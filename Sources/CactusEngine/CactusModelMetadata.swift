@@ -10,7 +10,7 @@ public struct CactusModelMetadata: Hashable, Sendable, Codable {
   public let createdAt: Date
   public let slug: String
   public let name: String
-  public let downloadURL: String
+  public let downloadURL: URL
   public let sizeMegabytes: Int
   public let supportsToolCalling: Bool
   public let supportsVision: Bool
