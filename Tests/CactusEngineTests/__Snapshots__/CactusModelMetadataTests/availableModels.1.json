@@ -1,0 +1,29 @@
+[
+  {
+    "created_at" : 779218283,
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/qwen3-0.6-embed.zip",
+    "name" : "Qwen 3 0.6B Embed",
+    "size_mb" : 414,
+    "slug" : "qwen3-0.6-embed",
+    "supports_tool_calling" : false,
+    "supports_vision" : false
+  },
+  {
+    "created_at" : 777686695.975939,
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/qwen3-0.6.zip",
+    "name" : "Qwen 3 0.6B",
+    "size_mb" : 394,
+    "slug" : "qwen3-0.6",
+    "supports_tool_calling" : true,
+    "supports_vision" : false
+  },
+  {
+    "created_at" : 780282079.968534,
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/qwen3-1.7.zip",
+    "name" : "Qwen 3 1.7B",
+    "size_mb" : 414,
+    "slug" : "qwen3-1.7",
+    "supports_tool_calling" : true,
+    "supports_vision" : false
+  }
+]
