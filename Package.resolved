@@ -1,5 +1,5 @@
 {
-  "originHash" : "fb29dad9509945d8f7f73af862bf1d7bccd735456d2bc3b9f737efd3143df303",
+  "originHash" : "e05dd2d5dfcdc1c453ffb9d8ac09acdd1d3c312d81cd1d073976fa36e153a59e",
   "pins" : [
     {
       "identity" : "swift-custom-dump",
@@ -35,6 +35,15 @@
       "state" : {
         "revision" : "4c27acf5394b645b70d8ba19dc249c0472d5f618",
         "version" : "1.7.0"
+      }
+    },
+    {
+      "identity" : "zip",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vapor-community/Zip",
+      "state" : {
+        "revision" : "6cf23016de581f1797842cbed799ef33a952bcf4",
+        "version" : "2.2.7"
       }
     }
   ],

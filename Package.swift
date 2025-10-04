@@ -10,10 +10,11 @@ let package = Package(
     .library(name: "CactusEngine", targets: ["CactusEngine"])
   ],
   dependencies: [
-    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.7")
+    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.7"),
+    .package(url: "https://github.com/vapor-community/Zip", from: "2.2.7")
   ],
   targets: [
-    .target(name: "CactusEngine"),
+    .target(name: "CactusEngine", dependencies: [.product(name: "Zip", package: "Zip")]),
     .testTarget(
       name: "CactusEngineTests",
       dependencies: [
