@@ -19,7 +19,7 @@ extension CactusLanguageModel {
     defer { subscription.cancel() }
     task.start()
     return try await withTaskCancellationHandler {
-      try await task.finishedDestinationURL()
+      try await task.waitForCompletion()
     } onCancel: {
       task.cancel()
     }
@@ -96,7 +96,8 @@ extension CactusLanguageModel {
       self.delegate.state.withLock { $0.isFinished }
     }
 
-    public func finishedDestinationURL() async throws -> URL {
+    @discardableResult
+    public func waitForCompletion() async throws -> URL {
       let state = Lock<(UnsafeContinuation<URL, any Error>?, CactusSubscription?)>((nil, nil))
       return try await withTaskCancellationHandler {
         try await withUnsafeThrowingContinuation { continuation in

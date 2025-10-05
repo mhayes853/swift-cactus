@@ -22,7 +22,7 @@ struct CactusLanguageModelDownloadingTests {
       progress.withLock { $0.append(try? result.get()) }
     }
     task.start()
-    let url = try await task.finishedDestinationURL()
+    let url = try await task.waitForCompletion()
     defer { try? FileManager.default.removeItem(at: url) }
     subscription.cancel()
 
