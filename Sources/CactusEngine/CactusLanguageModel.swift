@@ -7,13 +7,65 @@ import Foundation
 // MARK: - CactusLanguageModel
 
 public final class CactusLanguageModel {
+  public convenience init(from url: URL, contextSize: Int) throws {
+    try self.init(configuration: Configuration(modelURL: url, contextSize: contextSize))
+  }
 
+  public init(configuration: Configuration) throws {
+
+  }
+}
+
+// MARK: - Configuration
+
+extension CactusLanguageModel {
+  public struct Configuration: Hashable, Sendable {
+    public var modelURL: URL
+    public var contextSize: Int
+
+    public init(modelURL: URL, contextSize: Int) {
+      self.modelURL = modelURL
+      self.contextSize = contextSize
+    }
+  }
+}
+
+// MARK: - Tool
+
+extension CactusLanguageModel {
+  public protocol Tool {
+
+  }
+}
+
+// MARK: - Metadata
+
+extension CactusLanguageModel {
+  public struct Metadata: Hashable, Sendable, Codable {
+    public let createdAt: Date
+    public let slug: String
+    public let name: String
+    public let downloadURL: URL
+    public let sizeMegabytes: Int
+    public let supportsToolCalling: Bool
+    public let supportsVision: Bool
+
+    private enum CodingKeys: String, CodingKey {
+      case createdAt = "created_at"
+      case slug
+      case name
+      case downloadURL = "download_url"
+      case sizeMegabytes = "size_mb"
+      case supportsToolCalling = "supports_tool_calling"
+      case supportsVision = "supports_vision"
+    }
+  }
 }
 
 // MARK: - Available Models
 
 extension CactusLanguageModel {
-  private static let jsonDecoder = {
+  private static let supabaseJSONDecoder = {
     let decoder = JSONDecoder()
     decoder.dateDecodingStrategy = .iso8601
     return decoder
@@ -29,6 +81,6 @@ extension CactusLanguageModel {
     request.addValue("cactus", forHTTPHeaderField: "Accept-Profile")
 
     let (data, _) = try await URLSession.shared.data(for: request)
-    return try Self.jsonDecoder.decode([Metadata].self, from: data)
+    return try Self.supabaseJSONDecoder.decode([Metadata].self, from: data)
   }
 }
