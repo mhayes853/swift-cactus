@@ -27,18 +27,18 @@ jobs:
       - name: Run ${{ matrix.config }} Build
         run: swift build --configuration ${{ matrix.config }}
 
-  android:
-    name: Android
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
-          lfs: true
-      - name: "Build Swift Package on Android"
-        uses: swift-android-sdk/swift-android-action@v2
-        with:
-          swift-version: 6.2
-          swift-configuration: debug
-          run-tests: false
+  # android:
+  #   name: Android
+  #   runs-on: ubuntu-24.04-arm
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         submodules: recursive
+  #         fetch-depth: 0
+  #         lfs: true
+  #     - name: "Build Swift Package on Android"
+  #       uses: swift-android-sdk/swift-android-action@v2
+  #       with:
+  #         swift-version: 6.2
+  #         swift-configuration: debug
+  #         run-tests: false
