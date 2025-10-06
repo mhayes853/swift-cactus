@@ -8,17 +8,17 @@ import Zip
 // MARK: - Download Model
 
 extension CactusLanguageModel {
+  public static func modelDownloadURL(slug: String) -> URL {
+    URL(string: "\(cactusSupabaseURL)/storage/v1/object/public/cactus-models/\(slug).zip")!
+  }
+
   public static func downloadModel(
-    with metadata: Metadata,
+    from url: URL,
     to destination: URL,
     configuration: URLSessionConfiguration = .default,
     onProgress: @escaping @Sendable (Result<DownloadProgress, any Error>) -> Void = { _ in }
   ) async throws -> URL {
-    let task = Self.downloadModelTask(
-      with: metadata,
-      to: destination,
-      configuration: configuration
-    )
+    let task = Self.downloadModelTask(from: url, to: destination, configuration: configuration)
     let subscription = task.onProgress(onProgress)
     defer { subscription.cancel() }
     task.resume()
@@ -30,11 +30,11 @@ extension CactusLanguageModel {
   }
 
   public static func downloadModelTask(
-    with metadata: Metadata,
+    from url: URL,
     to destination: URL,
     configuration: URLSessionConfiguration = .default
   ) -> DownloadTask {
-    DownloadTask(with: metadata, to: destination, configuration: configuration)
+    DownloadTask(from: url, to: destination, configuration: configuration)
   }
 }
 
@@ -56,13 +56,13 @@ extension CactusLanguageModel {
     private let delegate: Delegate
 
     init(
-      with metadata: Metadata,
+      from url: URL,
       to destination: URL,
       configuration: URLSessionConfiguration
     ) {
       let delegate = Delegate(destination: destination)
       let session = URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
-      self.task = session.downloadTask(with: metadata.downloadURL)
+      self.task = session.downloadTask(with: url)
       self.delegate = delegate
     }
 

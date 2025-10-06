@@ -8,7 +8,7 @@ struct CactusLanguageModelDownloadingTests {
   @Test("Task Not Finished By Default")
   func testNotFinishedByDefault() async throws {
     let task = CactusLanguageModel.downloadModelTask(
-      with: try await CactusLanguageModel.testModelMetadata(),
+      from: try await CactusLanguageModel.testModelMetadata().downloadURL,
       to: self.temporaryURL()
     )
     expectNoDifference(task.isFinished, false)
@@ -42,7 +42,7 @@ struct CactusLanguageModelDownloadingTests {
     let progress = Lock([Result<CactusLanguageModel.DownloadProgress, any Error>]())
     let task = Task {
       try await CactusLanguageModel.downloadModel(
-        with: CactusLanguageModel.testModelMetadata(),
+        from: CactusLanguageModel.testModelMetadata().downloadURL,
         to: self.temporaryURL(),
         onProgress: { p in progress.withLock { $0.append(p) } }
       )
@@ -60,14 +60,14 @@ struct CactusLanguageModelDownloadingTests {
   @Test("Cancel Download From Task")
   func cancelDownloadFromTask() async throws {
     let task = CactusLanguageModel.downloadModelTask(
-      with: try await CactusLanguageModel.testModelMetadata(),
+      from: try await CactusLanguageModel.testModelMetadata().downloadURL,
       to: self.temporaryURL()
     )
 
     let progress = Lock([Result<CactusLanguageModel.DownloadProgress, any Error>]())
     let subscription = task.onProgress { p in progress.withLock { $0.append(p) } }
     task.resume()
-    await Task.yield()
+    await Task.yield()  // NB: Give some time for downloading to begin.
     task.cancel()
     await #expect(throws: CancellationError.self) {
       try await task.waitForCompletion()
