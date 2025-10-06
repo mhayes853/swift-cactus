@@ -1,4 +1,4 @@
-import CactusEngine
+import Cactus
 import SnapshotTesting
 import Testing
 

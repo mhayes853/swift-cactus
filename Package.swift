@@ -7,7 +7,7 @@ let package = Package(
   name: "swift-cactus",
   platforms: [.iOS(.v13), .macOS(.v10_15), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
   products: [
-    .library(name: "CactusEngine", targets: ["CactusEngine"])
+    .library(name: "Cactus", targets: ["Cactus"])
   ],
   dependencies: [
     .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.7"),
@@ -16,11 +16,11 @@ let package = Package(
     .package(url: "https://github.com/mhayes853/swift-operation", from: "0.1.0")
   ],
   targets: [
-    .target(name: "CactusEngine", dependencies: [.product(name: "Zip", package: "Zip")]),
+    .target(name: "Cactus", dependencies: [.product(name: "Zip", package: "Zip")]),
     .testTarget(
-      name: "CactusEngineTests",
+      name: "CactusTests",
       dependencies: [
-        "CactusEngine",
+        "Cactus",
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "Operation", package: "swift-operation")
