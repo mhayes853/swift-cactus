@@ -9,7 +9,7 @@ import Zip
 
 extension CactusLanguageModel {
   public static func modelDownloadURL(slug: String) -> URL {
-    URL(string: "\(cactusSupabaseURL)/storage/v1/object/public/cactus-models/\(slug).zip")!
+    CactusSupabaseClient.shared.modelDownloadURL(for: slug)
   }
 
   public static func downloadModel(
