@@ -1,5 +1,6 @@
 import Cactus
 import CustomDump
+import Foundation
 import SnapshotTesting
 import Testing
 
@@ -22,7 +23,6 @@ struct CactusLanguageModelTests {
   }
 
   @Test("Generates Embeddings")
-  @available(iOS 26.0, watchOS 26.0, macOS 26.0, tvOS 26.0, visionOS 26.0, *)
   func generatesEmbeddings() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL()
     let model = try CactusLanguageModel(from: modelURL)
@@ -36,7 +36,7 @@ struct CactusLanguageModelTests {
     let modelURL = try await CactusLanguageModel.testModelURL()
     let model = try CactusLanguageModel(from: modelURL)
     #expect(throws: CactusLanguageModel.EmbeddingsError.bufferTooSmall) {
-      try model.embeddings(for: "This is some text.", bufferSize: 20)
+      try model.embeddings(for: "This is some text.", maxBufferSize: 20)
     }
   }
 
@@ -45,7 +45,28 @@ struct CactusLanguageModelTests {
     let modelURL = try await CactusLanguageModel.testModelURL()
     let model = try CactusLanguageModel(from: modelURL)
     #expect(throws: CactusLanguageModel.EmbeddingsError.bufferTooSmall) {
-      try model.embeddings(for: "This is some text.", bufferSize: 0)
+      try model.embeddings(for: "This is some text.", maxBufferSize: 0)
     }
+  }
+
+  @Test(
+    "Schema Value JSON",
+    arguments: [
+      (CactusLanguageModel.SchemaValue.number(1), "1"),
+      (.string("blob"), "\"blob\""),
+      (.boolean(true), "true"),
+      (.null, "null"),
+      (.array([.string("blob"), .number(1)]), "[\"blob\",1]"),
+      (.array([]), "[]"),
+      (.object([:]), "{}"),
+      (.object(["key": .string("value")]), "{\"key\":\"value\"}")
+    ]
+  )
+  func schemaValueJSON(value: CactusLanguageModel.SchemaValue, json: String) throws {
+    let data = try JSONEncoder().encode(value)
+    expectNoDifference(String(decoding: data, as: UTF8.self), json)
+
+    let decodedValue = try JSONDecoder().decode(CactusLanguageModel.SchemaValue.self, from: data)
+    expectNoDifference(value, decodedValue)
   }
 }
