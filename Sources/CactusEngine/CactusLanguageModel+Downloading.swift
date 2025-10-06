@@ -17,7 +17,7 @@ extension CactusLanguageModel {
     )
     let subscription = task.onProgress(onProgress)
     defer { subscription.cancel() }
-    task.start()
+    task.resume()
     return try await withTaskCancellationHandler {
       try await task.waitForCompletion()
     } onCancel: {
@@ -75,25 +75,21 @@ extension CactusLanguageModel {
       configuration: URLSessionConfiguration
     ) {
       let delegate = Delegate(destination: destination)
-      let session = URLSession(
-        configuration: configuration,
-        delegate: delegate,
-        delegateQueue: nil
-      )
+      let session = URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
       self.task = session.downloadTask(with: metadata.downloadURL)
       self.delegate = delegate
     }
 
     public var isCancelled: Bool {
-      self.task.progress.isCancelled
+      self.delegate.state.withLock { $0.isCancelled }
     }
 
     public var isPaused: Bool {
-      self.task.progress.isPaused
+      self.delegate.state.withLock { $0.isPaused }
     }
 
     public var isFinished: Bool {
-      self.delegate.state.withLock { $0.isFinished }
+      self.delegate.state.withLock { $0.isFinished || $0.isCancelled }
     }
 
     @discardableResult
@@ -129,15 +125,18 @@ extension CactusLanguageModel {
       }
     }
 
-    public func start() {
+    public func resume() {
+      self.delegate.state.withLock { $0.isPaused = false }
       self.task.resume()
     }
 
     public func cancel() {
+      self.delegate.state.withLock { $0.isCancelled = true }
       self.task.cancel()
     }
 
     public func pause() {
+      self.delegate.state.withLock { $0.isPaused = true }
       self.task.suspend()
     }
   }
@@ -147,6 +146,8 @@ extension CactusLanguageModel.DownloadTask {
   private final class Delegate: NSObject, URLSessionDownloadDelegate, Sendable {
     struct State {
       var isFinished = false
+      var isCancelled = false
+      var isPaused = false
       private(set) var callbacks = [
         Int: @Sendable (Result<CactusLanguageModel.DownloadProgress, any Error>) -> Void
       ]()
@@ -191,11 +192,7 @@ extension CactusLanguageModel.DownloadTask {
       do {
         self.sendProgress(.success(.downloading(1)))
         Zip.addCustomFileExtension("tmp")
-        try Zip.unzipFile(
-          location,
-          destination: self.destination,
-          overwrite: true
-        ) {
+        try Zip.unzipFile(location, destination: self.destination, overwrite: true) {
           self.sendProgress(.success(.unzipping($0)))
         }
         self.state.withLock { $0.isFinished = true }

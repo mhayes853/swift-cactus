@@ -7,12 +7,14 @@ import Foundation
 // MARK: - CactusLanguageModel
 
 public final class CactusLanguageModel {
+  public let configuration: Configuration
+
   public convenience init(from url: URL, contextSize: Int) throws {
     try self.init(configuration: Configuration(modelURL: url, contextSize: contextSize))
   }
 
   public init(configuration: Configuration) throws {
-
+    self.configuration = configuration
   }
 }
 

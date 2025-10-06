@@ -7,54 +7,44 @@ import Testing
 struct CactusLanguageModelDownloadingTests {
   @Test("Task Not Finished By Default")
   func testNotFinishedByDefault() async throws {
-    let metadata = try await self.modelMetadata()
-    let task = CactusLanguageModel.downloadModelTask(with: metadata, to: self.temporaryURL())
+    let task = CactusLanguageModel.downloadModelTask(
+      with: try await CactusLanguageModel.testModelMetadata(),
+      to: self.temporaryURL()
+    )
     expectNoDifference(task.isFinished, false)
   }
 
-  @Test("Download Model With Task")
-  func downloadModelWithTask() async throws {
-    let metadata = try await self.modelMetadata()
-    let task = CactusLanguageModel.downloadModelTask(with: metadata, to: self.temporaryURL())
-
-    let progress = Lock([CactusLanguageModel.DownloadProgress?]())
-    let subscription = task.onProgress { result in
-      progress.withLock { $0.append(try? result.get()) }
-    }
-    task.start()
-    let url = try await task.waitForCompletion()
+  @Test("Download Model Successfully")
+  func downloadModelSuccessfully() async throws {
+    let url = try await CactusLanguageModel.testModelURL()
     defer { try? FileManager.default.removeItem(at: url) }
-    subscription.cancel()
 
-    expectNoDifference(task.isFinished, true)
-    progress.withLock {
+    CactusLanguageModel.testModelDownloadProgress.withLock {
       let containsDownloading = $0.contains {
         switch $0 {
-        case .downloading: true
+        case .success(.downloading): true
         default: false
         }
       }
       let containsUnzipping = $0.contains {
         switch $0 {
-        case .unzipping: true
+        case .success(.unzipping): true
         default: false
         }
       }
       expectNoDifference(containsDownloading, true)
       expectNoDifference(containsUnzipping, true)
-      expectNoDifference($0.last, .finished(url))
-      expectNoDifference($0.count { $0 == nil }, 0)
+      expectNoDifference(try? $0.last?.get(), .finished(url))
+      expectNoDifference($0.contains { $0.isFailure }, false)
     }
   }
 
-  @Test("Cancel Download")
+  @Test("Cancel Download From Concurrency Task")
   func cancelDownload() async throws {
-    let metadata = try await self.modelMetadata()
-
     let progress = Lock([Result<CactusLanguageModel.DownloadProgress, any Error>]())
     let task = Task {
       try await CactusLanguageModel.downloadModel(
-        with: metadata,
+        with: CactusLanguageModel.testModelMetadata(),
         to: self.temporaryURL(),
         onProgress: { p in progress.withLock { $0.append(p) } }
       )
@@ -69,17 +59,42 @@ struct CactusLanguageModelDownloadingTests {
     }
   }
 
-  private func modelMetadata() async throws -> CactusLanguageModel.Metadata {
-    let models = try await CactusLanguageModel.availableModels()
-    return try #require(models.first { $0.slug == "qwen3-0.6" })
+  @Test("Cancel Download From Task")
+  func cancelDownloadFromTask() async throws {
+    let task = CactusLanguageModel.downloadModelTask(
+      with: try await CactusLanguageModel.testModelMetadata(),
+      to: self.temporaryURL()
+    )
+
+    let progress = Lock([Result<CactusLanguageModel.DownloadProgress, any Error>]())
+    let subscription = task.onProgress { p in progress.withLock { $0.append(p) } }
+    task.resume()
+    await Task.yield()
+    task.cancel()
+    await #expect(throws: CancellationError.self) {
+      try await task.waitForCompletion()
+    }
+    progress.withLock { p in
+      expectNoDifference(p.last?.isCancelled, true)
+    }
+    expectNoDifference(task.isCancelled, true)
+    expectNoDifference(task.isFinished, true)
+    subscription.cancel()
   }
 
-  func temporaryURL() -> URL {
+  private func temporaryURL() -> URL {
     FileManager.default.temporaryDirectory.appendingPathComponent("tmp-model-\(UUID())")
   }
 }
 
 extension Result {
+  fileprivate var isFailure: Bool {
+    switch self {
+    case .success: false
+    case .failure: true
+    }
+  }
+
   fileprivate var isCancelled: Bool {
     switch self {
     case .success: false

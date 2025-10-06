@@ -12,7 +12,8 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.7"),
     .package(url: "https://github.com/vapor-community/Zip", from: "2.2.7"),
-    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.3.3")
+    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.3.3"),
+    .package(url: "https://github.com/mhayes853/swift-operation", from: "0.1.0")
   ],
   targets: [
     .target(name: "CactusEngine", dependencies: [.product(name: "Zip", package: "Zip")]),
@@ -21,7 +22,8 @@ let package = Package(
       dependencies: [
         "CactusEngine",
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
-        .product(name: "CustomDump", package: "swift-custom-dump")
+        .product(name: "CustomDump", package: "swift-custom-dump"),
+        .product(name: "Operation", package: "swift-operation")
       ]
     )
   ]
