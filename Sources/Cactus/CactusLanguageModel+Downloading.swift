@@ -1,6 +1,10 @@
 import Foundation
 import Zip
 
+#if canImport(FoundationNetworking)
+  import FoundationNetworking
+#endif
+
 // MARK: - Download Model
 
 extension CactusLanguageModel {
