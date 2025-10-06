@@ -55,17 +55,6 @@ extension CactusLanguageModel {
     private let task: URLSessionDownloadTask
     private let delegate: Delegate
 
-    init(
-      from url: URL,
-      to destination: URL,
-      configuration: URLSessionConfiguration
-    ) {
-      let delegate = Delegate(destination: destination)
-      let session = URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
-      self.task = session.downloadTask(with: url)
-      self.delegate = delegate
-    }
-
     public var isCancelled: Bool {
       self.delegate.state.withLock { $0.isCancelled }
     }
@@ -76,6 +65,21 @@ extension CactusLanguageModel {
 
     public var isFinished: Bool {
       self.delegate.state.withLock { $0.isFinished || $0.isCancelled }
+    }
+
+    public var currentProgress: DownloadProgress {
+      self.delegate.state.withLock { $0.progress }
+    }
+
+    init(
+      from url: URL,
+      to destination: URL,
+      configuration: URLSessionConfiguration
+    ) {
+      let delegate = Delegate(destination: destination)
+      let session = URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
+      self.task = session.downloadTask(with: url)
+      self.delegate = delegate
     }
 
     @discardableResult
@@ -134,6 +138,7 @@ extension CactusLanguageModel.DownloadTask {
       var isFinished = false
       var isCancelled = false
       var isPaused = false
+      var progress = CactusLanguageModel.DownloadProgress.downloading(0)
       private(set) var callbacks = [
         Int: @Sendable (Result<CactusLanguageModel.DownloadProgress, any Error>) -> Void
       ]()
@@ -205,6 +210,9 @@ extension CactusLanguageModel.DownloadTask {
       _ progress: Result<CactusLanguageModel.DownloadProgress, any Error>
     ) {
       self.state.withLock { state in
+        if case .success(let progress) = progress {
+          state.progress = progress
+        }
         state.callbacks.values.forEach { $0(progress) }
       }
     }
