@@ -72,7 +72,3 @@ extension CactusLanguageModel {
 }
 
 private struct TestModelNotFoundError: Error {}
-
-private func temporaryDirectory() async throws -> URL {
-  FileManager.default.temporaryDirectory.appendingPathComponent("tmp-model-\(UUID())")
-}

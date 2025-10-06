@@ -1,4 +1,4 @@
-import CXXCactus
+internal import CXXCactus
 import Foundation
 
 #if canImport(FoundationNetworking)
@@ -9,14 +9,20 @@ import Foundation
 
 public final class CactusLanguageModel {
   public let configuration: Configuration
+  private let model: cactus_model_t
 
-  public convenience init(from url: URL, contextSize: Int) throws {
+  public convenience init(from url: URL, contextSize: Int = 2048) throws {
     try self.init(configuration: Configuration(modelURL: url, contextSize: contextSize))
   }
 
   public init(configuration: Configuration) throws {
     self.configuration = configuration
+    let model = cactus_init(configuration.modelURL.nativePath, configuration.contextSize)
+    guard let model else { throw ModelCreationError(configuration: configuration) }
+    self.model = model
   }
+
+  deinit { cactus_destroy(self.model) }
 }
 
 // MARK: - Configuration
@@ -38,6 +44,22 @@ extension CactusLanguageModel {
 extension CactusLanguageModel {
   public protocol Tool {
 
+  }
+}
+
+// MARK: - Errors
+
+extension CactusLanguageModel {
+  public struct ModelCreationError: Error, Hashable {
+    public let message: String
+
+    init(configuration: Configuration) {
+      if let message = cactus_get_last_error() {
+        self.message = String(cString: message)
+      } else {
+        self.message = "Failed to create model with configuration: \(configuration)"
+      }
+    }
   }
 }
 
