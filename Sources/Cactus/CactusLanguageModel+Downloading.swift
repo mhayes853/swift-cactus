@@ -11,7 +11,7 @@ extension CactusLanguageModel {
   public static func downloadModel(
     with metadata: Metadata,
     to destination: URL,
-    configuration: URLSessionConfiguration = .defaultCactusModelDownload,
+    configuration: URLSessionConfiguration = .default,
     onProgress: @escaping @Sendable (Result<DownloadProgress, any Error>) -> Void = { _ in }
   ) async throws -> URL {
     let task = Self.downloadModelTask(
@@ -32,30 +32,10 @@ extension CactusLanguageModel {
   public static func downloadModelTask(
     with metadata: Metadata,
     to destination: URL,
-    configuration: URLSessionConfiguration = .defaultCactusModelDownload
+    configuration: URLSessionConfiguration = .default
   ) -> DownloadTask {
     DownloadTask(with: metadata, to: destination, configuration: configuration)
   }
-}
-
-// MARK: - URLSessionConfiguration
-
-extension URLSessionConfiguration {
-  public static let defaultCactusModelDownload = {
-    var config = URLSessionConfiguration.default
-    config.timeoutIntervalForRequest = .infinity
-    return config
-  }()
-
-  #if canImport(Darwin)
-    public static func backgroundCactusModelDownload(
-      withIdentifier identifier: String
-    ) -> URLSessionConfiguration {
-      let config = URLSessionConfiguration.background(withIdentifier: identifier)
-      config.timeoutIntervalForRequest = .infinity
-      return config
-    }
-  #endif
 }
 
 // MARK: - DownloadProgress
