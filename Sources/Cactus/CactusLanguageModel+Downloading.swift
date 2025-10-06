@@ -47,13 +47,15 @@ extension URLSessionConfiguration {
     return config
   }()
 
-  public static func backgroundCactusModelDownload(
-    withIdentifier identifier: String
-  ) -> URLSessionConfiguration {
-    let config = URLSessionConfiguration.background(withIdentifier: identifier)
-    config.timeoutIntervalForRequest = .infinity
-    return config
-  }
+  #if canImport(Darwin)
+    public static func backgroundCactusModelDownload(
+      withIdentifier identifier: String
+    ) -> URLSessionConfiguration {
+      let config = URLSessionConfiguration.background(withIdentifier: identifier)
+      config.timeoutIntervalForRequest = .infinity
+      return config
+    }
+  #endif
 }
 
 // MARK: - DownloadProgress
