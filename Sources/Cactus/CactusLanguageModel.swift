@@ -59,9 +59,8 @@ extension CactusLanguageModel {
 
 extension CactusLanguageModel {
   public enum EmbeddingsError: Error, Hashable {
-    case invalidGeneration
     case bufferTooSmall
-    case unknown(message: String)
+    case unknown(message: String?)
   }
 
   public func embeddings(for text: String, bufferSize: Int = 2048) throws -> [Float] {
@@ -70,7 +69,8 @@ extension CactusLanguageModel {
     let rawBuffer = UnsafeMutablePointer<Float>.allocate(capacity: bufferSize)
     let rawBufferSize = bufferSize * MemoryLayout<Float>.size
     switch cactus_embed(self.model, text, rawBuffer, rawBufferSize, &dimensions) {
-    case -1: throw EmbeddingsError.invalidGeneration
+    case -1:
+      throw EmbeddingsError.unknown(message: cactus_get_last_error().map { String(cString: $0) })
     case -2: throw EmbeddingsError.bufferTooSmall
     default: return (0..<dimensions).map { rawBuffer[$0] }
     }
