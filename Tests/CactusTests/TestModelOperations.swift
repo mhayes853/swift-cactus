@@ -38,10 +38,10 @@ extension CactusLanguageModel {
   )
 
   static func testModelURL() async throws -> URL {
-    if let url = Self.testModelStore.currentValue {
+    if let url = testModelStore.currentValue {
       return url
     }
-    return try await Self.testModelStore.fetch()
+    return try await testModelStore.fetch()
   }
 
   static func testModelMetadata() async throws -> Metadata {
@@ -60,14 +60,28 @@ extension CactusLanguageModel {
       in context: OperationContext,
       with continuation: OperationContinuation<URL, any Error>
     ) async throws -> URL {
-      try await CactusLanguageModel.downloadModel(
+      let url = try await CactusLanguageModel.downloadModel(
         with: CactusLanguageModel.testModelMetadata(),
         to: temporaryDirectory(),
         onProgress: { result in
           CactusLanguageModel.testModelDownloadProgress.withLock { $0.append(result) }
         }
       )
+      registerCleanup()
+      return url
     }
+  }
+}
+
+private let testModelStore = OperationStore.detached(
+  query: CactusLanguageModel.TestModelDownloadQuery().deduplicated(),
+  initialValue: nil
+)
+
+private func registerCleanup() {
+  atexit {
+    guard let url = testModelStore.currentValue else { return }
+    try? FileManager.default.removeItem(at: url)
   }
 }
 
