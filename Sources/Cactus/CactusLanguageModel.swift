@@ -1,3 +1,4 @@
+import CXXCactus
 import Foundation
 
 #if canImport(FoundationNetworking)
@@ -25,7 +26,7 @@ extension CactusLanguageModel {
     public var modelURL: URL
     public var contextSize: Int
 
-    public init(modelURL: URL, contextSize: Int) {
+    public init(modelURL: URL, contextSize: Int = 2048) {
       self.modelURL = modelURL
       self.contextSize = contextSize
     }

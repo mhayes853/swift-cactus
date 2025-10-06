@@ -1,0 +1,3 @@
+module CXXCactus {
+  header "cactus.h"
+}

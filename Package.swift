@@ -16,7 +16,15 @@ let package = Package(
     .package(url: "https://github.com/mhayes853/swift-operation", from: "0.1.0")
   ],
   targets: [
-    .target(name: "Cactus", dependencies: [.product(name: "Zip", package: "Zip")]),
+    .target(
+      name: "CXXCactus",
+      exclude: [
+        "cactus/apple", "cactus/android", "cactus/assets", "cactus/tests", "cactus/tools",
+        "cactus/.gitignore", "cactus/LICENSE", "cactus/README.md"
+      ],
+      cxxSettings: [.unsafeFlags(["-std=c++20"])]
+    ),
+    .target(name: "Cactus", dependencies: ["CXXCactus", .product(name: "Zip", package: "Zip")]),
     .testTarget(
       name: "CactusTests",
       dependencies: [
@@ -24,7 +32,8 @@ let package = Package(
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "Operation", package: "swift-operation")
-      ]
+      ],
+      exclude: ["__Snapshots__"]
     )
   ]
 )
