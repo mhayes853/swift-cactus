@@ -25,28 +25,6 @@ public final class CactusLanguageModel {
   deinit { cactus_destroy(self.model) }
 }
 
-// MARK: - Embeddings
-
-extension CactusLanguageModel {
-  public enum EmbeddingsError: Error, Hashable {
-    case invalidGeneration
-    case bufferTooSmall
-    case unknown(message: String)
-  }
-
-  public func embeddings(for text: String, bufferSize: Int = 2048) throws -> [Float] {
-    guard bufferSize > 0 else { throw EmbeddingsError.bufferTooSmall }
-    var dimensions = 0
-    let rawBuffer = UnsafeMutablePointer<Float>.allocate(capacity: bufferSize)
-    let rawBufferSize = bufferSize * MemoryLayout<Float>.size
-    switch cactus_embed(self.model, text, rawBuffer, rawBufferSize, &dimensions) {
-    case -1: throw EmbeddingsError.invalidGeneration
-    case -2: throw EmbeddingsError.bufferTooSmall
-    default: return (0..<dimensions).map { rawBuffer[$0] }
-    }
-  }
-}
-
 // MARK: - Configuration
 
 extension CactusLanguageModel {
@@ -58,14 +36,6 @@ extension CactusLanguageModel {
       self.modelURL = modelURL
       self.contextSize = contextSize
     }
-  }
-}
-
-// MARK: - Tool
-
-extension CactusLanguageModel {
-  public protocol Tool {
-
   }
 }
 
@@ -85,49 +55,24 @@ extension CactusLanguageModel {
   }
 }
 
-// MARK: - Metadata
+// MARK: - Embeddings
 
 extension CactusLanguageModel {
-  public struct Metadata: Hashable, Sendable, Codable {
-    public let createdAt: Date
-    public let slug: String
-    public let name: String
-    public let downloadURL: URL
-    public let sizeMegabytes: Int
-    public let supportsToolCalling: Bool
-    public let supportsVision: Bool
-
-    private enum CodingKeys: String, CodingKey {
-      case createdAt = "created_at"
-      case slug
-      case name
-      case downloadURL = "download_url"
-      case sizeMegabytes = "size_mb"
-      case supportsToolCalling = "supports_tool_calling"
-      case supportsVision = "supports_vision"
-    }
+  public enum EmbeddingsError: Error, Hashable {
+    case invalidGeneration
+    case bufferTooSmall
+    case unknown(message: String)
   }
-}
 
-// MARK: - Available Models
-
-extension CactusLanguageModel {
-  private static let supabaseJSONDecoder = {
-    let decoder = JSONDecoder()
-    decoder.dateDecodingStrategy = .iso8601
-    return decoder
-  }()
-
-  public static func availableModels() async throws -> [Metadata] {
-    var components = URLComponents(string: "\(cactusSupabaseURL)/rest/v1/models")!
-    components.queryItems = [URLQueryItem(name: "select", value: "*")]
-
-    var request = URLRequest(url: components.url!)
-    request.addValue(cactusSupabaseKey, forHTTPHeaderField: "apiKey")
-    request.addValue("Bearer \(cactusSupabaseKey)", forHTTPHeaderField: "Authorization")
-    request.addValue("cactus", forHTTPHeaderField: "Accept-Profile")
-
-    let (data, _) = try await URLSession.shared.data(for: request)
-    return try Self.supabaseJSONDecoder.decode([Metadata].self, from: data)
+  public func embeddings(for text: String, bufferSize: Int = 2048) throws -> [Float] {
+    guard bufferSize > 0 else { throw EmbeddingsError.bufferTooSmall }
+    var dimensions = 0
+    let rawBuffer = UnsafeMutablePointer<Float>.allocate(capacity: bufferSize)
+    let rawBufferSize = bufferSize * MemoryLayout<Float>.size
+    switch cactus_embed(self.model, text, rawBuffer, rawBufferSize, &dimensions) {
+    case -1: throw EmbeddingsError.invalidGeneration
+    case -2: throw EmbeddingsError.bufferTooSmall
+    default: return (0..<dimensions).map { rawBuffer[$0] }
+    }
   }
 }

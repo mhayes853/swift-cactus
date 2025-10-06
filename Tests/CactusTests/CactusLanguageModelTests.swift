@@ -48,10 +48,4 @@ struct CactusLanguageModelTests {
       try model.embeddings(for: "This is some text.", bufferSize: 0)
     }
   }
-
-  @Test("Available Models")
-  func availableModels() async throws {
-    let models = try await CactusLanguageModel.sharedAvailableModels()
-    assertSnapshot(of: models, as: .json)
-  }
 }
