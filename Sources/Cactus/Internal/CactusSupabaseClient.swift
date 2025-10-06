@@ -20,12 +20,12 @@ final class CactusSupabaseClient: Sendable {
   }()
 
   func availableModels() async throws -> [CactusLanguageModel.Metadata] {
-    var components = URLComponents(string: "\(cactusSupabaseURL)/rest/v1/models")!
+    var components = URLComponents(string: "\(self.cactusSupabaseURL)/rest/v1/models")!
     components.queryItems = [URLQueryItem(name: "select", value: "*")]
 
     var request = URLRequest(url: components.url!)
-    request.addValue(cactusSupabaseKey, forHTTPHeaderField: "apiKey")
-    request.addValue("Bearer \(cactusSupabaseKey)", forHTTPHeaderField: "Authorization")
+    request.addValue(self.cactusSupabaseKey, forHTTPHeaderField: "apiKey")
+    request.addValue("Bearer \(self.cactusSupabaseKey)", forHTTPHeaderField: "Authorization")
     request.addValue("cactus", forHTTPHeaderField: "Accept-Profile")
 
     let (data, _) = try await URLSession.shared.data(for: request)
@@ -33,6 +33,6 @@ final class CactusSupabaseClient: Sendable {
   }
 
   func modelDownloadURL(for slug: String) -> URL {
-    URL(string: "\(cactusSupabaseURL)/storage/v1/object/public/cactus-models/\(slug).zip")!
+    URL(string: "\(self.cactusSupabaseURL)/storage/v1/object/public/cactus-models/\(slug).zip")!
   }
 }

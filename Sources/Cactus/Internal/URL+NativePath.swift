@@ -6,6 +6,6 @@
 
 extension URL {
   var nativePath: String {
-    withUnsafeFileSystemRepresentation { String(cString: $0!) }
+    self.withUnsafeFileSystemRepresentation { String(cString: $0!) }
   }
 }
