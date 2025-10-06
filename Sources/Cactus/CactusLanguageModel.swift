@@ -1,4 +1,4 @@
-internal import CXXCactus
+private import CXXCactus
 import Foundation
 
 #if canImport(FoundationNetworking)
