@@ -17,8 +17,6 @@ struct CactusLanguageModelDownloadingTests {
   @Test("Download Model Successfully")
   func downloadModelSuccessfully() async throws {
     let url = try await CactusLanguageModel.testModelURL()
-    defer { try? FileManager.default.removeItem(at: url) }
-
     CactusLanguageModel.testModelDownloadProgress.withLock {
       let containsDownloading = $0.contains {
         switch $0 {
