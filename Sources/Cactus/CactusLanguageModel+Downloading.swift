@@ -8,10 +8,45 @@ import Zip
 // MARK: - Download Model
 
 extension CactusLanguageModel {
+  /// Returns the download `URL` for a model slug.
+  ///
+  /// - Parameter slug: The slug of the model.
   public static func modelDownloadURL(slug: String) -> URL {
     CactusSupabaseClient.shared.modelDownloadURL(for: slug)
   }
+  
+  /// Downloads the model for the provided `slug` to the provided destination `URL`.
+  ///
+  /// - Parameters:
+  ///   - slug: The slug of the model.
+  ///   - destination: The `URL` to download the model to.
+  ///   - configuration: A `URLSessionConfiguration` for the download.
+  ///   - onProgress: A callback that is invoked when progress is made towards the download.
+  /// - Returns: The destination`URL` of the downloaded model.
+  @discardableResult
+  public static func downloadModel(
+    slug: String,
+    to destination: URL,
+    configuration: URLSessionConfiguration = .default,
+    onProgress: @escaping @Sendable (Result<DownloadProgress, any Error>) -> Void = { _ in }
+  ) async throws -> URL {
+    try await Self.downloadModel(
+      from: Self.modelDownloadURL(slug: slug),
+      to: destination,
+      configuration: configuration,
+      onProgress: onProgress
+    )
+  }
 
+  /// Downloads the model for the provided source `URL` to the provided destination `URL`.
+  ///
+  /// - Parameters:
+  ///   - url: The source download `URL` of the model.
+  ///   - destination: The `URL` to download the model to.
+  ///   - configuration: A `URLSessionConfiguration` for the download.
+  ///   - onProgress: A callback that is invoked when progress is made towards the download.
+  /// - Returns: The destination`URL` of the downloaded model.
+  @discardableResult
   public static func downloadModel(
     from url: URL,
     to destination: URL,
@@ -28,7 +63,39 @@ extension CactusLanguageModel {
       task.cancel()
     }
   }
+  
+  /// Returns a ``DownloadTask`` for the model with the specified `slug`.
+  ///
+  /// You must manually start the download by calling ``DownloadTask/resume()``.
+  ///
+  /// - Parameters:
+  ///   - url: The slug of the model.
+  ///   - destination: The `URL` to download the model to.
+  ///   - configuration: A `URLSessionConfiguration` for the download.
+  ///   - onProgress: A callback that is invoked when progress is made towards the download.
+  /// - Returns: A ``DownloadTask``.
+  public static func downloadModelTask(
+    slug: String,
+    to destination: URL,
+    configuration: URLSessionConfiguration = .default
+  ) -> DownloadTask {
+    Self.downloadModelTask(
+      from: Self.modelDownloadURL(slug: slug),
+      to: destination,
+      configuration: configuration
+    )
+  }
 
+  /// Returns a ``DownloadTask`` for the model at the specificed source `URL`.
+  ///
+  /// You must manually start the download by calling ``DownloadTask/resume()``.
+  ///
+  /// - Parameters:
+  ///   - url: The source download `URL` of the model.
+  ///   - destination: The `URL` to download the model to.
+  ///   - configuration: A `URLSessionConfiguration` for the download.
+  ///   - onProgress: A callback that is invoked when progress is made towards the download.
+  /// - Returns: A ``DownloadTask``.
   public static func downloadModelTask(
     from url: URL,
     to destination: URL,
@@ -41,9 +108,15 @@ extension CactusLanguageModel {
 // MARK: - DownloadProgress
 
 extension CactusLanguageModel {
+  /// An enum representing progress on downloading a model from cactus.
   public enum DownloadProgress: Hashable, Sendable {
+    /// The model is being downloaded over the network.
     case downloading(Double)
+    
+    /// The model is being unzipped.
     case unzipping(Double)
+    
+    /// The model has finished downloading and has been unzipped.
     case finished(URL)
   }
 }
@@ -51,22 +124,27 @@ extension CactusLanguageModel {
 // MARK: - DownloadTask
 
 extension CactusLanguageModel {
+  /// A class to manage the download of a ``CactusLanguageModel``.
   public final class DownloadTask: Sendable {
     private let task: URLSessionDownloadTask
     private let delegate: Delegate
 
+    /// Whether or not the download has been cancelled.
     public var isCancelled: Bool {
       self.delegate.state.withLock { $0.isCancelled }
     }
 
+    /// Whether or not the download is paused.
     public var isPaused: Bool {
       self.delegate.state.withLock { $0.isPaused }
     }
 
+    /// Whether or not the download has ended.
     public var isFinished: Bool {
       self.delegate.state.withLock { $0.isFinished || $0.isCancelled }
     }
 
+    /// The current ``CactusLanguageModel/DownloadProgress``.
     public var currentProgress: DownloadProgress {
       self.delegate.state.withLock { $0.progress }
     }
@@ -81,7 +159,10 @@ extension CactusLanguageModel {
       self.task = session.downloadTask(with: url)
       self.delegate = delegate
     }
-
+    
+    /// Waits for completion of the download.
+    ///
+    /// - Returns: The destination`URL` of the downloaded model.
     @discardableResult
     public func waitForCompletion() async throws -> URL {
       let state = Lock<(UnsafeContinuation<URL, any Error>?, CactusSubscription?)>((nil, nil))
@@ -105,7 +186,11 @@ extension CactusLanguageModel {
         state.withLock { $0.0?.resume(throwing: CancellationError()) }
       }
     }
-
+    
+    /// Adds a handler to observe the progress of the download.
+    ///
+    /// - Parameter handler: The handler.
+    /// - Returns: A ``CactusSubscription``.
     public func onProgress(
       _ handler: @escaping @Sendable (Result<DownloadProgress, any Error>) -> Void
     ) -> CactusSubscription {
@@ -115,16 +200,19 @@ extension CactusLanguageModel {
       }
     }
 
+    /// Resumes the download from a paused state.
     public func resume() {
       self.delegate.state.withLock { $0.isPaused = false }
       self.task.resume()
     }
 
+    /// Cancels the download.
     public func cancel() {
       self.delegate.state.withLock { $0.isCancelled = true }
       self.task.cancel()
     }
 
+    /// Pauses the download.
     public func pause() {
       self.delegate.state.withLock { $0.isPaused = true }
       self.task.suspend()
@@ -137,7 +225,7 @@ extension CactusLanguageModel.DownloadTask {
     struct State {
       var isFinished = false
       var isCancelled = false
-      var isPaused = false
+      var isPaused = true
       var progress = CactusLanguageModel.DownloadProgress.downloading(0)
       private(set) var callbacks = [
         Int: @Sendable (Result<CactusLanguageModel.DownloadProgress, any Error>) -> Void
