@@ -28,7 +28,7 @@ final class CactusSupabaseClient: Sendable {
     request.addValue("Bearer \(self.cactusSupabaseKey)", forHTTPHeaderField: "Authorization")
     request.addValue("cactus", forHTTPHeaderField: "Accept-Profile")
 
-    let (data, _) = try await URLSession.shared.data(for: request)
+    let (data, _) = try await self.session.data(for: request)
     return try self.supabaseJSONDecoder.decode([CactusLanguageModel.Metadata].self, from: data)
   }
 

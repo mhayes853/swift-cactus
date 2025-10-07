@@ -60,6 +60,7 @@ extension CactusLanguageModel {
       in context: OperationContext,
       with continuation: OperationContinuation<URL, any Error>
     ) async throws -> URL {
+      print("=== Downloading Model ===")
       let url = try await CactusLanguageModel.downloadModel(
         from: CactusLanguageModel.testModelMetadata().downloadURL,
         to: temporaryDirectory(),
@@ -67,6 +68,7 @@ extension CactusLanguageModel {
           CactusLanguageModel.testModelDownloadProgress.withLock { $0.append(result) }
         }
       )
+      print("=== Finished Downloading Model ===")
       registerCleanup()
       return url
     }
