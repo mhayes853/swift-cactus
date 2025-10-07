@@ -69,8 +69,22 @@ extension CactusLanguageModel {
         }
       )
       print("=== Finished Downloading Model ===")
-      registerCleanup()
       return url
+    }
+  }
+}
+
+extension CactusLanguageModel {
+  static var isDownloadingTestModel: Bool {
+    testModelStore.isLoading
+  }
+
+  static func cleanupTestModel() throws {
+    try testModelStore.withExclusiveAccess { store in
+      guard let url = store.currentValue else { return }
+      print("=== Cleaning Up Test Model ===")
+      try FileManager.default.removeItem(at: url)
+      store.resetState()
     }
   }
 }
@@ -79,12 +93,5 @@ private let testModelStore = OperationStore.detached(
   query: CactusLanguageModel.TestModelDownloadQuery().deduplicated(),
   initialValue: nil
 )
-
-private func registerCleanup() {
-  atexit {
-    guard let url = testModelStore.currentValue else { return }
-    try? FileManager.default.removeItem(at: url)
-  }
-}
 
 private struct TestModelNotFoundError: Error {}

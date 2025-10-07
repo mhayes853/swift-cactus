@@ -99,7 +99,7 @@ extension CactusLanguageModel {
     public let prefillTokens: Int
     public let decodeTokens: Int
     public let totalTokens: Int
-    public private(set) var toolCalls: [ToolCall]
+    public let toolCalls: [ToolCall]
     private let timeToFirstTokenMs: Double
     private let totalTimeMs: Double
 
