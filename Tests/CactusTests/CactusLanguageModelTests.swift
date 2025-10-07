@@ -71,6 +71,26 @@ extension BaseTestSuite {
       expectNoDifference(value, decodedValue)
     }
 
+    @Test(
+      "Schema Type JSON",
+      arguments: [
+        (CactusLanguageModel.SchemaType.number, "\"number\""),
+        (.string, "\"string\""),
+        (.boolean, "\"boolean\""),
+        (.null, "\"null\""),
+        (.array, "\"array\""),
+        (.object, "\"object\""),
+        (.types([.string, .number]), "[\"string\",\"number\"]")
+      ]
+    )
+    func schemaTypeJSON(value: CactusLanguageModel.SchemaType, json: String) throws {
+      let data = try JSONEncoder().encode(value)
+      expectNoDifference(String(decoding: data, as: UTF8.self), json)
+
+      let decodedValue = try JSONDecoder().decode(CactusLanguageModel.SchemaType.self, from: data)
+      expectNoDifference(value, decodedValue)
+    }
+
     @Test("Basic Chat Completion")
     func basicChatCompletion() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
