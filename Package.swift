@@ -24,7 +24,7 @@ let package = Package(
       ],
       cxxSettings: [
         .unsafeFlags(["-std=c++20", "-O3"]),
-        .unsafeFlags(["-march=armv8.2-a+fp16+simd+dotprod"], .when(platforms: [.android]))
+        .unsafeFlags(["-mfpu=neon", "-mfloat-abi=softfp"], .when(platforms: [.android]))
       ],
     ),
     .target(name: "Cactus", dependencies: ["CXXCactus", .product(name: "Zip", package: "Zip")]),
