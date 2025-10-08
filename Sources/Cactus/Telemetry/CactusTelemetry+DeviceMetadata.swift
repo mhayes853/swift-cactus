@@ -13,19 +13,19 @@ extension CactusTelemetry {
   public struct DeviceMetadata: Hashable, Sendable, Codable {
     /// The name of the device.
     public var name: String
-    
+
     /// The operating system of the device.
     public var os: String
-    
+
     /// A stringified os version of the device.
     public var osVersion: String
-    
+
     /// A device vendor id.
     public var deviceId: String
-    
+
     /// The brand that owns the device.
     public var brand: String
-    
+
     /// Creates device metadata.
     ///
     /// - Parameters:
