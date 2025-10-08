@@ -5,7 +5,21 @@ public enum CactusTelemetry {
     fatalError()
   }
 
-  public static func configure(_ token: String, client: sending any Client = Self.defaultClient) {
+  #if canImport(Darwin)
+    @MainActor
+    public static func configure(
+      _ token: String,
+      client: sending any Client = Self.defaultClient
+    ) {
+      Self.configure(token, deviceMetadata: .current, client: client)
+    }
+  #endif
+  
+  public static func configure(
+    _ token: String,
+    deviceMetadata: DeviceMetadata,
+    client: sending any Client = Self.defaultClient
+  ) {
 
   }
 
