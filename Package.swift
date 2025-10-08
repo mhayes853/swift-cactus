@@ -22,10 +22,7 @@ let package = Package(
         "cactus/apple", "cactus/android", "cactus/assets", "cactus/tests", "cactus/tools",
         "cactus/.gitignore", "cactus/LICENSE", "cactus/README.md"
       ],
-      cxxSettings: [
-        .unsafeFlags(["-std=c++20", "-O3"]),
-        .unsafeFlags(["-mfpu=neon", "-mfloat-abi=softfp"], .when(platforms: [.android]))
-      ],
+      cxxSettings: [.unsafeFlags(["-std=c++20", "-O3"])],
     ),
     .target(name: "Cactus", dependencies: ["CXXCactus", .product(name: "Zip", package: "Zip")]),
     .testTarget(
