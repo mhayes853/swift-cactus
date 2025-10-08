@@ -16,6 +16,7 @@ let package = Package(
     .package(url: "https://github.com/mhayes853/swift-operation", from: "0.1.0")
   ],
   targets: [
+    .systemLibrary(name: "_CactusUtils"),
     .target(
       name: "CXXCactus",
       exclude: [
@@ -24,7 +25,10 @@ let package = Package(
       ],
       cxxSettings: [.unsafeFlags(["-std=c++20", "-O3"])],
     ),
-    .target(name: "Cactus", dependencies: ["CXXCactus", .product(name: "Zip", package: "Zip")]),
+    .target(
+      name: "Cactus",
+      dependencies: ["CXXCactus", "_CactusUtils", .product(name: "Zip", package: "Zip")]
+    ),
     .testTarget(
       name: "CactusTests",
       dependencies: [

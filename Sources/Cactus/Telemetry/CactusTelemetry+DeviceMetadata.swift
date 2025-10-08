@@ -8,11 +8,13 @@ import SwiftUI
   import IOKit
 #endif
 
+// htQlXiPj5Y65HPw0fLaSylSeLsyZohmlucMYEPSGMYWz8Db0XamyAwyj2KZl + l5mr9l / p2tUQ4eI4yhkfUsciblp3ehytG9gcgCV8PCr9yHQe9QmOD7BEi3fMuJ4MGOPSK0f2 + cPuQ ==
+
 extension CactusTelemetry {
   /// Device info for telemetry.
   public struct DeviceMetadata: Hashable, Sendable, Codable {
     /// The name of the device.
-    public var name: String
+    public var model: String
 
     /// The operating system of the device.
     public var os: String
@@ -34,8 +36,8 @@ extension CactusTelemetry {
     ///   - osVersion: A stringified os version of the device.
     ///   - deviceId: A device vendor id.
     ///   - brand: The brand that owns the device.
-    public init(name: String, os: String, osVersion: String, deviceId: String, brand: String) {
-      self.name = name
+    public init(model: String, os: String, osVersion: String, deviceId: String, brand: String) {
+      self.model = model
       self.os = os
       self.osVersion = osVersion
       self.deviceId = deviceId
@@ -51,7 +53,7 @@ extension CactusTelemetry {
       #if os(iOS) || os(tvOS) || os(visionOS)
         let device = UIDevice.current
         return Self(
-          name: device.name,
+          model: device.name,
           os: device.systemName,
           osVersion: device.systemVersion,
           deviceId: device.identifierForVendor.map(\.uuidString) ?? "unknown",
@@ -64,7 +66,7 @@ extension CactusTelemetry {
           deviceId = id.uuidString
         }
         return Self(
-          name: device.name,
+          model: device.name,
           os: device.systemName,
           osVersion: device.systemVersion,
           deviceId: deviceId,
@@ -75,7 +77,7 @@ extension CactusTelemetry {
         let v = ProcessInfo.processInfo.operatingSystemVersion
         let osVersion = "\(v.majorVersion).\(v.minorVersion).\(v.patchVersion)"
         return Self(
-          name: hostName,
+          model: hostName,
           os: "macOS",
           osVersion: osVersion,
           deviceId: Self.hardwareDeviceId,
