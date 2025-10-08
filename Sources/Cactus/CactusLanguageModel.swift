@@ -1,20 +1,61 @@
-private import CXXCactus
+import CXXCactus
 import Foundation
-
-#if canImport(FoundationNetworking)
-  import FoundationNetworking
-#endif
 
 // MARK: - CactusLanguageModel
 
+/// A language model powered by the cactus engine.
+///
+/// This class is largely not thread safe outside of calling ``stop()`` on a separate thread when
+/// the model is in the process of generating a response.
+///
+/// All methods of this class are synchronous and blocking, and should not be called on the main
+/// actor due to the long runtimes. To access the model safely in the background, you can create a
+/// background actor to protect the model from data races.
+/// ```swift
+/// final class LanguageModelActor {
+///   let model: CactusLanguageModel
+///
+///   init(model: sending CactusLanguageModel) {
+///     self.model = model
+///   }
+///
+///   func withIsolation<T, E: Error>(
+///     perform operation: (isolated Self) throws(E) -> sending T
+///   ) throws(E) -> sending T {
+///     try operation(self)
+///   }
+/// }
+///
+/// @concurrent
+/// func chatInBackground(with modelActor: LanguageModelActor) async throws {
+///   try await modelActor.withIsolation { modelActor in
+///     // You can access the model directly because the closure is isolated
+///     // to modelActor
+///     let model = modelActor.model
+///
+///     // ...
+///   }
+/// }
+/// ```
 public final class CactusLanguageModel {
+  /// The ``Configuration`` for this model.
   public let configuration: Configuration
-  private let model: cactus_model_t
 
+  /// The underlying model pointer.
+  public let model: cactus_model_t
+
+  /// Loads a model from the specified `URL`.
+  ///
+  /// - Parameters:
+  ///   - url: The local `URL` of the model.
+  ///   - contextSize: The context size.
   public convenience init(from url: URL, contextSize: Int = 2048) throws {
     try self.init(configuration: Configuration(modelURL: url, contextSize: contextSize))
   }
 
+  /// Loads a model from the specified ``Configuration``.
+  ///
+  /// - Parameter configuration: The ``Configuration``.
   public init(configuration: Configuration) throws {
     self.configuration = configuration
     let model = cactus_init(configuration.modelURL.nativePath, configuration.contextSize)
@@ -28,10 +69,19 @@ public final class CactusLanguageModel {
 // MARK: - Configuration
 
 extension CactusLanguageModel {
+  /// A configuration for loading a ``CactusLanguageModel``.
   public struct Configuration: Hashable, Sendable {
+    /// The local `URL` of the model.
     public var modelURL: URL
+
+    /// The context size.
     public var contextSize: Int
 
+    /// Creates a configuration.
+    ///
+    /// - Parameters:
+    ///   - modelURL: The local `URL` of the model.
+    ///   - contextSize: The context size.
     public init(modelURL: URL, contextSize: Int = 2048) {
       self.modelURL = modelURL
       self.contextSize = contextSize
@@ -42,7 +92,9 @@ extension CactusLanguageModel {
 // MARK: - Creation Error
 
 extension CactusLanguageModel {
+  /// An error thrown when trying to create a model.
   public struct ModelCreationError: Error, Hashable {
+    /// The error message.
     public let message: String
 
     init(configuration: Configuration) {
@@ -58,11 +110,21 @@ extension CactusLanguageModel {
 // MARK: - Embeddings
 
 extension CactusLanguageModel {
+  /// An error thrown when trying to generate embeddings.
   public enum EmbeddingsError: Error, Hashable {
+    /// The buffer size for the generated embeddings was too small.
     case bufferTooSmall
-    case unknown(message: String?)
+    
+    /// A generation error.
+    case generation(message: String?)
   }
-
+  
+  /// Generates embeddings for the specified `text`.
+  ///
+  /// - Parameters:
+  ///   - text: The text to generate embeddings for.
+  ///   - maxBufferSize: The size of the buffer to allocate to store the embeddings.
+  /// - Returns: An array of float values.
   public func embeddings(for text: String, maxBufferSize: Int = 2048) throws -> [Float] {
     let rawBuffer = UnsafeMutablePointer<Float>.allocate(capacity: maxBufferSize)
     defer { rawBuffer.deallocate() }
@@ -70,7 +132,13 @@ extension CactusLanguageModel {
     let dimensions = try self.embeddings(for: text, buffer: &buffer)
     return (0..<dimensions).map { buffer[$0] }
   }
-
+  
+  /// Generates embeddings for the specified `text` and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - text: The text to generate embeddings for.
+  ///   - buffer: A `MutableSpan` buffer.
+  /// - Returns: The number of dimensions.
   @discardableResult
   public func embeddings(for text: String, buffer: inout MutableSpan<Float>) throws -> Int {
     let size = buffer.count
@@ -80,7 +148,9 @@ extension CactusLanguageModel {
       let rawBufferSize = size * MemoryLayout<Float>.stride
       switch cactus_embed(self.model, text, ptr.baseAddress, rawBufferSize, &dimensions) {
       case -1:
-        throw EmbeddingsError.unknown(message: cactus_get_last_error().map { String(cString: $0) })
+        throw EmbeddingsError.generation(
+          message: cactus_get_last_error().map { String(cString: $0) }
+        )
       case -2:
         throw EmbeddingsError.bufferTooSmall
       default:
@@ -93,30 +163,58 @@ extension CactusLanguageModel {
 // MARK: - Chat Completion
 
 extension CactusLanguageModel {
+  /// A chat completion result.
   public struct ChatCompletion: Hashable, Sendable {
+    /// The raw response text from the model.
     public let response: String
+    
+    /// The tokens per second rate.
     public let tokensPerSecond: Double
+    
+    /// The number of prefilled tokens.
     public let prefillTokens: Int
+    
+    /// The number of tokens decoded.
     public let decodeTokens: Int
+    
+    /// The total amount of tokens that make up the response.
     public let totalTokens: Int
+    
+    /// A list of ``CactusLanguageModel/ToolCall`` instances from the model.
     public let toolCalls: [ToolCall]
+    
     private let timeToFirstTokenMs: Double
     private let totalTimeMs: Double
 
+    /// The amount of time in seconds to generate the first token.
     public var timeIntervalToFirstToken: TimeInterval {
       self.timeToFirstTokenMs / 1000
     }
 
+    /// The total generation time in seconds.
     public var totalTimeInterval: TimeInterval {
       self.totalTimeMs / 1000
     }
   }
 
+  /// An error thrown when trying to generate a ``ChatCompletion``.
   public enum ChatCompletionError: Error, Hashable {
+    /// The buffer size for the completion was too small.
     case bufferSizeTooSmall
+    
+    /// A generation error.
     case generation(message: String?)
   }
-
+  
+  /// Generates a ``ChatCompletion``.
+  ///
+  /// - Parameters:
+  ///   - messages: The list of ``ChatMessage`` instances.
+  ///   - options: The ``ChatCompletion/Options``.
+  ///   - maxBufferSize: The maximum buffer size to store the completion.
+  ///   - tools: A list of ``ToolDefinition`` instances.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Returns: A ``ChatCompletion``.
   public func chatCompletion(
     messages: [ChatMessage],
     options: ChatCompletion.Options = ChatCompletion.Options(),
@@ -183,13 +281,31 @@ extension CactusLanguageModel {
 }
 
 extension CactusLanguageModel.ChatCompletion {
+  /// Options for generating a ``CactusLanguageModel/ChatCompletion``
   public struct Options: Hashable, Sendable, Codable {
+    /// The maximum number of tokens for the completion.
     public var maxTokens: Int
+    
+    /// The temperature.
     public var temperature: Float
+    
+    /// The nucleus sampling.
     public var topP: Float
+    
+    /// The k most probable options to limit the next word to.
     public var topK: Float
+    
+    /// An array of stop sequence phrases.
     public var stopSequences: [String]
-
+    
+    /// Creates options for generating a ``CactusLanguageModel/ChatCompletion``.
+    ///
+    /// - Parameters:
+    ///   - maxTokens: The maximum number of tokens for the completion.
+    ///   - temperature: The temperature.
+    ///   - topP: The nucleus sampling.
+    ///   - topK: The k most probable options to limit the next word to.
+    ///   - stopSequences: An array of stop sequence phrases.
     public init(
       maxTokens: Int = 200,
       temperature: Float = 0.1,
@@ -242,171 +358,12 @@ extension CactusLanguageModel.ChatCompletion: Encodable {
   }
 }
 
-// MARK: - Tools
-
-extension CactusLanguageModel {
-  public struct ToolDefinition: Hashable, Sendable, Codable {
-    public var name: String
-    public var description: String
-    public var parameters: Parameters
-
-    public init(name: String, description: String, parameters: Parameters) {
-      self.name = name
-      self.description = description
-      self.parameters = parameters
-    }
-  }
-}
-
-extension CactusLanguageModel.ToolDefinition {
-  public struct Parameters: Hashable, Sendable, Codable {
-    public private(set) var type = CactusLanguageModel.SchemaType.object
-    public var required: [String]
-    public var properties: [String: Parameter]
-
-    public init(properties: [String: Parameter], required: [String]) {
-      self.required = required
-      self.properties = properties
-    }
-  }
-}
-
-extension CactusLanguageModel.ToolDefinition {
-  public struct Parameter: Hashable, Sendable, Codable {
-    public var type: CactusLanguageModel.SchemaType
-    public var description: String
-
-    public init(type: CactusLanguageModel.SchemaType, description: String) {
-      self.type = type
-      self.description = description
-    }
-  }
-}
-
-extension CactusLanguageModel {
-  public struct ToolCall: Hashable, Sendable, Codable {
-    public var name: String
-    public var arguments: [String: SchemaValue]
-
-    public init(name: String, arguments: [String: SchemaValue]) {
-      self.name = name
-      self.arguments = arguments
-    }
-  }
-}
-
-// MARK: - SchemaType
-
-extension CactusLanguageModel {
-  public enum SchemaType: Hashable, Sendable, Codable {
-    case integer
-    case string
-    case boolean
-    case array
-    case object
-    case number
-    case null
-    case types([Self])
-  }
-}
-
-// MARK: - SchemaValue
-
-extension CactusLanguageModel {
-  public enum SchemaValue: Hashable, Sendable {
-    case string(String)
-    case boolean(Bool)
-    case array([SchemaValue])
-    case object([String: SchemaValue])
-    case number(Double)
-    case null
-  }
-}
-
-extension CactusLanguageModel.SchemaValue: Encodable {
-  public func encode(to encoder: any Encoder) throws {
-    var container = encoder.singleValueContainer()
-    switch self {
-    case .array(let array): try container.encode(array)
-    case .boolean(let value): try container.encode(value)
-    case .null: try container.encodeNil()
-    case .number(let number): try container.encode(number)
-    case .object(let object): try container.encode(object)
-    case .string(let string): try container.encode(string)
-    }
-  }
-}
-
-extension CactusLanguageModel.SchemaValue: Decodable {
-  public init(from decoder: any Decoder) throws {
-    let container = try decoder.singleValueContainer()
-    if let bool = try? container.decode(Bool.self) {
-      self = .boolean(bool)
-    } else if let number = try? container.decode(Double.self) {
-      self = .number(number)
-    } else if let string = try? container.decode(String.self) {
-      self = .string(string)
-    } else if let array = try? container.decode([Self].self) {
-      self = .array(array)
-    } else if let object = try? container.decode([String: Self].self) {
-      self = .object(object)
-    } else if container.decodeNil() {
-      self = .null
-    } else {
-      throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid value.")
-    }
-  }
-}
-
-// MARK: - ChatMessage
-
-extension CactusLanguageModel {
-  public struct ChatMessage: Hashable, Sendable, Encodable {
-    public var role: Role
-    public var content: String
-
-    public init(role: Role, content: String) {
-      self.role = role
-      self.content = content
-    }
-  }
-}
-
-extension CactusLanguageModel.ChatMessage {
-  public struct Role: Hashable, Sendable, Codable, RawRepresentable {
-    public static let system = Role(rawValue: "system")
-    public static let user = Role(rawValue: "user")
-    public static let assistant = Role(rawValue: "assistant")
-
-    public var rawValue: String
-
-    public init(rawValue: String) {
-      self.rawValue = rawValue
-    }
-  }
-
-  public static func system(_ content: String) -> Self {
-    Self(role: .system, content: content)
-  }
-
-  public static func user(_ content: String) -> Self {
-    Self(role: .user, content: content)
-  }
-
-  public static func assistant(_ content: String) -> Self {
-    Self(role: .assistant, content: content)
-  }
-}
-
-extension CactusLanguageModel.ChatMessage.Role: ExpressibleByStringLiteral {
-  public init(stringLiteral value: StringLiteralType) {
-    self.init(rawValue: value)
-  }
-}
-
 // MARK: - Stop
 
 extension CactusLanguageModel {
+  /// Stops generation of an active chat completion.
+  ///
+  /// This method is safe to call from other threads.
   public func stop() {
     cactus_stop(self.model)
   }
@@ -415,6 +372,7 @@ extension CactusLanguageModel {
 // MARK: - Reset
 
 extension CactusLanguageModel {
+  /// Resets the context state of the model.
   public func reset() {
     cactus_reset(self.model)
   }

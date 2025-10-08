@@ -1,7 +1,4 @@
-# Swift Cactus
-[![CI](https://github.com/mhayes853/swift-cactus/actions/workflows/ci.yml/badge.svg)](https://github.com/mhayes853/swift-cactus/actions/workflows/ci.yml)
-[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmhayes853%2Fswift-cactus%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/mhayes853/swift-cactus)
-[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmhayes853%2Fswift-cactus%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/mhayes853/swift-cactus)
+# ``Cactus``
 
 A Swift wrapper for [catus compute](https://github.com/catus-compute/catus).
 
@@ -13,17 +10,24 @@ This package provides a minimal Swift wrapper around downloading models, and the
 
 ## Quick Start
 
-You first must download the model you want to use, then you can create an instance of `CactusLanguageModel` to start generating.
+You first must download the model you want to use, then you can create an instance of ``CactusLanguageModel`` to start generating.
 ```swift
 import Cactus
 
-let modelURL = URL.applicationSupportDirectory.appendingPathComponent("catus-models/qwen")
+let modelURL = URL.applicationSupportDirectory.appendingPathComponent(
+  "catus-models/qwen"
+)
 try await CactusLanguageModel.download(slug: "qwen3-0.6", to: modelURL)
 let model = try CactusLanguageModel(from: modelURL)
 
 let completion = try model.chatCompletion(
   messages: [
-    .system("You are a philosopher, philosophize about any questions you are asked."),
+    .system(
+      """
+      You are a philosopher, philosophize about any questions you are \
+      asked.
+      """
+    ),
     .user("What is the meaning of life?")
   ],
   onToken: { token in
@@ -82,27 +86,3 @@ var embeddings = [2048 of Float](repeating: 0)
 var span = embeddings.mutableSpan
 try model.embeddings(for: "This is some text", buffer: &span)
 ```
-
-## Documentation
-The documentation for releases and main are available here.
-* [main](https://swiftpackageindex.com/mhayes853/swift-cactus/main/documentation/cactus/)
-* [0.x.x](https://swiftpackageindex.com/mhayes853/swift-cactus/~/documentation/cactus/)
-
-## Installation
-You can add Swift Cactus to an Xcode project by adding it to your project as a package.
-> https://github.com/mhayes853/swift-cactus
-
-If you want to use Swift Cactus in a [SwiftPM](https://swift.org/package-manager/) project, it's as simple as adding it to your `Package.swift`.
-``` swift
-dependencies: [
-  .package(url: "https://github.com/mhayes853/swift-cactus", from: "0.1.0")
-]
-```
-
-And then adding the product to any target that needs access to the library.
-```swift
-.product(name: "Cactus", package: "swift-cactus")
-```
-
-## License
-This library is licensed under an MIT License. See [LICENSE](https://github.com/mhayes853/swift-cactus/blob/main/LICENSE) for details.

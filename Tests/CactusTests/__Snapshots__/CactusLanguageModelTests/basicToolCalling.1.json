@@ -1,9 +1,9 @@
 {
-  "decode_tokens" : 146,
-  "prefill_tokens" : 214,
-  "response" : "<think>\nOkay, the user is asking for the weather in San Francisco. I need to use the get_weather function here. Let me check if that function is available. Yes, it's listed as a tool_call in the provided examples.\n\nThe parameters required for get_weather are location. The user specified San Francisco, so I should pass \"San Francisco\" as the location parameter. Since there's only one function available for weather checks here (get_weather), I don't need any other tools. Just call get_weather with location set to San Francisco.\n<\/think>",
-  "time_to_first_token_ms" : 2353.95,
-  "tokens_per_second" : 29.54,
+  "decode_tokens" : 161,
+  "prefill_tokens" : 208,
+  "response" : "<think>\nOkay, the user is asking for the weather in San Francisco. I need to use the get_weather function here because they want real-time weather information. The function requires a location parameter, which in this case is \"San Francisco\". Since the user specified the city name directly without needing additional parameters like state or coordinates (as per the example given), I should pass \"San Francisco\" as the location argument. There's no indication that they want more details beyond just the current weather, so I'll proceed with calling the function with exactly \"San Francisco\". No other tools are needed here since it's a straightforward request.\n<\/think>",
+  "time_to_first_token_ms" : 2678.26,
+  "tokens_per_second" : 27.54,
   "tool_calls" : [
     {
       "arguments" : {
@@ -12,6 +12,6 @@
       "name" : "get_weather"
     }
   ],
-  "total_time_ms" : 7262.02,
-  "total_tokens" : 360
+  "total_time_ms" : 8487.73,
+  "total_tokens" : 369
 }
