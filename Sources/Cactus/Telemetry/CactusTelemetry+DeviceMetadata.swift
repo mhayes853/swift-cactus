@@ -8,8 +8,6 @@ import SwiftUI
   import IOKit
 #endif
 
-// htQlXiPj5Y65HPw0fLaSylSeLsyZohmlucMYEPSGMYWz8Db0XamyAwyj2KZl + l5mr9l / p2tUQ4eI4yhkfUsciblp3ehytG9gcgCV8PCr9yHQe9QmOD7BEi3fMuJ4MGOPSK0f2 + cPuQ ==
-
 extension CactusTelemetry {
   /// Device info for telemetry.
   public struct DeviceMetadata: Hashable, Sendable, Codable {
