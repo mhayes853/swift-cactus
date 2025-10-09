@@ -1,4 +1,0 @@
-module _CactusUtils {
-  header "cactus_util.h"
-  export *
-}

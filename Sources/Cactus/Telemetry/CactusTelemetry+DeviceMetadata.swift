@@ -41,6 +41,14 @@ extension CactusTelemetry {
       self.deviceId = deviceId
       self.brand = brand
     }
+
+    private enum CodingKeys: String, CodingKey {
+      case model
+      case os
+      case osVersion = "os_version"
+      case deviceId = "device_id"
+      case brand
+    }
   }
 }
 

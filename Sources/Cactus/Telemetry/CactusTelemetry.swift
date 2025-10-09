@@ -4,16 +4,20 @@ import Logging
 // MARK: - CactusTelemetry
 
 public enum CactusTelemetry {
-  public static var defaultClient: any Client & Sendable {
-    SystemTelemetryClient.shared
-  }
+  #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
+    public static var defaultClient: any Client & Sendable {
+      SystemTelemetryClient.shared
+    }
+
+    @MainActor
+    public static func configure(_ token: String) {
+      Self.configure(token, deviceMetadata: .current, client: Self.defaultClient)
+    }
+  #endif
 
   #if canImport(Darwin)
     @MainActor
-    public static func configure(
-      _ token: String,
-      client: any Client & Sendable = Self.defaultClient
-    ) {
+    public static func configure(_ token: String, client: any Client & Sendable) {
       Self.configure(token, deviceMetadata: .current, client: client)
     }
   #endif
@@ -21,7 +25,7 @@ public enum CactusTelemetry {
   public static func configure(
     _ token: String,
     deviceMetadata: DeviceMetadata,
-    client: any Client & Sendable = Self.defaultClient,
+    client: any Client & Sendable,
     logger: Logger = Logger(label: "cactus.telemetry.configure")
   ) {
     let session = Session(client: client, token: token)
@@ -79,6 +83,10 @@ public enum CactusTelemetry {
         )
       }
     }
+  }
+
+  public static func reset() {
+    Self.currentSession.withLock { $0 = nil }
   }
 }
 

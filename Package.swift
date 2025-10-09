@@ -3,6 +3,11 @@
 
 import PackageDescription
 
+let supportsTelemetry = SwiftSetting.define(
+  "SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY",
+  .when(platforms: [.iOS, .macOS])
+)
+
 let package = Package(
   name: "swift-cactus",
   platforms: [.iOS(.v13), .macOS(.v10_15), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
@@ -18,7 +23,6 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-log", from: "1.6.4")
   ],
   targets: [
-    .binaryTarget(name: "CactusUtil", path: "CactusUtil.artifactbundle"),
     .target(
       name: "CXXCactus",
       exclude: [
@@ -31,11 +35,12 @@ let package = Package(
       name: "Cactus",
       dependencies: [
         "CXXCactus",
-        .target(name: "CactusUtil", condition: .when(platforms: [.iOS])),
+        .target(name: "cactus_util", condition: .when(platforms: [.iOS, .macOS])),
         .product(name: "Logging", package: "swift-log"),
         .product(name: "Zip", package: "Zip"),
         .product(name: "IssueReporting", package: "xctest-dynamic-overlay")
-      ]
+      ],
+      swiftSettings: [supportsTelemetry]
     ),
     .testTarget(
       name: "CactusTests",
@@ -45,7 +50,9 @@ let package = Package(
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "Operation", package: "swift-operation")
       ],
-      exclude: ["__Snapshots__"]
-    )
+      exclude: ["__Snapshots__"],
+      swiftSettings: [supportsTelemetry]
+    ),
+    .binaryTarget(name: "cactus_util", path: "cactus_util.xcframework")
   ]
 )
