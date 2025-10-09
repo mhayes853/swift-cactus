@@ -13,10 +13,12 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.7"),
     .package(url: "https://github.com/vapor-community/Zip", from: "2.2.7"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.3.3"),
-    .package(url: "https://github.com/mhayes853/swift-operation", from: "0.1.0")
+    .package(url: "https://github.com/mhayes853/swift-operation", from: "0.1.0"),
+    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.4.3"),
+    .package(url: "https://github.com/apple/swift-log", from: "1.6.4")
   ],
   targets: [
-    .systemLibrary(name: "_CactusUtils"),
+    .binaryTarget(name: "CactusUtil", path: "CactusUtil.artifactbundle"),
     .target(
       name: "CXXCactus",
       exclude: [
@@ -27,7 +29,13 @@ let package = Package(
     ),
     .target(
       name: "Cactus",
-      dependencies: ["CXXCactus", "_CactusUtils", .product(name: "Zip", package: "Zip")]
+      dependencies: [
+        "CXXCactus",
+        .target(name: "CactusUtil", condition: .when(platforms: [.iOS])),
+        .product(name: "Logging", package: "swift-log"),
+        .product(name: "Zip", package: "Zip"),
+        .product(name: "IssueReporting", package: "xctest-dynamic-overlay")
+      ]
     ),
     .testTarget(
       name: "CactusTests",

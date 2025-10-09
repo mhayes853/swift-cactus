@@ -18,21 +18,127 @@ final class CactusSupabaseClient: Sendable {
     decoder.dateDecodingStrategy = .iso8601
     return decoder
   }()
+}
 
+// MARK: - Available Models
+
+extension CactusSupabaseClient {
   func availableModels() async throws -> [CactusLanguageModel.Metadata] {
-    var components = URLComponents(string: "\(self.cactusSupabaseURL)/rest/v1/models")!
+    var components = URLComponents(string: self.baseURL(for: "/rest/v1/models").absoluteString)!
     components.queryItems = [URLQueryItem(name: "select", value: "*")]
 
-    var request = URLRequest(url: components.url!)
-    request.addValue(self.cactusSupabaseKey, forHTTPHeaderField: "apiKey")
-    request.addValue("Bearer \(self.cactusSupabaseKey)", forHTTPHeaderField: "Authorization")
-    request.addValue("cactus", forHTTPHeaderField: "Accept-Profile")
-
-    let (data, _) = try await self.session.data(for: request)
+    let (data, _) = try await self.session.data(for: self.baseRequest(for: components.url!))
     return try self.supabaseJSONDecoder.decode([CactusLanguageModel.Metadata].self, from: data)
   }
+}
 
+// MARK: - Model Download URL
+
+extension CactusSupabaseClient {
   func modelDownloadURL(for slug: String) -> URL {
     URL(string: "\(self.cactusSupabaseURL)/storage/v1/object/public/cactus-models/\(slug).zip")!
+  }
+}
+
+// MARK: - Register Device
+
+extension CactusSupabaseClient {
+  typealias RegisterDevicePayload = String
+
+  struct DeviceRegistration: Sendable, Codable {
+    let deviceData: CactusTelemetry.DeviceMetadata
+
+    private enum CodingKeys: String, CodingKey {
+      case deviceData = "device_data"
+    }
+  }
+
+  func registerDevice(registration: DeviceRegistration) async throws -> RegisterDevicePayload {
+    var request = self.baseRequest(for: self.baseURL(for: "/functions/v1/device-registration"))
+    request.httpMethod = "POST"
+    request.httpBody = try JSONEncoder().encode(registration)
+    let (data, resp) = try await self.session.data(for: request)
+    let statusCode = (resp as? HTTPURLResponse)?.statusCode
+    guard [200, 201].contains(statusCode ?? 0) else {
+      throw RegisterDeviceError(statusCode: statusCode)
+    }
+    return String(decoding: data, as: UTF8.self)
+  }
+
+  struct RegisterDeviceError: Error {
+    let statusCode: Int?
+  }
+}
+
+// MARK: - Send Telemetry Event
+
+extension CactusSupabaseClient {
+  struct TelemetryEvent: Sendable, Codable {
+    let eventType: String
+    let projectId: String?
+    let deviceId: String?
+    let ttft: Double?
+    let tps: Double?
+    let responseTime: Double?
+    let model: String?
+    let tokens: Int?
+    let framework: String
+    let frameworkVersion: String
+    let success: Bool?
+    let message: String?
+    let telemetryToken: String?
+    let audioDuration: Int64?
+    let mode: String?
+
+    private enum CodingKeys: String, CodingKey {
+      case eventType = "event_type"
+      case projectId = "project_id"
+      case deviceId = "device_id"
+      case ttft = "ttft"
+      case tps = "tps"
+      case responseTime = "response_time"
+      case model = "model"
+      case tokens = "tokens"
+      case framework = "framework"
+      case frameworkVersion = "framework_version"
+      case success = "success"
+      case message = "message"
+      case telemetryToken = "telemetry_token"
+      case audioDuration = "audio_duration"
+      case mode = "mode"
+    }
+  }
+
+  func send(events: [TelemetryEvent]) async throws {
+    var request = self.baseRequest(for: self.baseURL(for: "/rest/v1/logs"))
+    request.addValue("return=minimal", forHTTPHeaderField: "Prefer")
+    request.httpMethod = "POST"
+    request.httpBody = try JSONEncoder().encode(events)
+    let (_, resp) = try await self.session.data(for: request)
+    let statusCode = (resp as? HTTPURLResponse)?.statusCode
+    guard [200, 201].contains(statusCode ?? 0) else {
+      throw TelemetryError(statusCode: statusCode)
+    }
+  }
+
+  struct TelemetryError: Error {
+    let statusCode: Int?
+  }
+}
+
+// MARK: - Helper
+
+extension CactusSupabaseClient {
+  private func baseURL(for endpoint: String) -> URL {
+    URL(string: "\(self.cactusSupabaseURL)\(endpoint)")!
+  }
+
+  private func baseRequest(for url: URL) -> URLRequest {
+    var request = URLRequest(url: url)
+    request.addValue(self.cactusSupabaseKey, forHTTPHeaderField: "apiKey")
+    request.addValue("Bearer \(self.cactusSupabaseKey)", forHTTPHeaderField: "Authorization")
+    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.addValue("cactus", forHTTPHeaderField: "Content-Profile")
+    return request
   }
 }
