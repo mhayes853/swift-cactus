@@ -190,5 +190,22 @@ extension BaseTestSuite {
         assertSnapshot(of: completion, as: .json, record: true)
       }
     }
+    
+    @Test("Derives Model Slug From Model URL If Not Provided")
+    func derivesModelSlugFromModelURLIfNotProvided() async throws {
+      let modelURL = try await CactusLanguageModel.testModelURL()
+      let configuration = CactusLanguageModel.Configuration(modelURL: modelURL)
+      expectNoDifference(configuration.modelSlug, CactusLanguageModel.testModelSlug)
+    }
+
+    @Test("Overrides Default Model Slug")
+    func overridesDefaultModelSlug() async throws {
+      let modelURL = try await CactusLanguageModel.testModelURL()
+      let configuration = CactusLanguageModel.Configuration(
+        modelURL: modelURL,
+        modelSlug: "custom-model"
+      )
+      expectNoDifference(configuration.modelSlug, "custom-model")
+    }
   }
 }

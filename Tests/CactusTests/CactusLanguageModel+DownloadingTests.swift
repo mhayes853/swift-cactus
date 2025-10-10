@@ -9,7 +9,7 @@ extension BaseTestSuite {
     @Test("Task Not Finished By Default")
     func testNotFinishedByDefault() async throws {
       let task = CactusLanguageModel.downloadModelTask(
-        from: try await CactusLanguageModel.testModelMetadata().downloadURL,
+        from: CactusLanguageModel.modelDownloadURL(slug: CactusLanguageModel.testModelSlug),
         to: self.temporaryURL()
       )
       expectNoDifference(task.isFinished, false)
@@ -43,7 +43,7 @@ extension BaseTestSuite {
       let progress = Lock([Result<CactusLanguageModel.DownloadProgress, any Error>]())
       let task = Task {
         try await CactusLanguageModel.downloadModel(
-          from: CactusLanguageModel.testModelMetadata().downloadURL,
+          from: CactusLanguageModel.modelDownloadURL(slug: CactusLanguageModel.testModelSlug),
           to: self.temporaryURL(),
           onProgress: { p in progress.withLock { $0.append(p) } }
         )
@@ -61,7 +61,7 @@ extension BaseTestSuite {
     @Test("Cancel Download From Task")
     func cancelDownloadFromTask() async throws {
       let task = CactusLanguageModel.downloadModelTask(
-        from: try await CactusLanguageModel.testModelMetadata().downloadURL,
+        from: CactusLanguageModel.modelDownloadURL(slug: CactusLanguageModel.testModelSlug),
         to: self.temporaryURL()
       )
 
