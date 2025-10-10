@@ -1,19 +1,13 @@
 import Cactus
 import CustomDump
 import Foundation
+import SQLite3
 import XCTest
 
 final class CactusTelemetryTests: XCTestCase {
   override func setUp() async throws {
     try await super.setUp()
-
-    let documentsDirectory =
-      FileManager.default
-      .urls(
-        for: .documentDirectory,
-        in: .userDomainMask
-      )[0]
-    try? FileManager.default.removeItem(at: documentsDirectory.appendingPathComponent("cactus.db"))
+    try cleanupCactusUtilsDatabase()
   }
 
   override func tearDown() {
@@ -130,5 +124,23 @@ extension CactusTelemetry.DeviceMetadata {
 }
 
 private let testEvent = CactusTelemetry.LanguageModelInitEvent(
-  configuration: CactusLanguageModel.Configuration(modelURL: .applicationSupportDirectory)
+  configuration: CactusLanguageModel.Configuration(
+    modelURL: temporaryDirectory().appendingPathComponent(CactusLanguageModel.testModelSlug)
+  )
 )
+
+private func cleanupCactusUtilsDatabase() throws {
+  #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
+    #if os(macOS)
+      let url = URL(fileURLWithPath: "~/.cactus.db")
+    #else
+      let documentsDirectory =
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+      let url = documentsDirectory.appendingPathComponent("cactus.db")
+    #endif
+
+    var handle: OpaquePointer?
+    _ = sqlite3_open_v2(url.relativePath, &handle, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nil)
+    sqlite3_exec(handle, "DELETE FROM app_registrations;", nil, nil, nil)
+  #endif
+}

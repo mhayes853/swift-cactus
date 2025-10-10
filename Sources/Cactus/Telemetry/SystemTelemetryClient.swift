@@ -26,7 +26,94 @@
       event: any CactusTelemetry.Event & Sendable,
       with data: CactusTelemetry.ClientEventData
     ) async throws {
-      fatalError()
+      guard let event = self.supabaseTelemetryEvent(from: event, data: data) else { return }
+      try await self.client.send(events: [event])
+    }
+
+    private func supabaseTelemetryEvent(
+      from event: any CactusTelemetry.Event,
+      data: CactusTelemetry.ClientEventData
+    ) -> CactusSupabaseClient.TelemetryEvent? {
+      switch event {
+      case let event as CactusTelemetry.ChatCompletionEvent:
+        CactusSupabaseClient.TelemetryEvent(
+          eventType: event.name,
+          projectId: CactusTelemetry.projectId,
+          deviceId: data.deviceId,
+          ttft: event.chatCompletion.timeIntervalToFirstToken * 1000,
+          tps: event.chatCompletion.tokensPerSecond,
+          responseTime: event.chatCompletion.totalTimeInterval,
+          model: event.configuration.modelSlug,
+          tokens: event.chatCompletion.totalTokens,
+          framework: frameworkName,
+          frameworkVersion: swiftCactusVersion,
+          success: true,
+          message: nil,
+          telemetryToken: data.token,
+          audioDuration: nil,
+          mode: "LOCAL"
+        )
+      case let event as CactusTelemetry.EmbeddingsEvent:
+        CactusSupabaseClient.TelemetryEvent(
+          eventType: event.name,
+          projectId: CactusTelemetry.projectId,
+          deviceId: data.deviceId,
+          ttft: nil,
+          tps: nil,
+          responseTime: nil,
+          model: event.configuration.modelSlug,
+          tokens: nil,
+          framework: frameworkName,
+          frameworkVersion: swiftCactusVersion,
+          success: true,
+          message: nil,
+          telemetryToken: data.token,
+          audioDuration: nil,
+          mode: nil
+        )
+      case let event as CactusTelemetry.LanguageModelInitEvent:
+        CactusSupabaseClient.TelemetryEvent(
+          eventType: event.name,
+          projectId: CactusTelemetry.projectId,
+          deviceId: data.deviceId,
+          ttft: nil,
+          tps: nil,
+          responseTime: nil,
+          model: event.configuration.modelSlug,
+          tokens: nil,
+          framework: frameworkName,
+          frameworkVersion: swiftCactusVersion,
+          success: true,
+          message: nil,
+          telemetryToken: data.token,
+          audioDuration: nil,
+          mode: nil
+        )
+      case let event as CactusTelemetry.LanguageModelErrorEvent:
+        CactusSupabaseClient.TelemetryEvent(
+          eventType: event.name,
+          projectId: CactusTelemetry.projectId,
+          deviceId: data.deviceId,
+          ttft: nil,
+          tps: nil,
+          responseTime: nil,
+          model: event.configuration.modelSlug,
+          tokens: nil,
+          framework: frameworkName,
+          frameworkVersion: swiftCactusVersion,
+          success: false,
+          message: event.message,
+          telemetryToken: data.token,
+          audioDuration: nil,
+          mode: nil
+        )
+      default:
+        nil
+      }
     }
   }
+
+  // NB: The dashboard filters by explicit official framework filters, so we'll just pretend like
+  // this is the KMP SDK for now...
+  private let frameworkName = "kotlin"
 #endif

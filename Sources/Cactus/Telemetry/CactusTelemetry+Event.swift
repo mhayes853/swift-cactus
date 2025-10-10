@@ -29,7 +29,7 @@ extension CactusTelemetry {
 // MARK: - EmbeddingsEvent
 
 extension CactusTelemetry {
-  public struct EmbeddingsEvent: Event {
+  public struct EmbeddingsEvent: Event, Sendable {
     public private(set) var name = "embedding"
     public let configuration: CactusLanguageModel.Configuration
 

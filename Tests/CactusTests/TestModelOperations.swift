@@ -62,8 +62,8 @@ extension CactusLanguageModel {
     ) async throws -> URL {
       print("=== Downloading Model ===")
       let url = try await CactusLanguageModel.downloadModel(
-        from: CactusLanguageModel.testModelMetadata().downloadURL,
-        to: temporaryDirectory(),
+        slug: CactusLanguageModel.testModelSlug,
+        to: temporaryDirectory().appendingPathComponent(CactusLanguageModel.testModelSlug),
         onProgress: { result in
           CactusLanguageModel.testModelDownloadProgress.withLock { $0.append(result) }
         }

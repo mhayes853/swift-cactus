@@ -60,10 +60,24 @@ public final class CactusLanguageModel {
   ///
   /// - Parameter configuration: The ``Configuration``.
   public init(configuration: Configuration) throws {
-    self.configuration = configuration
-    let model = cactus_init(configuration.modelURL.nativePath, configuration.contextSize)
-    guard let model else { throw ModelCreationError(configuration: configuration) }
-    self.model = model
+    do {
+      self.configuration = configuration
+      let model = cactus_init(configuration.modelURL.nativePath, configuration.contextSize)
+      guard let model else { throw ModelCreationError(configuration: configuration) }
+      self.model = model
+      CactusTelemetry.send(
+        event: CactusTelemetry.LanguageModelInitEvent(configuration: configuration)
+      )
+    } catch let error as ModelCreationError {
+      CactusTelemetry.send(
+        event: CactusTelemetry.LanguageModelErrorEvent(
+          name: "init",
+          message: error.message,
+          configuration: configuration
+        )
+      )
+      throw error
+    }
   }
 
   deinit { cactus_destroy(self.model) }
@@ -81,7 +95,7 @@ extension CactusLanguageModel {
     public var contextSize: Int
 
     /// The model slug.
-    public var modelSlug: String?
+    public var modelSlug: String
 
     /// Creates a configuration.
     ///
@@ -92,7 +106,11 @@ extension CactusLanguageModel {
     public init(modelURL: URL, contextSize: Int = 2048, modelSlug: String? = nil) {
       self.modelURL = modelURL
       self.contextSize = contextSize
-      self.modelSlug = modelSlug
+      if let modelSlug {
+        self.modelSlug = modelSlug
+      } else {
+        self.modelSlug = modelURL.lastPathComponent
+      }
     }
   }
 }
@@ -149,19 +167,37 @@ extension CactusLanguageModel {
   /// - Returns: The number of dimensions.
   @discardableResult
   public func embeddings(for text: String, buffer: inout MutableSpan<Float>) throws -> Int {
+    let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent(
+      name: "embedding",
+      message: "Buffer size too small",
+      configuration: self.configuration
+    )
     let size = buffer.count
-    guard size > 0 else { throw EmbeddingsError.bufferTooSmall }
+    guard size > 0 else {
+      CactusTelemetry.send(event: bufferTooSmallEvent)
+      throw EmbeddingsError.bufferTooSmall
+    }
     return try buffer.withUnsafeMutableBufferPointer { ptr in
       var dimensions = 0
       let rawBufferSize = size * MemoryLayout<Float>.stride
       switch cactus_embed(self.model, text, ptr.baseAddress, rawBufferSize, &dimensions) {
       case -1:
-        throw EmbeddingsError.generation(
-          message: cactus_get_last_error().map { String(cString: $0) }
+        let message = cactus_get_last_error().map { String(cString: $0) }
+        CactusTelemetry.send(
+          event: CactusTelemetry.LanguageModelErrorEvent(
+            name: "embedding",
+            message: message ?? "Unknown Error",
+            configuration: self.configuration
+          )
         )
+        throw EmbeddingsError.generation(message: message)
       case -2:
+        CactusTelemetry.send(event: bufferTooSmallEvent)
         throw EmbeddingsError.bufferTooSmall
       default:
+        CactusTelemetry.send(
+          event: CactusTelemetry.EmbeddingsEvent(configuration: self.configuration)
+        )
         return dimensions
       }
     }
@@ -230,7 +266,15 @@ extension CactusLanguageModel {
     tools: [ToolDefinition] = [],
     onToken: @escaping (String) -> Void = { _ in }
   ) throws -> ChatCompletion {
-    guard maxBufferSize > 0 else { throw ChatCompletionError.bufferSizeTooSmall }
+    let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent(
+      name: "completion",
+      message: "Response buffer too small",
+      configuration: self.configuration
+    )
+    guard maxBufferSize > 0 else {
+      CactusTelemetry.send(event: bufferTooSmallEvent)
+      throw ChatCompletionError.bufferSizeTooSmall
+    }
 
     let buffer = UnsafeMutablePointer<CChar>.allocate(capacity: maxBufferSize)
     defer { buffer.deallocate() }
@@ -264,11 +308,26 @@ extension CactusLanguageModel {
     guard result != -1 else {
       let response = try? JSONDecoder().decode(CompletionErrorResponse.self, from: responseData)
       if response?.error == "Response buffer too small" {
+        CactusTelemetry.send(event: bufferTooSmallEvent)
         throw ChatCompletionError.bufferSizeTooSmall
       }
+      CactusTelemetry.send(
+        event: CactusTelemetry.LanguageModelErrorEvent(
+          name: "completion",
+          message: response?.error ?? "Unknown error",
+          configuration: self.configuration
+        )
+      )
       throw ChatCompletionError.generation(message: response?.error)
     }
-    return try JSONDecoder().decode(ChatCompletion.self, from: responseData)
+    let completion = try JSONDecoder().decode(ChatCompletion.self, from: responseData)
+    CactusTelemetry.send(
+      event: CactusTelemetry.ChatCompletionEvent(
+        chatCompletion: completion,
+        configuration: self.configuration
+      )
+    )
+    return completion
   }
 
   private struct _ToolDefinition: Codable {
