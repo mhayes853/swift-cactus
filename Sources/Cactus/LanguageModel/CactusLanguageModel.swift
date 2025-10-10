@@ -49,8 +49,11 @@ public final class CactusLanguageModel {
   /// - Parameters:
   ///   - url: The local `URL` of the model.
   ///   - contextSize: The context size.
-  public convenience init(from url: URL, contextSize: Int = 2048) throws {
-    try self.init(configuration: Configuration(modelURL: url, contextSize: contextSize))
+  ///   - modelSlug: The model slug.
+  public convenience init(from url: URL, contextSize: Int = 2048, modelSlug: String? = nil) throws {
+    try self.init(
+      configuration: Configuration(modelURL: url, contextSize: contextSize, modelSlug: modelSlug)
+    )
   }
 
   /// Loads a model from the specified ``Configuration``.
@@ -77,14 +80,19 @@ extension CactusLanguageModel {
     /// The context size.
     public var contextSize: Int
 
+    /// The model slug.
+    public var modelSlug: String?
+
     /// Creates a configuration.
     ///
     /// - Parameters:
     ///   - modelURL: The local `URL` of the model.
     ///   - contextSize: The context size.
-    public init(modelURL: URL, contextSize: Int = 2048) {
+    ///   - modelSlug: The model slug.
+    public init(modelURL: URL, contextSize: Int = 2048, modelSlug: String? = nil) {
       self.modelURL = modelURL
       self.contextSize = contextSize
+      self.modelSlug = modelSlug
     }
   }
 }
@@ -114,11 +122,11 @@ extension CactusLanguageModel {
   public enum EmbeddingsError: Error, Hashable {
     /// The buffer size for the generated embeddings was too small.
     case bufferTooSmall
-    
+
     /// A generation error.
     case generation(message: String?)
   }
-  
+
   /// Generates embeddings for the specified `text`.
   ///
   /// - Parameters:
@@ -132,7 +140,7 @@ extension CactusLanguageModel {
     let dimensions = try self.embeddings(for: text, buffer: &buffer)
     return (0..<dimensions).map { buffer[$0] }
   }
-  
+
   /// Generates embeddings for the specified `text` and stores them in the specified buffer.
   ///
   /// - Parameters:
@@ -167,22 +175,22 @@ extension CactusLanguageModel {
   public struct ChatCompletion: Hashable, Sendable {
     /// The raw response text from the model.
     public let response: String
-    
+
     /// The tokens per second rate.
     public let tokensPerSecond: Double
-    
+
     /// The number of prefilled tokens.
     public let prefillTokens: Int
-    
+
     /// The number of tokens decoded.
     public let decodeTokens: Int
-    
+
     /// The total amount of tokens that make up the response.
     public let totalTokens: Int
-    
+
     /// A list of ``CactusLanguageModel/ToolCall`` instances from the model.
     public let toolCalls: [ToolCall]
-    
+
     private let timeToFirstTokenMs: Double
     private let totalTimeMs: Double
 
@@ -201,11 +209,11 @@ extension CactusLanguageModel {
   public enum ChatCompletionError: Error, Hashable {
     /// The buffer size for the completion was too small.
     case bufferSizeTooSmall
-    
+
     /// A generation error.
     case generation(message: String?)
   }
-  
+
   /// Generates a ``ChatCompletion``.
   ///
   /// - Parameters:
@@ -285,19 +293,19 @@ extension CactusLanguageModel.ChatCompletion {
   public struct Options: Hashable, Sendable, Codable {
     /// The maximum number of tokens for the completion.
     public var maxTokens: Int
-    
+
     /// The temperature.
     public var temperature: Float
-    
+
     /// The nucleus sampling.
     public var topP: Float
-    
+
     /// The k most probable options to limit the next word to.
     public var topK: Float
-    
+
     /// An array of stop sequence phrases.
     public var stopSequences: [String]
-    
+
     /// Creates options for generating a ``CactusLanguageModel/ChatCompletion``.
     ///
     /// - Parameters:
