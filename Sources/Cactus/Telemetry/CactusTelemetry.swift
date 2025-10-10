@@ -40,7 +40,7 @@ public enum CactusTelemetry {
   }
 
   public static func send(
-    event: Event,
+    event: any Event & Sendable,
     logger: Logger = Logger(label: "cactus.telemetry.send.event")
   ) {
     let session = Self.currentSession.withLock { $0 }
@@ -123,12 +123,13 @@ extension CactusTelemetry {
       _ = try await self.registerDeviceTask?.value
     }
 
-    func send(event: Event) async throws {
+    func send(event: any Event & Sendable) async throws {
       while let registerDeviceTask {
         _ = try? await registerDeviceTask.value
       }
       guard let deviceId else { return }
-      try await self.client.send(event: event, token: token, deviceId: deviceId)
+      let data = ClientEventData(deviceId: deviceId, token: self.token, projectId: "TODO")
+      try await self.client.send(event: event, with: data)
     }
   }
 }

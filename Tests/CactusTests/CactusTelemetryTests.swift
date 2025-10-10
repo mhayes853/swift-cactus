@@ -46,19 +46,17 @@ final class CactusTelemetryTests: XCTestCase {
       let registersDevice = self.expectation(description: "registers")
       let sendsEvent = self.expectation(description: "sends")
 
-      let event = CactusTelemetry.Event(name: "blob")
-
       let client = DefaultWrapperTelemetryClient { _ in
         registersDevice.fulfill()
       } onEventSent: { e in
-        expectNoDifference(event.name, e.name)
+        expectNoDifference(testEvent.name, e.name)
         sendsEvent.fulfill()
       }
 
       CactusTelemetry.configure(testTelemetryToken, deviceMetadata: .mock(), client: client)
       await self.fulfillment(of: [registersDevice], timeout: 10)
 
-      CactusTelemetry.send(event: event)
+      CactusTelemetry.send(event: testEvent)
       await self.fulfillment(of: [sendsEvent], timeout: 10)
     }
   #endif
@@ -79,9 +77,8 @@ final class CactusTelemetryTests: XCTestCase {
       }
 
       func send(
-        event: CactusTelemetry.Event,
-        token: String,
-        deviceId: CactusTelemetry.DeviceID
+        event: any CactusTelemetry.Event & Sendable,
+        with data: CactusTelemetry.ClientEventData
       ) async throws {
       }
     }
@@ -98,7 +95,7 @@ final class CactusTelemetryTests: XCTestCase {
 #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
   private struct DefaultWrapperTelemetryClient: CactusTelemetry.Client, Sendable {
     let onDeviceRegistered: @Sendable (CactusTelemetry.DeviceID) async throws -> Void
-    let onEventSent: @Sendable (CactusTelemetry.Event) async throws -> Void
+    let onEventSent: @Sendable (sending any CactusTelemetry.Event) async throws -> Void
 
     func deviceId() async throws -> CactusTelemetry.DeviceID? {
       try await CactusTelemetry.defaultClient.deviceId()
@@ -113,11 +110,10 @@ final class CactusTelemetryTests: XCTestCase {
     }
 
     func send(
-      event: CactusTelemetry.Event,
-      token: String,
-      deviceId: CactusTelemetry.DeviceID
+      event: any CactusTelemetry.Event & Sendable,
+      with data: CactusTelemetry.ClientEventData
     ) async throws {
-      try await CactusTelemetry.defaultClient.send(event: event, token: token, deviceId: deviceId)
+      try await CactusTelemetry.defaultClient.send(event: event, with: data)
       try await self.onEventSent(event)
     }
   }
@@ -128,3 +124,7 @@ extension CactusTelemetry.DeviceMetadata {
     Self(model: "mac", os: "macOS", osVersion: "26.1", deviceId: UUID().uuidString, brand: "Apple")
   }
 }
+
+private let testEvent = CactusTelemetry.LanguageModelInitEvent(
+  configuration: CactusLanguageModel.Configuration(modelURL: .applicationSupportDirectory)
+)

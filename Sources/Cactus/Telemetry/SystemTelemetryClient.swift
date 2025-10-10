@@ -23,36 +23,10 @@
     }
 
     func send(
-      event: CactusTelemetry.Event,
-      token: String,
-      deviceId: CactusTelemetry.DeviceID
+      event: any CactusTelemetry.Event & Sendable,
+      with data: CactusTelemetry.ClientEventData
     ) async throws {
-      let event = self.supabaseEvent(event: event, token: token, deviceId: deviceId)
-      try await self.client.send(events: [event])
-    }
-
-    private func supabaseEvent(
-      event: CactusTelemetry.Event,
-      token: String,
-      deviceId: CactusTelemetry.DeviceID
-    ) -> CactusSupabaseClient.TelemetryEvent {
-      CactusSupabaseClient.TelemetryEvent(
-        eventType: event.name,
-        projectId: token,
-        deviceId: deviceId,
-        ttft: event.properties["ttft"] as? Double,
-        tps: event.properties["tps"] as? Double,
-        responseTime: event.properties["responseTime"] as? Double,
-        model: event.properties["model"] as? String,
-        tokens: event.properties["tokens"] as? Int,
-        framework: event.framework,
-        frameworkVersion: event.frameworkVersion,
-        success: event.properties["success"] as? Bool,
-        message: event.properties["message"] as? String,
-        telemetryToken: event.properties["telemetryToken"] as? String,
-        audioDuration: event.properties["audioDuration"] as? Int64,
-        mode: event.properties["mode"] as? String
-      )
+      fatalError()
     }
   }
 #endif
