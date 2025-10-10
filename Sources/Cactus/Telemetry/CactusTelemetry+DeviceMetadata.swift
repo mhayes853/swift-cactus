@@ -54,6 +54,7 @@ extension CactusTelemetry {
 
 #if canImport(Darwin)
   extension CactusTelemetry.DeviceMetadata {
+    /// The current telemetry device metadata.
     @MainActor
     public static var current: Self {
       #if os(iOS) || os(tvOS) || os(visionOS)
