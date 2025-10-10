@@ -3,7 +3,7 @@
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmhayes853%2Fswift-cactus%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/mhayes853/swift-cactus)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmhayes853%2Fswift-cactus%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/mhayes853/swift-cactus)
 
-A Swift wrapper for [catus compute](https://github.com/catus-compute/catus).
+A Swift wrapper for [catus compute](https://github.com/cactus-compute/cactus).
 
 ## Overview
 
