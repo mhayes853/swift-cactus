@@ -59,9 +59,9 @@ extension CactusTelemetry {
       #if os(iOS) || os(tvOS) || os(visionOS)
         let device = UIDevice.current
         return Self(
-          model: device.name,
+          model: Self.hardwareModelName,
           os: device.systemName,
-          osVersion: device.systemVersion,
+          osVersion: Self.osVersionString,
           deviceId: device.identifierForVendor.map(\.uuidString) ?? "unknown",
           brand: "Apple"
         )
@@ -72,20 +72,17 @@ extension CactusTelemetry {
           deviceId = id.uuidString
         }
         return Self(
-          model: device.name,
+          model: Self.hardwareModelName,
           os: device.systemName,
-          osVersion: device.systemVersion,
+          osVersion: Self.osVersionString,
           deviceId: deviceId,
           brand: "Apple"
         )
       #else
-        let hostName = Host.current().localizedName ?? "Mac"
-        let v = ProcessInfo.processInfo.operatingSystemVersion
-        let osVersion = "\(v.majorVersion).\(v.minorVersion).\(v.patchVersion)"
         return Self(
-          model: hostName,
+          model: Self.hardwareModelName,
           os: "macOS",
-          osVersion: osVersion,
+          osVersion: Self.osVersionString,
           deviceId: Self.hardwareDeviceId,
           brand: "Apple"
         )
@@ -98,7 +95,7 @@ extension CactusTelemetry {
           kIOMasterPortDefault,
           IOServiceMatching("IOPlatformExpertDevice")
         )
-        defer { if service != 0 { IOObjectRelease(service) } }
+        defer { IOObjectRelease(service) }
         guard service != 0,
           let cfValue = IORegistryEntryCreateCFProperty(
             service,
@@ -111,5 +108,26 @@ extension CactusTelemetry {
         return cfValue
       }
     #endif
+
+    private static var osVersionString: String {
+      let osVersion = ProcessInfo.processInfo.operatingSystemVersion
+      return "\(osVersion.majorVersion).\(osVersion.minorVersion).\(osVersion.patchVersion)"
+    }
+
+    private static var hardwareModelName: String {
+      #if targetEnvironment(simulator)
+        let modelName =
+          ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"]?.description
+          ?? "Unknown"
+        return "\(modelName) (Simulator)"
+      #else
+        var size: Int = 0
+        sysctlbyname("hw.model", nil, &size, nil, 0)
+        var model = [CChar](repeating: 0, count: size)
+        sysctlbyname("hw.model", &model, &size, nil, 0)
+        let bytes = model.compactMap { $0 == 0 ? nil : UInt8(bitPattern: $0) }
+        return String(decoding: bytes, as: UTF8.self)
+      #endif
+    }
   }
 #endif
