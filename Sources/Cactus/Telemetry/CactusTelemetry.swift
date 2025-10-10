@@ -128,7 +128,7 @@ extension CactusTelemetry {
         _ = try? await registerDeviceTask.value
       }
       guard let deviceId else { return }
-      let data = ClientEventData(deviceId: deviceId, token: self.token, projectId: "TODO")
+      let data = ClientEventData(deviceId: deviceId, token: self.token)
       try await self.client.send(event: event, with: data)
     }
   }

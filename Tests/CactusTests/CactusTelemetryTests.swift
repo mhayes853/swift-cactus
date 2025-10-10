@@ -90,6 +90,10 @@ final class CactusTelemetryTests: XCTestCase {
     CactusTelemetry.configure(testTelemetryToken, deviceMetadata: .mock(), client: client)
     await self.fulfillment(of: [registersDevice], timeout: 1)
   }
+
+  func testProjectIdIsAUUIDV5() {
+    expectNoDifference(CactusTelemetry.projectId, "bc412594-249d-5b93-968b-c6cd782afc73")
+  }
 }
 
 #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY

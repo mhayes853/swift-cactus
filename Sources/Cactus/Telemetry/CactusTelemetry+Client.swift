@@ -4,7 +4,6 @@ extension CactusTelemetry {
   public struct ClientEventData: Sendable {
     public let deviceId: DeviceID
     public let token: String
-    public let projectId: String
   }
 
   public protocol Client {
