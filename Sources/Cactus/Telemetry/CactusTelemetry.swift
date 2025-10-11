@@ -3,12 +3,17 @@ import Logging
 
 // MARK: - CactusTelemetry
 
+/// A namespace for telemetry.
 public enum CactusTelemetry {
   #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
+    /// The default ``Client``.
     public static var defaultClient: any Client & Sendable {
       SystemTelemetryClient.shared
     }
-
+  
+    /// Configures telemetry with the specified token.
+    ///
+    /// - Parameter token: The telemetry token from the cactus dashboard.
     @MainActor
     public static func configure(_ token: String) {
       Self.configure(token, deviceMetadata: .current, client: Self.defaultClient)
@@ -16,12 +21,24 @@ public enum CactusTelemetry {
   #endif
 
   #if canImport(Darwin)
+    /// Configures telemetry with the specified token and client.
+    ///
+    /// - Parameters:
+    ///   - token: The telemetry token from the cactus dashboard.
+    ///   - client: The ``Client`` to use.
     @MainActor
     public static func configure(_ token: String, client: any Client & Sendable) {
       Self.configure(token, deviceMetadata: .current, client: client)
     }
   #endif
-
+  
+  /// Configures telemetry with the specified token, device metadata, and client.
+  ///
+  /// - Parameters:
+  ///   - token: The telemetry token from the cactus dashboard.
+  ///   - deviceMetadata: The ``DeviceMetadata`` of the current device.
+  ///   - client: The ``Client`` to use.
+  ///   - logger: A `Logger` for this operation.
   public static func configure(
     _ token: String,
     deviceMetadata: DeviceMetadata,
@@ -38,7 +55,12 @@ public enum CactusTelemetry {
       }
     }
   }
-
+  
+  /// Sends a telemetry ``CactusTelemetry/Event``.
+  ///
+  /// - Parameters:
+  ///   - event: The event to send.
+  ///   - logger: A `Logger` for this operation.
   public static func send(
     event: any Event & Sendable,
     logger: Logger = Logger(label: "cactus.telemetry.send.event")
@@ -55,7 +77,12 @@ public enum CactusTelemetry {
       }
     }
   }
-
+  
+  /// Registers the specified ``DeviceMetadata``.
+  ///
+  /// - Parameters:
+  ///   - metadata: The ``DeviceMetadata`` of the device.
+  ///   - logger: A `Logger` for this operation.
   public static func registerDevice(
     _ metadata: DeviceMetadata,
     logger: Logger = Logger(label: "cactus.telemetry.register.device")
@@ -85,6 +112,7 @@ public enum CactusTelemetry {
     }
   }
 
+  /// Resets all telemetry.
   public static func reset() {
     Self.currentSession.withLock { $0 = nil }
   }

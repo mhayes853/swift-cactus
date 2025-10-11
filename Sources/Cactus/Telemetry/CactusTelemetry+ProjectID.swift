@@ -2,6 +2,7 @@ import Foundation
 import IssueReporting
 
 extension CactusTelemetry {
+  /// The telemetry project id for the current project.
   public static var projectId: String {
     let name = "swift-cactus/\(Self.mainBundleIdentifier)/v1"
     return UUID.v5(namespace: .urlNamespace, name: name).uuidString.lowercased()
