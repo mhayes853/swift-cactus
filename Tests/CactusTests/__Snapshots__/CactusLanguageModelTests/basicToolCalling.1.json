@@ -1,17 +1,12 @@
 {
-  "decode_tokens" : 118,
+  "decode_tokens" : 200,
   "prefill_tokens" : 208,
-  "response" : "<think>\nOkay, the user is asking about the weather in San Francisco. I need to use the get_weather function here. The function requires a location parameter, which in this case is \"San Francisco\". Since they didn't specify any other details, I'll call the function with that location. There's no need to use any other tools here because it's a straightforward query for weather information.\n<\/think>",
-  "time_to_first_token_ms" : 2587.52,
-  "tokens_per_second" : 29.63,
+  "response" : "<think>\nOkay, let me figure out how to answer the user asking for the weather in San Francisco. The user wants the current weather there, so first, I need a way to get that information.\n\nLooking at the available tools, there's a function called get_weather. The description says this function gets weather data for a specified location. The parameters require an object with \"location\" as a string. Since the user mentioned San Francisco, I need to pass that as the location parameter.\n\nWait, does this function require any other parameters? The function definition only has \"location\" as required. So regardless of other parameters (though they don't seem to be needed here), I can call get_weather with the location set to San Francisco.\n\nI should make sure there are no typos in the JSON structure. The tool_call needs to have the name as get_weather and arguments including location: San Francisco. Once that's done, I can present the weather information from that response.\n<\/think>\n\n{\n ",
+  "time_to_first_token_ms" : 2614.26,
+  "tokens_per_second" : 30.22,
   "tool_calls" : [
-    {
-      "arguments" : {
-        "location" : "San Francisco"
-      },
-      "name" : "get_weather"
-    }
+
   ],
-  "total_time_ms" : 6536.34,
-  "total_tokens" : 326
+  "total_time_ms" : 9198.55,
+  "total_tokens" : 408
 }

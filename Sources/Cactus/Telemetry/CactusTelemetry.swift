@@ -6,12 +6,7 @@ import Logging
 /// A namespace for telemetry.
 public enum CactusTelemetry {
   #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
-    /// The default ``Client``.
-    public static var defaultClient: any Client & Sendable {
-      DefaultTelemetryClient.shared
-    }
-
-    /// Configures telemetry with the specified token.
+    /// Configures telemetry with the specified token and default client.
     ///
     /// - Parameter token: The telemetry token from the cactus dashboard.
     @MainActor
@@ -19,7 +14,7 @@ public enum CactusTelemetry {
       _ token: String,
       logger: Logger = Logger(label: "cactus.telemetry.configure")
     ) {
-      Self.configure(token, deviceMetadata: .current, client: Self.defaultClient, logger: logger)
+      Self.configure(token, deviceMetadata: .current, client: .default, logger: logger)
     }
   #endif
 

@@ -26,7 +26,7 @@ final class CactusTelemetryTests: XCTestCase {
       let device = CactusTelemetry.DeviceMetadata.mock()
 
       let client = DefaultWrapperTelemetryClient { id in
-        let realId = try await CactusTelemetry.defaultClient.deviceId()
+        let realId = try await defaultClient.deviceId()
         expectNoDifference(realId, id)
         registersDevice.fulfill()
       } onEventSent: { _ in
@@ -96,13 +96,13 @@ final class CactusTelemetryTests: XCTestCase {
     let onEventSent: @Sendable (sending any CactusTelemetry.Event) async throws -> Void
 
     func deviceId() async throws -> CactusTelemetry.DeviceID? {
-      try await CactusTelemetry.defaultClient.deviceId()
+      try await defaultClient.deviceId()
     }
 
     func registerDevice(
       _ metadata: CactusTelemetry.DeviceMetadata
     ) async throws -> CactusTelemetry.DeviceID {
-      let id = try await CactusTelemetry.defaultClient.registerDevice(metadata)
+      let id = try await defaultClient.registerDevice(metadata)
       try await self.onDeviceRegistered(id)
       return id
     }
@@ -111,9 +111,13 @@ final class CactusTelemetryTests: XCTestCase {
       event: any CactusTelemetry.Event & Sendable,
       with data: CactusTelemetry.ClientEventData
     ) async throws {
-      try await CactusTelemetry.defaultClient.send(event: event, with: data)
+      try await defaultClient.send(event: event, with: data)
       try await self.onEventSent(event)
     }
+  }
+
+  private var defaultClient: any CactusTelemetry.Client & Sendable {
+    .default
   }
 #endif
 
