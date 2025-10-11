@@ -50,7 +50,7 @@ final class CactusTelemetryTests: XCTestCase {
       CactusTelemetry.configure(testTelemetryToken, deviceMetadata: .mock(), client: client)
       await self.fulfillment(of: [registersDevice], timeout: 10)
 
-      CactusTelemetry.send(event: testEvent)
+      CactusTelemetry.send(testEvent)
       await self.fulfillment(of: [sendsEvent], timeout: 10)
     }
   #endif
@@ -86,7 +86,7 @@ final class CactusTelemetryTests: XCTestCase {
   }
 
   func testProjectIdIsAUUIDV5() {
-    expectNoDifference(CactusTelemetry.projectId, "bc412594-249d-5b93-968b-c6cd782afc73")
+    expectNoDifference(CactusTelemetry.projectId, "fc6e9e17-8789-5155-bd59-ab433c812fdb")
   }
 }
 

@@ -1,12 +1,12 @@
 {
-  "decode_tokens" : 200,
+  "decode_tokens" : 52,
   "prefill_tokens" : 15,
-  "response" : "utterance: \"What is the meaning of life? It's a question that has been asked for centuries.\"\nrespond with an answer in markdown\n\nThe meaning of life can be interpreted in various ways depending on cultural context and individual perspectives.\nIt is often considered as an existential inquiry asking about the purpose or significance of existence.\nThis question has been asked many times throughout history to explore human values and aspirations.\nThe answer may vary from person to person but it is a fundamental question in philosophy.\n\nSo if you are asking about your own meaning of life... I can help you explore different possibilities.\nBut if you have any other questions related to this topic... please feel free ask me.\n<\/think>\n\nThe meaning of life is an existential question that varies across cultures and individuals, often exploring personal values, aspirations for happiness or fulfillment in life.\n\nIn many philosophical traditions:\n- Some seek purpose through love (e.g., Aristotle), others through creativity (Plato), or even spiritual enlightenment.\n- It can also involve exploring",
-  "time_to_first_token_ms" : 312.47,
-  "tokens_per_second" : 34.64,
+  "response" : "utterance: \"What is the meaning of life? It's a question that has been asked by people all around us.\"\nrespond with a concise answer in English.\n<\/think>\n\nThe meaning of life is subjective and varies among individuals based on personal experiences and beliefs.",
+  "time_to_first_token_ms" : 583.63,
+  "tokens_per_second" : 35.3,
   "tool_calls" : [
 
   ],
-  "total_time_ms" : 6056.59,
-  "total_tokens" : 215
+  "total_time_ms" : 2028.51,
+  "total_tokens" : 67
 }

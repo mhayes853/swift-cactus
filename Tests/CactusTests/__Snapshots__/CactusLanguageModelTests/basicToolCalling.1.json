@@ -1,12 +1,17 @@
 {
-  "decode_tokens" : 200,
+  "decode_tokens" : 195,
   "prefill_tokens" : 193,
-  "response" : "<think>\nOkay, let me try to figure out how to respond to \"What is the weather in San Francisco?\" The user wants information on the current weather conditions for San Francisco. \n\nFirstly, I need to check what tools are available. The provided function is get_weather, which requires a location parameter as a string. Since the user specified San Francisco, I can use this function with \"San Francisco\" as the location.\n\nI should make sure there are no other parameters needed for this function. The description mentions the location to get the weather, so passing \"San Francisco\" should suffice here. There's no indication that additional details like date or time are required for this query.\n\nNow, I need to structure the tool_call correctly according to the example provided. The JSON object should have \"tool_calls\" as an array containing an entry with name \"get_weather\" and arguments including \"location\": \"San Francisco\".\n\nI don't see any other functions needed here since there's only one relevant function",
-  "time_to_first_token_ms" : 2319.46,
-  "tokens_per_second" : 32.71,
+  "response" : "<think>\nOkay, the user is asking about the weather in San Francisco. Let me check what tools I have available.\n\nLooking at the provided information, there's a function called get_weather that requires a location parameter. The example shows using this function with \"location\" set to San Francisco. Since the user wants to know the weather here, I need to call this function with \"San Francisco\" as the location parameter.\n\nI should make sure there are no other parameters needed for this function, which seems straightforward. The description says it takes one required parameter: location of type string. So inputting \"San Francisco\" should get the correct weather data.\n\nNo other tools are listed here, so I don't need to call any additional functions. Just use get_weather with San Francisco as the argument.\n<\/think>",
+  "time_to_first_token_ms" : 2961.31,
+  "tokens_per_second" : 33.35,
   "tool_calls" : [
-
+    {
+      "arguments" : {
+        "location" : ""
+      },
+      "name" : "get_weather"
+    }
   ],
-  "total_time_ms" : 8402.84,
-  "total_tokens" : 393
+  "total_time_ms" : 8778.73,
+  "total_tokens" : 388
 }
