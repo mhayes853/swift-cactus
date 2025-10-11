@@ -1,7 +1,13 @@
+// MARK: - DeviceID
+
 extension CactusTelemetry {
   /// An id for a device tracked by cactus telemetry.
   public typealias DeviceID = String
+}
 
+// MARK: - ClientEventData
+
+extension CactusTelemetry {
   /// Necessary data for sending telemetry events.
   public struct ClientEventData: Sendable {
     /// The ``CactusTelemetry/DeviceID`` of the current device.
@@ -13,7 +19,11 @@ extension CactusTelemetry {
     /// The project id to send with events.
     public let projectId: String
   }
+}
 
+// MARK: - Client
+
+extension CactusTelemetry {
   /// A protocol for sending cactus telemetry events.
   public protocol Client {
     /// Returns the current registered ``CactusTelemetry/DeviceID`` if known.

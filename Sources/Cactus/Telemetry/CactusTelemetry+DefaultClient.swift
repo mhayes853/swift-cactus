@@ -6,6 +6,7 @@
   // MARK: - DefaultClient
 
   extension CactusTelemetry {
+    /// The default telemetry client.
     public final class DefaultClient: Client, Sendable {
       static let shared = DefaultClient(client: .shared)
 
@@ -124,6 +125,7 @@
   }
 
   extension CactusTelemetry.Client where Self == CactusTelemetry.DefaultClient {
+    /// The default telemetry client.
     public static var `default`: Self { .shared }
   }
 
