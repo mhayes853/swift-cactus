@@ -1,5 +1,7 @@
 #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
   import cactus_util
+  import Foundation
+  import IssueReporting
 
   // MARK: - DefaultClient
 
@@ -8,9 +10,13 @@
       static let shared = DefaultClient(client: .shared)
 
       private let client: CactusSupabaseClient
+      private let batcher: CactusTelemetry.Batcher
 
       init(client: CactusSupabaseClient) {
         self.client = client
+        self.batcher = CactusTelemetry.Batcher(fileURL: .telemetryBatch()) { batch in
+          try await client.send(events: batch)
+        }
       }
 
       public func deviceId() async throws -> CactusTelemetry.DeviceID? {
@@ -30,16 +36,16 @@
         with data: CactusTelemetry.ClientEventData
       ) async throws {
         guard let event = self.supabaseTelemetryEvent(from: event, data: data) else { return }
-        try await self.client.send(events: [event])
+        try await self.batcher.record(event: event)
       }
 
       private func supabaseTelemetryEvent(
         from event: any CactusTelemetry.Event,
         data: CactusTelemetry.ClientEventData
-      ) -> CactusSupabaseClient.TelemetryEvent? {
+      ) -> CactusTelemetry.Batcher.Event? {
         switch event {
         case let event as CactusTelemetry.LanguageModelCompletionEvent:
-          CactusSupabaseClient.TelemetryEvent(
+          CactusTelemetry.Batcher.Event(
             eventType: event.name,
             projectId: data.projectId,
             deviceId: data.deviceId,
@@ -57,7 +63,7 @@
             mode: "LOCAL"
           )
         case let event as CactusTelemetry.LanguageModelEmbeddingsEvent:
-          CactusSupabaseClient.TelemetryEvent(
+          CactusTelemetry.Batcher.Event(
             eventType: event.name,
             projectId: data.projectId,
             deviceId: data.deviceId,
@@ -75,7 +81,7 @@
             mode: nil
           )
         case let event as CactusTelemetry.LanguageModelInitEvent:
-          CactusSupabaseClient.TelemetryEvent(
+          CactusTelemetry.Batcher.Event(
             eventType: event.name,
             projectId: data.projectId,
             deviceId: data.deviceId,
@@ -93,7 +99,7 @@
             mode: nil
           )
         case let event as CactusTelemetry.LanguageModelErrorEvent:
-          CactusSupabaseClient.TelemetryEvent(
+          CactusTelemetry.Batcher.Event(
             eventType: event.name,
             projectId: data.projectId,
             deviceId: data.deviceId,
@@ -124,4 +130,16 @@
   // MARK: - Helpers
 
   private let frameworkName = "swift-cactus"
+
+  extension URL {
+    fileprivate static func telemetryBatch() -> Self {
+      guard !isTesting else {
+        return FileManager.default.temporaryDirectory.appendingPathComponent(
+          "__test-cactus-telemetry-batch-\(UUID())__.json"
+        )
+      }
+      return FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent("__cactus-telemetry-batch__.json")
+    }
+  }
 #endif

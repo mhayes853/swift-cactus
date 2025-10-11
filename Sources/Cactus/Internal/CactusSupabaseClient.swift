@@ -73,43 +73,7 @@ extension CactusSupabaseClient {
 // MARK: - Send Telemetry Event
 
 extension CactusSupabaseClient {
-  struct TelemetryEvent: Sendable, Codable {
-    let eventType: String
-    let projectId: String?
-    let deviceId: String?
-    let ttft: Double?
-    let tps: Double?
-    let responseTime: Double?
-    let model: String?
-    let tokens: Int?
-    let framework: String
-    let frameworkVersion: String
-    let success: Bool?
-    let message: String?
-    let telemetryToken: String?
-    let audioDuration: Int64?
-    let mode: String?
-
-    private enum CodingKeys: String, CodingKey {
-      case eventType = "event_type"
-      case projectId = "project_id"
-      case deviceId = "device_id"
-      case ttft = "ttft"
-      case tps = "tps"
-      case responseTime = "response_time"
-      case model = "model"
-      case tokens = "tokens"
-      case framework = "framework"
-      case frameworkVersion = "framework_version"
-      case success = "success"
-      case message = "message"
-      case telemetryToken = "telemetry_token"
-      case audioDuration = "audio_duration"
-      case mode = "mode"
-    }
-  }
-
-  func send(events: [TelemetryEvent]) async throws {
+  func send(events: [CactusTelemetry.Batcher.Event]) async throws {
     var request = self.baseRequest(for: self.baseURL(for: "/rest/v1/logs"))
     request.addValue("return=minimal", forHTTPHeaderField: "Prefer")
     request.httpMethod = "POST"
