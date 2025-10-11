@@ -8,6 +8,8 @@ import SwiftUI
   import IOKit
 #endif
 
+// MARK: - DeviceMetadata
+
 extension CactusTelemetry {
   /// Device info for telemetry.
   public struct DeviceMetadata: Hashable, Sendable, Codable {
@@ -51,6 +53,8 @@ extension CactusTelemetry {
     }
   }
 }
+
+// MARK: - Current Metadata
 
 #if canImport(Darwin)
   extension CactusTelemetry.DeviceMetadata {

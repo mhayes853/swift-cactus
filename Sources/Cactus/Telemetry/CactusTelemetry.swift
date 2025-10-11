@@ -4,6 +4,26 @@ import Logging
 // MARK: - CactusTelemetry
 
 /// A namespace for telemetry.
+///
+/// You can configure telemetry in the entry point of your app.
+///
+/// ```swift
+/// import Cactus
+/// import SwiftUI
+///
+/// @main
+/// struct MyApp: App {
+///   init() {
+///     CactusTelemetry.configure("token-from-cactus-dashboard")
+///   }
+///
+///   // ...
+/// }
+/// ```
+///
+/// ``CactusLanguageModel`` will automatically record telemetry events for every model
+/// initialization, chat completion, and emdeddings generation. You can view the telemetry data
+/// in the cactus dashboard.
 public enum CactusTelemetry {
   #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
     /// Configures telemetry with the specified token and default client.
