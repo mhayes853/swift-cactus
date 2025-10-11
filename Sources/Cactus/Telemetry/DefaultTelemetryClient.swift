@@ -38,7 +38,7 @@
       case let event as CactusTelemetry.LanguageModelCompletionEvent:
         CactusSupabaseClient.TelemetryEvent(
           eventType: event.name,
-          projectId: CactusTelemetry.projectId,
+          projectId: data.projectId,
           deviceId: data.deviceId,
           ttft: event.chatCompletion.timeIntervalToFirstToken * 1000,
           tps: event.chatCompletion.tokensPerSecond,
@@ -56,7 +56,7 @@
       case let event as CactusTelemetry.LanguageModelEmbeddingsEvent:
         CactusSupabaseClient.TelemetryEvent(
           eventType: event.name,
-          projectId: CactusTelemetry.projectId,
+          projectId: data.projectId,
           deviceId: data.deviceId,
           ttft: nil,
           tps: nil,
@@ -74,7 +74,7 @@
       case let event as CactusTelemetry.LanguageModelInitEvent:
         CactusSupabaseClient.TelemetryEvent(
           eventType: event.name,
-          projectId: CactusTelemetry.projectId,
+          projectId: data.projectId,
           deviceId: data.deviceId,
           ttft: nil,
           tps: nil,
@@ -92,7 +92,7 @@
       case let event as CactusTelemetry.LanguageModelErrorEvent:
         CactusSupabaseClient.TelemetryEvent(
           eventType: event.name,
-          projectId: CactusTelemetry.projectId,
+          projectId: data.projectId,
           deviceId: data.deviceId,
           ttft: nil,
           tps: nil,
