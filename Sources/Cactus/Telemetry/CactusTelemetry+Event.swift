@@ -14,16 +14,19 @@ extension CactusTelemetry {
 
 extension CactusTelemetry {
   /// A telemetry event for a chat completion.
-  public struct ChatCompletionEvent: Event, Sendable {
+  public struct LanguageModelCompletionEvent: Event, Sendable {
     public private(set) var name = "completion"
     public let chatCompletion: CactusLanguageModel.ChatCompletion
+    public let options: CactusLanguageModel.ChatCompletion.Options
     public let configuration: CactusLanguageModel.Configuration
 
     public init(
       chatCompletion: CactusLanguageModel.ChatCompletion,
+      options: CactusLanguageModel.ChatCompletion.Options,
       configuration: CactusLanguageModel.Configuration
     ) {
       self.chatCompletion = chatCompletion
+      self.options = options
       self.configuration = configuration
     }
   }
@@ -33,7 +36,7 @@ extension CactusTelemetry {
 
 extension CactusTelemetry {
   /// A telemetry event for generating embeddings.
-  public struct EmbeddingsEvent: Event, Sendable {
+  public struct LanguageModelEmbeddingsEvent: Event, Sendable {
     public private(set) var name = "embedding"
     public let configuration: CactusLanguageModel.Configuration
 

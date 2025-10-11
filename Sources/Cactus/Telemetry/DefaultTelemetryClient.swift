@@ -1,8 +1,8 @@
 #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
   import cactus_util
 
-  final class SystemTelemetryClient: CactusTelemetry.Client, Sendable {
-    static let shared = SystemTelemetryClient(client: .shared)
+  final class DefaultTelemetryClient: CactusTelemetry.Client, Sendable {
+    static let shared = DefaultTelemetryClient(client: .shared)
 
     private let client: CactusSupabaseClient
 
@@ -35,10 +35,10 @@
       data: CactusTelemetry.ClientEventData
     ) -> CactusSupabaseClient.TelemetryEvent? {
       switch event {
-      case let event as CactusTelemetry.ChatCompletionEvent:
+      case let event as CactusTelemetry.LanguageModelCompletionEvent:
         CactusSupabaseClient.TelemetryEvent(
           eventType: event.name,
-          projectId: CactusTelemetry.projectId,
+          projectId: data.projectId,
           deviceId: data.deviceId,
           ttft: event.chatCompletion.timeIntervalToFirstToken * 1000,
           tps: event.chatCompletion.tokensPerSecond,
@@ -53,10 +53,10 @@
           audioDuration: nil,
           mode: "LOCAL"
         )
-      case let event as CactusTelemetry.EmbeddingsEvent:
+      case let event as CactusTelemetry.LanguageModelEmbeddingsEvent:
         CactusSupabaseClient.TelemetryEvent(
           eventType: event.name,
-          projectId: CactusTelemetry.projectId,
+          projectId: data.projectId,
           deviceId: data.deviceId,
           ttft: nil,
           tps: nil,
@@ -74,7 +74,7 @@
       case let event as CactusTelemetry.LanguageModelInitEvent:
         CactusSupabaseClient.TelemetryEvent(
           eventType: event.name,
-          projectId: CactusTelemetry.projectId,
+          projectId: data.projectId,
           deviceId: data.deviceId,
           ttft: nil,
           tps: nil,
@@ -92,7 +92,7 @@
       case let event as CactusTelemetry.LanguageModelErrorEvent:
         CactusSupabaseClient.TelemetryEvent(
           eventType: event.name,
-          projectId: CactusTelemetry.projectId,
+          projectId: data.projectId,
           deviceId: data.deviceId,
           ttft: nil,
           tps: nil,
@@ -113,7 +113,5 @@
     }
   }
 
-  // NB: The dashboard filters by explicit official framework filters, so we'll just pretend like
-  // this is the KMP SDK for now...
-  private let frameworkName = "kotlin"
+  private let frameworkName = "swift-cactus"
 #endif

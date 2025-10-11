@@ -8,15 +8,18 @@ public enum CactusTelemetry {
   #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
     /// The default ``Client``.
     public static var defaultClient: any Client & Sendable {
-      SystemTelemetryClient.shared
+      DefaultTelemetryClient.shared
     }
-  
+
     /// Configures telemetry with the specified token.
     ///
     /// - Parameter token: The telemetry token from the cactus dashboard.
     @MainActor
-    public static func configure(_ token: String) {
-      Self.configure(token, deviceMetadata: .current, client: Self.defaultClient)
+    public static func configure(
+      _ token: String,
+      logger: Logger = Logger(label: "cactus.telemetry.configure")
+    ) {
+      Self.configure(token, deviceMetadata: .current, client: Self.defaultClient, logger: logger)
     }
   #endif
 
@@ -27,11 +30,15 @@ public enum CactusTelemetry {
     ///   - token: The telemetry token from the cactus dashboard.
     ///   - client: The ``Client`` to use.
     @MainActor
-    public static func configure(_ token: String, client: any Client & Sendable) {
-      Self.configure(token, deviceMetadata: .current, client: client)
+    public static func configure(
+      _ token: String,
+      client: any Client & Sendable,
+      logger: Logger = Logger(label: "cactus.telemetry.configure")
+    ) {
+      Self.configure(token, deviceMetadata: .current, client: client, logger: logger)
     }
   #endif
-  
+
   /// Configures telemetry with the specified token, device metadata, and client.
   ///
   /// - Parameters:
@@ -55,14 +62,14 @@ public enum CactusTelemetry {
       }
     }
   }
-  
+
   /// Sends a telemetry ``CactusTelemetry/Event``.
   ///
   /// - Parameters:
   ///   - event: The event to send.
   ///   - logger: A `Logger` for this operation.
   public static func send(
-    event: any Event & Sendable,
+    _ event: any Event & Sendable,
     logger: Logger = Logger(label: "cactus.telemetry.send.event")
   ) {
     let session = Self.currentSession.withLock { $0 }
@@ -77,7 +84,7 @@ public enum CactusTelemetry {
       }
     }
   }
-  
+
   /// Registers the specified ``DeviceMetadata``.
   ///
   /// - Parameters:
@@ -156,7 +163,11 @@ extension CactusTelemetry {
         _ = try? await registerDeviceTask.value
       }
       guard let deviceId else { return }
-      let data = ClientEventData(deviceId: deviceId, token: self.token)
+      let data = ClientEventData(
+        deviceId: deviceId,
+        token: self.token,
+        projectId: CactusTelemetry.projectId
+      )
       try await self.client.send(event: event, with: data)
     }
   }

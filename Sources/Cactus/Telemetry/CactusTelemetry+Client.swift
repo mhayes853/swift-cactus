@@ -6,22 +6,25 @@ extension CactusTelemetry {
   public struct ClientEventData: Sendable {
     /// The ``CactusTelemetry/DeviceID`` of the current device.
     public let deviceId: DeviceID
-    
+
     /// The telemetry token from the cactus dashboard.
     public let token: String
+
+    /// The project id to send with events.
+    public let projectId: String
   }
 
   /// A protocol for sending cactus telemetry events.
   public protocol Client {
     /// Returns the current registered ``CactusTelemetry/DeviceID`` if known.
     func deviceId() async throws -> DeviceID?
-    
+
     /// Registers a device for cactus telemetry.
     ///
     /// - Parameter metadata: The ``CactusTelemetry/DeviceMetadata`` of the device.
     /// - Returns: The registered ``CactusTelemetry/DeviceID``.
     func registerDevice(_ metadata: DeviceMetadata) async throws -> DeviceID
-    
+
     /// Sends a telemetry ``CactusTelemetry/Event``.
     ///
     /// - Parameters:
