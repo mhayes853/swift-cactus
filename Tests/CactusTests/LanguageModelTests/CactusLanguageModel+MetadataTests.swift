@@ -3,10 +3,10 @@ import SnapshotTesting
 import Testing
 
 extension BaseTestSuite {
-  @Suite("CactusLanguageModelMetadata tests")
-  struct CactusLanguageModelMetadata {
-    @Test("Available Models", .disabled())
-    func availableModels() async throws {
+  @Suite
+  struct `CactusLanguageModelMetadata tests` {
+    @Test(.disabled())
+    func `Available Models`() async throws {
       let models = try await CactusLanguageModel.sharedAvailableModels()
       assertSnapshot(of: models, as: .json)
     }

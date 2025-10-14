@@ -50,7 +50,7 @@ let package = Package(
         .product(name: "CustomDump", package: "swift-custom-dump"),
         .product(name: "Operation", package: "swift-operation")
       ],
-      exclude: ["__Snapshots__"],
+      exclude: ["LanguageModelTests/__Snapshots__"],
       swiftSettings: [supportsTelemetry]
     ),
     .binaryTarget(name: "cactus_util", path: "cactus_util.xcframework")
