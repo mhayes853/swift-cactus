@@ -1,3 +1,5 @@
+// MARK: - Kind
+
 extension JSONSchema {
   public enum Kind: Hashable, Sendable {
     case integer
@@ -10,6 +12,8 @@ extension JSONSchema {
     case union([Self])
   }
 }
+
+// MARK: - Encodable
 
 extension JSONSchema.Kind: Encodable {
   public func encode(to encoder: any Encoder) throws {
@@ -26,6 +30,8 @@ extension JSONSchema.Kind: Encodable {
     }
   }
 }
+
+// MARK: - Decodable
 
 extension JSONSchema.Kind: Decodable {
   public init(from decoder: any Decoder) throws {
@@ -55,6 +61,8 @@ extension JSONSchema.Kind: Decodable {
     }
   }
 }
+
+// MARK: - ExpressibleByArrayLiteral
 
 extension JSONSchema.Kind: ExpressibleByArrayLiteral {
   public init(arrayLiteral elements: Self...) {

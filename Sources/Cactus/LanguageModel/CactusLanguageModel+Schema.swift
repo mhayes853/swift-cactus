@@ -2,6 +2,7 @@
 
 extension CactusLanguageModel {
   /// The type of a value in a schema provided to a ``CactusLanguageModel``.
+  @available(*, deprecated, message: "Use `JSONSchema.Kind` instead.")
   public enum SchemaType: Hashable, Sendable {
     case integer
     case string
