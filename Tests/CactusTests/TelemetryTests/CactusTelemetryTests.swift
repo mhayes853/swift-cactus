@@ -129,7 +129,7 @@ extension CactusTelemetry.DeviceMetadata {
 
 private let testEvent = CactusTelemetry.LanguageModelInitEvent(
   configuration: CactusLanguageModel.Configuration(
-    modelURL: temporaryDirectory().appendingPathComponent(CactusLanguageModel.testModelSlug)
+    modelURL: temporaryModelDirectory().appendingPathComponent(CactusLanguageModel.testModelSlug)
   )
 )
 

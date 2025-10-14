@@ -5,8 +5,6 @@ import Testing
 struct BaseTestSuite {}
 
 struct CleanupTrait: TestScoping, SuiteTrait {
-  private static let counter = Lock(0)
-
   func provideScope(
     for test: Test,
     testCase: Test.Case?,

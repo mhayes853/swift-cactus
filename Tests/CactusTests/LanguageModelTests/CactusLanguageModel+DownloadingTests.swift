@@ -4,10 +4,10 @@ import Foundation
 import Testing
 
 extension BaseTestSuite {
-  @Suite("CactusLanguageModel+Downloading tests")
-  struct CactusLanguageModelDownloadingTests {
-    @Test("Task Not Finished By Default")
-    func testNotFinishedByDefault() async throws {
+  @Suite
+  struct `CactusLanguageModel+Downloading tests` {
+    @Test
+    func `Task Not Finished By Default`() async throws {
       let task = CactusLanguageModel.downloadModelTask(
         from: CactusLanguageModel.modelDownloadURL(slug: CactusLanguageModel.testModelSlug),
         to: self.temporaryURL()
@@ -15,8 +15,8 @@ extension BaseTestSuite {
       expectNoDifference(task.isFinished, false)
     }
 
-    @Test("Download Model Successfully")
-    func downloadModelSuccessfully() async throws {
+    @Test
+    func `Download Model Successfully`() async throws {
       let url = try await CactusLanguageModel.testModelURL()
       CactusLanguageModel.testModelDownloadProgress.withLock {
         let containsDownloading = $0.contains {
@@ -38,8 +38,8 @@ extension BaseTestSuite {
       }
     }
 
-    @Test("Cancel Download From Concurrency Task")
-    func cancelDownload() async throws {
+    @Test
+    func `Cancel Download From Concurrency Task`() async throws {
       let progress = Lock([Result<CactusLanguageModel.DownloadProgress, any Error>]())
       let task = Task {
         try await CactusLanguageModel.downloadModel(
@@ -58,8 +58,8 @@ extension BaseTestSuite {
       }
     }
 
-    @Test("Cancel Download From Task")
-    func cancelDownloadFromTask() async throws {
+    @Test
+    func `Cancel Download From Task`() async throws {
       let task = CactusLanguageModel.downloadModelTask(
         from: CactusLanguageModel.modelDownloadURL(slug: CactusLanguageModel.testModelSlug),
         to: self.temporaryURL()

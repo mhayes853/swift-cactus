@@ -1,0 +1,12 @@
+{
+  "decode_tokens" : 200,
+  "prefill_tokens" : 152,
+  "response" : "<think>\nOkay, let me try to figure out how to answer the user's question about the weather in San Francisco.\n\nFirst, looking at the tools provided: there's a function called get_weather which requires a location parameter as an object. The user is asking about San Francisco, so I need to call this function with \"San Francisco\" as the location.\n\nWait, does the get_weather function actually take a location parameter? The description says it takes \"location\" as an object with properties for the location. So I need to pass \"San Francisco\" into that parameter.\n\nI should check if there are any other parameters required, but according to the function definition, only \"location\" is needed. So just passing San Francisco should work.\n\nNow, structuring the tool call: using the name \"get_weather\", arguments include an object with location set to San Francisco. The example shows a format where each tool_call has name and arguments as objects.\n\nSo putting it all together: { \"tool_calls",
+  "time_to_first_token_ms" : 1811.77,
+  "tokens_per_second" : 32.46,
+  "tool_calls" : [
+
+  ],
+  "total_time_ms" : 7942.66,
+  "total_tokens" : 352
+}

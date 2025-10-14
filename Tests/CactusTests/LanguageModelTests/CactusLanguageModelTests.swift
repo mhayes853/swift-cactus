@@ -5,26 +5,26 @@ import SnapshotTesting
 import Testing
 
 extension BaseTestSuite {
-  @Suite("CactusLanguageModel tests")
-  struct CactusLanguageModelTests {
-    @Test("Attempt To Create Model From Non-Existent URL, Throws Error")
-    func attemptToCreateModelFromNonExistentURLThrowsError() async throws {
+  @Suite
+  struct `CactusLanguageModel tests` {
+    @Test
+    func `Attempt To Create Model From Non-Existent URL, Throws Error`() async throws {
       let error = #expect(throws: CactusLanguageModel.ModelCreationError.self) {
-        try CactusLanguageModel(from: temporaryDirectory())
+        try CactusLanguageModel(from: temporaryModelDirectory())
       }
       expectNoDifference(error?.message.starts(with: "Failed to create model from:"), true)
     }
 
-    @Test("Successfully Creates Model From Downloaded Model")
-    func successfullyCreatesModelFromDownloadedModel() async throws {
+    @Test
+    func `Successfully Creates Model From Downloaded Model`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       #expect(throws: Never.self) {
         try CactusLanguageModel(from: modelURL)
       }
     }
 
-    @Test("Generates Embeddings")
-    func generatesEmbeddings() async throws {
+    @Test
+    func `Generates Embeddings`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       let model = try CactusLanguageModel(from: modelURL)
 
@@ -32,8 +32,8 @@ extension BaseTestSuite {
       assertSnapshot(of: embeddings, as: .dump)
     }
 
-    @Test("Throws Buffer Too Small Error When Buffer Size Too Small")
-    func throwsBufferTooSmallErrorWhenBufferSizeTooSmall() async throws {
+    @Test
+    func `Throws Buffer Too Small Error When Buffer Size Too Small`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       let model = try CactusLanguageModel(from: modelURL)
       #expect(throws: CactusLanguageModel.EmbeddingsError.bufferTooSmall) {
@@ -41,8 +41,8 @@ extension BaseTestSuite {
       }
     }
 
-    @Test("Throws Buffer Too Small Error When Buffer Size Zero")
-    func throwsBufferTooSmallErrorWhenBufferSizeZero() async throws {
+    @Test
+    func `Throws Buffer Too Small Error When Buffer Size Zero`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       let model = try CactusLanguageModel(from: modelURL)
       #expect(throws: CactusLanguageModel.EmbeddingsError.bufferTooSmall) {
@@ -51,7 +51,6 @@ extension BaseTestSuite {
     }
 
     @Test(
-      "Schema Value JSON",
       arguments: [
         (CactusLanguageModel.SchemaValue.number(1), "1"),
         (.string("blob"), "\"blob\""),
@@ -63,7 +62,7 @@ extension BaseTestSuite {
         (.object(["key": .string("value")]), "{\"key\":\"value\"}")
       ]
     )
-    func schemaValueJSON(value: CactusLanguageModel.SchemaValue, json: String) throws {
+    func `Schema Value JSON`(value: CactusLanguageModel.SchemaValue, json: String) throws {
       let data = try JSONEncoder().encode(value)
       expectNoDifference(String(decoding: data, as: UTF8.self), json)
 
@@ -72,7 +71,6 @@ extension BaseTestSuite {
     }
 
     @Test(
-      "Schema Type JSON",
       arguments: [
         (CactusLanguageModel.SchemaType.number, "\"number\""),
         (.string, "\"string\""),
@@ -83,7 +81,7 @@ extension BaseTestSuite {
         (.types([.string, .number]), "[\"string\",\"number\"]")
       ]
     )
-    func schemaTypeJSON(value: CactusLanguageModel.SchemaType, json: String) throws {
+    func `Schema Type JSON`(value: CactusLanguageModel.SchemaType, json: String) throws {
       let data = try JSONEncoder().encode(value)
       expectNoDifference(String(decoding: data, as: UTF8.self), json)
 
@@ -91,8 +89,8 @@ extension BaseTestSuite {
       expectNoDifference(value, decodedValue)
     }
 
-    @Test("Basic Chat Completion")
-    func basicChatCompletion() async throws {
+    @Test
+    func `Basic Chat Completion`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       let model = try CactusLanguageModel(from: modelURL)
 
@@ -107,8 +105,8 @@ extension BaseTestSuite {
       }
     }
 
-    @Test("Streams Same Response Content")
-    func streamsSameResponseContent() async throws {
+    @Test
+    func `Streams Same Response Content`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       let model = try CactusLanguageModel(from: modelURL)
 
@@ -124,8 +122,8 @@ extension BaseTestSuite {
       stream.withLock { expectNoDifference($0, completion.response) }
     }
 
-    @Test("Throws Chat Completion Error When Buffer Size Too Small")
-    func throwsChatCompletionErrorWhenBufferSizeTooSmall() async throws {
+    @Test
+    func `Throws Chat Completion Error When Buffer Size Too Small`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       let model = try CactusLanguageModel(from: modelURL)
 
@@ -143,8 +141,8 @@ extension BaseTestSuite {
       }
     }
 
-    @Test("Throws Chat Completion Error When Buffer Size Zero")
-    func throwsChatCompletionErrorWhenBufferSizeZero() async throws {
+    @Test
+    func `Throws Chat Completion Error When Buffer Size Zero`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       let model = try CactusLanguageModel(from: modelURL)
 
@@ -159,8 +157,8 @@ extension BaseTestSuite {
       }
     }
 
-    @Test("Basic Tool Calling")
-    func basicToolCalling() async throws {
+    @Test
+    func `Basic Tool Calling`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       let model = try CactusLanguageModel(from: modelURL)
 
@@ -190,16 +188,16 @@ extension BaseTestSuite {
         assertSnapshot(of: completion, as: .json, record: true)
       }
     }
-    
-    @Test("Derives Model Slug From Model URL If Not Provided")
-    func derivesModelSlugFromModelURLIfNotProvided() async throws {
+
+    @Test
+    func `Derives Model Slug From Model URL If Not Provided`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       let configuration = CactusLanguageModel.Configuration(modelURL: modelURL)
       expectNoDifference(configuration.modelSlug, CactusLanguageModel.testModelSlug)
     }
 
-    @Test("Overrides Default Model Slug")
-    func overridesDefaultModelSlug() async throws {
+    @Test
+    func `Overrides Default Model Slug`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       let configuration = CactusLanguageModel.Configuration(
         modelURL: modelURL,

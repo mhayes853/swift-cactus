@@ -1,0 +1,12 @@
+{
+  "decode_tokens" : 200,
+  "prefill_tokens" : 34,
+  "response" : "<think>\nOkay, the user is asking about the meaning of life. I need to address this from a philosophical perspective. First, I should acknowledge that there's no single answer and that different people have varying views.\n\nI can start by discussing various perspectives like existentialism or existentialist philosophy. For example, Sartre's \"Existentialism Is to Live Your Life as It Is\" emphasizes freedom and choice in defining one's existence.\n\nThen I could mention other traditions such as Buddhism or Taoism which focus on inner peace and harmony with nature. These approaches might offer different insights into what life means.\n\nIt would be good to touch on common themes: purpose, happiness, personal growth, relationships with others and the self. Also considering cultural differences where meaning might be more about community or tradition than individuality.\n\nI should end by encouraging reflection rather than giving a definitive answer because each person has their own journey of discovering meaning through experiences.\n<\/think>\n\nThe question of the *meaning* of life is deeply",
+  "time_to_first_token_ms" : 333.63,
+  "tokens_per_second" : 52.83,
+  "tool_calls" : [
+
+  ],
+  "total_time_ms" : 4100.37,
+  "total_tokens" : 234
+}

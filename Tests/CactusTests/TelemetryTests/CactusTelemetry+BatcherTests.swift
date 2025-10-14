@@ -3,8 +3,8 @@ import CustomDump
 import Foundation
 import Testing
 
-@Suite("CactusTelemetry+Batcher tests")
-final class CactusTelemetryBatcherTests {
+@Suite
+final class `CactusTelemetry+Batcher tests` {
   private let fileURL = FileManager.default.temporaryDirectory
     .appendingPathComponent("cactus-telemetry-\(UUID()).json")
 
@@ -12,8 +12,8 @@ final class CactusTelemetryBatcherTests {
     try? FileManager.default.removeItem(at: self.fileURL)
   }
 
-  @Test("Appends Failed Uploads To Batch")
-  func appendFailedUploadsToBatch() async throws {
+  @Test
+  func `Appends Failed Uploads To Batch`() async throws {
     let state = Lock((0, [CactusTelemetry.Batcher.Event]()))
     let batcher = CactusTelemetry.Batcher(fileURL: self.fileURL) { batch in
       try state.withLock { state in
@@ -34,8 +34,8 @@ final class CactusTelemetryBatcherTests {
     state.withLock { expectNoDifference($0.1, [event1, event2]) }
   }
 
-  @Test("Resets Batch When All Events Uploaded")
-  func resetsBatchWhenAllEventsUploaded() async throws {
+  @Test
+  func `Resets Batch When All Events Uploaded`() async throws {
     let state = Lock((0, [CactusTelemetry.Batcher.Event]()))
     let batcher = CactusTelemetry.Batcher(fileURL: self.fileURL) { batch in
       try state.withLock { state in
@@ -58,8 +58,8 @@ final class CactusTelemetryBatcherTests {
     state.withLock { expectNoDifference($0.1, [event3]) }
   }
 
-  @Test("Serializes Batch Uploads")
-  func serializesBatchUploads() async throws {
+  @Test
+  func `Serializes Batch Uploads`() async throws {
     let state = Lock((0, [Int]()))
     let batcher = CactusTelemetry.Batcher(fileURL: self.fileURL) { batch in
       try state.withLock { state in

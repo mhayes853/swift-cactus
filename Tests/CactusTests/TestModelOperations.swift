@@ -63,7 +63,7 @@ extension CactusLanguageModel {
       print("=== Downloading Test Model ===")
       let url = try await CactusLanguageModel.downloadModel(
         slug: CactusLanguageModel.testModelSlug,
-        to: temporaryDirectory().appendingPathComponent(CactusLanguageModel.testModelSlug),
+        to: temporaryModelDirectory().appendingPathComponent(CactusLanguageModel.testModelSlug),
         onProgress: { result in
           CactusLanguageModel.testModelDownloadProgress.withLock { $0.append(result) }
         }
