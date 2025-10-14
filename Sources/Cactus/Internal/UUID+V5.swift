@@ -1,5 +1,10 @@
-import CryptoKit
 import Foundation
+
+#if os(Android)
+  import Crypto
+#else
+  import CryptoKit
+#endif
 
 extension UUID {
   static let urlNamespace = UUID(uuidString: "6ba7b811-9dad-11d1-80b4-00c04fd430c8")!

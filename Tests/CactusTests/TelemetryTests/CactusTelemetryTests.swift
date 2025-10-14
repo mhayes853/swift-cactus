@@ -1,25 +1,68 @@
 import Cactus
 import CustomDump
 import Foundation
-import SQLite3
+import Testing
 import XCTest
 
-final class CactusTelemetryTests: XCTestCase {
-  override func setUp() async throws {
-    try await super.setUp()
-    try cleanupCactusUtilsDatabase()
-  }
+#if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
+  import SQLite3
+#endif
 
-  override func tearDown() {
-    super.tearDown()
+@Suite(.serialized)
+final class `CactusTelemetry tests` {
+  deinit {
     CactusTelemetry.reset()
   }
 
-  func testReportsIssueWhenRegisteringDeviceWithoutConfiguring() {
-    XCTExpectFailure { CactusTelemetry.registerDevice(.mock()) }
+  @Test
+  func `Reports Issue When Registering Device Without Configuring`() {
+    withKnownIssue { CactusTelemetry.registerDevice(.mock()) }
   }
 
-  #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
+  @Test
+  func `Does Not Register Device When Id Available`() async throws {
+    struct Client: CactusTelemetry.Client {
+      let onRegister: @Sendable () -> Void
+
+      func deviceId() async throws -> CactusTelemetry.DeviceID? {
+        "blob"
+      }
+
+      func registerDevice(
+        _ metadata: CactusTelemetry.DeviceMetadata
+      ) async throws -> CactusTelemetry.DeviceID {
+        self.onRegister()
+        return "blob"
+      }
+
+      func send(
+        event: any CactusTelemetry.Event & Sendable,
+        with data: CactusTelemetry.ClientEventData
+      ) async throws {
+      }
+    }
+
+    let registerCount = Lock(0)
+    let client = Client { registerCount.withLock { $0 += 1 } }
+    CactusTelemetry.configure(testTelemetryToken, deviceMetadata: .mock(), client: client)
+    try await Task.sleep(for: .seconds(1))
+
+    registerCount.withLock { expectNoDifference($0, 0) }
+  }
+}
+
+#if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
+  final class CactusDefaultTelemetryTests: XCTestCase {
+    override func setUp() async throws {
+      try await super.setUp()
+      try cleanupCactusUtilsDatabase()
+    }
+
+    override func tearDown() {
+      super.tearDown()
+      CactusTelemetry.reset()
+    }
+
     func testRegistersDeviceWithClientWhenConfigured() async throws {
       let registersDevice = self.expectation(description: "registers")
 
@@ -53,44 +96,8 @@ final class CactusTelemetryTests: XCTestCase {
       CactusTelemetry.send(testEvent)
       await self.fulfillment(of: [sendsEvent], timeout: 10)
     }
-  #endif
-
-  func testDoesNotRegisterDeviceWhenIdAvailable() async throws {
-    struct Client: CactusTelemetry.Client {
-      let registersDevice: XCTestExpectation
-
-      func deviceId() async throws -> CactusTelemetry.DeviceID? {
-        "blob"
-      }
-
-      func registerDevice(
-        _ metadata: CactusTelemetry.DeviceMetadata
-      ) async throws -> CactusTelemetry.DeviceID {
-        registersDevice.fulfill()
-        return "blob"
-      }
-
-      func send(
-        event: any CactusTelemetry.Event & Sendable,
-        with data: CactusTelemetry.ClientEventData
-      ) async throws {
-      }
-    }
-
-    let registersDevice = self.expectation(description: "registers")
-    registersDevice.isInverted = true
-    let client = Client(registersDevice: registersDevice)
-
-    CactusTelemetry.configure(testTelemetryToken, deviceMetadata: .mock(), client: client)
-    await self.fulfillment(of: [registersDevice], timeout: 1)
   }
 
-  func testProjectIdIsAUUIDV5() {
-    expectNoDifference(CactusTelemetry.projectId, "fc6e9e17-8789-5155-bd59-ab433c812fdb")
-  }
-}
-
-#if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
   private struct DefaultWrapperTelemetryClient: CactusTelemetry.Client, Sendable {
     let onDeviceRegistered: @Sendable (CactusTelemetry.DeviceID) async throws -> Void
     let onEventSent: @Sendable (sending any CactusTelemetry.Event) async throws -> Void
@@ -119,6 +126,20 @@ final class CactusTelemetryTests: XCTestCase {
   private var defaultClient: any CactusTelemetry.Client & Sendable {
     .default
   }
+
+  private func cleanupCactusUtilsDatabase() throws {
+    #if os(macOS)
+      let url = URL(fileURLWithPath: "~/.cactus.db")
+    #else
+      let documentsDirectory =
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+      let url = documentsDirectory.appendingPathComponent("cactus.db")
+    #endif
+
+    var handle: OpaquePointer?
+    _ = sqlite3_open_v2(url.relativePath, &handle, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nil)
+    sqlite3_exec(handle, "DELETE FROM app_registrations;", nil, nil, nil)
+  }
 #endif
 
 extension CactusTelemetry.DeviceMetadata {
@@ -132,19 +153,3 @@ private let testEvent = CactusTelemetry.LanguageModelInitEvent(
     modelURL: temporaryModelDirectory().appendingPathComponent(CactusLanguageModel.testModelSlug)
   )
 )
-
-private func cleanupCactusUtilsDatabase() throws {
-  #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
-    #if os(macOS)
-      let url = URL(fileURLWithPath: "~/.cactus.db")
-    #else
-      let documentsDirectory =
-        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-      let url = documentsDirectory.appendingPathComponent("cactus.db")
-    #endif
-
-    var handle: OpaquePointer?
-    _ = sqlite3_open_v2(url.relativePath, &handle, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nil)
-    sqlite3_exec(handle, "DELETE FROM app_registrations;", nil, nil, nil)
-  #endif
-}

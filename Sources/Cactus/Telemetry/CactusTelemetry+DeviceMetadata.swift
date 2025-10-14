@@ -1,4 +1,6 @@
-import SwiftUI
+#if canImport(SwiftUI)
+  import SwiftUI
+#endif
 
 #if canImport(UIKit)
   import UIKit
