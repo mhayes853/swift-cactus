@@ -20,7 +20,8 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.3.3"),
     .package(url: "https://github.com/mhayes853/swift-operation", from: "0.1.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.4.3"),
-    .package(url: "https://github.com/apple/swift-log", from: "1.6.4")
+    .package(url: "https://github.com/apple/swift-log", from: "1.6.4"),
+    .package(url: "https://github.com/apple/swift-crypto", from: "4.0.0")
   ],
   targets: [
     .target(
@@ -29,7 +30,7 @@ let package = Package(
         "cactus/apple", "cactus/android", "cactus/assets", "cactus/tests", "cactus/tools",
         "cactus/.gitignore", "cactus/LICENSE", "cactus/README.md"
       ],
-      cxxSettings: [.unsafeFlags(["-std=c++20", "-O3"])],
+      cxxSettings: [.unsafeFlags(["-std=c++20", "-O3", "-march=armv8.2-a+fp16+simd+dotprod"])],
     ),
     .target(
       name: "Cactus",
@@ -38,7 +39,8 @@ let package = Package(
         .target(name: "cactus_util", condition: .when(platforms: [.iOS, .macOS])),
         .product(name: "Logging", package: "swift-log"),
         .product(name: "Zip", package: "Zip"),
-        .product(name: "IssueReporting", package: "xctest-dynamic-overlay")
+        .product(name: "IssueReporting", package: "xctest-dynamic-overlay"),
+        .product(name: "Crypto", package: "swift-crypto", condition: .when(platforms: [.android]))
       ],
       swiftSettings: [supportsTelemetry]
     ),
@@ -48,7 +50,8 @@ let package = Package(
         "Cactus",
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
         .product(name: "CustomDump", package: "swift-custom-dump"),
-        .product(name: "Operation", package: "swift-operation")
+        .product(name: "Operation", package: "swift-operation"),
+        .product(name: "IssueReportingTestSupport", package: "xctest-dynamic-overlay")
       ],
       exclude: ["LanguageModelTests/__Snapshots__"],
       swiftSettings: [supportsTelemetry]
