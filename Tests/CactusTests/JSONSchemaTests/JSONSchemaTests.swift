@@ -107,7 +107,9 @@ struct `JSONSchema tests` {
           minItems: 10,
           uniqueItems: true
         )
-      )
+      ),
+      JSONSchema.Object(title: "Enum", type: nil, enum: [.boolean(true), .string("blob")]),
+      JSONSchema.Object(title: "Union", type: [.string(), .boolean])
     ]
   )
   func `Object Schema JSON`(object: JSONSchema.Object) throws {
@@ -117,6 +119,12 @@ struct `JSONSchema tests` {
     let decoded = try JSONDecoder()
       .decode(JSONSchema.self, from: Self.jsonEncoder.encode(JSONSchema.object(object)))
     expectNoDifference(decoded, JSONSchema.object(object))
+  }
+
+  @Test
+  func `Throws Encoding Error When Nested Union`() throws {
+    let schema = JSONSchema.object(type: [.string(), [.boolean, .null]])
+    #expect(throws: EncodingError.self) { try Self.jsonEncoder.encode(schema) }
   }
 
   private static let jsonEncoder = {

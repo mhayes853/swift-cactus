@@ -1,0 +1,7 @@
+{
+  "title" : "Union",
+  "type" : [
+    "string",
+    "boolean"
+  ]
+}

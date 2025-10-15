@@ -121,8 +121,37 @@ extension JSONSchema: Encodable {
   public func encode(to encoder: any Encoder) throws {
     var container = encoder.singleValueContainer()
     switch self {
-    case .boolean(let bool): try container.encode(bool)
-    case .object(let object): try container.encode(SerializeableObject(object: object))
+    case .boolean(let bool):
+      try container.encode(bool)
+    case .object(let object):
+      if let nestedUnionTypes = object.nestedUnionTypes {
+        throw EncodingError.invalidValue(
+          object,
+          EncodingError.Context(
+            codingPath: encoder.codingPath,
+            debugDescription: "Nested union types are not supported. Found: \(nestedUnionTypes)."
+          )
+        )
+      } else {
+        try container.encode(SerializeableObject(object: object))
+      }
+    }
+  }
+
+}
+
+extension JSONSchema.Object {
+  fileprivate var nestedUnionTypes: [JSONSchema.ValueType]? {
+    switch self.type {
+    case .union(let types):
+      var unionedTypes: [JSONSchema.ValueType]?
+      for type in types {
+        guard case .union(let nestedTypes) = type else { continue }
+        unionedTypes = nestedTypes
+      }
+      return unionedTypes
+    default:
+      return nil
     }
   }
 }
