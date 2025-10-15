@@ -1,0 +1,10 @@
+{
+  "description" : "A mysterious loreful character.",
+  "properties" : {
+    "name" : {
+      "type" : "string"
+    }
+  },
+  "title" : "blob",
+  "type" : "object"
+}

@@ -41,18 +41,18 @@ extension JSONSchema.ValueType {
   public struct String: Hashable, Sendable, Codable {
     /// The minimum length of the string.
     ///
-    /// [6.3.2](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.3.2)
-    public let minLength: Int?
+    /// [6.3.2](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.3.2)
+    public var minLength: Int?
 
     /// The maximum length of the string.
     ///
-    /// [6.3.1](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.3.1)
-    public let maxLength: Int?
+    /// [6.3.1](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.3.1)
+    public var maxLength: Int?
 
     /// A regular expression that the string must match.
     ///
-    /// [6.3.3](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.3.3)
-    public let pattern: Swift.String?
+    /// [6.3.3](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.3.3)
+    public var pattern: Swift.String?
 
     /// Creates a string-specific schema.
     ///
@@ -66,6 +66,20 @@ extension JSONSchema.ValueType {
       self.pattern = pattern
     }
   }
+
+  /// Creates a string-specific schema.
+  ///
+  /// - Parameters:
+  ///   - minLength: The minimum length of the string.
+  ///   - maxLength: The maximum length of the string.
+  ///   - pattern: A regular expression that the string must match.
+  public static func string(
+    minLength: Int? = nil,
+    maxLength: Int? = nil,
+    pattern: Swift.String? = nil
+  ) -> Self {
+    .string(String(minLength: minLength, maxLength: maxLength, pattern: pattern))
+  }
 }
 
 // MARK: - Number
@@ -75,27 +89,27 @@ extension JSONSchema.ValueType {
   public struct Number: Hashable, Sendable, Codable {
     /// The value that the number must be a multiple of.
     ///
-    /// [6.2.1](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.2.1)
+    /// [6.2.1](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.1)
     public var multipleOf: Double?
 
     /// The minimum value (inclusive) of the number.
     ///
-    /// [6.2.4](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.2.4)
+    /// [6.2.4](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.4)
     public var minimum: Double?
 
     /// The minimum value (exclusive) of the number.
     ///
-    /// [6.2.5](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.2.5)
+    /// [6.2.5](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.5)
     public var exclusiveMinimum: Double?
 
     /// The maximum value (inclusive) of the number.
     ///
-    /// [6.2.2](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.2.2)
+    /// [6.2.2](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.2)
     public var maximum: Double?
 
     /// The maximum value (exclusive) of the number.
     ///
-    /// [6.2.3](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.2.3)
+    /// [6.2.3](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.3)
     public var exclusiveMaximum: Double?
 
     /// Creates a number-specific schema.
@@ -120,6 +134,32 @@ extension JSONSchema.ValueType {
       self.exclusiveMinimum = exclusiveMinimum
     }
   }
+
+  /// Creates a number-specific schema.
+  ///
+  /// - Parameters:
+  ///   - multipleOf: The value that the number must be a multiple of.
+  ///   - minimum: The minimum value (inclusive) of the number.
+  ///   - exclusiveMinimum: The minimum value (exclusive) of the number.
+  ///   - maximum: The maximum value (inclusive) of the number.
+  ///   - exclusiveMaximum: The maximum value (exclusive) of the number.
+  public static func number(
+    multipleOf: Double? = nil,
+    minimum: Double? = nil,
+    exclusiveMinimum: Double? = nil,
+    maximum: Double? = nil,
+    exclusiveMaximum: Double? = nil
+  ) -> Self {
+    .number(
+      Number(
+        multipleOf: multipleOf,
+        minimum: minimum,
+        exclusiveMinimum: exclusiveMinimum,
+        maximum: maximum,
+        exclusiveMaximum: exclusiveMaximum
+      )
+    )
+  }
 }
 
 // MARK: - Array
@@ -127,76 +167,114 @@ extension JSONSchema.ValueType {
 extension JSONSchema.ValueType {
   /// An array-specific schema.
   public struct Array: Hashable, Sendable, Codable {
+    /// A method of defining items in an array-specific schema.
+    public enum Items: Hashable, Sendable, Codable {
+      /// The ``JSONSchema`` that all items in the array must conform to.
+      case schemaForAll(JSONSchema)
+
+      /// Individual ``JSONSchema`` instances for each item in the array.
+      case itemsSchemas([JSONSchema])
+
+      public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .schemaForAll(let schema): try container.encode(schema)
+        case .itemsSchemas(let schemas): try container.encode(schemas)
+        }
+      }
+
+      public init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let schema = try? container.decode(JSONSchema.self) {
+          self = .schemaForAll(schema)
+        } else if let schemas = try? container.decode([JSONSchema].self) {
+          self = .itemsSchemas(schemas)
+        } else {
+          throw DecodingError.dataCorruptedError(
+            in: container,
+            debugDescription: "Invalid array items schema"
+          )
+        }
+      }
+    }
+
     /// The schema for the items in the array.
     ///
-    /// [10.3.1.2](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-00#rfc.section.10.3.1.2)
-    public var items: JSONSchema?
+    /// [6.4.1](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.4.1)
+    public var items: Items?
 
-    /// An array of schemas for the first few items in the array.
+    /// A schema describing elements that are not covered by `items`.
     ///
-    /// [10.3.1.1](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-00#rfc.section.10.3.1.1)
-    public var prefixItems: [JSONSchema]?
+    /// [6.4.2](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.4.2)
+    public var additionalItems: JSONSchema?
 
     /// The minimum number of items allowed in the array.
     ///
-    /// [6.4.2](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.4.2)
+    /// [6.4.4](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.4.4)
     public var minItems: Int?
 
     /// The maximum number of items allowed in the array.
     ///
-    /// [6.4.1](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.4.1)
+    /// [6.4.3](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.4.3)
     public var maxItems: Int?
 
     /// A boolean that indicates whether all items in the array must be unique.
     ///
-    /// [6.4.3](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.4.3)
+    /// [6.4.5](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.4.5)
     public var uniqueItems: Bool?
 
     /// A schema that must be contained within the array.
     ///
-    /// [10.3.1.3](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.10.3.1.3)
+    /// [6.4.6](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.4.6)
     public var contains: JSONSchema?
-
-    /// The minimum number of items that must match the schema denoted by ``contains``.
-    ///
-    /// [6.4.5](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.4.5)
-    public var minContains: Int?
-
-    /// The maximum number of items that must match the schema denoted by ``contains``.
-    ///
-    /// [6.4.4](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.4.4)
-    public var maxContains: Int?
 
     /// Creates an array-specific schema.
     ///
     /// - Parameters:
     ///   - items: The schema for the items in the array.
-    ///   - prefixItems: An array of schemas for the first few items in the array.
     ///   - minItems: The minimum number of items allowed in the array.
     ///   - maxItems: The maximum number of items allowed in the array.
     ///   - uniqueItems: A boolean that indicates whether all items in the array must be unique.
     ///   - contains: A schema that must be contained within the array.
-    ///   - minContains: The minimum number of items that must match the schema denoted by ``contains``.
-    ///   - maxContains: The maximum number of items that must match the schema denoted by ``contains``.
     public init(
-      items: JSONSchema? = nil,
-      prefixItems: [JSONSchema]? = nil,
+      items: Items? = nil,
       minItems: Int? = nil,
       maxItems: Int? = nil,
       uniqueItems: Bool? = nil,
-      contains: JSONSchema? = nil,
-      minContains: Int? = nil,
-      maxContains: Int? = nil
+      contains: JSONSchema? = nil
     ) {
       self.items = items
-      self.prefixItems = prefixItems
       self.minItems = minItems
       self.maxItems = maxItems
       self.uniqueItems = uniqueItems
       self.contains = contains
-      self.minContains = minContains
-      self.maxContains = maxContains
     }
+  }
+
+  /// Creates an array-specific schema.
+  ///
+  /// - Parameters:
+  ///   - items: The schema for the items in the array.
+  ///   - minItems: The minimum number of items allowed in the array.
+  ///   - maxItems: The maximum number of items allowed in the array.
+  ///   - uniqueItems: A boolean that indicates whether all items in the array must be unique.
+  ///   - contains: A schema that must be contained within the array.
+  public static func array(
+    items: Array.Items? = nil,
+    minItems: Int? = nil,
+    maxItems: Int? = nil,
+    uniqueItems: Bool? = nil,
+    contains: JSONSchema? = nil
+  ) -> Self {
+    .array(
+      Array(
+        items: items,
+        minItems: minItems,
+        maxItems: maxItems,
+        uniqueItems: uniqueItems,
+        contains: contains
+      )
+    )
   }
 }
 
@@ -204,40 +282,42 @@ extension JSONSchema.ValueType {
 
 extension JSONSchema.ValueType {
   /// An object-specific schema.
+  ///
+  /// [6.5](https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.5)
   public struct Object: Hashable, Sendable, Codable {
     /// A dictionary of property names and their corresponding schemas.
     ///
-    /// [10.3.2.1](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-00#rfc.section.10.3.2.1)
-    public var properties: [String: JSONSchema]?
+    /// [6.5.4](https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.5.4)
+    public var properties: [Swift.String: JSONSchema]?
 
     /// An array of property names that are required for the object.
     ///
-    /// [6.5.3](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.5.3)
-    public var required: [String]?
+    /// [6.5.3](https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.5.3)
+    public var required: [Swift.String]?
 
     /// The minimum number of properties the object must have.
     ///
-    /// [6.5.2](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.5.2)
+    /// [6.5.2](https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.5.2)
     public var minProperties: Int?
 
     /// The maximum number of properties the object can have.
     ///
-    /// [6.5.1](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.6.5.1)
+    /// [6.5.1](https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.5.1)
     public var maxProperties: Int?
 
     /// A schema that defines constraints for additional properties not defined on the object.
     ///
-    /// [10.3.2.3](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-00#rfc.section.10.3.2.3)
+    /// [6.5.6](https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.5.6)
     public var additionalProperties: JSONSchema?
 
     /// A dictionary of regex patterns and their corresponding schemas for matching property names.
     ///
-    /// [10.3.2.2](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-00#rfc.section.10.3.2.2)
-    public var patternProperties: [String: JSONSchema]?
+    /// [6.5.5](https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.5.5)
+    public var patternProperties: [Swift.String: JSONSchema]?
 
     /// A schema that defines constraints for property names.
     ///
-    /// [10.3.2.4](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-00#rfc.section.10.3.2.4)
+    /// [6.5.8](https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.5.8)
     public var propertyNames: JSONSchema?
 
     /// Creates an object-specific schema.
@@ -251,12 +331,12 @@ extension JSONSchema.ValueType {
     ///   - patternProperties: A dictionary of regex patterns and their corresponding schemas for matching property names.
     ///   - propertyNames: A schema that defines constraints for property names.
     public init(
-      properties: [JSONSchema.ValueType.String: JSONSchema]? = nil,
-      required: [JSONSchema.ValueType.String]? = nil,
+      properties: [Swift.String: JSONSchema]? = nil,
+      required: [Swift.String]? = nil,
       minProperties: Int? = nil,
       maxProperties: Int? = nil,
       additionalProperties: JSONSchema? = nil,
-      patternProperties: [JSONSchema.ValueType.String: JSONSchema]? = nil,
+      patternProperties: [Swift.String: JSONSchema]? = nil,
       propertyNames: JSONSchema? = nil
     ) {
       self.properties = properties
@@ -267,5 +347,37 @@ extension JSONSchema.ValueType {
       self.patternProperties = patternProperties
       self.propertyNames = propertyNames
     }
+  }
+
+  /// Creates an object-specific schema.
+  ///
+  /// - Parameters:
+  ///   - properties: A dictionary of property names and their corresponding schemas.
+  ///   - required: An array of required property names.
+  ///   - minProperties: The minimum number of properties required.
+  ///   - maxProperties: The maximum number of properties allowed.
+  ///   - additionalProperties: A schema that defines constraints for additional properties not defined on the object.
+  ///   - patternProperties: A dictionary of regex patterns and their corresponding schemas for matching property names.
+  ///   - propertyNames: A schema that defines constraints for property names.
+  public static func object(
+    properties: [Swift.String: JSONSchema]? = nil,
+    required: [Swift.String]? = nil,
+    minProperties: Int? = nil,
+    maxProperties: Int? = nil,
+    additionalProperties: JSONSchema? = nil,
+    patternProperties: [Swift.String: JSONSchema]? = nil,
+    propertyNames: JSONSchema? = nil
+  ) -> Self {
+    .object(
+      Object(
+        properties: properties,
+        required: required,
+        minProperties: minProperties,
+        maxProperties: maxProperties,
+        additionalProperties: additionalProperties,
+        patternProperties: patternProperties,
+        propertyNames: propertyNames
+      )
+    )
   }
 }
