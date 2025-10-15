@@ -52,26 +52,6 @@ extension BaseTestSuite {
 
     @Test(
       arguments: [
-        (CactusLanguageModel.SchemaValue.number(1), "1"),
-        (.string("blob"), "\"blob\""),
-        (.boolean(true), "true"),
-        (.null, "null"),
-        (.array([.string("blob"), .number(1)]), "[\"blob\",1]"),
-        (.array([]), "[]"),
-        (.object([:]), "{}"),
-        (.object(["key": .string("value")]), "{\"key\":\"value\"}")
-      ]
-    )
-    func `Schema Value JSON`(value: CactusLanguageModel.SchemaValue, json: String) throws {
-      let data = try JSONEncoder().encode(value)
-      expectNoDifference(String(decoding: data, as: UTF8.self), json)
-
-      let decodedValue = try JSONDecoder().decode(CactusLanguageModel.SchemaValue.self, from: data)
-      expectNoDifference(value, decodedValue)
-    }
-
-    @Test(
-      arguments: [
         (CactusLanguageModel.SchemaType.number, "\"number\""),
         (.string, "\"string\""),
         (.boolean, "\"boolean\""),
@@ -81,6 +61,7 @@ extension BaseTestSuite {
         (.types([.string, .number]), "[\"string\",\"number\"]")
       ]
     )
+    @available(*, deprecated)
     func `Schema Type JSON`(value: CactusLanguageModel.SchemaType, json: String) throws {
       let data = try JSONEncoder().encode(value)
       expectNoDifference(String(decoding: data, as: UTF8.self), json)

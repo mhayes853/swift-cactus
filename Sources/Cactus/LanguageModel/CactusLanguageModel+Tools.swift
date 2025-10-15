@@ -79,18 +79,20 @@ extension CactusLanguageModel.ToolDefinition {
 extension CactusLanguageModel {
   /// A tool call from a ``CactusLanguageModel``.
   public struct ToolCall: Hashable, Sendable, Codable {
+    public typealias Argument = JSONSchema.Value
+
     /// The name of the tool that was invoked.
     public var name: String
 
     /// The arguments that the tool was invoked with.
-    public var arguments: [String: SchemaValue]
+    public var arguments: [String: Argument]
 
     /// Creates a tool call.
     ///
     /// - Parameters:
     ///   - name: The name of the tool that was invoked.
     ///   - arguments: The arguments that the tool was invoked with.
-    public init(name: String, arguments: [String: CactusLanguageModel.SchemaValue]) {
+    public init(name: String, arguments: [String: Argument]) {
       self.name = name
       self.arguments = arguments
     }

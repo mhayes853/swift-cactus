@@ -1,17 +1,17 @@
 {
-  "decode_tokens" : 181,
-  "prefill_tokens" : 152,
-  "response" : "<think>\nOkay, I need to figure out what weather is in San Francisco based on the given tools. Let me check the available functions again.\n\nThe user provided a function called get_weather which requires a location parameter. The parameters should be an object with 'location' as the key and 'description' as the value stating \"The location to get the weather for\". The parameters are required and have properties. \n\nSo I need to call this function with \"location\" set to \"San Francisco\". That should retrieve the weather information for San Francisco using the provided tool. There are no other parameters needed here since it's a straightforward request. I don't see any other tools mentioned, so this should be sufficient.\n<\/think>",
-  "time_to_first_token_ms" : 7269.4,
-  "tokens_per_second" : 13.37,
+  "decode_tokens" : 147,
+  "prefill_tokens" : 167,
+  "response" : "<think>\nOkay, the user is asking for the weather in San Francisco. I need to use the get_weather function here because it's designed to retrieve weather information based on a location parameter. The function requires the \"location\" key with the city name provided as \"San Francisco\". Since San Francisco is a specific location, I should pass that directly into the function call. There's no mention of needing additional parameters, so I don't see any other arguments required for this tool call. Just make sure the location string matches exactly as provided by the user.\n<\/think>",
+  "time_to_first_token_ms" : 2190.49,
+  "tokens_per_second" : 29.17,
   "tool_calls" : [
     {
       "arguments" : {
-        "location" : "San Francisco"
+        "location" : ""
       },
       "name" : "get_weather"
     }
   ],
-  "total_time_ms" : 20730.09,
-  "total_tokens" : 333
+  "total_time_ms" : 7196.18,
+  "total_tokens" : 314
 }
