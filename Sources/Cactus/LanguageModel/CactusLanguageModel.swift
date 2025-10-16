@@ -303,7 +303,10 @@ extension CactusLanguageModel {
     }
 
     guard result != -1 else {
-      let response = try? JSONDecoder().decode(CompletionErrorResponse.self, from: responseData)
+      let response = try? Self.chatCompletionDecoder.decode(
+        CompletionErrorResponse.self,
+        from: responseData
+      )
       if response?.error == "Response buffer too small" {
         CactusTelemetry.send(bufferTooSmallEvent)
         throw ChatCompletionError.bufferSizeTooSmall
@@ -317,7 +320,7 @@ extension CactusLanguageModel {
       )
       throw ChatCompletionError.generation(message: response?.error)
     }
-    let completion = try JSONDecoder().decode(ChatCompletion.self, from: responseData)
+    let completion = try Self.chatCompletionDecoder.decode(ChatCompletion.self, from: responseData)
     CactusTelemetry.send(
       CactusTelemetry.LanguageModelCompletionEvent(
         chatCompletion: completion,
@@ -327,6 +330,14 @@ extension CactusLanguageModel {
     )
     return completion
   }
+
+  private static let chatCompletionDecoder = {
+    let decoder = JSONDecoder()
+    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+      decoder.allowsJSON5 = true
+    }
+    return decoder
+  }()
 
   private struct _ToolDefinition: Codable {
     var function: ToolDefinition
