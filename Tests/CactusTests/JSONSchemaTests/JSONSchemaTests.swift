@@ -8,11 +8,12 @@ import Testing
 struct `JSONSchema tests` {
   @Test(
     arguments: [
-      (JSONSchema.Value.number(1), "1"),
+      (JSONSchema.Value.number(11.1), "11.1"),
+      (JSONSchema.Value.integer(1), "1"),
       (.string("blob"), "\"blob\""),
       (.boolean(true), "true"),
       (.null, "null"),
-      (.array([.string("blob"), .number(1)]), "[\"blob\",1]"),
+      (.array([.string("blob"), .number(11.1)]), "[\"blob\",11.1]"),
       (.array([]), "[]"),
       (.object([:]), "{}"),
       (.object(["key": .string("value")]), "{\"key\":\"value\"}")
@@ -87,7 +88,7 @@ struct `JSONSchema tests` {
       JSONSchema.Object(
         title: "n",
         description: "A number.",
-        type: .number(minimum: 10, maximum: 20)
+        type: .number(minimum: 10.1, maximum: 20.2)
       ),
       JSONSchema.Object(
         title: "b",
@@ -109,7 +110,12 @@ struct `JSONSchema tests` {
         )
       ),
       JSONSchema.Object(title: "Enum", type: nil, enum: [.boolean(true), .string("blob")]),
-      JSONSchema.Object(title: "Union", type: [.string(), .boolean])
+      JSONSchema.Object(title: "Union", type: [.string(), .boolean]),
+      JSONSchema.Object(
+        title: "Integer",
+        description: "An integer",
+        type: .integer(minimum: 10, maximum: 20)
+      )
     ]
   )
   func `Object Schema JSON`(object: JSONSchema.Object) throws {

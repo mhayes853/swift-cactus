@@ -145,21 +145,24 @@ extension BaseTestSuite {
 
       let completion = try model.chatCompletion(
         messages: [
-          .system("You are a helpful assistant that can use tools."),
-          .user("What is the weather in San Francisco?")
+          .system("You are a helpful weather assistant that can use tools."),
+          .user("What is the weather in Santa Cruz?")
         ],
         tools: [
           CactusLanguageModel.ToolDefinition(
             name: "get_weather",
             description: "Get the weather in a given location",
-            parameters: CactusLanguageModel.ToolDefinition.Parameters(
-              properties: [
-                "location": CactusLanguageModel.ToolDefinition.Parameter(
-                  type: .string,
-                  description: "The location to get the weather for"
-                )
-              ],
-              required: ["location"]
+            parameters: .object(
+              type: .object(
+                properties: [
+                  "location": .object(
+                    description: "City name, eg. 'San Francisco'",
+                    type: .string(minLength: 1),
+                    examples: ["San Francisco"]
+                  )
+                ],
+                required: ["location"]
+              )
             )
           )
         ]

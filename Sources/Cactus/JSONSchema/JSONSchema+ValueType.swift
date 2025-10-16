@@ -1,3 +1,5 @@
+import Foundation
+
 // MARK: - ValueType
 
 extension JSONSchema {
@@ -17,6 +19,9 @@ extension JSONSchema {
 
     /// A number type.
     case number(Number)
+
+    /// An integer type.
+    case integer(Integer)
 
     /// A null type.
     case null
@@ -90,27 +95,27 @@ extension JSONSchema.ValueType {
     /// The value that the number must be a multiple of.
     ///
     /// [6.2.1](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.1)
-    public var multipleOf: Double?
+    public var multipleOf: Decimal?
 
     /// The minimum value (inclusive) of the number.
     ///
     /// [6.2.4](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.4)
-    public var minimum: Double?
+    public var minimum: Decimal?
 
     /// The minimum value (exclusive) of the number.
     ///
     /// [6.2.5](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.5)
-    public var exclusiveMinimum: Double?
+    public var exclusiveMinimum: Decimal?
 
     /// The maximum value (inclusive) of the number.
     ///
     /// [6.2.2](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.2)
-    public var maximum: Double?
+    public var maximum: Decimal?
 
     /// The maximum value (exclusive) of the number.
     ///
     /// [6.2.3](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.3)
-    public var exclusiveMaximum: Double?
+    public var exclusiveMaximum: Decimal?
 
     /// Creates a number-specific schema.
     ///
@@ -121,11 +126,11 @@ extension JSONSchema.ValueType {
     ///   - maximum: The maximum value (inclusive) of the number.
     ///   - exclusiveMaximum: The maximum value (exclusive) of the number.
     public init(
-      multipleOf: Double? = nil,
-      minimum: Double? = nil,
-      exclusiveMinimum: Double? = nil,
-      maximum: Double? = nil,
-      exclusiveMaximum: Double? = nil
+      multipleOf: Decimal? = nil,
+      minimum: Decimal? = nil,
+      exclusiveMinimum: Decimal? = nil,
+      maximum: Decimal? = nil,
+      exclusiveMaximum: Decimal? = nil
     ) {
       self.multipleOf = multipleOf
       self.maximum = maximum
@@ -144,14 +149,94 @@ extension JSONSchema.ValueType {
   ///   - maximum: The maximum value (inclusive) of the number.
   ///   - exclusiveMaximum: The maximum value (exclusive) of the number.
   public static func number(
-    multipleOf: Double? = nil,
-    minimum: Double? = nil,
-    exclusiveMinimum: Double? = nil,
-    maximum: Double? = nil,
-    exclusiveMaximum: Double? = nil
+    multipleOf: Decimal? = nil,
+    minimum: Decimal? = nil,
+    exclusiveMinimum: Decimal? = nil,
+    maximum: Decimal? = nil,
+    exclusiveMaximum: Decimal? = nil
   ) -> Self {
     .number(
       Number(
+        multipleOf: multipleOf,
+        minimum: minimum,
+        exclusiveMinimum: exclusiveMinimum,
+        maximum: maximum,
+        exclusiveMaximum: exclusiveMaximum
+      )
+    )
+  }
+}
+
+// MARK: - Integer
+
+extension JSONSchema.ValueType {
+  /// An integer-specific schema.
+  public struct Integer: Hashable, Sendable, Codable {
+    /// The value that the integer must be a multiple of.
+    ///
+    /// [6.2.1](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.1)
+    public var multipleOf: Int?
+
+    /// The minimum value (inclusive) of the integer.
+    ///
+    /// [6.2.4](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.4)
+    public var minimum: Int?
+
+    /// The minimum value (exclusive) of the integer.
+    ///
+    /// [6.2.5](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.5)
+    public var exclusiveMinimum: Int?
+
+    /// The maximum value (inclusive) of the integer.
+    ///
+    /// [6.2.2](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.2)
+    public var maximum: Int?
+
+    /// The maximum value (exclusive) of the integer.
+    ///
+    /// [6.2.3](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.3)
+    public var exclusiveMaximum: Int?
+
+    /// Creates a number-specific schema.
+    ///
+    /// - Parameters:
+    ///   - multipleOf: The value that the integer must be a multiple of.
+    ///   - minimum: The minimum value (inclusive) of the integer.
+    ///   - exclusiveMinimum: The minimum value (exclusive) of the integer.
+    ///   - maximum: The maximum value (inclusive) of the integer.
+    ///   - exclusiveMaximum: The maximum value (exclusive) of the integer.
+    public init(
+      multipleOf: Int? = nil,
+      minimum: Int? = nil,
+      exclusiveMinimum: Int? = nil,
+      maximum: Int? = nil,
+      exclusiveMaximum: Int? = nil
+    ) {
+      self.multipleOf = multipleOf
+      self.maximum = maximum
+      self.exclusiveMaximum = exclusiveMaximum
+      self.minimum = minimum
+      self.exclusiveMinimum = exclusiveMinimum
+    }
+  }
+
+  /// Creates an integer-specific schema.
+  ///
+  /// - Parameters:
+  ///   - multipleOf: The value that the integer must be a multiple of.
+  ///   - minimum: The minimum value (inclusive) of the integer.
+  ///   - exclusiveMinimum: The minimum value (exclusive) of the integer.
+  ///   - maximum: The maximum value (inclusive) of the integer.
+  ///   - exclusiveMaximum: The maximum value (exclusive) of the integer.
+  public static func integer(
+    multipleOf: Int? = nil,
+    minimum: Int? = nil,
+    exclusiveMinimum: Int? = nil,
+    maximum: Int? = nil,
+    exclusiveMaximum: Int? = nil
+  ) -> Self {
+    .integer(
+      Integer(
         multipleOf: multipleOf,
         minimum: minimum,
         exclusiveMinimum: exclusiveMinimum,

@@ -61,14 +61,17 @@ let completion = try model.chatCompletion(
     CactusLanguageModel.ToolDefinition(
       name: "get_weather",
       description: "Get the weather in a given location",
-      parameters: CactusLanguageModel.ToolDefinition.Parameters(
-        properties: [
-          "location": CactusLanguageModel.ToolDefinition.Parameter(
-            type: .string,
-            description: "The location to get the weather for"
-          )
-        ],
-        required: ["location"]
+      parameters: .object(
+        type: .object(
+          properties: [
+            "location": .object(
+              description: "City name, eg. 'San Francisco'",
+              type: .string(minLength: 1),
+              examples: ["San Francisco"]
+            )
+          ],
+          required: ["location"]
+        )
       )
     )
   ]
