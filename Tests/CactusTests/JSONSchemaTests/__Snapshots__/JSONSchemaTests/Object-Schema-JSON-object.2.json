@@ -1,0 +1,7 @@
+{
+  "description" : "A number.",
+  "maximum" : 20.2,
+  "minimum" : 10.1,
+  "title" : "n",
+  "type" : "number"
+}

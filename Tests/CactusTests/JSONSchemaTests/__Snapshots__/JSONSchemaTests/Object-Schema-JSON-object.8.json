@@ -1,0 +1,7 @@
+{
+  "description" : "An integer",
+  "maximum" : 20,
+  "minimum" : 10,
+  "title" : "Integer",
+  "type" : "integer"
+}

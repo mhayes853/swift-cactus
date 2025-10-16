@@ -9,8 +9,11 @@ extension CactusLanguageModel {
     /// The description of the functionallity that the tool provides.
     public var description: String
 
-    /// The parameters used by the tool.
-    public var parameters: Parameters
+    /// A ``JSONSchema`` for the parameters of this tool.
+    ///
+    /// > Notice: The language model isn't guaranteed to generate a value that is valid with this
+    /// > schema. You will need to manually validate model-generated values against this schema.
+    public var parameters: JSONSchema
 
     /// Creates a tool definition.
     ///
@@ -18,58 +21,10 @@ extension CactusLanguageModel {
     ///   - name: The name of the tool.
     ///   - description: The description of the functionallity that the tool provides.
     ///   - parameters: The parameters used by the tool.
-    public init(name: String, description: String, parameters: Parameters) {
+    public init(name: String, description: String, parameters: JSONSchema) {
       self.name = name
       self.description = description
       self.parameters = parameters
-    }
-  }
-}
-
-// MARK: - Parameters
-
-extension CactusLanguageModel.ToolDefinition {
-  /// A set of parameters used by a tool.
-  public struct Parameters: Hashable, Sendable, Codable {
-    public private(set) var type = CactusLanguageModel.SchemaType.object
-
-    /// A list of names indicating the required parameters.
-    public var required: [String]
-
-    /// A dictionary of parameters.
-    public var properties: [String: Parameter]
-
-    /// Creayes a parameter set.
-    ///
-    /// - Parameters:
-    ///   - properties: A list of names indicating the required parameters.
-    ///   - required: A dictionary of parameters.
-    public init(properties: [String: Parameter], required: [String]) {
-      self.required = required
-      self.properties = properties
-    }
-  }
-}
-
-// MARK: - Parameter
-
-extension CactusLanguageModel.ToolDefinition {
-  /// A parameter for a tool.
-  public struct Parameter: Hashable, Sendable, Codable {
-    /// The ``CactusLanguageModel/SchemaType`` of the parameter.
-    public var type: CactusLanguageModel.SchemaType
-
-    /// A description of the parameter.
-    public var description: String
-
-    /// Creates a parameter.
-    ///
-    /// - Parameters:
-    ///   - type: The ``CactusLanguageModel/SchemaType`` of the parameter.
-    ///   - description: A description of the parameter.
-    public init(type: CactusLanguageModel.SchemaType, description: String) {
-      self.type = type
-      self.description = description
     }
   }
 }
@@ -83,14 +38,14 @@ extension CactusLanguageModel {
     public var name: String
 
     /// The arguments that the tool was invoked with.
-    public var arguments: [String: SchemaValue]
+    public var arguments: [String: JSONSchema.Value]
 
     /// Creates a tool call.
     ///
     /// - Parameters:
     ///   - name: The name of the tool that was invoked.
     ///   - arguments: The arguments that the tool was invoked with.
-    public init(name: String, arguments: [String: CactusLanguageModel.SchemaValue]) {
+    public init(name: String, arguments: [String: JSONSchema.Value]) {
       self.name = name
       self.arguments = arguments
     }

@@ -1,0 +1,10 @@
+{
+  "description" : "An array",
+  "items" : {
+    "type" : "string"
+  },
+  "minItems" : 10,
+  "title" : "Array",
+  "type" : "array",
+  "uniqueItems" : true
+}

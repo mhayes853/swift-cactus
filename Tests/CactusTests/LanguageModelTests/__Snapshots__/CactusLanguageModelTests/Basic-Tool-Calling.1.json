@@ -1,17 +1,12 @@
 {
-  "decode_tokens" : 181,
-  "prefill_tokens" : 152,
-  "response" : "<think>\nOkay, I need to figure out what weather is in San Francisco based on the given tools. Let me check the available functions again.\n\nThe user provided a function called get_weather which requires a location parameter. The parameters should be an object with 'location' as the key and 'description' as the value stating \"The location to get the weather for\". The parameters are required and have properties. \n\nSo I need to call this function with \"location\" set to \"San Francisco\". That should retrieve the weather information for San Francisco using the provided tool. There are no other parameters needed here since it's a straightforward request. I don't see any other tools mentioned, so this should be sufficient.\n<\/think>",
-  "time_to_first_token_ms" : 7269.4,
-  "tokens_per_second" : 13.37,
+  "decode_tokens" : 200,
+  "prefill_tokens" : 159,
+  "response" : "<think>\nOkay, let me try to figure out how to answer the user's question about Santa Cruz' weather using the provided tools. The user mentioned calling any of the listed functions, so first I need to check what function is available for getting weather information.\n\nLooking at the example tool call syntax provided: it's an object with \"tool_calls\" under \"arguments\". The function name is \"get_weather\", which requires a parameter called \"location\" with a minimum length of 1 character. The user is asking about Santa Cruz, so I need to make sure the location parameter is set correctly.\n\nWait, the example uses \"San Francisco\" as a placeholder for the city name. So in this case, Santa Cruz should be passed as \"Santa Cruz\". The function parameters specify that \"location\" must have at least one character (which it does), and type is string. \n\nI should structure the tool call accordingly: {\"tool_calls\": [{\"name\": \"get_weather\", \"arguments\": {\"",
+  "time_to_first_token_ms" : 2080.2,
+  "tokens_per_second" : 31.97,
   "tool_calls" : [
-    {
-      "arguments" : {
-        "location" : "San Francisco"
-      },
-      "name" : "get_weather"
-    }
+
   ],
-  "total_time_ms" : 20730.09,
-  "total_tokens" : 333
+  "total_time_ms" : 8304.31,
+  "total_tokens" : 359
 }

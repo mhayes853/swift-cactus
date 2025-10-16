@@ -1,0 +1,7 @@
+{
+  "enum" : [
+    true,
+    "blob"
+  ],
+  "title" : "Enum"
+}
