@@ -376,7 +376,7 @@ extension CactusLanguageModel.ChatCompletion {
       temperature: Float = 0.1,
       topP: Float = 0.95,
       topK: Float = 40,
-      stopSequences: [String] = []
+      stopSequences: [String] = ["<|im_end|>", "<end_of_turn>"]
     ) {
       self.maxTokens = maxTokens
       self.temperature = temperature
