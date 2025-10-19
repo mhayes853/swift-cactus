@@ -1,18 +1,33 @@
-// MARK: - Validate
+import Foundation
+
+// MARK: - Validator
 
 extension JSONSchema {
-  /// Validates the specified `value` against this schema.
+  /// A class for validating JSON values against a ``JSONSchema``.
   ///
-  /// - Parameter value: The ``Value`` to validate.
-  /// - Throws: A ``ValidationError`` indicating the reason for the validation failure.
-  public func validate(value: Value) throws(ValidationError) {
-    switch self {
-    case .boolean(false):
-      throw ValidationError(reason: .falseSchema)
-    case .boolean(true):
-      return
-    default:
-      return
+  /// For performance, you should create and hold a single instance of a validator throughout the
+  /// lifetime of your application.
+  public final class Validator: Sendable {
+    private let regexCache = Lock([String: NSRegularExpression]())
+
+    /// Creates a validator.
+    public init() {}
+
+    /// Validates the specified `value` against the schema held by this validator.
+    ///
+    /// - Parameters:
+    ///   - value: The ``Value`` to validate.
+    ///   - schema: The ``JSONSchema`` to validate against.
+    /// - Throws: A ``ValidationError`` indicating the reason for the validation failure.
+    public func validate(value: Value, with schema: JSONSchema) throws(ValidationError) {
+      switch schema {
+      case .boolean(false):
+        throw ValidationError(reason: .falseSchema)
+      case .boolean(true):
+        return
+      default:
+        return
+      }
     }
   }
 }

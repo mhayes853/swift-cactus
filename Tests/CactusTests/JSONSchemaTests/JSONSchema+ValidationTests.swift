@@ -7,28 +7,30 @@ struct `JSONSchemaValidation tests` {
   @Test(arguments: [JSONSchema.Value.null, "blob", 10, [], [:], 10.0])
   func `Always Validates For True Schema`(value: JSONSchema.Value) {
     #expect(throws: Never.self) {
-      try JSONSchema.boolean(true).validate(value: value)
+      try validator.validate(value: value, with: .boolean(true))
     }
   }
 
   @Test(arguments: [JSONSchema.Value.null, "blob", 10, [], [:], 10.0])
   func `Always Validates For Empty Schema`(value: JSONSchema.Value) {
     #expect(throws: Never.self) {
-      try JSONSchema.object(type: nil).validate(value: value)
+      try validator.validate(value: value, with: .object(type: nil))
     }
   }
 
   @Test(arguments: [JSONSchema.Value.null, "blob", 10, [], [:], 10.0])
   func `Never Validates For False Schema`(value: JSONSchema.Value) {
     #expect(throws: JSONSchema.ValidationError(reason: .falseSchema)) {
-      try JSONSchema.boolean(false).validate(value: value)
+      try validator.validate(value: value, with: .boolean(false))
     }
   }
 
   @Test
   func `Validates Null Value For Null Type`() {
     #expect(throws: Never.self) {
-      try JSONSchema.object(type: .null).validate(value: .null)
+      try validator.validate(value: .null, with: .object(type: .null))
     }
   }
 }
+
+private let validator = JSONSchema.Validator()
