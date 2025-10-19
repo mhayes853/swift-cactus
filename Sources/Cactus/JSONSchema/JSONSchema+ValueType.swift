@@ -2,38 +2,63 @@
 
 extension JSONSchema {
   /// The type of value represented by a ``JSONSchema``.
-  public enum ValueType: Hashable, Sendable, Codable {
+  public struct ValueType: Hashable, Sendable, Codable {
     /// A string type.
-    case string(String)
+    public var string: String?
 
-    /// A boolean type.
-    case boolean
+    /// Whether or not the type indicates that the value can be a boolean.
+    public var isBoolean: Bool
 
     /// An array type.
-    case array(Array)
+    public var array: Array?
 
     /// An object type.
-    case object(Object)
+    public var object: Object?
 
     /// A number type.
-    case number(Number)
+    public var number: Number?
 
     /// An integer type.
-    case integer(Integer)
+    public var integer: Integer?
 
-    /// A null type.
-    case null
+    /// Whether or not the type is nullable.
+    public var isNullable: Bool
 
     /// A union type.
-    case union([Self])
-  }
-}
+    ///
+    /// - Parameters:
+    ///   - string: A string type.
+    ///   - isBoolean: Whether or not the type indicates that the value can be a boolean.
+    ///   - array: An array type.
+    ///   - object: An object type.
+    ///   - number: A number type.
+    ///   - integer: An integer type.
+    ///   - isNullable: Whether or not the type is nullable.
+    public static func union(
+      string: String? = nil,
+      isBoolean: Bool = false,
+      array: Array? = nil,
+      object: Object? = nil,
+      number: Number? = nil,
+      integer: Integer? = nil,
+      isNullable: Bool = false
+    ) -> Self {
+      Self(
+        string: string,
+        isBoolean: isBoolean,
+        array: array,
+        object: object,
+        number: number,
+        integer: integer,
+        isNullable: isNullable
+      )
+    }
 
-// MARK: - ExpressibleByArrayLiteral
+    /// A nullable type.
+    public static let null = Self.union(isNullable: true)
 
-extension JSONSchema.ValueType: ExpressibleByArrayLiteral {
-  public init(arrayLiteral elements: Self...) {
-    self = .union(elements)
+    /// A boolean type.
+    public static let boolean = Self.union(isBoolean: true)
   }
 }
 
@@ -81,7 +106,7 @@ extension JSONSchema.ValueType {
     maxLength: Int? = nil,
     pattern: Swift.String? = nil
   ) -> Self {
-    .string(String(minLength: minLength, maxLength: maxLength, pattern: pattern))
+    .union(string: String(minLength: minLength, maxLength: maxLength, pattern: pattern))
   }
 }
 
@@ -153,8 +178,8 @@ extension JSONSchema.ValueType {
     maximum: Double? = nil,
     exclusiveMaximum: Double? = nil
   ) -> Self {
-    .number(
-      Number(
+    .union(
+      number: Number(
         multipleOf: multipleOf,
         minimum: minimum,
         exclusiveMinimum: exclusiveMinimum,
@@ -233,8 +258,8 @@ extension JSONSchema.ValueType {
     maximum: Int? = nil,
     exclusiveMaximum: Int? = nil
   ) -> Self {
-    .integer(
-      Integer(
+    .union(
+      integer: Integer(
         multipleOf: multipleOf,
         minimum: minimum,
         exclusiveMinimum: exclusiveMinimum,
@@ -349,8 +374,8 @@ extension JSONSchema.ValueType {
     uniqueItems: Bool? = nil,
     contains: JSONSchema? = nil
   ) -> Self {
-    .array(
-      Array(
+    .union(
+      array: Array(
         items: items,
         minItems: minItems,
         maxItems: maxItems,
@@ -451,8 +476,8 @@ extension JSONSchema.ValueType {
     patternProperties: [Swift.String: JSONSchema]? = nil,
     propertyNames: JSONSchema? = nil
   ) -> Self {
-    .object(
-      Object(
+    .union(
+      object: Object(
         properties: properties,
         required: required,
         minProperties: minProperties,

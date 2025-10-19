@@ -235,33 +235,7 @@ extension JSONSchema: Encodable {
     case .boolean(let bool):
       try container.encode(bool)
     case .object(let object):
-      if let nestedUnionTypes = object.nestedUnionTypes {
-        throw EncodingError.invalidValue(
-          object,
-          EncodingError.Context(
-            codingPath: encoder.codingPath,
-            debugDescription: "Nested union types are not supported. Found: \(nestedUnionTypes)."
-          )
-        )
-      } else {
-        try container.encode(SerializeableObject(object: object))
-      }
-    }
-  }
-}
-
-extension JSONSchema.Object {
-  fileprivate var nestedUnionTypes: [JSONSchema.ValueType]? {
-    switch self.type {
-    case .union(let types):
-      var unionedTypes: [JSONSchema.ValueType]?
-      for type in types {
-        guard case .union(let nestedTypes) = type else { continue }
-        unionedTypes = nestedTypes
-      }
-      return unionedTypes
-    default:
-      return nil
+      try container.encode(SerializeableObject(object: object))
     }
   }
 }
@@ -355,72 +329,65 @@ private struct SerializeableObject: Codable {
   }
 
   private mutating func set(from valueType: JSONSchema.ValueType, isUnion: Bool = false) {
-    switch valueType {
-    case .array(let array):
-      if !isUnion {
-        self.type = .array
-      }
+    var schemaTypes = [SchemaType]()
+
+    if let array = valueType.array {
+      schemaTypes.append(.array)
       self.items = array.items
       self.additionalItems = array.additionalItems
       self.minItems = array.minItems
       self.maxItems = array.maxItems
       self.uniqueItems = array.uniqueItems
       self.contains = array.contains
+    }
 
-    case .number(let number):
-      if !isUnion {
-        self.type = .number
-      }
+    if let number = valueType.number {
+      schemaTypes.append(.number)
       self.multipleOf = number.multipleOf.map(Numeric.double)
       self.minimum = number.minimum.map(Numeric.double)
       self.exclusiveMinimum = number.exclusiveMinimum.map(Numeric.double)
       self.maximum = number.maximum.map(Numeric.double)
       self.exclusiveMaximum = number.exclusiveMaximum.map(Numeric.double)
+    }
 
-    case .integer(let integer):
-      if !isUnion {
-        self.type = .integer
-      }
+    if let integer = valueType.integer {
+      schemaTypes.append(.integer)
       self.multipleOf = integer.multipleOf.map(Numeric.integer)
       self.minimum = integer.minimum.map(Numeric.integer)
       self.exclusiveMinimum = integer.exclusiveMinimum.map(Numeric.integer)
       self.maximum = integer.maximum.map(Numeric.integer)
       self.exclusiveMaximum = integer.exclusiveMaximum.map(Numeric.integer)
+    }
 
-    case .string(let string):
-      if !isUnion {
-        self.type = .string
-      }
+    if let string = valueType.string {
+      schemaTypes.append(.string)
       self.minLength = string.minLength
       self.maxLength = string.maxLength
       self.pattern = string.pattern
+    }
 
-    case .null:
-      if !isUnion {
-        self.type = .null
-      }
-
-    case .boolean:
-      if !isUnion {
-        self.type = .boolean
-      }
-
-    case .object(let object):
-      if !isUnion {
-        self.type = .object
-      }
+    if let object = valueType.object {
+      schemaTypes.append(.object)
       self.properties = object.properties
       self.patternProperties = object.patternProperties
       self.additionalProperties = object.additionalProperties
       self.minProperties = object.minProperties
       self.maxProperties = object.maxProperties
       self.required = object.required
+    }
 
-    case .union(let valueTypes):
-      self.type = .types(valueTypes.map(\.schemaType))
-      for type in valueTypes {
-        self.set(from: type, isUnion: true)
-      }
+    if valueType.isBoolean {
+      schemaTypes.append(.boolean)
+    }
+
+    if valueType.isNullable {
+      schemaTypes.append(.null)
+    }
+
+    if schemaTypes.count == 1 {
+      self.type = schemaTypes[0]
+    } else if schemaTypes.count > 1 {
+      self.type = .types(schemaTypes)
     }
   }
 }
@@ -479,6 +446,19 @@ extension SerializeableObject {
     case null
     case types([Self])
 
+    var allTypes: [Self] {
+      switch self {
+      case .integer: [.integer]
+      case .string: [.string]
+      case .boolean: [.boolean]
+      case .array: [.array]
+      case .object: [.object]
+      case .number: [.number]
+      case .null: [.null]
+      case .types(let types): types
+      }
+    }
+
     func encode(to encoder: any Encoder) throws {
       var container = encoder.singleValueContainer()
       switch self {
@@ -522,21 +502,6 @@ extension SerializeableObject {
   }
 }
 
-extension JSONSchema.ValueType {
-  fileprivate var schemaType: SerializeableObject.SchemaType {
-    switch self {
-    case .array: .array
-    case .boolean: .boolean
-    case .number: .number
-    case .integer: .integer
-    case .null: .null
-    case .object: .object
-    case .string: .string
-    case .union(let valueTypes): .types(valueTypes.map(\.schemaType))
-    }
-  }
-}
-
 extension JSONSchema.Object {
   fileprivate init(serializeable: SerializeableObject) {
     self.init(
@@ -563,62 +528,58 @@ extension JSONSchema.Object {
 
 extension JSONSchema.ValueType {
   fileprivate init?(serializeable: SerializeableObject) {
-    switch serializeable.type {
-    case .array:
-      self = .array(
-        items: serializeable.items,
-        minItems: serializeable.minItems,
-        maxItems: serializeable.maxItems,
-        uniqueItems: serializeable.uniqueItems,
-        contains: serializeable.contains
-      )
-    case .integer:
-      self = .integer(
-        multipleOf: serializeable.multipleOf?.integerValue,
-        minimum: serializeable.minimum?.integerValue,
-        exclusiveMinimum: serializeable.exclusiveMinimum?.integerValue,
-        maximum: serializeable.maximum?.integerValue,
-        exclusiveMaximum: serializeable.exclusiveMaximum?.integerValue
-      )
-    case .number:
-      self = .number(
-        multipleOf: serializeable.multipleOf?.doubleValue,
-        minimum: serializeable.minimum?.doubleValue,
-        exclusiveMinimum: serializeable.exclusiveMinimum?.doubleValue,
-        maximum: serializeable.maximum?.doubleValue,
-        exclusiveMaximum: serializeable.exclusiveMaximum?.doubleValue
-      )
-    case .string:
-      self = .string(
-        minLength: serializeable.minLength,
-        maxLength: serializeable.maxLength,
-        pattern: serializeable.pattern
-      )
-    case .null:
-      self = .null
-    case .boolean:
-      self = .boolean
-    case .object:
-      self = .object(
-        properties: serializeable.properties,
-        required: serializeable.required,
-        minProperties: serializeable.minProperties,
-        maxProperties: serializeable.maxProperties,
-        additionalProperties: serializeable.additionalItems,
-        patternProperties: serializeable.patternProperties,
-        propertyNames: serializeable.propertyNames
-      )
-    case .types(let types):
-      var union = [Self]()
-      for type in types {
-        var object = serializeable
-        object.type = type
-        guard let valueType = Self(serializeable: object) else { continue }
-        union.append(valueType)
+    guard let types = serializeable.type?.allTypes else { return nil }
+
+    self = .union()
+    for type in types {
+      switch type {
+      case .array:
+        self.array = Array(
+          items: serializeable.items,
+          minItems: serializeable.minItems,
+          maxItems: serializeable.maxItems,
+          uniqueItems: serializeable.uniqueItems,
+          contains: serializeable.contains
+        )
+      case .integer:
+        self.integer = Integer(
+          multipleOf: serializeable.multipleOf?.integerValue,
+          minimum: serializeable.minimum?.integerValue,
+          exclusiveMinimum: serializeable.exclusiveMinimum?.integerValue,
+          maximum: serializeable.maximum?.integerValue,
+          exclusiveMaximum: serializeable.exclusiveMaximum?.integerValue
+        )
+      case .number:
+        self.number = Number(
+          multipleOf: serializeable.multipleOf?.doubleValue,
+          minimum: serializeable.minimum?.doubleValue,
+          exclusiveMinimum: serializeable.exclusiveMinimum?.doubleValue,
+          maximum: serializeable.maximum?.doubleValue,
+          exclusiveMaximum: serializeable.exclusiveMaximum?.doubleValue
+        )
+      case .string:
+        self.string = String(
+          minLength: serializeable.minLength,
+          maxLength: serializeable.maxLength,
+          pattern: serializeable.pattern
+        )
+      case .null:
+        self.isNullable = true
+      case .boolean:
+        self.isBoolean = true
+      case .object:
+        self.object = Object(
+          properties: serializeable.properties,
+          required: serializeable.required,
+          minProperties: serializeable.minProperties,
+          maxProperties: serializeable.maxProperties,
+          additionalProperties: serializeable.additionalItems,
+          patternProperties: serializeable.patternProperties,
+          propertyNames: serializeable.propertyNames
+        )
+      default:
+        break
       }
-      self = .union(union)
-    default:
-      return nil
     }
   }
 }
