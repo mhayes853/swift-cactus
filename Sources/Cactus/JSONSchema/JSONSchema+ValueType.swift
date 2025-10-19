@@ -1,41 +1,70 @@
-import Foundation
-
 // MARK: - ValueType
 
 extension JSONSchema {
   /// The type of value represented by a ``JSONSchema``.
-  public enum ValueType: Hashable, Sendable, Codable {
+  public struct ValueType: Hashable, Sendable, Codable {
     /// A string type.
-    case string(String)
+    public var string: String?
 
-    /// A boolean type.
-    case boolean
+    /// Whether or not the type indicates that the value can be a boolean.
+    public var isBoolean: Bool
 
     /// An array type.
-    case array(Array)
+    public var array: Array?
 
     /// An object type.
-    case object(Object)
+    public var object: Object?
 
     /// A number type.
-    case number(Number)
+    ///
+    /// If this value is present with ``integer``, then the properties from `number` will override
+    /// the integer properties.
+    public var number: Number?
 
     /// An integer type.
-    case integer(Integer)
+    ///
+    /// If this value is present with ``number``, then the properties from `number` will override
+    /// the integer properties.
+    public var integer: Integer?
 
-    /// A null type.
-    case null
+    /// Whether or not the type is nullable.
+    public var isNullable: Bool
 
     /// A union type.
-    case union([Self])
-  }
-}
+    ///
+    /// - Parameters:
+    ///   - string: A string type.
+    ///   - isBoolean: Whether or not the type indicates that the value can be a boolean.
+    ///   - array: An array type.
+    ///   - object: An object type.
+    ///   - number: A number type.
+    ///   - integer: An integer type.
+    ///   - isNullable: Whether or not the type is nullable.
+    public static func union(
+      string: String? = nil,
+      isBoolean: Bool = false,
+      array: Array? = nil,
+      object: Object? = nil,
+      number: Number? = nil,
+      integer: Integer? = nil,
+      isNullable: Bool = false
+    ) -> Self {
+      Self(
+        string: string,
+        isBoolean: isBoolean,
+        array: array,
+        object: object,
+        number: number,
+        integer: integer,
+        isNullable: isNullable
+      )
+    }
 
-// MARK: - ExpressibleByArrayLiteral
+    /// A nullable type.
+    public static let null = Self.union(isNullable: true)
 
-extension JSONSchema.ValueType: ExpressibleByArrayLiteral {
-  public init(arrayLiteral elements: Self...) {
-    self = .union(elements)
+    /// A boolean type.
+    public static let boolean = Self.union(isBoolean: true)
   }
 }
 
@@ -83,7 +112,7 @@ extension JSONSchema.ValueType {
     maxLength: Int? = nil,
     pattern: Swift.String? = nil
   ) -> Self {
-    .string(String(minLength: minLength, maxLength: maxLength, pattern: pattern))
+    .union(string: String(minLength: minLength, maxLength: maxLength, pattern: pattern))
   }
 }
 
@@ -95,27 +124,27 @@ extension JSONSchema.ValueType {
     /// The value that the number must be a multiple of.
     ///
     /// [6.2.1](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.1)
-    public var multipleOf: Decimal?
+    public var multipleOf: Double?
 
     /// The minimum value (inclusive) of the number.
     ///
     /// [6.2.4](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.4)
-    public var minimum: Decimal?
+    public var minimum: Double?
 
     /// The minimum value (exclusive) of the number.
     ///
     /// [6.2.5](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.5)
-    public var exclusiveMinimum: Decimal?
+    public var exclusiveMinimum: Double?
 
     /// The maximum value (inclusive) of the number.
     ///
     /// [6.2.2](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.2)
-    public var maximum: Decimal?
+    public var maximum: Double?
 
     /// The maximum value (exclusive) of the number.
     ///
     /// [6.2.3](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.3)
-    public var exclusiveMaximum: Decimal?
+    public var exclusiveMaximum: Double?
 
     /// Creates a number-specific schema.
     ///
@@ -126,11 +155,11 @@ extension JSONSchema.ValueType {
     ///   - maximum: The maximum value (inclusive) of the number.
     ///   - exclusiveMaximum: The maximum value (exclusive) of the number.
     public init(
-      multipleOf: Decimal? = nil,
-      minimum: Decimal? = nil,
-      exclusiveMinimum: Decimal? = nil,
-      maximum: Decimal? = nil,
-      exclusiveMaximum: Decimal? = nil
+      multipleOf: Double? = nil,
+      minimum: Double? = nil,
+      exclusiveMinimum: Double? = nil,
+      maximum: Double? = nil,
+      exclusiveMaximum: Double? = nil
     ) {
       self.multipleOf = multipleOf
       self.maximum = maximum
@@ -149,14 +178,14 @@ extension JSONSchema.ValueType {
   ///   - maximum: The maximum value (inclusive) of the number.
   ///   - exclusiveMaximum: The maximum value (exclusive) of the number.
   public static func number(
-    multipleOf: Decimal? = nil,
-    minimum: Decimal? = nil,
-    exclusiveMinimum: Decimal? = nil,
-    maximum: Decimal? = nil,
-    exclusiveMaximum: Decimal? = nil
+    multipleOf: Double? = nil,
+    minimum: Double? = nil,
+    exclusiveMinimum: Double? = nil,
+    maximum: Double? = nil,
+    exclusiveMaximum: Double? = nil
   ) -> Self {
-    .number(
-      Number(
+    .union(
+      number: Number(
         multipleOf: multipleOf,
         minimum: minimum,
         exclusiveMinimum: exclusiveMinimum,
@@ -235,8 +264,8 @@ extension JSONSchema.ValueType {
     maximum: Int? = nil,
     exclusiveMaximum: Int? = nil
   ) -> Self {
-    .integer(
-      Integer(
+    .union(
+      integer: Integer(
         multipleOf: multipleOf,
         minimum: minimum,
         exclusiveMinimum: exclusiveMinimum,
@@ -351,8 +380,8 @@ extension JSONSchema.ValueType {
     uniqueItems: Bool? = nil,
     contains: JSONSchema? = nil
   ) -> Self {
-    .array(
-      Array(
+    .union(
+      array: Array(
         items: items,
         minItems: minItems,
         maxItems: maxItems,
@@ -453,8 +482,8 @@ extension JSONSchema.ValueType {
     patternProperties: [Swift.String: JSONSchema]? = nil,
     propertyNames: JSONSchema? = nil
   ) -> Self {
-    .object(
-      Object(
+    .union(
+      object: Object(
         properties: properties,
         required: required,
         minProperties: minProperties,

@@ -53,8 +53,10 @@ struct `JSONSchema tests` {
 
   @Test
   func `Union Type JSON`() throws {
-    let value = JSONSchema.object(type: .union([.boolean, .string(minLength: 10)]))
-    let json = "{\"minLength\":10,\"type\":[\"boolean\",\"string\"]}"
+    let value = JSONSchema.object(
+      type: .union(string: JSONSchema.ValueType.String(minLength: 10), isBoolean: true)
+    )
+    let json = "{\"minLength\":10,\"type\":[\"string\",\"boolean\"]}"
 
     let data = try Self.jsonEncoder.encode(value)
     expectNoDifference(String(decoding: data, as: UTF8.self), json)
@@ -75,31 +77,33 @@ struct `JSONSchema tests` {
     expectNoDifference(schema, decodedValue)
   }
 
+  @Test
+  func `Empty Schema JSON`() throws {
+    let schema = JSONSchema.object(type: nil)
+    let json = "{}"
+
+    let data = try Self.jsonEncoder.encode(schema)
+    expectNoDifference(String(decoding: data, as: UTF8.self), json)
+
+    let decodedValue = try JSONDecoder().decode(JSONSchema.self, from: data)
+    expectNoDifference(schema, decodedValue)
+  }
+
   @Test(
     .serialized,
     arguments: [
       JSONSchema.Object(
         title: "blob",
         description: "A mysterious loreful character.",
-        type: .object(
-          properties: ["name": .object(type: .string())]
-        )
+        type: .object(properties: ["name": .object(type: .string())])
       ),
       JSONSchema.Object(
         title: "n",
         description: "A number.",
         type: .number(minimum: 10.1, maximum: 20.2)
       ),
-      JSONSchema.Object(
-        title: "b",
-        description: "A boolean.",
-        type: .boolean
-      ),
-      JSONSchema.Object(
-        title: "Nullable",
-        description: "A nullable property.",
-        type: .null
-      ),
+      JSONSchema.Object(title: "b", description: "A boolean.", type: .boolean),
+      JSONSchema.Object(title: "Nullable", description: "A nullable property.", type: .null),
       JSONSchema.Object(
         title: "Array",
         description: "An array",
@@ -110,7 +114,10 @@ struct `JSONSchema tests` {
         )
       ),
       JSONSchema.Object(title: "Enum", type: nil, enum: [.boolean(true), .string("blob")]),
-      JSONSchema.Object(title: "Union", type: [.string(), .boolean]),
+      JSONSchema.Object(
+        title: "Union",
+        type: .union(string: JSONSchema.ValueType.String(), isBoolean: true)
+      ),
       JSONSchema.Object(
         title: "Integer",
         description: "An integer",
@@ -128,9 +135,24 @@ struct `JSONSchema tests` {
   }
 
   @Test
-  func `Throws Encoding Error When Nested Union`() throws {
-    let schema = JSONSchema.object(type: [.string(), [.boolean, .null]])
-    #expect(throws: EncodingError.self) { try Self.jsonEncoder.encode(schema) }
+  func `Prioritizes Number Properties Over Integer Properties When Encoding`() throws {
+    let schema = JSONSchema.object(
+      type: .union(
+        number: JSONSchema.ValueType.Number(minimum: 10),
+        integer: JSONSchema.ValueType.Integer(minimum: 12)
+      )
+    )
+    let data = try Self.jsonEncoder.encode(schema)
+    let decoded = try JSONDecoder().decode(JSONSchema.self, from: data)
+
+    switch (schema, decoded) {
+    case (.object(let schema), .object(let decoded)):
+      expectNoDifference(schema.type?.number?.minimum, decoded.type?.number?.minimum)
+      expectNoDifference(decoded.type?.number?.minimum, 10)
+      expectNoDifference(decoded.type?.integer?.minimum, 10)
+    default:
+      break
+    }
   }
 
   private static let jsonEncoder = {

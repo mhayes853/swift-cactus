@@ -1,5 +1,3 @@
-import Foundation
-
 // MARK: - Value
 
 extension JSONSchema {
@@ -18,7 +16,7 @@ extension JSONSchema {
     case object([String: Self])
 
     /// A numerical value.
-    case number(Decimal)
+    case number(Double)
 
     /// An integer value.
     case integer(Int)
@@ -54,7 +52,7 @@ extension JSONSchema.Value: Decodable {
       self = .boolean(bool)
     } else if let integer = try? container.decode(Int.self) {
       self = .integer(integer)
-    } else if let number = try? container.decode(Decimal.self) {
+    } else if let number = try? container.decode(Double.self) {
       self = .number(number)
     } else if let string = try? container.decode(String.self) {
       self = .string(string)
@@ -90,7 +88,7 @@ extension JSONSchema.Value: ExpressibleByBooleanLiteral {
 
 extension JSONSchema.Value: ExpressibleByFloatLiteral {
   public init(floatLiteral value: Double) {
-    self = .number(Decimal(value))
+    self = .number(value)
   }
 }
 
