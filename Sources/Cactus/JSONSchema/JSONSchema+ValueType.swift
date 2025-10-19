@@ -1,5 +1,3 @@
-import Foundation
-
 // MARK: - ValueType
 
 extension JSONSchema {
@@ -95,27 +93,27 @@ extension JSONSchema.ValueType {
     /// The value that the number must be a multiple of.
     ///
     /// [6.2.1](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.1)
-    public var multipleOf: Decimal?
+    public var multipleOf: Double?
 
     /// The minimum value (inclusive) of the number.
     ///
     /// [6.2.4](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.4)
-    public var minimum: Decimal?
+    public var minimum: Double?
 
     /// The minimum value (exclusive) of the number.
     ///
     /// [6.2.5](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.5)
-    public var exclusiveMinimum: Decimal?
+    public var exclusiveMinimum: Double?
 
     /// The maximum value (inclusive) of the number.
     ///
     /// [6.2.2](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.2)
-    public var maximum: Decimal?
+    public var maximum: Double?
 
     /// The maximum value (exclusive) of the number.
     ///
     /// [6.2.3](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01#section-6.2.3)
-    public var exclusiveMaximum: Decimal?
+    public var exclusiveMaximum: Double?
 
     /// Creates a number-specific schema.
     ///
@@ -126,11 +124,11 @@ extension JSONSchema.ValueType {
     ///   - maximum: The maximum value (inclusive) of the number.
     ///   - exclusiveMaximum: The maximum value (exclusive) of the number.
     public init(
-      multipleOf: Decimal? = nil,
-      minimum: Decimal? = nil,
-      exclusiveMinimum: Decimal? = nil,
-      maximum: Decimal? = nil,
-      exclusiveMaximum: Decimal? = nil
+      multipleOf: Double? = nil,
+      minimum: Double? = nil,
+      exclusiveMinimum: Double? = nil,
+      maximum: Double? = nil,
+      exclusiveMaximum: Double? = nil
     ) {
       self.multipleOf = multipleOf
       self.maximum = maximum
@@ -149,11 +147,11 @@ extension JSONSchema.ValueType {
   ///   - maximum: The maximum value (inclusive) of the number.
   ///   - exclusiveMaximum: The maximum value (exclusive) of the number.
   public static func number(
-    multipleOf: Decimal? = nil,
-    minimum: Decimal? = nil,
-    exclusiveMinimum: Decimal? = nil,
-    maximum: Decimal? = nil,
-    exclusiveMaximum: Decimal? = nil
+    multipleOf: Double? = nil,
+    minimum: Double? = nil,
+    exclusiveMinimum: Double? = nil,
+    maximum: Double? = nil,
+    exclusiveMaximum: Double? = nil
   ) -> Self {
     .number(
       Number(

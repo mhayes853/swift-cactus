@@ -1,5 +1,3 @@
-import Foundation
-
 // MARK: - JSONSchema
 
 /// An enun defining a JSON Schema.
@@ -373,11 +371,11 @@ private struct SerializeableObject: Codable {
       if !isUnion {
         self.type = .number
       }
-      self.multipleOf = number.multipleOf.map(Numeric.decimal)
-      self.minimum = number.minimum.map(Numeric.decimal)
-      self.exclusiveMinimum = number.exclusiveMinimum.map(Numeric.decimal)
-      self.maximum = number.maximum.map(Numeric.decimal)
-      self.exclusiveMaximum = number.exclusiveMaximum.map(Numeric.decimal)
+      self.multipleOf = number.multipleOf.map(Numeric.double)
+      self.minimum = number.minimum.map(Numeric.double)
+      self.exclusiveMinimum = number.exclusiveMinimum.map(Numeric.double)
+      self.maximum = number.maximum.map(Numeric.double)
+      self.exclusiveMaximum = number.exclusiveMaximum.map(Numeric.double)
 
     case .integer(let integer):
       if !isUnion {
@@ -430,19 +428,19 @@ private struct SerializeableObject: Codable {
 extension SerializeableObject {
   enum Numeric: Codable {
     case integer(Int)
-    case decimal(Decimal)
+    case double(Double)
 
-    var decimalValue: Decimal? {
+    var doubleValue: Double? {
       switch self {
       case .integer: nil
-      case .decimal(let decimal): decimal
+      case .double(let decimal): decimal
       }
     }
 
     var integerValue: Int? {
       switch self {
       case .integer(let integer): integer
-      case .decimal: nil
+      case .double: nil
       }
     }
 
@@ -450,7 +448,7 @@ extension SerializeableObject {
       var container = encoder.singleValueContainer()
       switch self {
       case .integer(let integer): try container.encode(integer)
-      case .decimal(let decimal): try container.encode(decimal)
+      case .double(let decimal): try container.encode(decimal)
       }
     }
 
@@ -458,8 +456,8 @@ extension SerializeableObject {
       let container = try decoder.singleValueContainer()
       if let integer = try? container.decode(Int.self) {
         self = .integer(integer)
-      } else if let decimal = try? container.decode(Decimal.self) {
-        self = .decimal(decimal)
+      } else if let double = try? container.decode(Double.self) {
+        self = .double(double)
       } else {
         throw DecodingError.typeMismatch(
           Numeric.self,
@@ -584,11 +582,11 @@ extension JSONSchema.ValueType {
       )
     case .number:
       self = .number(
-        multipleOf: serializeable.multipleOf?.decimalValue,
-        minimum: serializeable.minimum?.decimalValue,
-        exclusiveMinimum: serializeable.exclusiveMinimum?.decimalValue,
-        maximum: serializeable.maximum?.decimalValue,
-        exclusiveMaximum: serializeable.exclusiveMaximum?.decimalValue
+        multipleOf: serializeable.multipleOf?.doubleValue,
+        minimum: serializeable.minimum?.doubleValue,
+        exclusiveMinimum: serializeable.exclusiveMinimum?.doubleValue,
+        maximum: serializeable.maximum?.doubleValue,
+        exclusiveMaximum: serializeable.exclusiveMaximum?.doubleValue
       )
     case .string:
       self = .string(
