@@ -16,9 +16,15 @@ extension JSONSchema {
     public var object: Object?
 
     /// A number type.
+    ///
+    /// If this value is present with ``integer``, then the properties from `number` will override
+    /// the integer properties.
     public var number: Number?
 
     /// An integer type.
+    ///
+    /// If this value is present with ``number``, then the properties from `number` will override
+    /// the integer properties.
     public var integer: Integer?
 
     /// Whether or not the type is nullable.

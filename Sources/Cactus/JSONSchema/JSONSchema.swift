@@ -341,15 +341,6 @@ private struct SerializeableObject: Codable {
       self.contains = array.contains
     }
 
-    if let number = valueType.number {
-      schemaTypes.append(.number)
-      self.multipleOf = number.multipleOf.map(Numeric.double)
-      self.minimum = number.minimum.map(Numeric.double)
-      self.exclusiveMinimum = number.exclusiveMinimum.map(Numeric.double)
-      self.maximum = number.maximum.map(Numeric.double)
-      self.exclusiveMaximum = number.exclusiveMaximum.map(Numeric.double)
-    }
-
     if let integer = valueType.integer {
       schemaTypes.append(.integer)
       self.multipleOf = integer.multipleOf.map(Numeric.integer)
@@ -357,6 +348,15 @@ private struct SerializeableObject: Codable {
       self.exclusiveMinimum = integer.exclusiveMinimum.map(Numeric.integer)
       self.maximum = integer.maximum.map(Numeric.integer)
       self.exclusiveMaximum = integer.exclusiveMaximum.map(Numeric.integer)
+    }
+
+    if let number = valueType.number {
+      schemaTypes.append(.number)
+      self.multipleOf = number.multipleOf.map(Numeric.double)
+      self.minimum = number.minimum.map(Numeric.double)
+      self.exclusiveMinimum = number.exclusiveMinimum.map(Numeric.double)
+      self.maximum = number.maximum.map(Numeric.double)
+      self.exclusiveMaximum = number.exclusiveMaximum.map(Numeric.double)
     }
 
     if let string = valueType.string {
@@ -397,17 +397,17 @@ extension SerializeableObject {
     case integer(Int)
     case double(Double)
 
-    var doubleValue: Double? {
+    var doubleValue: Double {
       switch self {
-      case .integer: nil
+      case .integer(let integer): Double(integer)
       case .double(let decimal): decimal
       }
     }
 
-    var integerValue: Int? {
+    var integerValue: Int {
       switch self {
       case .integer(let integer): integer
-      case .double: nil
+      case .double(let decimal): Int(decimal)
       }
     }
 

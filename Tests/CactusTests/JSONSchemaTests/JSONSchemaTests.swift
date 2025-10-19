@@ -134,6 +134,27 @@ struct `JSONSchema tests` {
     expectNoDifference(decoded, JSONSchema.object(object))
   }
 
+  @Test
+  func `Prioritizes Number Properties Over Integer Properties When Encoding`() throws {
+    let schema = JSONSchema.object(
+      type: .union(
+        number: JSONSchema.ValueType.Number(minimum: 10),
+        integer: JSONSchema.ValueType.Integer(minimum: 12)
+      )
+    )
+    let data = try Self.jsonEncoder.encode(schema)
+    let decoded = try JSONDecoder().decode(JSONSchema.self, from: data)
+
+    switch (schema, decoded) {
+    case (.object(let schema), .object(let decoded)):
+      expectNoDifference(schema.type?.number?.minimum, decoded.type?.number?.minimum)
+      expectNoDifference(decoded.type?.number?.minimum, 10)
+      expectNoDifference(decoded.type?.integer?.minimum, 10)
+    default:
+      break
+    }
+  }
+
   private static let jsonEncoder = {
     let encoder = JSONEncoder()
     encoder.outputFormatting = .sortedKeys
