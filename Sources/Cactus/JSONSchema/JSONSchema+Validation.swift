@@ -1,5 +1,3 @@
-import Foundation
-
 // MARK: - Validator
 
 extension JSONSchema {
@@ -8,7 +6,7 @@ extension JSONSchema {
   /// For performance, you should create and hold a single instance of a validator throughout the
   /// lifetime of your application.
   public final class Validator: Sendable {
-    private let regexCache = Lock([String: NSRegularExpression]())
+    private let regexCache = Lock([String: RegularExpression]())
 
     /// Creates a validator.
     public init() {}
