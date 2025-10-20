@@ -58,6 +58,9 @@ extension JSONSchema {
       case .string(let string):
         guard let stringSchema = object.valueSchema?.string else { return }
         self.validate(string: string, with: stringSchema, in: &context)
+      case .array(let array):
+        guard let arraySchema = object.valueSchema?.array else { return }
+        self.validate(array: array, with: arraySchema, in: &context)
       default:
         break
       }
@@ -128,18 +131,33 @@ extension JSONSchema {
     private func matches(string: String, pattern: String, in context: inout Context) {
       do {
         let regex = try self.regexCache.withLock { cache in
-          var regex = cache[pattern]
-          defer { cache[pattern] = regex }
-          if regex == nil {
-            regex = try RegularExpression(pattern)
+          if let regex = cache[pattern] {
+            return regex
           }
-          return regex!
+          cache[pattern] = try RegularExpression(pattern)
+          return cache[pattern]!
         }
         if !regex.matches(string) {
           context.appendFailureReason(.stringPatternMismatch(pattern: pattern))
         }
       } catch {
         context.appendFailureReason(.patternCompilationError(pattern: pattern))
+      }
+    }
+
+    private func validate(
+      array: [JSONSchema.Value],
+      with schema: ValueSchema.Array,
+      in context: inout Context
+    ) {
+      if let minItems = schema.minItems, array.count < minItems {
+        context.appendFailureReason(.arrayLengthTooShort(minimum: minItems))
+      }
+      if let maxItems = schema.maxItems, array.count > maxItems {
+        context.appendFailureReason(.arrayLengthTooLong(maximum: maxItems))
+      }
+      if schema.uniqueItems == true && !array.isUnique {
+        context.appendFailureReason(.arrayItemsNotUnique)
       }
     }
   }
@@ -188,6 +206,10 @@ extension JSONSchema.ValidationError {
     case stringPatternMismatch(pattern: String)
 
     case patternCompilationError(pattern: String)
+
+    case arrayLengthTooShort(minimum: Int)
+    case arrayLengthTooLong(maximum: Int)
+    case arrayItemsNotUnique
   }
 }
 

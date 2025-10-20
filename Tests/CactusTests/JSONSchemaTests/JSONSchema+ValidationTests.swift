@@ -278,6 +278,29 @@ struct `JSONSchemaValidation tests` {
     expectContainsFailureReason(schema, "abc", .stringPatternMismatch(pattern: "[0-9]+"))
     expectContainsFailureReason(schema, "", .stringPatternMismatch(pattern: "[0-9]+"))
   }
+
+  @Test
+  func `Array Must Have Minimum Items`() {
+    let schema = JSONSchema.object(valueSchema: .array(minItems: 2))
+    expectValidates(schema, [1, 2])
+    expectValidates(schema, [1, 2, 3])
+    expectContainsFailureReason(schema, [1], .arrayLengthTooShort(minimum: 2))
+  }
+
+  @Test
+  func `Array Must Not Have More Than Maximum Items`() {
+    let schema = JSONSchema.object(valueSchema: .array(maxItems: 1))
+    expectValidates(schema, [1])
+    expectValidates(schema, [])
+    expectContainsFailureReason(schema, [1, 2], .arrayLengthTooLong(maximum: 1))
+  }
+
+  @Test
+  func `Array Must Be Unique When Unique Specified`() {
+    let schema = JSONSchema.object(valueSchema: .array(uniqueItems: true))
+    expectValidates(schema, [1, 2])
+    expectContainsFailureReason(schema, [1, 1], .arrayItemsNotUnique)
+  }
 }
 
 private func expectValidates(_ schema: JSONSchema, _ value: JSONSchema.Value) {
