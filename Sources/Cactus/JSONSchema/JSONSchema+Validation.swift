@@ -61,6 +61,9 @@ extension JSONSchema {
       case .array(let array):
         guard let arraySchema = object.valueSchema?.array else { return }
         self.validate(array: array, with: arraySchema, in: &context)
+      case .object(let obj):
+        guard let objectSchema = object.valueSchema?.object else { return }
+        self.validate(object: obj, with: objectSchema, in: &context)
       default:
         break
       }
@@ -160,6 +163,27 @@ extension JSONSchema {
         context.appendFailureReason(.arrayItemsNotUnique)
       }
     }
+
+    private func validate(
+      object: [String: JSONSchema.Value],
+      with schema: ValueSchema.Object,
+      in context: inout Context
+    ) {
+      if let minProperties = schema.minProperties, object.count < minProperties {
+        context.appendFailureReason(.objectPropertiesTooShort(minimum: minProperties))
+      }
+      if let maxProperties = schema.maxProperties, object.count > maxProperties {
+        context.appendFailureReason(.objectPropertiesTooLong(maximum: maxProperties))
+      }
+      if let required = schema.required {
+        let missingProperties = Array(Set(required).subtracting(object.keys))
+        if !missingProperties.isEmpty {
+          context.appendFailureReason(
+            .objectMissingRequiredProperties(required: required, missing: missingProperties)
+          )
+        }
+      }
+    }
   }
 }
 
@@ -210,6 +234,10 @@ extension JSONSchema.ValidationError {
     case arrayLengthTooShort(minimum: Int)
     case arrayLengthTooLong(maximum: Int)
     case arrayItemsNotUnique
+
+    case objectPropertiesTooShort(minimum: Int)
+    case objectPropertiesTooLong(maximum: Int)
+    case objectMissingRequiredProperties(required: [String], missing: [String])
   }
 }
 

@@ -301,6 +301,37 @@ struct `JSONSchemaValidation tests` {
     expectValidates(schema, [1, 2])
     expectContainsFailureReason(schema, [1, 1], .arrayItemsNotUnique)
   }
+
+  @Test
+  func `Object Must Have Minimum Properties`() {
+    let schema = JSONSchema.object(valueSchema: .object(minProperties: 2))
+    expectValidates(schema, ["a": 1, "b": 2])
+    expectContainsFailureReason(schema, ["a": 1], .objectPropertiesTooShort(minimum: 2))
+  }
+
+  @Test
+  func `Object Must Have Maximum Properties`() {
+    let schema = JSONSchema.object(valueSchema: .object(maxProperties: 2))
+    expectValidates(schema, ["a": 1, "b": 2])
+    expectValidates(schema, [:])
+    expectContainsFailureReason(
+      schema,
+      ["a": 1, "b": 2, "c": 3],
+      .objectPropertiesTooLong(maximum: 2)
+    )
+  }
+
+  @Test
+  func `Object Must Have All Required Properties`() {
+    let schema = JSONSchema.object(valueSchema: .object(required: ["a", "b"]))
+    expectValidates(schema, ["a": 1, "b": 2])
+    expectValidates(schema, ["a": 1, "b": 2, "c": 3])
+    expectContainsFailureReason(
+      schema,
+      ["a": 1],
+      .objectMissingRequiredProperties(required: ["a", "b"], missing: ["b"])
+    )
+  }
 }
 
 private func expectValidates(_ schema: JSONSchema, _ value: JSONSchema.Value) {
