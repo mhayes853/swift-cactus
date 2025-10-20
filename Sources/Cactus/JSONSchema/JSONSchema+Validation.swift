@@ -18,36 +18,67 @@ extension JSONSchema {
     ///   - schema: The ``JSONSchema`` to validate against.
     /// - Throws: A ``ValidationError`` indicating the reason for the validation failure.
     public func validate(value: Value, with schema: JSONSchema) throws(ValidationError) {
-      switch schema {
-      case .boolean(false): throw ValidationError.falseSchema
-      case .boolean(true): break
-      case .object(let object): try self.validate(value: value, with: object)
+      var context = Context()
+      self.validate(value: value, with: schema, in: &context)
+
+      if !context.failures.isEmpty {
+        throw ValidationError(failures: context.failures)
       }
     }
 
-    private func validate(value: Value, with object: Object) throws(ValidationError) {
+    private func validate(value: Value, with schema: JSONSchema, in context: inout Context) {
+      switch schema {
+      case .boolean(false): context.appendFailureReason(.falseSchema)
+      case .boolean(true): break
+      case .object(let object): self.validate(value: value, with: object, in: &context)
+      }
+    }
+
+    private func validate(value: Value, with object: Object, in context: inout Context) {
       if let type = object.type, !type.isCompatible(with: value) {
-        throw ValidationError.typeMismatch(expected: type, got: value.type)
+        context.appendFailureReason(.typeMismatch(expected: type))
       }
       if let const = object.const, value != const {
-        throw ValidationError.constMismatch(expected: const, got: value)
+        context.appendFailureReason(.constMismatch(expected: const))
       }
       if let `enum` = object.enum, !`enum`.contains(value) {
-        throw ValidationError.enumMismatch(expected: `enum`, got: value)
+        context.appendFailureReason(.enumMismatch(expected: `enum`))
       }
       switch value {
       case .integer(let integer):
-        if let multipleOf = object.valueSchema?.integer?.multipleOf,
-          !integer.isMultiple(of: multipleOf)
-        {
-          throw ValidationError.notMultipleOf(integer: multipleOf)
-        }
-        if let minimum = object.valueSchema?.integer?.minimum, integer < minimum {
-          throw ValidationError.belowMinimum(inclusive: true, integer: minimum)
-        }
+        guard let integerSchema = object.valueSchema?.integer else { return }
+        self.validate(integer: integer, with: integerSchema, in: &context)
       default:
         break
       }
+    }
+
+    private func validate(
+      integer: Int,
+      with schema: ValueSchema.Integer,
+      in context: inout Context
+    ) {
+      if let multipleOf = schema.multipleOf, !integer.isMultiple(of: multipleOf) {
+        context.appendFailureReason(.notMultipleOf(integer: multipleOf))
+      }
+      if let minimum = schema.minimum, integer < minimum {
+        context.appendFailureReason(.belowMinimum(inclusive: true, integer: minimum))
+      }
+    }
+  }
+}
+
+// MARK: - Context
+
+extension JSONSchema.Validator {
+  private struct Context: Sendable {
+    var path = [KeyPath<JSONSchema, JSONSchema?> & Sendable]()
+    private(set) var failures = [JSONSchema.ValidationError.Failure]()
+
+    mutating func appendFailureReason(_ reason: JSONSchema.ValidationError.Reason) {
+      self.failures.append(
+        JSONSchema.ValidationError.Failure(subschemaPath: self.path, reason: reason)
+      )
     }
   }
 }
@@ -55,11 +86,17 @@ extension JSONSchema {
 // MARK: - ValidationError
 
 extension JSONSchema {
-  public enum ValidationError: Hashable, Error {
+  public struct ValidationError: Hashable, Error {
+    public let failures: [Failure]
+  }
+}
+
+extension JSONSchema.ValidationError {
+  public enum Reason: Hashable, Sendable {
     case falseSchema
-    case typeMismatch(expected: ValueType, got: ValueType)
-    case constMismatch(expected: Value, got: Value)
-    case enumMismatch(expected: [Value], got: Value)
+    case typeMismatch(expected: JSONSchema.ValueType)
+    case constMismatch(expected: JSONSchema.Value)
+    case enumMismatch(expected: [JSONSchema.Value])
 
     case notMultipleOf(integer: Int)
     case belowMinimum(inclusive: Bool, integer: Int)
@@ -68,5 +105,12 @@ extension JSONSchema {
     case notMultipleOf(number: Double)
     case belowMinimum(inclusive: Bool, number: Double)
     case aboveMaximum(inclusive: Bool, number: Double)
+  }
+}
+
+extension JSONSchema.ValidationError {
+  public struct Failure: Hashable, Sendable {
+    public let subschemaPath: [KeyPath<JSONSchema, JSONSchema?> & Sendable]
+    public let reason: Reason
   }
 }

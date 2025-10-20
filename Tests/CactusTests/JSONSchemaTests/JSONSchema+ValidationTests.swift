@@ -6,185 +6,206 @@ import Testing
 struct `JSONSchemaValidation tests` {
   @Test(arguments: [JSONSchema.Value.null, true, "blob", 10, [], [:], 10.0])
   func `Always Validates For True Schema`(value: JSONSchema.Value) {
-    #expect(throws: Never.self) {
-      try validator.validate(value: value, with: .boolean(true))
-    }
+    expectValidates(true, value)
   }
 
   @Test(arguments: [JSONSchema.Value.null, true, "blob", 10, [], [:], 10.0])
   func `Always Validates For Empty Schema`(value: JSONSchema.Value) {
-    #expect(throws: Never.self) {
-      try validator.validate(value: value, with: .object(valueSchema: nil))
-    }
+    expectValidates(.object(valueSchema: nil), value)
   }
 
   @Test(arguments: [JSONSchema.Value.null, true, "blob", 10, [], [:], 10.0])
   func `Never Validates For False Schema`(value: JSONSchema.Value) {
-    #expect(throws: JSONSchema.ValidationError.falseSchema) {
-      try validator.validate(value: value, with: .boolean(false))
-    }
+    expectContainsFailureReason(false, value, .falseSchema)
   }
 
   @Test(arguments: [JSONSchema.Value.null, true, "blob", 10, [], [:], 10.0])
   func `Never Validates For Empty Type Union`(value: JSONSchema.Value) {
-    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: [], got: value.type)) {
-      try validator.validate(value: value, with: .object(valueSchema: .union()))
-    }
+    expectContainsFailureReason(
+      .object(valueSchema: .union()),
+      value,
+      .typeMismatch(expected: [])
+    )
   }
 
   @Test
   func `Validates Null Value For Null Type`() {
-    #expect(throws: Never.self) {
-      try validator.validate(value: .null, with: .object(valueSchema: .null))
-    }
+    expectValidates(.object(valueSchema: .null), .null)
+  }
+
+  @Test
+  func `Captures Multiple Failure Reasons`() {
+    let schema = JSONSchema.object(valueSchema: .null, const: 1)
+    expectContainsFailureReasons(
+      schema,
+      2,
+      [.typeMismatch(expected: .null), .constMismatch(expected: 1)]
+    )
+
   }
 
   @Test(arguments: [JSONSchema.Value.string("blob"), true, 10, [], [:], 10.0])
   func `Invalid When Validating Non-Null Value Against Null Schema`(
     value: JSONSchema.Value
   ) {
-    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: .null, got: value.type)) {
-      try validator.validate(value: value, with: .object(valueSchema: .null))
-    }
+    expectContainsFailureReason(
+      .object(valueSchema: .null),
+      value,
+      .typeMismatch(expected: .null)
+    )
   }
 
   @Test(arguments: [JSONSchema.Value.null, true, "blob", [], [:], 10.0])
   func `Invalid When Validating Non-Integer Value Against Integer Schema`(
     value: JSONSchema.Value
   ) {
-    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: .integer, got: value.type)) {
-      try validator.validate(value: value, with: .object(valueSchema: .integer()))
-    }
+    expectContainsFailureReason(
+      .object(valueSchema: .integer()),
+      value,
+      .typeMismatch(expected: .integer)
+    )
   }
 
   @Test
   func `Validates Integer For Number Type Schema`() {
-    #expect(throws: Never.self) {
-      try validator.validate(value: 10, with: .object(valueSchema: .number()))
-    }
+    expectValidates(.object(valueSchema: .number()), 10)
   }
 
   @Test(arguments: [JSONSchema.Value.null, true, "blob", [], [:]])
   func `Invalid When Validating Non-Number Value Against Number Schema`(
     value: JSONSchema.Value
   ) {
-    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: .number, got: value.type)) {
-      try validator.validate(value: value, with: .object(valueSchema: .number()))
-    }
+    expectContainsFailureReason(
+      .object(valueSchema: .number()),
+      value,
+      .typeMismatch(expected: .number)
+    )
   }
 
   @Test(arguments: [JSONSchema.Value.null, 10, "blob", [], [:], 10.0])
   func `Invalid When Validating Non-Boolean Value Against Boolean Schema`(
     value: JSONSchema.Value
   ) {
-    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: .boolean, got: value.type)) {
-      try validator.validate(value: value, with: .object(valueSchema: .boolean))
-    }
+    expectContainsFailureReason(
+      .object(valueSchema: .boolean),
+      value,
+      .typeMismatch(expected: .boolean)
+    )
   }
 
   @Test(arguments: [JSONSchema.Value.null, 10, [], [:], 10.0])
   func `Invalid When Validating Non-String Value Against String Schema`(
     value: JSONSchema.Value
   ) {
-    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: .string, got: value.type)) {
-      try validator.validate(value: value, with: .object(valueSchema: .string()))
-    }
+    expectContainsFailureReason(
+      .object(valueSchema: .string()),
+      value,
+      .typeMismatch(expected: .string)
+    )
   }
 
   @Test(arguments: [JSONSchema.Value.null, 10, "blob", [:], 10.0])
   func `Invalid When Validating Non-Array Value Against Array Schema`(
     value: JSONSchema.Value
   ) {
-    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: .array, got: value.type)) {
-      try validator.validate(value: value, with: .object(valueSchema: .array()))
-    }
+    expectContainsFailureReason(
+      .object(valueSchema: .array()),
+      value,
+      .typeMismatch(expected: .array)
+    )
   }
 
   @Test(arguments: [JSONSchema.Value.null, 10, "blob", [], 10.0])
   func `Invalid When Validating Non-Object Value Against Object Schema`(
     value: JSONSchema.Value
   ) {
-    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: .object, got: value.type)) {
-      try validator.validate(value: value, with: .object(valueSchema: .object()))
-    }
+    expectContainsFailureReason(
+      .object(valueSchema: .object()),
+      value,
+      .typeMismatch(expected: .object)
+    )
   }
 
   @Test
   func `Is Valid When Value Has A Type That Is Part Of The Union`() {
-    #expect(throws: Never.self) {
-      let schema = JSONSchema.object(
-        valueSchema: .union(string: .string(), isBoolean: true, isNullable: true)
-      )
-      try validator.validate(value: .null, with: schema)
-      try validator.validate(value: true, with: schema)
-      try validator.validate(value: "hello", with: schema)
-    }
+    let schema = JSONSchema.object(
+      valueSchema: .union(string: .string(), isBoolean: true, isNullable: true)
+    )
+    expectValidates(schema, .null)
+    expectValidates(schema, true)
+    expectValidates(schema, "hello")
   }
 
   @Test
   func `Invalid When Value Doesn't Match Const`() {
-    #expect(
-      throws: JSONSchema.ValidationError.constMismatch(expected: "blob", got: "blob jr")
-    ) {
-      let schema = JSONSchema.object(valueSchema: .string(), const: "blob")
-      try validator.validate(value: "blob jr", with: schema)
-    }
+    let schema = JSONSchema.object(valueSchema: .string(), const: "blob")
+    expectContainsFailureReason(schema, "blob jr", .constMismatch(expected: "blob"))
   }
 
   @Test
   func `Validates When Value Matches Const`() {
-    #expect(throws: Never.self) {
-      let schema = JSONSchema.object(valueSchema: .string(), const: "blob")
-      try validator.validate(value: "blob", with: schema)
-    }
+    let schema = JSONSchema.object(valueSchema: .string(), const: "blob")
+    expectValidates(schema, "blob")
   }
 
   @Test
   func `Invalid When Value Not Contained In Enum`() {
-    #expect(
-      throws: JSONSchema.ValidationError.enumMismatch(
-        expected: ["blob", "blob jr"],
-        got: "blob jr jr"
-      )
-    ) {
-      let schema = JSONSchema.object(valueSchema: .string(), enum: ["blob", "blob jr"])
-      try validator.validate(value: "blob jr jr", with: schema)
-    }
+    let schema = JSONSchema.object(valueSchema: .string(), enum: ["blob", "blob jr"])
+    expectContainsFailureReason(schema, "blob jr jr", .enumMismatch(expected: ["blob", "blob jr"]))
   }
 
   @Test
   func `Validates When Value Contained In Enum`() {
-    #expect(throws: Never.self) {
-      let schema = JSONSchema.object(valueSchema: .string(), enum: ["blob", "blob jr"])
-      try validator.validate(value: "blob jr", with: schema)
-    }
+    let schema = JSONSchema.object(valueSchema: .string(), enum: ["blob", "blob jr"])
+    expectValidates(schema, "blob")
+    expectValidates(schema, "blob jr")
   }
 
   @Test
   func `Integer Value Must Be Multiple Of MultipleOf`() {
     let schema = JSONSchema.object(valueSchema: .integer(multipleOf: 2))
-
-    #expect(throws: Never.self) {
-      try validator.validate(value: 4, with: schema)
-    }
-    #expect(throws: JSONSchema.ValidationError.notMultipleOf(integer: 2)) {
-      try validator.validate(value: 3, with: schema)
-    }
+    expectValidates(schema, 4)
+    expectContainsFailureReason(schema, 3, .notMultipleOf(integer: 2))
   }
 
   @Test
   func `Integer Value Must Be Greater Than Or Equal To Inclusive Minimum`() {
     let schema = JSONSchema.object(valueSchema: .integer(minimum: 2))
+    expectValidates(schema, 4)
+    expectValidates(schema, 2)
+    expectContainsFailureReason(schema, 1, .belowMinimum(inclusive: true, integer: 2))
+  }
+}
 
-    #expect(throws: Never.self) {
-      try validator.validate(value: 4, with: schema)
-    }
-    #expect(throws: Never.self) {
-      try validator.validate(value: 2, with: schema)
-    }
-    #expect(throws: JSONSchema.ValidationError.belowMinimum(inclusive: true, integer: 2)) {
-      try validator.validate(value: 1, with: schema)
-    }
+private func expectValidates(_ schema: JSONSchema, _ value: JSONSchema.Value) {
+  #expect(throws: Never.self) {
+    try validator.validate(value: value, with: schema)
+  }
+}
+
+private func expectContainsFailureReason(
+  _ schema: JSONSchema,
+  _ value: JSONSchema.Value,
+  _ reason: JSONSchema.ValidationError.Reason,
+  for path: [KeyPath<JSONSchema, JSONSchema?> & Sendable] = []
+) {
+  expectContainsFailureReasons(schema, value, [reason], for: path)
+}
+
+private func expectContainsFailureReasons(
+  _ schema: JSONSchema,
+  _ value: JSONSchema.Value,
+  _ reasons: [JSONSchema.ValidationError.Reason],
+  for path: [KeyPath<JSONSchema, JSONSchema?> & Sendable] = []
+) {
+  do {
+    try validator.validate(value: value, with: schema)
+    Issue.record("Value should not validate for schema.")
+  } catch {
+    expectNoDifference(
+      error.failures.contains { $0.subschemaPath == path && reasons.contains($0.reason) },
+      true
+    )
   }
 }
 

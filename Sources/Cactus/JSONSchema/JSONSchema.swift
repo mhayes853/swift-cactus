@@ -231,6 +231,14 @@ extension JSONSchema {
   }
 }
 
+// MARK: - ExpressibleByBooleanLiteral
+
+extension JSONSchema: ExpressibleByBooleanLiteral {
+  public init(booleanLiteral value: Bool) {
+    self = .boolean(value)
+  }
+}
+
 // MARK: - Encodable
 
 extension JSONSchema: Encodable {
