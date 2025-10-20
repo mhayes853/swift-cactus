@@ -2,15 +2,33 @@
 
 extension JSONSchema {
   /// A type-identifier for a ``JSONSchema`` value.
-  public enum ValueType: Hashable, Sendable {
-    case integer
-    case string
-    case boolean
-    case array
-    case object
-    case number
-    case null
-    case union([Self])
+  public struct ValueType: Hashable, Sendable, OptionSet {
+    public var rawValue: UInt8
+
+    public init(rawValue: UInt8) {
+      self.rawValue = rawValue
+    }
+
+    /// An integer type.
+    public static let integer = Self(rawValue: 1 << 0)
+
+    /// A string type.
+    public static let string = Self(rawValue: 1 << 1)
+
+    /// A boolean type.
+    public static let boolean = Self(rawValue: 1 << 2)
+
+    /// An array type.
+    public static let array = Self(rawValue: 1 << 3)
+
+    /// An object type.
+    public static let object = Self(rawValue: 1 << 4)
+
+    /// A number type.
+    public static let number = Self(rawValue: 1 << 5)
+
+    /// A null type.
+    public static let null = Self(rawValue: 1 << 6)
   }
 }
 
@@ -18,7 +36,7 @@ extension JSONSchema {
 
 extension JSONSchema.ValueType: ExpressibleByArrayLiteral {
   public init(arrayLiteral elements: Self...) {
-    self = .union(elements)
+    self.init(elements)
   }
 }
 
@@ -35,7 +53,9 @@ extension JSONSchema.ValueType: Encodable {
     case .object: try container.encode("object")
     case .number: try container.encode("number")
     case .null: try container.encode("null")
-    case .union(let types): try container.encode(types)
+    default:
+      let allTypes = [Self.integer, .string, .boolean, .array, .object, .number, .null]
+      try container.encode(allTypes.filter { self.contains($0) })
     }
   }
 }
@@ -61,7 +81,7 @@ extension JSONSchema.ValueType: Decodable {
         )
       }
     } else if let array = try? container.decode([Self].self) {
-      self = .union(array)
+      self.init(array)
     } else {
       throw DecodingError.dataCorruptedError(
         in: container,

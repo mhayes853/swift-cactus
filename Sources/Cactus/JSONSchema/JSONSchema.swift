@@ -33,10 +33,7 @@ extension JSONSchema {
     ///
     /// [6.1.1](https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.1.1)
     public var type: ValueType? {
-      guard let valueSchema, !valueSchema.valueTypes.isEmpty else { return nil }
-      return valueSchema.valueTypes.count == 1
-        ? valueSchema.valueTypes[0]
-        : .union(valueSchema.valueTypes)
+      self.valueSchema?.type
     }
 
     /// The default value of the schema.
@@ -511,74 +508,67 @@ extension JSONSchema.Object {
 
 extension JSONSchema.ValueSchema {
   fileprivate init?(serializeable: SerializeableObject) {
-    guard let types = serializeable.type?.allTypes else { return nil }
+    guard let type = serializeable.type else { return nil }
 
     self = .union()
-    for type in types {
-      switch type {
-      case .array:
-        self.array = .array(
-          items: serializeable.items,
-          additionalItems: serializeable.additionalItems,
-          minItems: serializeable.minItems,
-          maxItems: serializeable.maxItems,
-          uniqueItems: serializeable.uniqueItems,
-          contains: serializeable.contains
-        )
-      case .integer:
-        self.integer = .integer(
-          multipleOf: serializeable.multipleOf?.integerValue,
-          minimum: serializeable.minimum?.integerValue,
-          exclusiveMinimum: serializeable.exclusiveMinimum?.integerValue,
-          maximum: serializeable.maximum?.integerValue,
-          exclusiveMaximum: serializeable.exclusiveMaximum?.integerValue
-        )
-      case .number:
-        self.number = .number(
-          multipleOf: serializeable.multipleOf?.doubleValue,
-          minimum: serializeable.minimum?.doubleValue,
-          exclusiveMinimum: serializeable.exclusiveMinimum?.doubleValue,
-          maximum: serializeable.maximum?.doubleValue,
-          exclusiveMaximum: serializeable.exclusiveMaximum?.doubleValue
-        )
-      case .string:
-        self.string = .string(
-          minLength: serializeable.minLength,
-          maxLength: serializeable.maxLength,
-          pattern: serializeable.pattern
-        )
-      case .null:
-        self.isNullable = true
-      case .boolean:
-        self.isBoolean = true
-      case .object:
-        self.object = .object(
-          properties: serializeable.properties,
-          required: serializeable.required,
-          minProperties: serializeable.minProperties,
-          maxProperties: serializeable.maxProperties,
-          additionalProperties: serializeable.additionalItems,
-          patternProperties: serializeable.patternProperties,
-          propertyNames: serializeable.propertyNames
-        )
-      default:
-        break
-      }
+    if type.contains(.array) {
+      self.array = .array(
+        items: serializeable.items,
+        additionalItems: serializeable.additionalItems,
+        minItems: serializeable.minItems,
+        maxItems: serializeable.maxItems,
+        uniqueItems: serializeable.uniqueItems,
+        contains: serializeable.contains
+      )
+    }
+    if type.contains(.integer) {
+      self.integer = .integer(
+        multipleOf: serializeable.multipleOf?.integerValue,
+        minimum: serializeable.minimum?.integerValue,
+        exclusiveMinimum: serializeable.exclusiveMinimum?.integerValue,
+        maximum: serializeable.maximum?.integerValue,
+        exclusiveMaximum: serializeable.exclusiveMaximum?.integerValue
+      )
+    }
+    if type.contains(.number) {
+      self.number = .number(
+        multipleOf: serializeable.multipleOf?.doubleValue,
+        minimum: serializeable.minimum?.doubleValue,
+        exclusiveMinimum: serializeable.exclusiveMinimum?.doubleValue,
+        maximum: serializeable.maximum?.doubleValue,
+        exclusiveMaximum: serializeable.exclusiveMaximum?.doubleValue
+      )
+    }
+    if type.contains(.string) {
+      self.string = .string(
+        minLength: serializeable.minLength,
+        maxLength: serializeable.maxLength,
+        pattern: serializeable.pattern
+      )
+    }
+    if type.contains(.object) {
+      self.object = .object(
+        properties: serializeable.properties,
+        required: serializeable.required,
+        minProperties: serializeable.minProperties,
+        maxProperties: serializeable.maxProperties,
+        additionalProperties: serializeable.additionalItems,
+        patternProperties: serializeable.patternProperties,
+        propertyNames: serializeable.propertyNames
+      )
+    }
+    if type.contains(.null) {
+      self.isNullable = true
+    }
+    if type.contains(.boolean) {
+      self.isBoolean = true
     }
   }
 }
 
 extension JSONSchema.ValueType {
-  fileprivate var allTypes: [Self] {
-    switch self {
-    case .integer: [.integer]
-    case .string: [.string]
-    case .boolean: [.boolean]
-    case .array: [.array]
-    case .object: [.object]
-    case .number: [.number]
-    case .null: [.null]
-    case .union(let union): union
-    }
+  fileprivate var containedTypes: [Self] {
+    let allTypes = [Self.integer, .string, .boolean, .array, .object, .number, .null]
+    return allTypes.filter { self.contains($0) }
   }
 }

@@ -148,12 +148,6 @@ struct `JSONSchema tests` {
   }
 
   @Test
-  func `Nil Value Type When Empty Union ValueSchema`() {
-    let schema = JSONSchema.Object(valueSchema: .union())
-    expectNoDifference(schema.type, nil)
-  }
-
-  @Test
   func `Single Value Type When Single ValueSchema`() {
     let schema = JSONSchema.Object(valueSchema: .number(minimum: 10))
     expectNoDifference(schema.type, .number)

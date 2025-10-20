@@ -72,28 +72,28 @@ extension JSONSchema {
 
 extension JSONSchema.ValueSchema {
   /// All of the ``JSONSchema/ValueType`` instances that this value schema represents.
-  public var valueTypes: [JSONSchema.ValueType] {
-    var schemaTypes = [JSONSchema.ValueType]()
+  public var type: JSONSchema.ValueType {
+    var schemaTypes = JSONSchema.ValueType()
     if self.array != nil {
-      schemaTypes.append(.array)
+      schemaTypes.insert(.array)
     }
     if self.integer != nil {
-      schemaTypes.append(.integer)
+      schemaTypes.insert(.integer)
     }
     if self.number != nil {
-      schemaTypes.append(.number)
+      schemaTypes.insert(.number)
     }
     if self.string != nil {
-      schemaTypes.append(.string)
+      schemaTypes.insert(.string)
     }
     if self.object != nil {
-      schemaTypes.append(.object)
+      schemaTypes.insert(.object)
     }
     if self.isBoolean {
-      schemaTypes.append(.boolean)
+      schemaTypes.insert(.boolean)
     }
     if self.isNullable {
-      schemaTypes.append(.null)
+      schemaTypes.insert(.null)
     }
     return schemaTypes
   }

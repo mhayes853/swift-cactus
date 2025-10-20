@@ -40,14 +40,3 @@ extension JSONSchema {
     case typeMismatch
   }
 }
-
-// MARK: - Helpers
-
-extension JSONSchema.ValueType {
-  fileprivate func contains(_ type: Self) -> Bool {
-    switch self {
-    case .union(let union): union.contains(type)
-    default: self == type
-    }
-  }
-}
