@@ -113,6 +113,24 @@ struct `JSONSchemaValidation tests` {
       try validator.validate(value: "hello", with: schema)
     }
   }
+
+  @Test
+  func `Invalid When Value Doesn't Match Const`() {
+    #expect(
+      throws: JSONSchema.ValidationError.constMismatch(expected: "blob", got: "blob jr")
+    ) {
+      let schema = JSONSchema.object(valueSchema: .string(), const: "blob")
+      try validator.validate(value: "blob jr", with: schema)
+    }
+  }
+
+  @Test
+  func `Validates When Value Matches Const`() {
+    #expect(throws: Never.self) {
+      let schema = JSONSchema.object(valueSchema: .string(), const: "blob")
+      try validator.validate(value: "blob", with: schema)
+    }
+  }
 }
 
 private let validator = JSONSchema.Validator()

@@ -27,6 +27,9 @@ extension JSONSchema {
         if let type = object.type, type.contains(value.type) == false {
           throw ValidationError.typeMismatch(expected: type, got: value.type)
         }
+        if let const = object.const, value != const {
+          throw ValidationError.constMismatch(expected: const, got: value)
+        }
       }
     }
   }
@@ -38,5 +41,6 @@ extension JSONSchema {
   public enum ValidationError: Hashable, Error {
     case falseSchema
     case typeMismatch(expected: ValueType, got: ValueType)
+    case constMismatch(expected: Value, got: Value)
   }
 }
