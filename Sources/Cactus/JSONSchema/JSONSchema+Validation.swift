@@ -55,6 +55,9 @@ extension JSONSchema {
       case .number(let number):
         guard let numberSchema = object.valueSchema?.number else { return }
         self.validate(number: number, with: numberSchema, in: &context)
+      case .string(let string):
+        guard let stringSchema = object.valueSchema?.string else { return }
+        self.validate(string: string, with: stringSchema, in: &context)
       default:
         break
       }
@@ -105,6 +108,40 @@ extension JSONSchema {
         context.appendFailureReason(.aboveMaximum(inclusive: false, number: exclusiveMaximum))
       }
     }
+
+    private func validate(
+      string: String,
+      with schema: ValueSchema.String,
+      in context: inout Context
+    ) {
+      if let minLength = schema.minLength, string.utf8.count < minLength {
+        context.appendFailureReason(.stringLengthTooShort(minimum: minLength))
+      }
+      if let maxLength = schema.maxLength, string.utf8.count > maxLength {
+        context.appendFailureReason(.stringLengthTooLong(maximum: maxLength))
+      }
+      if let pattern = schema.pattern {
+        self.matches(string: string, pattern: pattern, in: &context)
+      }
+    }
+
+    private func matches(string: String, pattern: String, in context: inout Context) {
+      do {
+        let regex = try self.regexCache.withLock { cache in
+          var regex = cache[pattern]
+          defer { cache[pattern] = regex }
+          if regex == nil {
+            regex = try RegularExpression(pattern)
+          }
+          return regex!
+        }
+        if !regex.matches(string) {
+          context.appendFailureReason(.stringPatternMismatch(pattern: pattern))
+        }
+      } catch {
+        context.appendFailureReason(.patternCompilationError(pattern: pattern))
+      }
+    }
   }
 }
 
@@ -145,6 +182,12 @@ extension JSONSchema.ValidationError {
     case notMultipleOf(number: Double)
     case belowMinimum(inclusive: Bool, number: Double)
     case aboveMaximum(inclusive: Bool, number: Double)
+
+    case stringLengthTooShort(minimum: Int)
+    case stringLengthTooLong(maximum: Int)
+    case stringPatternMismatch(pattern: String)
+
+    case patternCompilationError(pattern: String)
   }
 }
 

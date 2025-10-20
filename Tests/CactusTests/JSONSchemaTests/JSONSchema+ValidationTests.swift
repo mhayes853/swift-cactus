@@ -245,6 +245,39 @@ struct `JSONSchemaValidation tests` {
     expectValidates(schema, true)
     expectValidates(schema, false)
   }
+
+  @Test
+  func `String Must Have Minimum Length`() {
+    let schema = JSONSchema.object(valueSchema: .string(minLength: 5))
+    expectValidates(schema, "hello")
+    expectValidates(schema, "world this is a test")
+    expectValidates(schema, "✅🔴🤖")
+    expectContainsFailureReason(schema, "hi", .stringLengthTooShort(minimum: 5))
+    expectContainsFailureReason(schema, "hi", .stringLengthTooShort(minimum: 5))
+  }
+
+  @Test
+  func `String Must Have Less Than Maximum Length`() {
+    let schema = JSONSchema.object(valueSchema: .string(maxLength: 4))
+    expectValidates(schema, "hell")
+    expectValidates(schema, "hi")
+    expectContainsFailureReason(schema, "world this is a test", .stringLengthTooLong(maximum: 4))
+    expectContainsFailureReason(schema, "✅🔴🤖", .stringLengthTooLong(maximum: 4))
+  }
+
+  @Test
+  func `String Pattern Must Be A Valid Regex`() {
+    let schema = JSONSchema.object(valueSchema: .string(pattern: "["))
+    expectContainsFailureReason(schema, "abc", .patternCompilationError(pattern: "["))
+  }
+
+  @Test
+  func `String Must Match Pattern`() {
+    let schema = JSONSchema.object(valueSchema: .string(pattern: "[0-9]+"))
+    expectValidates(schema, "1234")
+    expectContainsFailureReason(schema, "abc", .stringPatternMismatch(pattern: "[0-9]+"))
+    expectContainsFailureReason(schema, "", .stringPatternMismatch(pattern: "[0-9]+"))
+  }
 }
 
 private func expectValidates(_ schema: JSONSchema, _ value: JSONSchema.Value) {
