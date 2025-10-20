@@ -1,12 +1,12 @@
 {
   "decode_tokens" : 200,
-  "prefill_tokens" : 15,
-  "response" : "<think>\nOkay, the user asked for a definition of life?\"\nrespond with a well-structured tasks. It's about what you are looking for.\"\n<\/think>\n\nThe meaning of life as an AI assistant that can answer this question.\n<\/think>\n\n<\/think>\n\nThe question \"What is the meaning of life. The user mentioned Santa Cruz and used in function call\",\n       \"description\": \"location parameter description: 'string' as response\"}\n   }\"\n]\n\nOkay, the user is asking about the weather in Santa Cruz. To answer it accurately and according to your provided tools and parameters are needed), but based on standard knowledge of geography and climate data, it's likely using an API to fetch real-time weather data.\n- Use the `get_weather` function by passing:\n    {\n        'parameters': {\n            \"location\": \"Santa-Cruz\"\n}\n```\n\nSo, when using `get_weather`, call it with `\"location\"` set to `\"Santa Cruz\"`. Let me know if there's anything",
-  "time_to_first_token_ms" : 352.05,
-  "tokens_per_second" : 33.49,
+  "prefill_tokens" : 34,
+  "response" : "<think>\nOkay, the user is asking about the meaning of life?\" as a philosophical question. First, I should acknowledge that it's subjective and varies from person to person.\n\nFirstly, I should consider different perspectives.\n\nFirst thing comes to mind: The concept of \"meaning\" isn't always clear\"},\n       \"units\": {\"description\":\"Location in which we are looking for a location\"\n]\nNow, let's say that I'm trying to find out what's going on.\nOkay, so far only one person who knows how to handle it?\n\nI think that when you call this function and you don't have a function available (like asking about a city name that is not supported.\n\nNow let's see what happens next.\nOkay so first of all we need to check whether it is possible to call? Or maybe there are some error?\nSo when you call the function, make sure that parameters are correct.\n\nAlso make sure to use proper syntax when calling functions. For example: get_weather(location",
+  "time_to_first_token_ms" : 636.95,
+  "tokens_per_second" : 30.15,
   "tool_calls" : [
 
   ],
-  "total_time_ms" : 6294.55,
-  "total_tokens" : 215
+  "total_time_ms" : 7237.04,
+  "total_tokens" : 234
 }

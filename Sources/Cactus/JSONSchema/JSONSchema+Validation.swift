@@ -20,11 +20,13 @@ extension JSONSchema {
     public func validate(value: Value, with schema: JSONSchema) throws(ValidationError) {
       switch schema {
       case .boolean(false):
-        throw ValidationError(reason: .falseSchema)
+        throw ValidationError.falseSchema
       case .boolean(true):
         return
-      default:
-        return
+      case .object(let object):
+        if object.type?.contains(value.type) == false {
+          throw ValidationError.typeMismatch
+        }
       }
     }
   }
@@ -33,23 +35,19 @@ extension JSONSchema {
 // MARK: - ValidationError
 
 extension JSONSchema {
-  public struct ValidationError: Hashable, Error {
-    public let reason: Reason
-
-    public init(reason: Reason) {
-      self.reason = reason
-    }
+  public enum ValidationError: Hashable, Error {
+    case falseSchema
+    case typeMismatch
   }
 }
 
-extension JSONSchema.ValidationError {
-  public struct Reason: RawRepresentable, Hashable, Sendable {
-    public let rawValue: String
+// MARK: - Helpers
 
-    public init(rawValue: String) {
-      self.rawValue = rawValue
+extension JSONSchema.ValueType {
+  fileprivate func contains(_ type: Self) -> Bool {
+    switch self {
+    case .union(let union): union.contains(type)
+    default: self == type
     }
-
-    public static let falseSchema = Self(rawValue: "False Schema")
   }
 }

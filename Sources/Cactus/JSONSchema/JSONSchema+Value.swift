@@ -23,6 +23,19 @@ extension JSONSchema {
 
     /// A null value.
     case null
+
+    /// The ``ValueType`` of this value.
+    public var type: ValueType {
+      switch self {
+      case .string: .string
+      case .boolean: .boolean
+      case .array: .array
+      case .object: .object
+      case .number: .number
+      case .integer: .integer
+      case .null: .null
+      }
+    }
   }
 }
 
