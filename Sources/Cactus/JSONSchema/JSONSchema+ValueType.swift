@@ -29,6 +29,15 @@ extension JSONSchema {
 
     /// A null type.
     public static let null = Self(rawValue: 1 << 6)
+
+    /// Returns true if this type of compatible with type of the specified `value`.
+    ///
+    /// If the type of value is ``integer``, it is compatible with ``number``.
+    ///
+    /// - Parameter value: The value to check compatibility with.
+    public func isCompatible(with value: Value) -> Bool {
+      self.contains(value.type) || (value.type == .integer && self.contains(.number))
+    }
   }
 }
 

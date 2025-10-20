@@ -26,7 +26,7 @@ extension JSONSchema {
     }
 
     private func validate(value: Value, with object: Object) throws(ValidationError) {
-      if let type = object.type, !type.contains(value.type) {
+      if let type = object.type, !type.isCompatible(with: value) {
         throw ValidationError.typeMismatch(expected: type, got: value.type)
       }
       if let const = object.const, value != const {

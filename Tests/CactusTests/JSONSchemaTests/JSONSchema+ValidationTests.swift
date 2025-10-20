@@ -57,6 +57,13 @@ struct `JSONSchemaValidation tests` {
     }
   }
 
+  @Test
+  func `Validates Integer For Number Type Schema`() {
+    #expect(throws: Never.self) {
+      try validator.validate(value: 10, with: .object(valueSchema: .number()))
+    }
+  }
+
   @Test(arguments: [JSONSchema.Value.null, true, "blob", [], [:]])
   func `Invalid When Validating Non-Number Value Against Number Schema`(
     value: JSONSchema.Value
