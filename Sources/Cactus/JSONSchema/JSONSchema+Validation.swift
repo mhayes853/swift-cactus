@@ -35,6 +35,19 @@ extension JSONSchema {
       if let `enum` = object.enum, !`enum`.contains(value) {
         throw ValidationError.enumMismatch(expected: `enum`, got: value)
       }
+      switch value {
+      case .integer(let integer):
+        if let multipleOf = object.valueSchema?.integer?.multipleOf,
+          !integer.isMultiple(of: multipleOf)
+        {
+          throw ValidationError.notMultipleOf(integer: multipleOf)
+        }
+        if let minimum = object.valueSchema?.integer?.minimum, integer < minimum {
+          throw ValidationError.belowMinimum(inclusive: true, integer: minimum)
+        }
+      default:
+        break
+      }
     }
   }
 }
@@ -47,5 +60,13 @@ extension JSONSchema {
     case typeMismatch(expected: ValueType, got: ValueType)
     case constMismatch(expected: Value, got: Value)
     case enumMismatch(expected: [Value], got: Value)
+
+    case notMultipleOf(integer: Int)
+    case belowMinimum(inclusive: Bool, integer: Int)
+    case aboveMaximum(inclusive: Bool, integer: Int)
+
+    case notMultipleOf(number: Double)
+    case belowMinimum(inclusive: Bool, number: Double)
+    case aboveMaximum(inclusive: Bool, number: Double)
   }
 }

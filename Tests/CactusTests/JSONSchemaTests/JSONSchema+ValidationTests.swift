@@ -159,6 +159,33 @@ struct `JSONSchemaValidation tests` {
       try validator.validate(value: "blob jr", with: schema)
     }
   }
+
+  @Test
+  func `Integer Value Must Be Multiple Of MultipleOf`() {
+    let schema = JSONSchema.object(valueSchema: .integer(multipleOf: 2))
+
+    #expect(throws: Never.self) {
+      try validator.validate(value: 4, with: schema)
+    }
+    #expect(throws: JSONSchema.ValidationError.notMultipleOf(integer: 2)) {
+      try validator.validate(value: 3, with: schema)
+    }
+  }
+
+  @Test
+  func `Integer Value Must Be Greater Than Or Equal To Inclusive Minimum`() {
+    let schema = JSONSchema.object(valueSchema: .integer(minimum: 2))
+
+    #expect(throws: Never.self) {
+      try validator.validate(value: 4, with: schema)
+    }
+    #expect(throws: Never.self) {
+      try validator.validate(value: 2, with: schema)
+    }
+    #expect(throws: JSONSchema.ValidationError.belowMinimum(inclusive: true, integer: 2)) {
+      try validator.validate(value: 1, with: schema)
+    }
+  }
 }
 
 private let validator = JSONSchema.Validator()
