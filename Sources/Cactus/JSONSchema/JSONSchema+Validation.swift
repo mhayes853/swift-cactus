@@ -24,8 +24,8 @@ extension JSONSchema {
       case .boolean(true):
         return
       case .object(let object):
-        if object.type?.contains(value.type) == false {
-          throw ValidationError.typeMismatch
+        if let type = object.type, type.contains(value.type) == false {
+          throw ValidationError.typeMismatch(expected: type, got: value.type)
         }
       }
     }
@@ -37,6 +37,6 @@ extension JSONSchema {
 extension JSONSchema {
   public enum ValidationError: Hashable, Error {
     case falseSchema
-    case typeMismatch
+    case typeMismatch(expected: ValueType, got: ValueType)
   }
 }

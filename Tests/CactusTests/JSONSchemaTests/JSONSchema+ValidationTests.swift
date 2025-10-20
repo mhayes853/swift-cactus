@@ -25,6 +25,13 @@ struct `JSONSchemaValidation tests` {
     }
   }
 
+  @Test(arguments: [JSONSchema.Value.null, true, "blob", 10, [], [:], 10.0])
+  func `Never Validates For Empty Type Union`(value: JSONSchema.Value) {
+    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: [], got: value.type)) {
+      try validator.validate(value: value, with: .object(valueSchema: .union()))
+    }
+  }
+
   @Test
   func `Validates Null Value For Null Type`() {
     #expect(throws: Never.self) {
@@ -36,7 +43,7 @@ struct `JSONSchemaValidation tests` {
   func `Invalid When Validating Non-Null Value Against Null Schema`(
     value: JSONSchema.Value
   ) {
-    #expect(throws: JSONSchema.ValidationError.typeMismatch) {
+    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: .null, got: value.type)) {
       try validator.validate(value: value, with: .object(valueSchema: .null))
     }
   }
@@ -45,7 +52,7 @@ struct `JSONSchemaValidation tests` {
   func `Invalid When Validating Non-Integer Value Against Integer Schema`(
     value: JSONSchema.Value
   ) {
-    #expect(throws: JSONSchema.ValidationError.typeMismatch) {
+    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: .integer, got: value.type)) {
       try validator.validate(value: value, with: .object(valueSchema: .integer()))
     }
   }
@@ -54,7 +61,7 @@ struct `JSONSchemaValidation tests` {
   func `Invalid When Validating Non-Number Value Against Number Schema`(
     value: JSONSchema.Value
   ) {
-    #expect(throws: JSONSchema.ValidationError.typeMismatch) {
+    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: .number, got: value.type)) {
       try validator.validate(value: value, with: .object(valueSchema: .number()))
     }
   }
@@ -63,7 +70,7 @@ struct `JSONSchemaValidation tests` {
   func `Invalid When Validating Non-Boolean Value Against Boolean Schema`(
     value: JSONSchema.Value
   ) {
-    #expect(throws: JSONSchema.ValidationError.typeMismatch) {
+    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: .boolean, got: value.type)) {
       try validator.validate(value: value, with: .object(valueSchema: .boolean))
     }
   }
@@ -72,7 +79,7 @@ struct `JSONSchemaValidation tests` {
   func `Invalid When Validating Non-String Value Against String Schema`(
     value: JSONSchema.Value
   ) {
-    #expect(throws: JSONSchema.ValidationError.typeMismatch) {
+    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: .string, got: value.type)) {
       try validator.validate(value: value, with: .object(valueSchema: .string()))
     }
   }
@@ -81,7 +88,7 @@ struct `JSONSchemaValidation tests` {
   func `Invalid When Validating Non-Array Value Against Array Schema`(
     value: JSONSchema.Value
   ) {
-    #expect(throws: JSONSchema.ValidationError.typeMismatch) {
+    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: .array, got: value.type)) {
       try validator.validate(value: value, with: .object(valueSchema: .array()))
     }
   }
@@ -90,7 +97,7 @@ struct `JSONSchemaValidation tests` {
   func `Invalid When Validating Non-Object Value Against Object Schema`(
     value: JSONSchema.Value
   ) {
-    #expect(throws: JSONSchema.ValidationError.typeMismatch) {
+    #expect(throws: JSONSchema.ValidationError.typeMismatch(expected: .object, got: value.type)) {
       try validator.validate(value: value, with: .object(valueSchema: .object()))
     }
   }
