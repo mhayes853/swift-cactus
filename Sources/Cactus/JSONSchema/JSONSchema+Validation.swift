@@ -46,8 +46,15 @@ extension JSONSchema {
       }
       switch value {
       case .integer(let integer):
-        guard let integerSchema = object.valueSchema?.integer else { return }
-        self.validate(integer: integer, with: integerSchema, in: &context)
+        if let integerSchema = object.valueSchema?.integer {
+          self.validate(integer: integer, with: integerSchema, in: &context)
+        }
+        if let numberSchema = object.valueSchema?.number {
+          self.validate(number: Double(integer), with: numberSchema, in: &context)
+        }
+      case .number(let number):
+        guard let numberSchema = object.valueSchema?.number else { return }
+        self.validate(number: number, with: numberSchema, in: &context)
       default:
         break
       }
@@ -63,6 +70,39 @@ extension JSONSchema {
       }
       if let minimum = schema.minimum, integer < minimum {
         context.appendFailureReason(.belowMinimum(inclusive: true, integer: minimum))
+      }
+      if let exclusiveMinimum = schema.exclusiveMinimum, integer <= exclusiveMinimum {
+        context.appendFailureReason(.belowMinimum(inclusive: false, integer: exclusiveMinimum))
+      }
+      if let maximum = schema.maximum, integer > maximum {
+        context.appendFailureReason(.aboveMaximum(inclusive: true, integer: maximum))
+      }
+      if let exclusiveMaximum = schema.exclusiveMaximum, integer >= exclusiveMaximum {
+        context.appendFailureReason(.aboveMaximum(inclusive: false, integer: exclusiveMaximum))
+      }
+    }
+
+    private func validate(
+      number: Double,
+      with schema: ValueSchema.Number,
+      in context: inout Context
+    ) {
+      if let multipleOf = schema.multipleOf,
+        number.truncatingRemainder(dividingBy: multipleOf) != 0
+      {
+        context.appendFailureReason(.notMultipleOf(number: multipleOf))
+      }
+      if let minimum = schema.minimum, number < minimum {
+        context.appendFailureReason(.belowMinimum(inclusive: true, number: minimum))
+      }
+      if let exclusiveMinimum = schema.exclusiveMinimum, number <= exclusiveMinimum {
+        context.appendFailureReason(.belowMinimum(inclusive: false, number: exclusiveMinimum))
+      }
+      if let maximum = schema.maximum, number > maximum {
+        context.appendFailureReason(.aboveMaximum(inclusive: true, number: maximum))
+      }
+      if let exclusiveMaximum = schema.exclusiveMaximum, number >= exclusiveMaximum {
+        context.appendFailureReason(.aboveMaximum(inclusive: false, number: exclusiveMaximum))
       }
     }
   }

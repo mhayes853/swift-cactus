@@ -175,6 +175,69 @@ struct `JSONSchemaValidation tests` {
     expectValidates(schema, 2)
     expectContainsFailureReason(schema, 1, .belowMinimum(inclusive: true, integer: 2))
   }
+
+  @Test
+  func `Integer Value Must Be Greater Than Exclusive Minimum`() {
+    let schema = JSONSchema.object(valueSchema: .integer(exclusiveMinimum: 2))
+    expectValidates(schema, 4)
+    expectContainsFailureReason(schema, 2, .belowMinimum(inclusive: false, integer: 2))
+    expectContainsFailureReason(schema, 1, .belowMinimum(inclusive: false, integer: 2))
+  }
+
+  @Test
+  func `Integer Value Must Be Less Than Or Equal To Inclusive Maximum`() {
+    let schema = JSONSchema.object(valueSchema: .integer(maximum: 4))
+    expectValidates(schema, 4)
+    expectValidates(schema, 2)
+    expectContainsFailureReason(schema, 5, .aboveMaximum(inclusive: true, integer: 4))
+  }
+
+  @Test
+  func `Integer Value Must Be Less Than Exclusive Maximum`() {
+    let schema = JSONSchema.object(valueSchema: .integer(exclusiveMaximum: 4))
+    expectValidates(schema, 2)
+    expectContainsFailureReason(schema, 4, .aboveMaximum(inclusive: false, integer: 4))
+    expectContainsFailureReason(schema, 5, .aboveMaximum(inclusive: false, integer: 4))
+  }
+
+  @Test
+  func `Number Value Must Be Multiple Of MultipleOf`() {
+    let schema = JSONSchema.object(valueSchema: .number(multipleOf: 2.5))
+    expectValidates(schema, 5)
+    expectContainsFailureReason(schema, 4.2, .notMultipleOf(number: 2.5))
+  }
+
+  @Test
+  func `Number Value Must Be Greater Than Or Equal To Inclusive Minimum`() {
+    let schema = JSONSchema.object(valueSchema: .number(minimum: 2))
+    expectValidates(schema, 4)
+    expectValidates(schema, 2.12)
+    expectContainsFailureReason(schema, 1.8, .belowMinimum(inclusive: true, number: 2))
+  }
+
+  @Test
+  func `Number Value Must Be Greater Than Exclusive Minimum`() {
+    let schema = JSONSchema.object(valueSchema: .number(exclusiveMinimum: 2))
+    expectValidates(schema, 4)
+    expectContainsFailureReason(schema, 2, .belowMinimum(inclusive: false, number: 2))
+    expectContainsFailureReason(schema, 1.8, .belowMinimum(inclusive: false, number: 2))
+  }
+
+  @Test
+  func `Number Value Must Be Less Than Or Equal To Inclusive Maximum`() {
+    let schema = JSONSchema.object(valueSchema: .number(maximum: 4))
+    expectValidates(schema, 4)
+    expectValidates(schema, 2.2)
+    expectContainsFailureReason(schema, 5.1, .aboveMaximum(inclusive: true, number: 4))
+  }
+
+  @Test
+  func `Number Value Must Be Less Than Exclusive Maximum`() {
+    let schema = JSONSchema.object(valueSchema: .number(exclusiveMaximum: 4))
+    expectValidates(schema, 2.1)
+    expectContainsFailureReason(schema, 4, .aboveMaximum(inclusive: false, number: 4))
+    expectContainsFailureReason(schema, 5.3, .aboveMaximum(inclusive: false, number: 4))
+  }
 }
 
 private func expectValidates(_ schema: JSONSchema, _ value: JSONSchema.Value) {
