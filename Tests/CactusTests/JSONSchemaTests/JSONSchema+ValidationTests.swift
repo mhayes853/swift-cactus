@@ -238,6 +238,13 @@ struct `JSONSchemaValidation tests` {
     expectContainsFailureReason(schema, 4, .aboveMaximum(inclusive: false, number: 4))
     expectContainsFailureReason(schema, 5.3, .aboveMaximum(inclusive: false, number: 4))
   }
+
+  @Test
+  func `Boolean Value Valid When Type Is Boolean`() {
+    let schema = JSONSchema.object(valueSchema: .boolean)
+    expectValidates(schema, true)
+    expectValidates(schema, false)
+  }
 }
 
 private func expectValidates(_ schema: JSONSchema, _ value: JSONSchema.Value) {
