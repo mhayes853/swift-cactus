@@ -131,6 +131,27 @@ struct `JSONSchemaValidation tests` {
       try validator.validate(value: "blob", with: schema)
     }
   }
+
+  @Test
+  func `Invalid When Value Not Contained In Enum`() {
+    #expect(
+      throws: JSONSchema.ValidationError.enumMismatch(
+        expected: ["blob", "blob jr"],
+        got: "blob jr jr"
+      )
+    ) {
+      let schema = JSONSchema.object(valueSchema: .string(), enum: ["blob", "blob jr"])
+      try validator.validate(value: "blob jr jr", with: schema)
+    }
+  }
+
+  @Test
+  func `Validates When Value Contained In Enum`() {
+    #expect(throws: Never.self) {
+      let schema = JSONSchema.object(valueSchema: .string(), enum: ["blob", "blob jr"])
+      try validator.validate(value: "blob jr", with: schema)
+    }
+  }
 }
 
 private let validator = JSONSchema.Validator()

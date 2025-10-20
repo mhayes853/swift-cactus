@@ -19,17 +19,21 @@ extension JSONSchema {
     /// - Throws: A ``ValidationError`` indicating the reason for the validation failure.
     public func validate(value: Value, with schema: JSONSchema) throws(ValidationError) {
       switch schema {
-      case .boolean(false):
-        throw ValidationError.falseSchema
-      case .boolean(true):
-        return
-      case .object(let object):
-        if let type = object.type, type.contains(value.type) == false {
-          throw ValidationError.typeMismatch(expected: type, got: value.type)
-        }
-        if let const = object.const, value != const {
-          throw ValidationError.constMismatch(expected: const, got: value)
-        }
+      case .boolean(false): throw ValidationError.falseSchema
+      case .boolean(true): break
+      case .object(let object): try self.validate(value: value, with: object)
+      }
+    }
+
+    private func validate(value: Value, with object: Object) throws(ValidationError) {
+      if let type = object.type, !type.contains(value.type) {
+        throw ValidationError.typeMismatch(expected: type, got: value.type)
+      }
+      if let const = object.const, value != const {
+        throw ValidationError.constMismatch(expected: const, got: value)
+      }
+      if let `enum` = object.enum, !`enum`.contains(value) {
+        throw ValidationError.enumMismatch(expected: `enum`, got: value)
       }
     }
   }
@@ -42,5 +46,6 @@ extension JSONSchema {
     case falseSchema
     case typeMismatch(expected: ValueType, got: ValueType)
     case constMismatch(expected: Value, got: Value)
+    case enumMismatch(expected: [Value], got: Value)
   }
 }
