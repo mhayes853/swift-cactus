@@ -18,13 +18,13 @@ extension JSONSchema {
     /// A number type.
     ///
     /// If this value is present with ``integer``, then the properties from `number` will override
-    /// the integer properties.
+    /// the integer properties when encoding.
     public var number: Number?
 
     /// An integer type.
     ///
     /// If this value is present with ``number``, then the properties from `number` will override
-    /// the integer properties.
+    /// the integer properties when encoding.
     public var integer: Integer?
 
     /// Whether or not the type is nullable.

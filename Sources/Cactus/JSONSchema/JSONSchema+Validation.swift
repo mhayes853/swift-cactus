@@ -58,6 +58,7 @@ extension JSONSchema {
       if let `enum` = object.enum, !`enum`.contains(value) {
         context.appendFailureReason(.enumMismatch(expected: `enum`))
       }
+
       switch value {
       case .integer(let integer):
         if let integerSchema = object.valueSchema?.integer {
@@ -81,20 +82,62 @@ extension JSONSchema {
       default:
         break
       }
+
       if let notSchema = object.not, self.isValid(value: value, with: notSchema) {
         context.appendFailureReason(.matchesNot(schema: notSchema))
       }
-      if let ifSchema = object.if {
-        context.withPathSaveState { context, path in
-          if self.isValid(value: value, with: ifSchema) {
-            if let thenSchema = object.then {
-              context.path = path + [.then]
-              self.validate(value: value, with: thenSchema, in: &context)
-            }
-          } else if let elseSchema = object.else {
-            context.path = path + [.else]
-            self.validate(value: value, with: elseSchema, in: &context)
+
+      self.validateControlFlow(value: value, with: object, in: &context)
+
+      if let allOfSchemas = object.allOf {
+        var allOfContext = Context(path: context.path, failures: [])
+        allOfContext.withPathSaveState { context, path in
+          for (subschema, index) in zip(allOfSchemas, allOfSchemas.indices) {
+            context.path = path + [.allOf(index: index)]
+            self.validate(value: value, with: subschema, in: &context)
           }
+        }
+
+        if !allOfContext.failures.isEmpty {
+          context.appendFailureReason(.allOfMismatch(failures: allOfContext.failures))
+        }
+      }
+
+      if let anyOfSchemas = object.anyOf {
+        var anyOfContext = Context(path: context.path, failures: [])
+        var hasMatch = false
+        anyOfContext.withPathSaveState { context, path in
+          for (subschema, index) in zip(anyOfSchemas, anyOfSchemas.indices) {
+            context.path = path + [.anyOf(index: index)]
+            if !hasMatch {
+              let failureCount = context.failures.count
+              self.validate(value: value, with: subschema, in: &context)
+              hasMatch = context.failures.count == failureCount
+            }
+          }
+        }
+
+        if !hasMatch {
+          context.appendFailureReason(.anyOfMismatch(failures: anyOfContext.failures))
+        }
+      }
+
+      if let oneOfSchemas = object.oneOf {
+        var oneOfContext = Context(path: context.path, failures: [])
+        var matchCount = 0
+        oneOfContext.withPathSaveState { context, path in
+          for (subschema, index) in zip(oneOfSchemas, oneOfSchemas.indices) {
+            context.path = path + [.oneOf(index: index)]
+            if matchCount <= 1 {
+              let failureCount = context.failures.count
+              self.validate(value: value, with: subschema, in: &context)
+              matchCount += context.failures.count == failureCount ? 1 : 0
+            }
+          }
+        }
+
+        if matchCount != 1 {
+          context.appendFailureReason(.oneOfMismatch(failures: oneOfContext.failures))
         }
       }
     }
@@ -259,6 +302,22 @@ extension JSONSchema {
       }
     }
 
+    private func validateControlFlow(value: Value, with object: Object, in context: inout Context) {
+      if let ifSchema = object.if {
+        context.withPathSaveState { context, path in
+          if self.isValid(value: value, with: ifSchema) {
+            if let thenSchema = object.then {
+              context.path = path + [.then]
+              self.validate(value: value, with: thenSchema, in: &context)
+            }
+          } else if let elseSchema = object.else {
+            context.path = path + [.else]
+            self.validate(value: value, with: elseSchema, in: &context)
+          }
+        }
+      }
+    }
+
     private func regexes(
       for patterns: some Sequence<String>,
       in context: inout Context
@@ -344,6 +403,10 @@ extension JSONSchema.ValidationError {
     case patternCompilationError(pattern: String)
 
     case matchesNot(schema: JSONSchema)
+
+    case allOfMismatch(failures: [Failure])
+    case anyOfMismatch(failures: [Failure])
+    case oneOfMismatch(failures: [Failure])
   }
 }
 
@@ -353,6 +416,9 @@ extension JSONSchema.ValidationError {
     case objectProperty(property: String)
     case objectValue(property: String)
     case then
+    case allOf(index: Int)
+    case anyOf(index: Int)
+    case oneOf(index: Int)
     case `else`
   }
 }

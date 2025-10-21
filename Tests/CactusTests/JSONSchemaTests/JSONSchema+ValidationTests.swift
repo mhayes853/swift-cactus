@@ -586,6 +586,87 @@ struct `JSONSchemaValidation tests` {
       for: [.else]
     )
   }
+
+  @Test
+  func `Value Must Match All Of The Defined Subschemas`() {
+    let subSchema1 = JSONSchema.object(valueSchema: .string())
+    let subSchema2 = JSONSchema.object(valueSchema: .string(minLength: 1))
+    let schema = JSONSchema.object(valueSchema: nil, allOf: [subSchema1, subSchema2])
+
+    expectValidates(schema, "blob")
+    expectContainsFailureReason(
+      schema,
+      "",
+      .allOfMismatch(failures: [
+        JSONSchema.ValidationError.Failure(
+          path: [.allOf(index: 1)],
+          reason: .stringLengthTooShort(minimum: 1)
+        )
+      ])
+    )
+    expectContainsFailureReason(
+      schema,
+      1,
+      .allOfMismatch(failures: [
+        JSONSchema.ValidationError.Failure(
+          path: [.allOf(index: 0)],
+          reason: .typeMismatch(expected: .string)
+        ),
+        JSONSchema.ValidationError.Failure(
+          path: [.allOf(index: 1)],
+          reason: .typeMismatch(expected: .string)
+        )
+      ])
+    )
+  }
+
+  @Test
+  func `Value Must Match Any Of The Defined Subschemas`() {
+    let subSchema1 = JSONSchema.object(valueSchema: .number())
+    let subSchema2 = JSONSchema.object(valueSchema: .string())
+    let schema = JSONSchema.object(valueSchema: nil, anyOf: [subSchema1, subSchema2])
+
+    expectValidates(schema, "blob")
+    expectValidates(schema, 1)
+    expectContainsFailureReason(
+      schema,
+      true,
+      .anyOfMismatch(failures: [
+        JSONSchema.ValidationError.Failure(
+          path: [.anyOf(index: 0)],
+          reason: .typeMismatch(expected: .number)
+        ),
+        JSONSchema.ValidationError.Failure(
+          path: [.anyOf(index: 1)],
+          reason: .typeMismatch(expected: .string)
+        )
+      ])
+    )
+  }
+
+  @Test
+  func `Value Must Match Exactly One Of The Defined Subschemas`() {
+    let subSchema1 = JSONSchema.object(valueSchema: .string())
+    let subSchema2 = JSONSchema.object(valueSchema: .string(minLength: 1))
+    let schema = JSONSchema.object(valueSchema: nil, oneOf: [subSchema1, subSchema2])
+
+    expectValidates(schema, "")
+    expectContainsFailureReason(schema, "blob", .oneOfMismatch(failures: []))
+    expectContainsFailureReason(
+      schema,
+      1,
+      .oneOfMismatch(failures: [
+        JSONSchema.ValidationError.Failure(
+          path: [.oneOf(index: 0)],
+          reason: .typeMismatch(expected: .string)
+        ),
+        JSONSchema.ValidationError.Failure(
+          path: [.oneOf(index: 1)],
+          reason: .typeMismatch(expected: .string)
+        )
+      ])
+    )
+  }
 }
 
 private func expectValidates(_ schema: JSONSchema, _ value: JSONSchema.Value) {
