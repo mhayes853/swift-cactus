@@ -14,7 +14,7 @@ extension CactusLanguageModel {
   public static func modelDownloadURL(slug: String) -> URL {
     CactusSupabaseClient.shared.modelDownloadURL(for: slug)
   }
-  
+
   /// Downloads the model for the provided `slug` to the provided destination `URL`.
   ///
   /// - Parameters:
@@ -63,7 +63,7 @@ extension CactusLanguageModel {
       task.cancel()
     }
   }
-  
+
   /// Returns a ``DownloadTask`` for the model with the specified `slug`.
   ///
   /// You must manually start the download by calling ``DownloadTask/resume()``.
@@ -112,10 +112,10 @@ extension CactusLanguageModel {
   public enum DownloadProgress: Hashable, Sendable {
     /// The model is being downloaded over the network.
     case downloading(Double)
-    
+
     /// The model is being unzipped.
     case unzipping(Double)
-    
+
     /// The model has finished downloading and has been unzipped.
     case finished(URL)
   }
@@ -129,9 +129,17 @@ extension CactusLanguageModel {
     private let task: URLSessionDownloadTask
     private let delegate: Delegate
 
+    /// The destination `URL` of the downloaded model.
+    public let destination: URL
+
     /// Whether or not the download has been cancelled.
     public var isCancelled: Bool {
-      self.delegate.state.withLock { $0.isCancelled }
+      self.delegate.state.withLock {
+        switch $0.finalResult {
+        case .failure(let error): error is CancellationError
+        default: false
+        }
+      }
     }
 
     /// Whether or not the download is paused.
@@ -141,7 +149,7 @@ extension CactusLanguageModel {
 
     /// Whether or not the download has ended.
     public var isFinished: Bool {
-      self.delegate.state.withLock { $0.isFinished || $0.isCancelled }
+      self.delegate.state.withLock { $0.finalResult != nil }
     }
 
     /// The current ``CactusLanguageModel/DownloadProgress``.
@@ -157,9 +165,10 @@ extension CactusLanguageModel {
       let delegate = Delegate(destination: destination)
       let session = URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
       self.task = session.downloadTask(with: url)
+      self.destination = destination
       self.delegate = delegate
     }
-    
+
     /// Waits for completion of the download.
     ///
     /// - Returns: The destination`URL` of the downloaded model.
@@ -169,6 +178,10 @@ extension CactusLanguageModel {
       return try await withTaskCancellationHandler {
         try await withUnsafeThrowingContinuation { continuation in
           state.withLock {
+            if let finalResult = self.delegate.state.withLock(\.finalResult) {
+              continuation.resume(with: finalResult)
+              return
+            }
             $0.0 = continuation
             $0.1 = self.onProgress { result in
               switch result {
@@ -186,7 +199,7 @@ extension CactusLanguageModel {
         state.withLock { $0.0?.resume(throwing: CancellationError()) }
       }
     }
-    
+
     /// Adds a handler to observe the progress of the download.
     ///
     /// - Parameter handler: The handler.
@@ -208,7 +221,6 @@ extension CactusLanguageModel {
 
     /// Cancels the download.
     public func cancel() {
-      self.delegate.state.withLock { $0.isCancelled = true }
       self.task.cancel()
     }
 
@@ -223,8 +235,7 @@ extension CactusLanguageModel {
 extension CactusLanguageModel.DownloadTask {
   private final class Delegate: NSObject, URLSessionDownloadDelegate, Sendable {
     struct State {
-      var isFinished = false
-      var isCancelled = false
+      var finalResult: Result<URL, any Error>?
       var isPaused = true
       var progress = CactusLanguageModel.DownloadProgress.downloading(0)
       private(set) var callbacks = [
@@ -244,9 +255,18 @@ extension CactusLanguageModel.DownloadTask {
       mutating func clearProgress(_ id: Int) {
         self.callbacks.removeValue(forKey: id)
       }
+
+      mutating func sendProgress(
+        _ progress: Result<CactusLanguageModel.DownloadProgress, any Error>
+      ) {
+        if case .success(let progress) = progress {
+          self.progress = progress
+        }
+        self.callbacks.values.forEach { $0(progress) }
+      }
     }
 
-    let state = Lock(State())
+    let state = RecursiveLock(State())
     let destination: URL
 
     init(destination: URL) {
@@ -260,7 +280,9 @@ extension CactusLanguageModel.DownloadTask {
       totalBytesWritten: Int64,
       totalBytesExpectedToWrite: Int64
     ) {
-      self.sendProgress(.success(.downloading(downloadTask.progress.fractionCompleted)))
+      self.state.withLock {
+        $0.sendProgress(.success(.downloading(downloadTask.progress.fractionCompleted)))
+      }
     }
 
     func urlSession(
@@ -269,15 +291,20 @@ extension CactusLanguageModel.DownloadTask {
       didFinishDownloadingTo location: URL
     ) {
       do {
-        self.sendProgress(.success(.downloading(1)))
+        self.state.withLock { $0.sendProgress(.success(.downloading(1))) }
         Zip.addCustomFileExtension("tmp")
-        try Zip.unzipFile(location, destination: self.destination, overwrite: true) {
-          self.sendProgress(.success(.unzipping($0)))
+        try Zip.unzipFile(location, destination: self.destination, overwrite: true) { progress in
+          self.state.withLock { $0.sendProgress(.success(.unzipping(progress))) }
         }
-        self.state.withLock { $0.isFinished = true }
-        self.sendProgress(.success(.finished(self.destination)))
+        self.state.withLock {
+          $0.finalResult = .success(self.destination)
+          $0.sendProgress(.success(.finished(self.destination)))
+        }
       } catch {
-        self.sendProgress(.failure(error))
+        self.state.withLock {
+          $0.finalResult = .failure(error)
+          $0.sendProgress(.failure(error))
+        }
       }
     }
 
@@ -288,20 +315,15 @@ extension CactusLanguageModel.DownloadTask {
     ) {
       guard let error else { return }
       if (error as? URLError)?.code == .cancelled {
-        self.sendProgress(.failure(CancellationError()))
-      } else {
-        self.sendProgress(.failure(error))
-      }
-    }
-
-    private func sendProgress(
-      _ progress: Result<CactusLanguageModel.DownloadProgress, any Error>
-    ) {
-      self.state.withLock { state in
-        if case .success(let progress) = progress {
-          state.progress = progress
+        self.state.withLock {
+          $0.finalResult = .failure(CancellationError())
+          $0.sendProgress(.failure(CancellationError()))
         }
-        state.callbacks.values.forEach { $0(progress) }
+      } else {
+        self.state.withLock {
+          $0.finalResult = .failure(error)
+          $0.sendProgress(.failure(error))
+        }
       }
     }
   }
