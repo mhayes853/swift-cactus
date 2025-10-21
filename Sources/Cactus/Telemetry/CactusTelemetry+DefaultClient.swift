@@ -140,8 +140,7 @@
           "__test-cactus-telemetry-batch-\(UUID())__.json"
         )
       }
-      return FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        .appendingPathComponent("__cactus-telemetry-batch__.json")
+      return URL._applicationSupportDirectory.appendingPathComponent("cactus-telemetry/batch.json")
     }
   }
 #endif

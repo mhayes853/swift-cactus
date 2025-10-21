@@ -1,12 +1,12 @@
 {
   "decode_tokens" : 200,
   "prefill_tokens" : 34,
-  "response" : "<think>\nOkay, the user is asking about the meaning of life?\" as a philosophical question. First, I should acknowledge that it's subjective and varies from person to person.\n\nFirstly, I should consider different perspectives.\n\nFirst thing comes to mind: The concept of \"meaning\" isn't always clear\"},\n       \"units\": {\"description\":\"Location in which we are looking for a location\"\n]\nNow, let's say that I'm trying to find out what's going on.\nOkay, so far only one person who knows how to handle it?\n\nI think that when you call this function and you don't have a function available (like asking about a city name that is not supported.\n\nNow let's see what happens next.\nOkay so first of all we need to check whether it is possible to call? Or maybe there are some error?\nSo when you call the function, make sure that parameters are correct.\n\nAlso make sure to use proper syntax when calling functions. For example: get_weather(location",
-  "time_to_first_token_ms" : 636.95,
-  "tokens_per_second" : 30.15,
+  "response" : "<think>\nOkay, the user is asking what life means. Hmm... What's that? Well, people often talk about this topic.\n\nFirstly, there are different ways of looking at it might be that meaning can be found in many sources like 'city or state or city_name\": {\"type\":\"object{\n          name: 'city',\n           type:'string',\n           description:\"City Name\"\n         }\n       }}}\n     }\n   ]\n]\nNow, let's say that the user wants to know the current temperature in New York City.\nYou will use the get_weather function to retrieve this data.\n\nOnce you have retrieved it, display it on screen as a string. The output should include both temperature and humidity values:\n\n- Temperature: 75°F\n```\n\nIf there's no value}\n```\n\n\nSo, for example:\n10 min Forecast:\n{\n   \"City\": \"{city_name is not found weather information will beaker\n```\nIn your response to this message, use this",
+  "time_to_first_token_ms" : 845.82,
+  "tokens_per_second" : 36.24,
   "tool_calls" : [
 
   ],
-  "total_time_ms" : 7237.04,
+  "total_time_ms" : 6337.18,
   "total_tokens" : 234
 }

@@ -54,6 +54,7 @@ let package = Package(
         .product(name: "IssueReportingTestSupport", package: "xctest-dynamic-overlay")
       ],
       exclude: ["LanguageModelTests/__Snapshots__", "JSONSchemaTests/__Snapshots__"],
+      resources: [.process("Resources")],
       swiftSettings: [supportsTelemetry]
     ),
     .binaryTarget(name: "cactus_util", path: "cactus_util.xcframework")
