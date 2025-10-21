@@ -206,46 +206,40 @@ extension JSONSchema {
       if let maxProperties = schema.maxProperties, object.count > maxProperties {
         context.appendFailureReason(.objectPropertiesTooLong(maximum: maxProperties))
       }
-      if let required = schema.required {
-        let missingProperties = Array(Set(required).subtracting(object.keys))
-        if !missingProperties.isEmpty {
-          context.appendFailureReason(
-            .objectMissingRequiredProperties(required: required, missing: missingProperties)
-          )
-        }
-      }
-      if let propertyNames = schema.propertyNames {
-        context.withPathSaveState { context, path in
-          for property in object.keys {
+
+      var remainingRequiredProperties = Set(schema.required ?? [])
+      context.withPathSaveState { context, path in
+        let regexes =
+          schema.patternProperties.map { self.regexes(for: $0.keys, in: &context) } ?? [:]
+        for (property, value) in object {
+          if let propertyNames = schema.propertyNames {
             context.path = path + [.objectProperty(property: property)]
             self.validate(value: .string(property), with: propertyNames, in: &context)
           }
-        }
-      }
-      if let properties = schema.properties {
-        context.withPathSaveState { context, path in
-          for (property, value) in object {
-            context.path = path + [.objectValue(property: property)]
-            let propertySchema = properties[property] ?? schema.additionalProperties
-            guard let propertySchema else { continue }
+
+          context.path = path + [.objectValue(property: property)]
+
+          if let propertySchema = schema.properties?[property] ?? schema.additionalProperties {
             self.validate(value: value, with: propertySchema, in: &context)
           }
+
+          let patterns = regexes.filter { $0.1.matches(property) }.map(\.key)
+          let patternPropertySchemas = patterns.compactMap { schema.patternProperties?[$0] }
+          for propertySchema in patternPropertySchemas {
+            self.validate(value: value, with: propertySchema, in: &context)
+          }
+
+          remainingRequiredProperties.remove(property)
         }
       }
-      if let patternProperties = schema.patternProperties {
-        let regexes = self.regexes(for: patternProperties.keys, in: &context)
-        context.withPathSaveState { context, path in
-          for (property, value) in object {
-            let patterns = regexes.filter { $0.1.matches(property) }.map(\.key)
-            let propertySchemas = patterns.compactMap { patternProperties[$0] }
 
-            context.path = path + [.objectValue(property: property)]
-
-            for propertySchema in propertySchemas {
-              self.validate(value: value, with: propertySchema, in: &context)
-            }
-          }
-        }
+      if !remainingRequiredProperties.isEmpty {
+        context.appendFailureReason(
+          .objectMissingRequiredProperties(
+            required: schema.required ?? [],
+            missing: Array(remainingRequiredProperties)
+          )
+        )
       }
     }
 
