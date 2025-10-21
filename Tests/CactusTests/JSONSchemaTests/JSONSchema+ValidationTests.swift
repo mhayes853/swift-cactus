@@ -667,6 +667,48 @@ struct `JSONSchemaValidation tests` {
       ])
     )
   }
+
+  @Test
+  func `Validates Properly Against Complex Object Schema`() {
+    let schema = JSONSchema.object(
+      valueSchema: .object(
+        properties: [
+          "p1": .object(valueSchema: .string()),
+          "p2": .object(
+            valueSchema: .object(
+              properties: [
+                "p3": .object(valueSchema: .number()),
+                "p4": .object(valueSchema: .boolean)
+              ],
+              required: ["p3", "p4"]
+            )
+          ),
+          "p5": .object(valueSchema: .array(items: .schemaForAll(.object(valueSchema: .string()))))
+        ]
+      )
+    )
+
+    expectValidates(schema, [:])
+    expectValidates(schema, ["p1": "blob", "p2": ["p3": 1.0, "p4": true], "p5": ["blob"]])
+    expectContainsFailureReason(
+      schema,
+      ["p1": "blob", "p2": ["p3": 1.0], "p5": ["blob"]],
+      .objectMissingRequiredProperties(required: ["p3", "p4"], missing: ["p4"]),
+      for: [.objectValue(property: "p2")]
+    )
+    expectContainsFailureReason(
+      schema,
+      ["p1": "blob", "p2": ["p3": "1.0", "p4": true], "p5": ["blob"]],
+      .typeMismatch(expected: .number),
+      for: [.objectValue(property: "p2"), .objectValue(property: "p3")]
+    )
+    expectContainsFailureReason(
+      schema,
+      ["p1": "blob", "p2": ["p3": 1.0, "p4": true], "p5": [1]],
+      .typeMismatch(expected: .string),
+      for: [.objectValue(property: "p5"), .arrayItem(index: 0)]
+    )
+  }
 }
 
 private func expectValidates(_ schema: JSONSchema, _ value: JSONSchema.Value) {
