@@ -411,6 +411,25 @@ struct `JSONSchemaValidation tests` {
       .objectMissingRequiredProperties(required: ["a", "b"], missing: ["b"])
     )
   }
+
+  @Test
+  func `Object Property Names Must Match Appropriate Schema`() {
+    let nameSchema = JSONSchema.object(valueSchema: .string(minLength: 3))
+    let schema = JSONSchema.object(valueSchema: .object(propertyNames: nameSchema))
+    expectValidates(schema, ["abc": 1, "def": true])
+    expectContainsFailureReason(
+      schema,
+      ["a": 1, "b": true],
+      .stringLengthTooShort(minimum: 3),
+      for: [.objectProperty(property: "a")]
+    )
+    expectContainsFailureReason(
+      schema,
+      ["a": 1, "b": true],
+      .stringLengthTooShort(minimum: 3),
+      for: [.objectProperty(property: "b")]
+    )
+  }
 }
 
 private func expectValidates(_ schema: JSONSchema, _ value: JSONSchema.Value) {

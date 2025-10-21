@@ -183,17 +183,17 @@ extension JSONSchema {
       }
 
       if let items = schema.items {
-        let path = context.path
-        let itemSchemas = items.schemaPerItem(
-          count: array.count,
-          additionalItems: schema.additionalItems
-        )
-        for (value, (index, itemSchema)) in zip(array, zip(array.indices, itemSchemas)) {
-          context.path = path + [.arrayItem(index: index)]
-          guard let itemSchema else { continue }
-          self.validate(value: value, with: itemSchema, in: &context)
+        context.withPathSaveState { context, path in
+          let itemSchemas = items.schemaPerItem(
+            count: array.count,
+            additionalItems: schema.additionalItems
+          )
+          for (value, (index, itemSchema)) in zip(array, zip(array.indices, itemSchemas)) {
+            context.path = path + [.arrayItem(index: index)]
+            guard let itemSchema else { continue }
+            self.validate(value: value, with: itemSchema, in: &context)
+          }
         }
-        context.path = path
       }
     }
 
@@ -216,6 +216,14 @@ extension JSONSchema {
           )
         }
       }
+      if let propertyNames = schema.propertyNames {
+        context.withPathSaveState { context, path in
+          for property in object.keys {
+            context.path = path + [.objectProperty(property: property)]
+            self.validate(value: .string(property), with: propertyNames, in: &context)
+          }
+        }
+      }
     }
   }
 }
@@ -226,6 +234,14 @@ extension JSONSchema.Validator {
   private struct Context: Sendable {
     var path = [JSONSchema.ValidationError.PathElement]()
     private(set) var failures = [JSONSchema.ValidationError.Failure]()
+
+    mutating func withPathSaveState(
+      operation: (inout Context, [JSONSchema.ValidationError.PathElement]) -> Void
+    ) {
+      let path = self.path
+      operation(&self, path)
+      self.path = path
+    }
 
     mutating func appendFailureReason(_ reason: JSONSchema.ValidationError.Reason) {
       self.failures.append(
@@ -279,6 +295,7 @@ extension JSONSchema.ValidationError {
 extension JSONSchema.ValidationError {
   public enum PathElement: Hashable, Sendable {
     case arrayItem(index: Int)
+    case objectProperty(property: String)
   }
 }
 
