@@ -510,6 +510,18 @@ struct `JSONSchemaValidation tests` {
       .typeMismatch(expected: .number),
       for: [.objectValue(property: "2")]
     )
+    expectContainsFailureReason(
+      schema,
+      ["1a": "foo"],
+      .typeMismatch(expected: .number),
+      for: [.objectValue(property: "1a")]
+    )
+    expectContainsFailureReason(
+      schema,
+      ["a1": 12],
+      .typeMismatch(expected: .string),
+      for: [.objectValue(property: "a1")]
+    )
   }
 
   @Test

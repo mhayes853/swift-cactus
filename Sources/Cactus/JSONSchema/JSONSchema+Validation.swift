@@ -226,11 +226,14 @@ extension JSONSchema {
         let regexes = self.regexes(for: patternProperties.keys, in: &context)
         context.withPathSaveState { context, path in
           for (property, value) in object {
-            let pattern = regexes.first { $0.1.matches(property) }?.key
-            guard let propertySchema = pattern.flatMap({ patternProperties[$0] }) else { continue }
+            let patterns = regexes.filter { $0.1.matches(property) }.map(\.key)
+            let propertySchemas = patterns.compactMap { patternProperties[$0] }
 
             context.path = path + [.objectValue(property: property)]
-            self.validate(value: value, with: propertySchema, in: &context)
+
+            for propertySchema in propertySchemas {
+              self.validate(value: value, with: propertySchema, in: &context)
+            }
           }
         }
       }
