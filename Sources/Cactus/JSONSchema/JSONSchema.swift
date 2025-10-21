@@ -26,10 +26,15 @@ extension JSONSchema {
     /// [10.1](https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-10.1)
     public var description: String?
 
-    /// The ``JSONSchema/ValueType`` of the schema.
+    /// The ``JSONSchema/ValueSchema`` of this schema.
+    public var valueSchema: ValueSchema?
+
+    /// The ``JSONSchema/ValueType`` of this schema.
     ///
     /// [6.1.1](https://tools.ietf.org/html/draft-handrews-json-schema-validation-01#section-6.1.1)
-    public var type: ValueType?
+    public var type: ValueType? {
+      self.valueSchema?.type
+    }
 
     /// The default value of the schema.
     ///
@@ -109,7 +114,7 @@ extension JSONSchema {
     /// - Parameters:
     ///   - title: The title of the schema.
     ///   - description: The description of the schema.
-    ///   - type: The type of the schema.
+    ///   - valueSchema: The ``JSONSchema/ValueSchema`` of this schema.
     ///   - default: The default value of the schema.
     ///   - readOnly: Indicates whether the value is managed exclusively by the owning authority.
     ///   - writeOnly: Indicates whether the or not the value is present when retrieved from the owning authority.
@@ -127,7 +132,7 @@ extension JSONSchema {
     public init(
       title: String? = nil,
       description: String? = nil,
-      type: ValueType?,
+      valueSchema: ValueSchema?,
       `default`: Value? = nil,
       readOnly: Bool? = nil,
       writeOnly: Bool? = nil,
@@ -149,7 +154,7 @@ extension JSONSchema {
       self.readOnly = readOnly
       self.writeOnly = writeOnly
       self.examples = examples
-      self.type = type
+      self.valueSchema = valueSchema
       self.`enum` = `enum`
       self.const = const
       self.allOf = allOf
@@ -168,7 +173,7 @@ extension JSONSchema {
   /// - Parameters:
   ///   - title: The title of the schema.
   ///   - description: The description of the schema.
-  ///   - type: The type of the schema.
+  ///   - valueSchema: The ``JSONSchema/ValueSchema`` of this schema.
   ///   - default: The default value of the schema.
   ///   - readOnly: Indicates whether the value is managed exclusively by the owning authority.
   ///   - writeOnly: Indicates whether the or not the value is present when retrieved from the owning authority.
@@ -186,7 +191,7 @@ extension JSONSchema {
   public static func object(
     title: String? = nil,
     description: String? = nil,
-    type: ValueType?,
+    valueSchema: ValueSchema?,
     `default`: Value? = nil,
     readOnly: Bool? = nil,
     writeOnly: Bool? = nil,
@@ -206,7 +211,7 @@ extension JSONSchema {
       Object(
         title: title,
         description: description,
-        type: type,
+        valueSchema: valueSchema,
         default: `default`,
         readOnly: readOnly,
         writeOnly: writeOnly,
@@ -223,6 +228,14 @@ extension JSONSchema {
         format: format
       )
     )
+  }
+}
+
+// MARK: - ExpressibleByBooleanLiteral
+
+extension JSONSchema: ExpressibleByBooleanLiteral {
+  public init(booleanLiteral value: Bool) {
+    self = .boolean(value)
   }
 }
 
@@ -261,7 +274,7 @@ extension JSONSchema: Decodable {
 // MARK: - SerializeableObject
 
 private struct SerializeableObject: Codable {
-  var type: SchemaType?
+  var type: JSONSchema.ValueType?
   var title: String?
   var description: String?
   var `default`: JSONSchema.Value?
@@ -291,7 +304,7 @@ private struct SerializeableObject: Codable {
   var patternProperties: [Swift.String: JSONSchema]?
   var propertyNames: JSONSchema?
 
-  var items: JSONSchema.ValueType.Array.Items?
+  var items: JSONSchema.ValueSchema.Array.Items?
   var additionalItems: JSONSchema?
   var minItems: Int?
   var maxItems: Int?
@@ -323,16 +336,7 @@ private struct SerializeableObject: Codable {
     self.enum = object.enum
     self.const = object.const
 
-    if let type = object.type {
-      self.set(from: type)
-    }
-  }
-
-  private mutating func set(from valueType: JSONSchema.ValueType, isUnion: Bool = false) {
-    var schemaTypes = [SchemaType]()
-
-    if let array = valueType.array {
-      schemaTypes.append(.array)
+    if let array = object.valueSchema?.array {
       self.items = array.items
       self.additionalItems = array.additionalItems
       self.minItems = array.minItems
@@ -341,8 +345,7 @@ private struct SerializeableObject: Codable {
       self.contains = array.contains
     }
 
-    if let integer = valueType.integer {
-      schemaTypes.append(.integer)
+    if let integer = object.valueSchema?.integer {
       self.multipleOf = integer.multipleOf.map(Numeric.integer)
       self.minimum = integer.minimum.map(Numeric.integer)
       self.exclusiveMinimum = integer.exclusiveMinimum.map(Numeric.integer)
@@ -350,8 +353,7 @@ private struct SerializeableObject: Codable {
       self.exclusiveMaximum = integer.exclusiveMaximum.map(Numeric.integer)
     }
 
-    if let number = valueType.number {
-      schemaTypes.append(.number)
+    if let number = object.valueSchema?.number {
       self.multipleOf = number.multipleOf.map(Numeric.double)
       self.minimum = number.minimum.map(Numeric.double)
       self.exclusiveMinimum = number.exclusiveMinimum.map(Numeric.double)
@@ -359,15 +361,13 @@ private struct SerializeableObject: Codable {
       self.exclusiveMaximum = number.exclusiveMaximum.map(Numeric.double)
     }
 
-    if let string = valueType.string {
-      schemaTypes.append(.string)
+    if let string = object.valueSchema?.string {
       self.minLength = string.minLength
       self.maxLength = string.maxLength
       self.pattern = string.pattern
     }
 
-    if let object = valueType.object {
-      schemaTypes.append(.object)
+    if let object = object.valueSchema?.object {
       self.properties = object.properties
       self.patternProperties = object.patternProperties
       self.additionalProperties = object.additionalProperties
@@ -376,19 +376,7 @@ private struct SerializeableObject: Codable {
       self.required = object.required
     }
 
-    if valueType.isBoolean {
-      schemaTypes.append(.boolean)
-    }
-
-    if valueType.isNullable {
-      schemaTypes.append(.null)
-    }
-
-    if schemaTypes.count == 1 {
-      self.type = schemaTypes[0]
-    } else if schemaTypes.count > 1 {
-      self.type = .types(schemaTypes)
-    }
+    self.type = object.type
   }
 }
 
@@ -507,7 +495,7 @@ extension JSONSchema.Object {
     self.init(
       title: serializeable.title,
       description: serializeable.description,
-      type: JSONSchema.ValueType(serializeable: serializeable),
+      valueSchema: JSONSchema.ValueSchema(serializeable: serializeable),
       default: serializeable.default,
       readOnly: serializeable.readOnly,
       writeOnly: serializeable.writeOnly,
@@ -526,60 +514,69 @@ extension JSONSchema.Object {
   }
 }
 
-extension JSONSchema.ValueType {
+extension JSONSchema.ValueSchema {
   fileprivate init?(serializeable: SerializeableObject) {
-    guard let types = serializeable.type?.allTypes else { return nil }
+    guard let type = serializeable.type else { return nil }
 
     self = .union()
-    for type in types {
-      switch type {
-      case .array:
-        self.array = Array(
-          items: serializeable.items,
-          minItems: serializeable.minItems,
-          maxItems: serializeable.maxItems,
-          uniqueItems: serializeable.uniqueItems,
-          contains: serializeable.contains
-        )
-      case .integer:
-        self.integer = Integer(
-          multipleOf: serializeable.multipleOf?.integerValue,
-          minimum: serializeable.minimum?.integerValue,
-          exclusiveMinimum: serializeable.exclusiveMinimum?.integerValue,
-          maximum: serializeable.maximum?.integerValue,
-          exclusiveMaximum: serializeable.exclusiveMaximum?.integerValue
-        )
-      case .number:
-        self.number = Number(
-          multipleOf: serializeable.multipleOf?.doubleValue,
-          minimum: serializeable.minimum?.doubleValue,
-          exclusiveMinimum: serializeable.exclusiveMinimum?.doubleValue,
-          maximum: serializeable.maximum?.doubleValue,
-          exclusiveMaximum: serializeable.exclusiveMaximum?.doubleValue
-        )
-      case .string:
-        self.string = String(
-          minLength: serializeable.minLength,
-          maxLength: serializeable.maxLength,
-          pattern: serializeable.pattern
-        )
-      case .null:
-        self.isNullable = true
-      case .boolean:
-        self.isBoolean = true
-      case .object:
-        self.object = Object(
-          properties: serializeable.properties,
-          required: serializeable.required,
-          minProperties: serializeable.minProperties,
-          maxProperties: serializeable.maxProperties,
-          additionalProperties: serializeable.additionalItems,
-          patternProperties: serializeable.patternProperties,
-          propertyNames: serializeable.propertyNames
-        )
-      default:
-        break
-      }
+    if type.contains(.array) {
+      self.array = .array(
+        items: serializeable.items,
+        additionalItems: serializeable.additionalItems,
+        minItems: serializeable.minItems,
+        maxItems: serializeable.maxItems,
+        uniqueItems: serializeable.uniqueItems,
+        contains: serializeable.contains
+      )
     }
+    if type.contains(.integer) {
+      self.integer = .integer(
+        multipleOf: serializeable.multipleOf?.integerValue,
+        minimum: serializeable.minimum?.integerValue,
+        exclusiveMinimum: serializeable.exclusiveMinimum?.integerValue,
+        maximum: serializeable.maximum?.integerValue,
+        exclusiveMaximum: serializeable.exclusiveMaximum?.integerValue
+      )
+    }
+    if type.contains(.number) {
+      self.number = .number(
+        multipleOf: serializeable.multipleOf?.doubleValue,
+        minimum: serializeable.minimum?.doubleValue,
+        exclusiveMinimum: serializeable.exclusiveMinimum?.doubleValue,
+        maximum: serializeable.maximum?.doubleValue,
+        exclusiveMaximum: serializeable.exclusiveMaximum?.doubleValue
+      )
+    }
+    if type.contains(.string) {
+      self.string = .string(
+        minLength: serializeable.minLength,
+        maxLength: serializeable.maxLength,
+        pattern: serializeable.pattern
+      )
+    }
+    if type.contains(.object) {
+      self.object = .object(
+        properties: serializeable.properties,
+        required: serializeable.required,
+        minProperties: serializeable.minProperties,
+        maxProperties: serializeable.maxProperties,
+        additionalProperties: serializeable.additionalItems,
+        patternProperties: serializeable.patternProperties,
+        propertyNames: serializeable.propertyNames
+      )
+    }
+    if type.contains(.null) {
+      self.isNullable = true
+    }
+    if type.contains(.boolean) {
+      self.isBoolean = true
+    }
+  }
+}
+
+extension JSONSchema.ValueType {
+  fileprivate var containedTypes: [Self] {
+    let allTypes = [Self.integer, .string, .boolean, .array, .object, .number, .null]
+    return allTypes.filter { self.contains($0) }
   }
 }

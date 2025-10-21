@@ -11,8 +11,9 @@ extension CactusLanguageModel {
 
     /// A ``JSONSchema`` for the parameters of this tool.
     ///
-    /// > Notice: The language model isn't guaranteed to generate a value that is valid with this
-    /// > schema. You will need to manually validate model-generated values against this schema.
+    /// > Notice: The language model isn't guaranteed to generate values that are valid with this
+    /// > schema. If validity matters, you can manually validate the output using
+    /// > ``JSONSchema/Validator``.
     public var parameters: JSONSchema
 
     /// Creates a tool definition.
@@ -38,6 +39,10 @@ extension CactusLanguageModel {
     public var name: String
 
     /// The arguments that the tool was invoked with.
+    ///
+    /// > Notice: The language model isn't guaranteed to generate a values that are valid with
+    /// > tool definition parameters If validity matters, you can manually validate the output
+    /// > using ``JSONSchema/Validator``.
     public var arguments: [String: JSONSchema.Value]
 
     /// Creates a tool call.

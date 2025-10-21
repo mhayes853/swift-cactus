@@ -153,11 +153,11 @@ extension BaseTestSuite {
             name: "get_weather",
             description: "Get the weather in a given location",
             parameters: .object(
-              type: .object(
+              valueSchema: .object(
                 properties: [
                   "location": .object(
                     description: "City name, eg. 'San Francisco'",
-                    type: .string(minLength: 1),
+                    valueSchema: .string(minLength: 1),
                     examples: ["San Francisco"]
                   )
                 ],
