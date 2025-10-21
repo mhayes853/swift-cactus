@@ -303,6 +303,15 @@ struct `JSONSchemaValidation tests` {
   }
 
   @Test
+  func `Array Must Contain At Least One Element Matching Contains Schema`() {
+    let containsSchema = JSONSchema.object(valueSchema: .string())
+    let schema = JSONSchema.object(valueSchema: .array(contains: containsSchema))
+
+    expectValidates(schema, [1, "2"])
+    expectContainsFailureReason(schema, [1, 2], .arrayContainsMismatch(schema: containsSchema))
+  }
+
+  @Test
   func `Object Must Have Minimum Properties`() {
     let schema = JSONSchema.object(valueSchema: .object(minProperties: 2))
     expectValidates(schema, ["a": 1, "b": 2])

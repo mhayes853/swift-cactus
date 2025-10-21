@@ -162,6 +162,19 @@ extension JSONSchema {
       if schema.uniqueItems == true && !array.isUnique {
         context.appendFailureReason(.arrayItemsNotUnique)
       }
+      if let contains = schema.contains {
+        let containsMatch = array.contains { value in
+          do {
+            try self.validate(value: value, with: contains)
+            return true
+          } catch {
+            return false
+          }
+        }
+        if !containsMatch {
+          context.appendFailureReason(.arrayContainsMismatch(schema: contains))
+        }
+      }
     }
 
     private func validate(
@@ -213,6 +226,7 @@ extension JSONSchema {
 extension JSONSchema.ValidationError {
   public enum Reason: Hashable, Sendable {
     case falseSchema
+
     case typeMismatch(expected: JSONSchema.ValueType)
     case constMismatch(expected: JSONSchema.Value)
     case enumMismatch(expected: [JSONSchema.Value])
@@ -229,15 +243,16 @@ extension JSONSchema.ValidationError {
     case stringLengthTooLong(maximum: Int)
     case stringPatternMismatch(pattern: String)
 
-    case patternCompilationError(pattern: String)
-
     case arrayLengthTooShort(minimum: Int)
     case arrayLengthTooLong(maximum: Int)
+    case arrayContainsMismatch(schema: JSONSchema)
     case arrayItemsNotUnique
 
     case objectPropertiesTooShort(minimum: Int)
     case objectPropertiesTooLong(maximum: Int)
     case objectMissingRequiredProperties(required: [String], missing: [String])
+
+    case patternCompilationError(pattern: String)
   }
 }
 
