@@ -67,22 +67,35 @@ extension JSONSchema {
           self.validate(number: Double(integer), with: numberSchema, in: &context)
         }
       case .number(let number):
-        guard let numberSchema = object.valueSchema?.number else { return }
+        guard let numberSchema = object.valueSchema?.number else { break }
         self.validate(number: number, with: numberSchema, in: &context)
       case .string(let string):
-        guard let stringSchema = object.valueSchema?.string else { return }
+        guard let stringSchema = object.valueSchema?.string else { break }
         self.validate(string: string, with: stringSchema, in: &context)
       case .array(let array):
-        guard let arraySchema = object.valueSchema?.array else { return }
+        guard let arraySchema = object.valueSchema?.array else { break }
         self.validate(array: array, with: arraySchema, in: &context)
       case .object(let obj):
-        guard let objectSchema = object.valueSchema?.object else { return }
+        guard let objectSchema = object.valueSchema?.object else { break }
         self.validate(object: obj, with: objectSchema, in: &context)
       default:
         break
       }
       if let notSchema = object.not, self.isValid(value: value, with: notSchema) {
         context.appendFailureReason(.matchesNot(schema: notSchema))
+      }
+      if let ifSchema = object.if {
+        context.withPathSaveState { context, path in
+          if self.isValid(value: value, with: ifSchema) {
+            if let thenSchema = object.then {
+              context.path = path + [.then]
+              self.validate(value: value, with: thenSchema, in: &context)
+            }
+          } else if let elseSchema = object.else {
+            context.path = path + [.else]
+            self.validate(value: value, with: elseSchema, in: &context)
+          }
+        }
       }
     }
 
@@ -339,6 +352,8 @@ extension JSONSchema.ValidationError {
     case arrayItem(index: Int)
     case objectProperty(property: String)
     case objectValue(property: String)
+    case then
+    case `else`
   }
 }
 

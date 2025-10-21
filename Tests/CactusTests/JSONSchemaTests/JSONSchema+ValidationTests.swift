@@ -554,6 +554,38 @@ struct `JSONSchemaValidation tests` {
     expectValidates(schema, "foo")
     expectContainsFailureReason(schema, .null, .matchesNot(schema: notSchema))
   }
+
+  @Test
+  func `Value Must Match Then When Matching If`() {
+    let ifSchema = JSONSchema.object(valueSchema: .string())
+    let thenSchema = JSONSchema.object(valueSchema: .string(minLength: 10))
+    let schema = JSONSchema.object(valueSchema: nil, if: ifSchema, then: thenSchema)
+
+    expectValidates(schema, 1)
+    expectValidates(schema, "this is a string with some length")
+    expectContainsFailureReason(
+      schema,
+      "blob",
+      .stringLengthTooShort(minimum: 10),
+      for: [.then]
+    )
+  }
+
+  @Test
+  func `Value Must Match Else When Not Matching If`() {
+    let ifSchema = JSONSchema.object(valueSchema: .string())
+    let elseSchema = JSONSchema.object(valueSchema: .number())
+    let schema = JSONSchema.object(valueSchema: nil, if: ifSchema, else: elseSchema)
+
+    expectValidates(schema, 1)
+    expectValidates(schema, "this is a string with some length")
+    expectContainsFailureReason(
+      schema,
+      true,
+      .typeMismatch(expected: .number),
+      for: [.else]
+    )
+  }
 }
 
 private func expectValidates(_ schema: JSONSchema, _ value: JSONSchema.Value) {
