@@ -1,6 +1,6 @@
 import Foundation
 
-#if canImport(FoundatioNetworking)
+#if canImport(FoundationNetworking)
   import FoundationNetworking
 #endif
 
@@ -34,12 +34,12 @@ public final class CactusModelsDirectory: Sendable {
 
   /// The base `URL` of this directory.
   public let baseURL: URL
-  
+
   private let downloadTasks = Lock([String: DownloadTaskEntry]())
 
   private let downloadTask:
     @Sendable (String, URL, URLSessionConfiguration) -> CactusLanguageModel.DownloadTask
-  
+
   /// Creates a model directory.
   ///
   /// - Parameter baseURL: The `URL` of the directory.
@@ -91,7 +91,7 @@ extension CactusModelsDirectory {
       task.cancel()
     }
   }
-  
+
   /// Returns a ``CactusLanguageModel/DownloadTask`` for the model with the specified `slug`.
   ///
   /// If another download task is in progress, then this method will return the in-progress download task.
@@ -130,21 +130,24 @@ extension CactusModelsDirectory {
   public struct StoredModel: Hashable, Sendable {
     /// The slug of the model.
     public let slug: String
-    
+
     /// The `URL` of the model inside the directory.
     public let url: URL
   }
-  
+
   /// Returns the stored `URL` for the model with the specified `slug` if one exists.
   ///
   /// - Parameter slug: The model slug.
   public func storedModelURL(for slug: String) -> URL? {
     let destinationURL = self.destinationURL(for: slug)
     var isDirectory = ObjCBool(false)
-    FileManager.default.fileExists(atPath: destinationURL.relativePath, isDirectory: &isDirectory)
-    return isDirectory.boolValue ? destinationURL : nil
+    let doesExist = FileManager.default.fileExists(
+      atPath: destinationURL.relativePath,
+      isDirectory: &isDirectory
+    )
+    return doesExist && isDirectory.boolValue ? destinationURL : nil
   }
-  
+
   /// Returns an array of all ``StoredModel`` instances in this directory.
   public func storedModels() -> [StoredModel] {
     let models = try? FileManager.default
