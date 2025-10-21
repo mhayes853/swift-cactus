@@ -308,7 +308,23 @@ struct `JSONSchemaValidation tests` {
     let schema = JSONSchema.object(valueSchema: .array(contains: containsSchema))
 
     expectValidates(schema, [1, "2"])
-    expectContainsFailureReason(schema, [1, 2], .arrayContainsMismatch(schema: containsSchema))
+    expectContainsFailureReason(
+      schema,
+      [1, 2],
+      .arrayContainsMismatch(
+        schema: containsSchema,
+        failures: [
+          JSONSchema.ValidationError.Failure(
+            path: [.arrayItem(index: 0)],
+            reason: .typeMismatch(expected: .string)
+          ),
+          JSONSchema.ValidationError.Failure(
+            path: [.arrayItem(index: 1)],
+            reason: .typeMismatch(expected: .string)
+          )
+        ]
+      )
+    )
   }
 
   @Test
@@ -557,7 +573,7 @@ private func expectContainsFailureReasons(
     Issue.record("Value should not validate for schema.")
   } catch {
     expectNoDifference(
-      error.failures.contains { $0.subschemaPath == path && reasons.contains($0.reason) },
+      error.failures.contains { $0.path == path && reasons.contains($0.reason) },
       true
     )
   }

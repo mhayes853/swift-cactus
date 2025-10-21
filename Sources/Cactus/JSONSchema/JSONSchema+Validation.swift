@@ -164,10 +164,22 @@ extension JSONSchema {
       if schema.uniqueItems == true && !array.isUnique {
         context.appendFailureReason(.arrayItemsNotUnique)
       }
-      if let containsSchema = schema.contains,
-        !array.contains(where: { self.isValid(value: $0, with: containsSchema) })
-      {
-        context.appendFailureReason(.arrayContainsMismatch(schema: containsSchema))
+      if let containsSchema = schema.contains {
+        var contextCopy = Context(path: context.path, failures: [])
+        var doesContain = false
+        contextCopy.withPathSaveState { context, path in
+          for (value, index) in zip(array, array.indices) {
+            context.path = path + [.arrayItem(index: index)]
+            let failureCount = context.failures.count
+            self.validate(value: value, with: containsSchema, in: &context)
+            doesContain = doesContain || failureCount == context.failures.count
+          }
+        }
+        if !doesContain {
+          context.appendFailureReason(
+            .arrayContainsMismatch(schema: containsSchema, failures: contextCopy.failures)
+          )
+        }
       }
 
       if let items = schema.items {
@@ -278,7 +290,7 @@ extension JSONSchema.Validator {
 
     mutating func appendFailureReason(_ reason: JSONSchema.ValidationError.Reason) {
       self.failures.append(
-        JSONSchema.ValidationError.Failure(subschemaPath: self.path, reason: reason)
+        JSONSchema.ValidationError.Failure(path: self.path, reason: reason)
       )
     }
   }
@@ -314,7 +326,7 @@ extension JSONSchema.ValidationError {
 
     case arrayLengthTooShort(minimum: Int)
     case arrayLengthTooLong(maximum: Int)
-    case arrayContainsMismatch(schema: JSONSchema)
+    case arrayContainsMismatch(schema: JSONSchema, failures: [Failure])
     case arrayItemsNotUnique
 
     case objectPropertiesTooShort(minimum: Int)
@@ -335,8 +347,16 @@ extension JSONSchema.ValidationError {
 
 extension JSONSchema.ValidationError {
   public struct Failure: Hashable, Sendable {
-    public let subschemaPath: [PathElement]
+    public let path: [PathElement]
     public let reason: Reason
+
+    public init(
+      path: [JSONSchema.ValidationError.PathElement],
+      reason: JSONSchema.ValidationError.Reason
+    ) {
+      self.path = path
+      self.reason = reason
+    }
   }
 }
 
