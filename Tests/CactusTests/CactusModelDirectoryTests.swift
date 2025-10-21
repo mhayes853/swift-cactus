@@ -3,6 +3,10 @@ import CustomDump
 import Foundation
 import Testing
 
+#if canImport(FoundatioNetworking)
+  import FoundationNetworking
+#endif
+
 @Suite
 struct `CactusModelDirectory tests` {
   @Test
