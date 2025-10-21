@@ -546,6 +546,14 @@ struct `JSONSchemaValidation tests` {
     let schema = JSONSchema.object(valueSchema: .object(patternProperties: ["[": true]))
     expectContainsFailureReason(schema, [:], .patternCompilationError(pattern: "["))
   }
+
+  @Test
+  func `Value Must Not Match The Not Schema`() {
+    let notSchema = JSONSchema.object(valueSchema: .null)
+    let schema = JSONSchema.object(valueSchema: nil, not: notSchema)
+    expectValidates(schema, "foo")
+    expectContainsFailureReason(schema, .null, .matchesNot(schema: notSchema))
+  }
 }
 
 private func expectValidates(_ schema: JSONSchema, _ value: JSONSchema.Value) {

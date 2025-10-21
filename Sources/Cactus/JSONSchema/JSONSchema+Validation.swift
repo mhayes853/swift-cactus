@@ -81,6 +81,9 @@ extension JSONSchema {
       default:
         break
       }
+      if let notSchema = object.not, self.isValid(value: value, with: notSchema) {
+        context.appendFailureReason(.matchesNot(schema: notSchema))
+      }
     }
 
     private func validate(
@@ -326,6 +329,8 @@ extension JSONSchema.ValidationError {
     case objectMissingRequiredProperties(required: [String], missing: [String])
 
     case patternCompilationError(pattern: String)
+
+    case matchesNot(schema: JSONSchema)
   }
 }
 
