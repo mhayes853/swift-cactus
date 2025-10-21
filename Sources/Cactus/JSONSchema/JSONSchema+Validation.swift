@@ -224,6 +224,16 @@ extension JSONSchema {
           }
         }
       }
+      if let properties = schema.properties {
+        context.withPathSaveState { context, path in
+          for (property, value) in object {
+            context.path = path + [.objectValue(property: property)]
+            let propertySchema = properties[property] ?? schema.additionalProperties
+            guard let propertySchema else { continue }
+            self.validate(value: value, with: propertySchema, in: &context)
+          }
+        }
+      }
     }
   }
 }
@@ -296,6 +306,7 @@ extension JSONSchema.ValidationError {
   public enum PathElement: Hashable, Sendable {
     case arrayItem(index: Int)
     case objectProperty(property: String)
+    case objectValue(property: String)
   }
 }
 

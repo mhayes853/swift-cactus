@@ -430,6 +430,68 @@ struct `JSONSchemaValidation tests` {
       for: [.objectProperty(property: "b")]
     )
   }
+
+  @Test
+  func `Object Values Must Match Assigned Schemas`() {
+    let p1Schema = JSONSchema.object(valueSchema: .string())
+    let p2Schema = JSONSchema.object(valueSchema: .number())
+    let schema = JSONSchema.object(
+      valueSchema: .object(properties: ["a": p1Schema, "b": p2Schema])
+    )
+
+    expectValidates(schema, ["a": "hello"])
+    expectValidates(schema, [:])
+    expectValidates(schema, ["a": "hello", "b": 123])
+    expectValidates(schema, ["a": "hello", "b": 123, "c": true])
+    expectContainsFailureReason(
+      schema,
+      ["a": 1, "b": true],
+      .typeMismatch(expected: .string),
+      for: [.objectValue(property: "a")]
+    )
+    expectContainsFailureReason(
+      schema,
+      ["a": 1, "b": true],
+      .typeMismatch(expected: .number),
+      for: [.objectValue(property: "b")]
+    )
+  }
+
+  @Test
+  func `Object Forbids Additional Properties When Specified`() {
+    let p1Schema = JSONSchema.object(valueSchema: .string())
+    let p2Schema = JSONSchema.object(valueSchema: .number())
+    let schema = JSONSchema.object(
+      valueSchema: .object(properties: ["a": p1Schema, "b": p2Schema], additionalProperties: false)
+    )
+    expectContainsFailureReason(
+      schema,
+      ["a": "hello", "b": 1, "c": true],
+      .falseSchema,
+      for: [.objectValue(property: "c")]
+    )
+  }
+
+  @Test
+  func `Object Ensures That All Additional Properties Are Validated By Schema`() {
+    let p1Schema = JSONSchema.object(valueSchema: .string())
+    let p2Schema = JSONSchema.object(valueSchema: .number())
+    let additionalSchema = JSONSchema.object(valueSchema: .boolean)
+    let schema = JSONSchema.object(
+      valueSchema: .object(
+        properties: ["a": p1Schema, "b": p2Schema],
+        additionalProperties: additionalSchema
+      )
+    )
+    expectValidates(schema, ["a": "hello", "b": 123, "c": true])
+    expectValidates(schema, ["a": "hello", "b": 123, "c": true, "d": false])
+    expectContainsFailureReason(
+      schema,
+      ["a": "hello", "b": 1, "c": 10],
+      .typeMismatch(expected: .boolean),
+      for: [.objectValue(property: "c")]
+    )
+  }
 }
 
 private func expectValidates(_ schema: JSONSchema, _ value: JSONSchema.Value) {
