@@ -141,24 +141,12 @@ extension JSONSchema {
         context.appendFailureReason(.stringLengthTooLong(maximum: maxLength))
       }
       if let pattern = schema.pattern {
-        self.matches(string: string, pattern: pattern, in: &context)
-      }
-    }
-
-    private func matches(string: String, pattern: String, in context: inout Context) {
-      do {
-        let regex = try self.regexCache.withLock { cache in
-          if let regex = cache[pattern] {
-            return regex
-          }
-          cache[pattern] = try RegularExpression(pattern)
-          return cache[pattern]!
+        guard let regex = self.regexes(for: CollectionOfOne(pattern), in: &context)[pattern] else {
+          return
         }
         if !regex.matches(string) {
           context.appendFailureReason(.stringPatternMismatch(pattern: pattern))
         }
-      } catch {
-        context.appendFailureReason(.patternCompilationError(pattern: pattern))
       }
     }
 
@@ -233,6 +221,38 @@ extension JSONSchema {
             self.validate(value: value, with: propertySchema, in: &context)
           }
         }
+      }
+      if let patternProperties = schema.patternProperties {
+        let regexes = self.regexes(for: patternProperties.keys, in: &context)
+        context.withPathSaveState { context, path in
+          for (property, value) in object {
+            let pattern = regexes.first { $0.1.matches(property) }?.key
+            guard let propertySchema = pattern.flatMap({ patternProperties[$0] }) else { continue }
+
+            context.path = path + [.objectValue(property: property)]
+            self.validate(value: value, with: propertySchema, in: &context)
+          }
+        }
+      }
+    }
+
+    private func regexes(
+      for patterns: some Sequence<String>,
+      in context: inout Context
+    ) -> [String: RegularExpression] {
+      self.regexCache.withLock { cache in
+        var regexes = [String: RegularExpression]()
+        for pattern in patterns {
+          if let regex = cache[pattern] {
+            regexes[pattern] = regex
+          } else if let regex = try? RegularExpression(pattern) {
+            regexes[pattern] = regex
+            cache[pattern] = regex
+          } else {
+            context.appendFailureReason(.patternCompilationError(pattern: pattern))
+          }
+        }
+        return regexes
       }
     }
   }

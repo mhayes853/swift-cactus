@@ -492,6 +492,31 @@ struct `JSONSchemaValidation tests` {
       for: [.objectValue(property: "c")]
     )
   }
+
+  @Test
+  func `Object Pattern Matched Properties Must Match Associated Schema`() {
+    let p1Schema = JSONSchema.object(valueSchema: .string())
+    let p2Schema = JSONSchema.object(valueSchema: .number())
+    let schema = JSONSchema.object(
+      valueSchema: .object(patternProperties: ["[0-9]+": p2Schema, "[a-z]+": p1Schema])
+    )
+    expectValidates(schema, ["1": 1, "a": "hello"])
+    expectValidates(schema, [:])
+    expectValidates(schema, ["A": true])
+    expectValidates(schema, ["1": 1, "a": "hello", "2": 2, "b": "world"])
+    expectContainsFailureReason(
+      schema,
+      ["1": 1, "2": "two"],
+      .typeMismatch(expected: .number),
+      for: [.objectValue(property: "2")]
+    )
+  }
+
+  @Test
+  func `Object Pattern Matched Properties Must Be Valid Regexes`() {
+    let schema = JSONSchema.object(valueSchema: .object(patternProperties: ["[": true]))
+    expectContainsFailureReason(schema, [:], .patternCompilationError(pattern: "["))
+  }
 }
 
 private func expectValidates(_ schema: JSONSchema, _ value: JSONSchema.Value) {
