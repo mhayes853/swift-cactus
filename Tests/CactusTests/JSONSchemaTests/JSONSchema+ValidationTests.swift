@@ -713,7 +713,7 @@ struct `JSONSchemaValidation tests` {
 
 private func expectValidates(_ schema: JSONSchema, _ value: JSONSchema.Value) {
   #expect(throws: Never.self) {
-    try validator.validate(value: value, with: schema)
+    try JSONSchema.Validator.shared.validate(value: value, with: schema)
   }
 }
 
@@ -733,7 +733,7 @@ private func expectContainsFailureReasons(
   for path: [JSONSchema.ValidationError.PathElement] = []
 ) {
   do {
-    try validator.validate(value: value, with: schema)
+    try JSONSchema.Validator.shared.validate(value: value, with: schema)
     Issue.record("Value should not validate for schema.")
   } catch {
     expectNoDifference(
@@ -742,5 +742,3 @@ private func expectContainsFailureReasons(
     )
   }
 }
-
-private let validator = JSONSchema.Validator()
