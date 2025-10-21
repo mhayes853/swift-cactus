@@ -87,58 +87,24 @@ extension JSONSchema {
         context.appendFailureReason(.matchesNot(schema: notSchema))
       }
 
-      self.validateControlFlow(value: value, with: object, in: &context)
+      if let ifSchema = object.if {
+        self.validateControlFlow(
+          value: value,
+          with: ifSchema,
+          thenSchema: object.then,
+          elseSchema: object.else,
+          in: &context
+        )
+      }
 
       if let allOfSchemas = object.allOf {
-        var allOfContext = Context(path: context.path, failures: [])
-        allOfContext.withPathSaveState { context, path in
-          for (subschema, index) in zip(allOfSchemas, allOfSchemas.indices) {
-            context.path = path + [.allOf(index: index)]
-            self.validate(value: value, with: subschema, in: &context)
-          }
-        }
-
-        if !allOfContext.failures.isEmpty {
-          context.appendFailureReason(.allOfMismatch(failures: allOfContext.failures))
-        }
+        self.validateAllOf(value: value, with: allOfSchemas, in: &context)
       }
-
       if let anyOfSchemas = object.anyOf {
-        var anyOfContext = Context(path: context.path, failures: [])
-        var hasMatch = false
-        anyOfContext.withPathSaveState { context, path in
-          for (subschema, index) in zip(anyOfSchemas, anyOfSchemas.indices) {
-            context.path = path + [.anyOf(index: index)]
-            if !hasMatch {
-              let failureCount = context.failures.count
-              self.validate(value: value, with: subschema, in: &context)
-              hasMatch = context.failures.count == failureCount
-            }
-          }
-        }
-
-        if !hasMatch {
-          context.appendFailureReason(.anyOfMismatch(failures: anyOfContext.failures))
-        }
+        self.validateAnyOf(value: value, with: anyOfSchemas, in: &context)
       }
-
       if let oneOfSchemas = object.oneOf {
-        var oneOfContext = Context(path: context.path, failures: [])
-        var matchCount = 0
-        oneOfContext.withPathSaveState { context, path in
-          for (subschema, index) in zip(oneOfSchemas, oneOfSchemas.indices) {
-            context.path = path + [.oneOf(index: index)]
-            if matchCount <= 1 {
-              let failureCount = context.failures.count
-              self.validate(value: value, with: subschema, in: &context)
-              matchCount += context.failures.count == failureCount ? 1 : 0
-            }
-          }
-        }
-
-        if matchCount != 1 {
-          context.appendFailureReason(.oneOfMismatch(failures: oneOfContext.failures))
-        }
+        self.validateOneOf(value: value, with: oneOfSchemas, in: &context)
       }
     }
 
@@ -302,19 +268,87 @@ extension JSONSchema {
       }
     }
 
-    private func validateControlFlow(value: Value, with object: Object, in context: inout Context) {
-      if let ifSchema = object.if {
-        context.withPathSaveState { context, path in
-          if self.isValid(value: value, with: ifSchema) {
-            if let thenSchema = object.then {
-              context.path = path + [.then]
-              self.validate(value: value, with: thenSchema, in: &context)
-            }
-          } else if let elseSchema = object.else {
-            context.path = path + [.else]
-            self.validate(value: value, with: elseSchema, in: &context)
+    private func validateControlFlow(
+      value: Value,
+      with ifSchema: JSONSchema,
+      thenSchema: JSONSchema?,
+      elseSchema: JSONSchema?,
+      in context: inout Context
+    ) {
+      context.withPathSaveState { context, path in
+        if self.isValid(value: value, with: ifSchema) {
+          if let thenSchema = thenSchema {
+            context.path = path + [.then]
+            self.validate(value: value, with: thenSchema, in: &context)
+          }
+        } else if let elseSchema = elseSchema {
+          context.path = path + [.else]
+          self.validate(value: value, with: elseSchema, in: &context)
+        }
+      }
+    }
+
+    private func validateAllOf(
+      value: Value,
+      with schemas: [JSONSchema],
+      in context: inout Context
+    ) {
+      var allOfContext = Context(path: context.path, failures: [])
+      allOfContext.withPathSaveState { context, path in
+        for (subschema, index) in zip(schemas, schemas.indices) {
+          context.path = path + [.allOf(index: index)]
+          self.validate(value: value, with: subschema, in: &context)
+        }
+      }
+
+      if !allOfContext.failures.isEmpty {
+        context.appendFailureReason(.allOfMismatch(failures: allOfContext.failures))
+      }
+    }
+
+    private func validateAnyOf(
+      value: Value,
+      with schemas: [JSONSchema],
+      in context: inout Context
+    ) {
+      var anyOfContext = Context(path: context.path, failures: [])
+      var hasMatch = false
+      anyOfContext.withPathSaveState { context, path in
+        for (subschema, index) in zip(schemas, schemas.indices) {
+          context.path = path + [.anyOf(index: index)]
+          if !hasMatch {
+            let failureCount = context.failures.count
+            self.validate(value: value, with: subschema, in: &context)
+            hasMatch = context.failures.count == failureCount
           }
         }
+      }
+
+      if !hasMatch {
+        context.appendFailureReason(.anyOfMismatch(failures: anyOfContext.failures))
+      }
+    }
+
+    private func validateOneOf(
+      value: Value,
+      with schemas: [JSONSchema],
+      in context: inout Context
+    ) {
+      var oneOfContext = Context(path: context.path, failures: [])
+      var matchCount = 0
+      oneOfContext.withPathSaveState { context, path in
+        for (subschema, index) in zip(schemas, schemas.indices) {
+          context.path = path + [.oneOf(index: index)]
+          if matchCount <= 1 {
+            let failureCount = context.failures.count
+            self.validate(value: value, with: subschema, in: &context)
+            matchCount += context.failures.count == failureCount ? 1 : 0
+          }
+        }
+      }
+
+      if matchCount != 1 {
+        context.appendFailureReason(.oneOfMismatch(failures: oneOfContext.failures))
       }
     }
 
