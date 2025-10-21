@@ -332,6 +332,7 @@ struct `JSONSchemaValidation tests` {
     let itemSchema = JSONSchema.object(valueSchema: .number())
     let schema = JSONSchema.object(valueSchema: .array(items: .schemaForAll(itemSchema)))
 
+    expectValidates(schema, [])
     expectValidates(schema, [1, 2])
     expectContainsFailureReason(
       schema,

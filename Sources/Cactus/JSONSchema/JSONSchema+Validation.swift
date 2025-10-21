@@ -164,36 +164,34 @@ extension JSONSchema {
       if schema.uniqueItems == true && !array.isUnique {
         context.appendFailureReason(.arrayItemsNotUnique)
       }
-      if let containsSchema = schema.contains {
-        var contextCopy = Context(path: context.path, failures: [])
-        var doesContain = false
-        contextCopy.withPathSaveState { context, path in
-          for (value, index) in zip(array, array.indices) {
-            context.path = path + [.arrayItem(index: index)]
-            let failureCount = context.failures.count
-            self.validate(value: value, with: containsSchema, in: &context)
-            doesContain = doesContain || failureCount == context.failures.count
+
+      var containsContext = Context(path: context.path, failures: [])
+      let containsSchema = schema.contains ?? .object(valueSchema: nil)
+      var doesContain = schema.contains == nil
+      context.withPathSaveState { context, path in
+        let itemSchemas =
+          schema.items?.schemaPerItem(count: array.count, additionalItems: schema.additionalItems)
+          ?? AnySequence<JSONSchema?>(repeatElement(nil, count: array.count))
+
+        for (value, (index, itemSchema)) in zip(array, zip(array.indices, itemSchemas)) {
+          context.path = path + [.arrayItem(index: index)]
+          containsContext.path = context.path
+          if let itemSchema {
+            self.validate(value: value, with: itemSchema, in: &context)
           }
-        }
-        if !doesContain {
-          context.appendFailureReason(
-            .arrayContainsMismatch(schema: containsSchema, failures: contextCopy.failures)
-          )
+
+          if !doesContain {
+            let containsFailureCount = containsContext.failures.count
+            self.validate(value: value, with: containsSchema, in: &containsContext)
+            doesContain = doesContain || containsContext.failures.count == containsFailureCount
+          }
         }
       }
 
-      if let items = schema.items {
-        context.withPathSaveState { context, path in
-          let itemSchemas = items.schemaPerItem(
-            count: array.count,
-            additionalItems: schema.additionalItems
-          )
-          for (value, (index, itemSchema)) in zip(array, zip(array.indices, itemSchemas)) {
-            context.path = path + [.arrayItem(index: index)]
-            guard let itemSchema else { continue }
-            self.validate(value: value, with: itemSchema, in: &context)
-          }
-        }
+      if !doesContain {
+        context.appendFailureReason(
+          .arrayContainsMismatch(schema: containsSchema, failures: containsContext.failures)
+        )
       }
     }
 
