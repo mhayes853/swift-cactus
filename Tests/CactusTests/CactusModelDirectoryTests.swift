@@ -1,10 +1,13 @@
 import Cactus
 import CustomDump
-import Foundation
 import Testing
+
+import struct Foundation.URL
 
 #if canImport(FoundatioNetworking)
   import FoundationNetworking
+#else
+  import Foundation
 #endif
 
 @Suite

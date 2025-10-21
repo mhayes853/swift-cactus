@@ -1,7 +1,11 @@
-import Foundation
+import class Foundation.FileManager
+import struct Foundation.ObjCBool
+import struct Foundation.URL
 
 #if canImport(FoundationNetworking)
   import FoundationNetworking
+#else
+  import class Foundation.URLSessionConfiguration
 #endif
 
 // MARK: - CactusModelsDirectory
