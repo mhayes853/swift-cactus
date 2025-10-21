@@ -312,6 +312,76 @@ struct `JSONSchemaValidation tests` {
   }
 
   @Test
+  func `All Array Items Must Conform To Schema`() {
+    let itemSchema = JSONSchema.object(valueSchema: .number())
+    let schema = JSONSchema.object(valueSchema: .array(items: .schemaForAll(itemSchema)))
+
+    expectValidates(schema, [1, 2])
+    expectContainsFailureReason(
+      schema,
+      [1, "2"],
+      .typeMismatch(expected: .number),
+      for: [.arrayItem(index: 1)]
+    )
+  }
+
+  @Test
+  func `First N Array Items Must Conform To Schema`() {
+    let item1Schema = JSONSchema.object(valueSchema: .number())
+    let item2Schema = JSONSchema.object(valueSchema: .string())
+    let schema = JSONSchema.object(
+      valueSchema: .array(items: .itemsSchemas([item1Schema, item2Schema]))
+    )
+
+    expectValidates(schema, [1])
+    expectValidates(schema, [1, "2"])
+    expectValidates(schema, [1, "2", true])
+    expectContainsFailureReason(
+      schema,
+      [1, 2],
+      .typeMismatch(expected: .string),
+      for: [.arrayItem(index: 1)]
+    )
+  }
+
+  @Test
+  func `Array Doesn't Allow Additional Items When Specified`() {
+    let item1Schema = JSONSchema.object(valueSchema: .number())
+    let item2Schema = JSONSchema.object(valueSchema: .string())
+    let schema = JSONSchema.object(
+      valueSchema: .array(items: .itemsSchemas([item1Schema, item2Schema]), additionalItems: false)
+    )
+
+    expectContainsFailureReason(
+      schema,
+      [1, "2", true],
+      .falseSchema,
+      for: [.arrayItem(index: 2)]
+    )
+  }
+
+  @Test
+  func `Array Allows Additional Items According To The Specified Schema`() {
+    let item1Schema = JSONSchema.object(valueSchema: .number())
+    let item2Schema = JSONSchema.object(valueSchema: .string())
+    let additionalSchema = JSONSchema.object(valueSchema: .boolean)
+    let schema = JSONSchema.object(
+      valueSchema: .array(
+        items: .itemsSchemas([item1Schema, item2Schema]),
+        additionalItems: additionalSchema
+      )
+    )
+
+    expectValidates(schema, [1, "2", true])
+    expectContainsFailureReason(
+      schema,
+      [1, "2", "true"],
+      .typeMismatch(expected: .boolean),
+      for: [.arrayItem(index: 2)]
+    )
+  }
+
+  @Test
   func `Object Must Have Minimum Properties`() {
     let schema = JSONSchema.object(valueSchema: .object(minProperties: 2))
     expectValidates(schema, ["a": 1, "b": 2])
@@ -353,7 +423,7 @@ private func expectContainsFailureReason(
   _ schema: JSONSchema,
   _ value: JSONSchema.Value,
   _ reason: JSONSchema.ValidationError.Reason,
-  for path: [KeyPath<JSONSchema, JSONSchema?> & Sendable] = []
+  for path: [JSONSchema.ValidationError.PathElement] = []
 ) {
   expectContainsFailureReasons(schema, value, [reason], for: path)
 }
@@ -362,7 +432,7 @@ private func expectContainsFailureReasons(
   _ schema: JSONSchema,
   _ value: JSONSchema.Value,
   _ reasons: [JSONSchema.ValidationError.Reason],
-  for path: [KeyPath<JSONSchema, JSONSchema?> & Sendable] = []
+  for path: [JSONSchema.ValidationError.PathElement] = []
 ) {
   do {
     try validator.validate(value: value, with: schema)

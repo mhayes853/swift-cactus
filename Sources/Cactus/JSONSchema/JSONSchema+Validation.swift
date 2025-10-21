@@ -11,7 +11,7 @@ extension JSONSchema {
     /// Creates a validator.
     public init() {}
 
-    /// Validates the specified `value` against the schema held by this validator.
+    /// Validates the specified `value` against the specified ``JSONSchema``.
     ///
     /// - Parameters:
     ///   - value: The ``Value`` to validate.
@@ -23,6 +23,20 @@ extension JSONSchema {
 
       if !context.failures.isEmpty {
         throw ValidationError(failures: context.failures)
+      }
+    }
+
+    /// Returns true if the specified `value` is valid against the specified ``JSONSchema``.
+    ///
+    /// - Parameters:
+    ///   - value: The ``Value`` to validate.
+    ///   - schema: The ``JSONSchema`` to validate against.
+    public func isValid(value: Value, with schema: JSONSchema) -> Bool {
+      do {
+        try self.validate(value: value, with: schema)
+        return true
+      } catch {
+        return false
       }
     }
 
@@ -162,18 +176,24 @@ extension JSONSchema {
       if schema.uniqueItems == true && !array.isUnique {
         context.appendFailureReason(.arrayItemsNotUnique)
       }
-      if let contains = schema.contains {
-        let containsMatch = array.contains { value in
-          do {
-            try self.validate(value: value, with: contains)
-            return true
-          } catch {
-            return false
-          }
+      if let containsSchema = schema.contains,
+        !array.contains(where: { self.isValid(value: $0, with: containsSchema) })
+      {
+        context.appendFailureReason(.arrayContainsMismatch(schema: containsSchema))
+      }
+
+      if let items = schema.items {
+        let path = context.path
+        let itemSchemas = items.schemaPerItem(
+          count: array.count,
+          additionalItems: schema.additionalItems
+        )
+        for (value, (index, itemSchema)) in zip(array, zip(array.indices, itemSchemas)) {
+          context.path = path + [.arrayItem(index: index)]
+          guard let itemSchema else { continue }
+          self.validate(value: value, with: itemSchema, in: &context)
         }
-        if !containsMatch {
-          context.appendFailureReason(.arrayContainsMismatch(schema: contains))
-        }
+        context.path = path
       }
     }
 
@@ -204,7 +224,7 @@ extension JSONSchema {
 
 extension JSONSchema.Validator {
   private struct Context: Sendable {
-    var path = [KeyPath<JSONSchema, JSONSchema?> & Sendable]()
+    var path = [JSONSchema.ValidationError.PathElement]()
     private(set) var failures = [JSONSchema.ValidationError.Failure]()
 
     mutating func appendFailureReason(_ reason: JSONSchema.ValidationError.Reason) {
@@ -257,8 +277,31 @@ extension JSONSchema.ValidationError {
 }
 
 extension JSONSchema.ValidationError {
+  public enum PathElement: Hashable, Sendable {
+    case arrayItem(index: Int)
+  }
+}
+
+extension JSONSchema.ValidationError {
   public struct Failure: Hashable, Sendable {
-    public let subschemaPath: [KeyPath<JSONSchema, JSONSchema?> & Sendable]
+    public let subschemaPath: [PathElement]
     public let reason: Reason
+  }
+}
+
+// MARK: - Helpers
+
+extension JSONSchema.ValueSchema.Array.Items {
+  fileprivate func schemaPerItem(
+    count: Int,
+    additionalItems: JSONSchema?
+  ) -> AnySequence<JSONSchema?> {
+    switch (self, additionalItems) {
+    case (.schemaForAll(let schema), _):
+      return AnySequence(repeatElement(schema, count: count) as Repeated<JSONSchema?>)
+    case (.itemsSchemas(let itemsSchemas), let additionalItems):
+      let repetition = repeatElement(additionalItems, count: max(0, count - itemsSchemas.count))
+      return AnySequence(chain(itemsSchemas, repetition))
+    }
   }
 }
