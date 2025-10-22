@@ -3,34 +3,62 @@
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmhayes853%2Fswift-cactus%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/mhayes853/swift-cactus)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmhayes853%2Fswift-cactus%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/mhayes853/swift-cactus)
 
-A Swift client for [catus compute](https://github.com/cactus-compute/cactus).
+Swift bindings for [catus compute](https://github.com/cactus-compute/cactus).
 
 ## Overview
 
 Cactus is a framework for deploying LLMs locally in your app, and can act as a suitable alternative to FoundationModels for your app by offering more model choices and better performance.
 
-At the moment, this package provides a minimal Swifty interface above the Cactus C FFI, telemetry, and model downloading.
+At the moment, this package provides a minimal and low-level Swifty interface above the Cactus C FFI, JSON Schema, Cactus Telemetry, and model downloading.
 
 ## Quick Start
 
-You first must download the model you want to use, then you can create an instance of `CactusLanguageModel` to start generating.
+You first must download the model you want to use using `CactusModelsDirectory`, then you can create an instance of `CactusLanguageModel` with a local model `URL` to start generating.
 ```swift
 import Cactus
 
-let modelURL = URL.applicationSupportDirectory.appendingPathComponent("catus-models/qwen3-0.6")
-try await CactusLanguageModel.download(slug: "qwen3-0.6", to: modelURL)
+let modelURL = try await CactusModelsDirectory.shared
+  .modelURL(for: "qwen3-0.6")
 let model = try CactusLanguageModel(from: modelURL)
 
 let completion = try model.chatCompletion(
   messages: [
-    .system("You are a philosopher, philosophize about any questions you are asked."),
+    .system("You are a philosopher, philosophize about anything."),
     .user("What is the meaning of life?")
   ]
 )
 ```
 
 > [!NOTE]
-> The methods of `CactusLanguageModel` are synchronous and blocking, and the `CactusLanguageModel` class is also not Sendable. This gives you the flexibility to use the model on any thread, but you should almost certainly avoid running it directly on the main thread. Additionally, if you need concurrent access to the model, you may want to consider wrapping it in an actor.
+> The methods of `CactusLanguageModel` are synchronous and blocking, and the `CactusLanguageModel` class is also not Sendable. This gives you the flexibility to use the model in non-isolated and synchronous contexts, but you should almost certainly avoid using it directly on the main thread. If you need concurrent access to the model, you may want to consider wrapping it in an actor.
+> ```swift
+> final class LanguageModelActor {
+>   let model: CactusLanguageModel
+>
+>   init(model: sending CactusLanguageModel) {
+>     self.model = model
+>   }
+>
+>   func withIsolation<T, E: Error>(
+>     perform operation: (isolated Self) throws(E) -> sending T
+>   ) throws(E) -> sending T {
+>     try operation(self)
+>   }
+> }
+>
+> @concurrent
+> func chatInBackground(
+>   with modelActor: LanguageModelActor
+> ) async throws {
+>   try await modelActor.withIsolation { modelActor in
+>     // You can access the model directly because the closure
+>     // is isolated to modelActor.
+>     let model = modelActor.model
+>
+>     // ...
+>   }
+> }
+> ```
 
 ### Streaming
 
@@ -39,7 +67,7 @@ The `chatCompletion` method provides a callback the allows you to stream tokens 
 ```swift
 let completion = try model.chatCompletion(
   messages: [
-    .system("You are a philosopher, philosophize about any questions you are asked."),
+    .system("You are a philosopher, philosophize about anything."),
     .user("What is the meaning of life?")
   ]
 ) { token in
@@ -49,7 +77,7 @@ let completion = try model.chatCompletion(
 
 ### Tool Calling
 
-You can pass a list of tool definitions to the model, which the model can then invoke based on the schema of arguments you provide.
+You can pass a list of tool definitions to the model, which the model can then invoke based on the schema of arguments you provide. The tool calling format is based on the [JSON Schema format](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01).
 
 ```swift
 let completion = try model.chatCompletion(
@@ -80,17 +108,42 @@ let completion = try model.chatCompletion(
 // [
 //   CactusLanguageModel.ToolCall(
 //     name: "get_weather",
-//     arguments: ["location": .string("San Francisco")]
+//     arguments: ["location": "San Francisco"]
 //   )
 // ]
 print(completion.toolCalls)
 ```
 
-Your app is responsible for invoking code to fetch the weather for San Francisco, and passing the response back to the model as a new message.
+> [!NOTE]
+> Smaller models may struggle to generate tool arguments that match the `JSONSchema` you specify for the tool. Therefore, the library provides a way to manually validate any value against the schema you provide to the model using the `JSONSchema.Validator` class.
+> ```swift
+> let toolDefinition = CactusLanguageModel.ToolDefinition(
+>   name: "search",
+>   description: "Find something",
+>   parameters: .object(
+>     valueSchema: .object(
+>       properties: [
+>         "query": .object(valueSchema: .string(minLength: 1))
+>       ]
+>     )
+>   )
+> )
+> let completion = try model.chatCompletion(
+>   messages: messages,
+>   tools: [toolDefinition]
+> )
+>
+> for toolCall in completion.toolCalls {
+>   try JSONSchema.Validator.shared.validate(
+>     value: .object(toolCall.arguments),
+>     with: toolDefinition.parameters
+>   )
+> }
+> ```
 
 ### Embeddings
 
-You can generate embeddings by passing a `MutableSpan` as a buffer, or you can alternatively obtain a `[Float]` directly.
+You can generate embeddings by passing a `MutableSpan` as a buffer to `embeddings`, or you can alternatively obtain a `[Float]` directly.
 
 ```swift
 let embeddings: [Float] = try model.embeddings(for: "This is some text")
@@ -134,7 +187,7 @@ print(cosineSimilarity(fancy, pretty))
 
 ### Telemetry (iOS and macOS Only)
 
-You can configure telemetry in the entry point of your app.
+You can configure telemetry in the entry point of your app by calling `CactusTelemetry.configure`.
 
 ```swift
 import Cactus
@@ -150,7 +203,7 @@ struct MyApp: App {
 }
 ```
 
-`CactusLanguageModel` will automatically record telemetry events for every model initialization, chat completion, and emdeddings generation. You can view the telemetry data in the cactus dashboard.
+`CactusLanguageModel` will automatically record telemetry events for every model initialization, chat completion, and embeddings generation, but you can also send telemetry events manually using `CactusTelemetry.send`. You can view the telemetry data in the cactus dashboard.
 
 ## Documentation
 The documentation for releases and main are available here.
@@ -164,7 +217,7 @@ You can add Swift Cactus to an Xcode project by adding it to your project as a p
 If you want to use Swift Cactus in a [SwiftPM](https://swift.org/package-manager/) project, it's as simple as adding it to your `Package.swift`.
 ``` swift
 dependencies: [
-  .package(url: "https://github.com/mhayes853/swift-cactus", from: "0.1.0")
+  .package(url: "https://github.com/mhayes853/swift-cactus", from: "0.3.0")
 ]
 ```
 

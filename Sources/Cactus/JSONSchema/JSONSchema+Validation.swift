@@ -5,16 +5,33 @@ extension JSONSchema {
   ///
   /// You can use this to validate tool parameter output from a ``CactusLanguageModel``.
   /// ```swift
-  /// let completion = try model.chatCompletion(/* ... */)
+  /// let toolDefinition = CactusLanguageModel.ToolDefinition(
+  ///   name: "search",
+  ///   description: "Find something",
+  ///   parameters: .object(
+  ///     valueSchema: .object(
+  ///       properties: [
+  ///         "query": .object(valueSchema: .string(minLength: 1))
+  ///       ]
+  ///     )
+  ///   )
+  /// )
+  /// let completion = try model.chatCompletion(
+  ///   messages: messages,
+  ///   tools: [toolDefinition]
+  /// )
   ///
   /// for toolCall in completion.toolCalls {
-  ///   try JSONSchema.Validator.shared.validate(.object(toolCall.arguments))
+  ///   try JSONSchema.Validator.shared.validate(
+  ///     value: .object(toolCall.arguments),
+  ///     with: toolDefinition.parameters
+  ///   )
   /// }
   /// ```
   public final class Validator: Sendable {
     /// A shared validator instance.
     public static let shared = Validator()
-    
+
     private let regexCache = Lock([String: RegularExpression]())
 
     /// Creates a validator.
@@ -420,92 +437,92 @@ extension JSONSchema.ValidationError {
   /// The reason for a validation failure.
   public enum Reason: Hashable, Sendable {
     // MARK: - False Schema
-    
+
     /// The schema was a boolean set to `false`.
     case falseSchema
-    
+
     // MARK: - Top Level Mismatches
 
     /// A ``JSONSchema/Object/type`` mismatch.
     case typeMismatch(expected: JSONSchema.ValueType)
-    
+
     /// A ``JSONSchema/Object/const`` mismatch.
     case constMismatch(expected: JSONSchema.Value)
-    
+
     /// A ``JSONSchema/Object/enum`` mismatch.
     case enumMismatch(expected: [JSONSchema.Value])
-    
+
     /// A value matched ``JSONSchema/Object/not`` successfully.
     case matchesNot(schema: JSONSchema)
 
     /// A value did not match all schemas from ``JSONSchema/Object/allOf``.
     case allOfMismatch(failures: [Failure])
-    
+
     /// A value did not match any of the schemas from ``JSONSchema/Object/anyOf``.
     case anyOfMismatch(failures: [Failure])
-    
+
     /// A value did not match exactly one of the schemas from ``JSONSchema/Object/oneOf``.
     case oneOfMismatch(failures: [Failure])
-    
+
     // MARK: - Integer
 
     /// An integer was not a multiple of ``JSONSchema/ValueSchema/Integer/multipleOf``.
     case notMultipleOf(integer: Int)
-    
+
     /// An integer was below the minimum allowed value.
     case belowMinimum(inclusive: Bool, integer: Int)
-    
+
     /// An integer was above the maximum allowed value.
     case aboveMaximum(inclusive: Bool, integer: Int)
-    
+
     // MARK: - Number
 
     /// A number was not a multiple of ``JSONSchema/ValueSchema/Number/multipleOf``.
     case notMultipleOf(number: Double)
-    
+
     /// A number was below the minimum allowed value.
     case belowMinimum(inclusive: Bool, number: Double)
-    
+
     /// A number was above the maximum allowed value.
     case aboveMaximum(inclusive: Bool, number: Double)
-    
+
     // MARK: - String
 
     /// A string's length was too short.
     case stringLengthTooShort(minimum: Int)
-    
+
     /// A string's length was too long.
     case stringLengthTooLong(maximum: Int)
-    
+
     /// A string failed to match a regular expression pattern.
     case stringPatternMismatch(pattern: String)
-    
+
     // MARK: - Array
 
     /// An array's length was too short.
     case arrayLengthTooShort(minimum: Int)
-    
+
     /// An array's length was too long.
     case arrayLengthTooLong(maximum: Int)
-    
+
     /// An array did not have an item that matched ``JSONSchema/ValueSchema/Array/contains``.
     case arrayContainsMismatch(schema: JSONSchema, failures: [Failure])
-    
+
     /// The items of an array were not unique when ``JSONSchema/ValueSchema/Array/uniqueItems``
     /// was true.
     case arrayItemsNotUnique
-    
+
     // MARK: - Object
 
     /// An object didn't have enough properties.
     case objectPropertiesTooShort(minimum: Int)
-    
+
     /// An object had too many properties.
     case objectPropertiesTooLong(maximum: Int)
-    
+
     /// An object was missing required properties.
     case objectMissingRequiredProperties(required: [String], missing: [String])
-    
+
     // MARK: - Regex
 
     /// A regular expression pattern could not be compiled.
@@ -518,25 +535,25 @@ extension JSONSchema.ValidationError {
   public enum PathElement: Hashable, Sendable {
     /// Validating an array item.
     case arrayItem(index: Int)
-    
+
     /// Validating an object property name.
     case objectProperty(property: String)
-    
+
     /// Validating an object property value.
     case objectValue(property: String)
-    
+
     /// Validating against the ``JSONSchema/Object/then`` schema.
     case then
-    
+
     /// Validating against the ``JSONSchema/Object/else`` schema.
     case `else`
-    
+
     /// Validating against the ``JSONSchema/Object/allOf`` schemas.
     case allOf(index: Int)
-    
+
     /// Validating against the ``JSONSchema/Object/anyOf`` schemas.
     case anyOf(index: Int)
-    
+
     /// Validating against the ``JSONSchema/Object/oneOf`` schemas.
     case oneOf(index: Int)
   }
@@ -547,10 +564,10 @@ extension JSONSchema.ValidationError {
   public struct Failure: Hashable, Sendable {
     /// An array of ``PathElement`` instances that point to the cite of the failure.
     public let path: [PathElement]
-    
+
     /// The ``Reason`` for the failure.
     public let reason: Reason
-    
+
     /// Creates a failure.
     ///
     /// - Parameters:

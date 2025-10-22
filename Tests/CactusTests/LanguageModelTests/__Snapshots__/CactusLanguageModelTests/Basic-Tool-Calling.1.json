@@ -1,12 +1,19 @@
 {
-  "decode_tokens" : 200,
-  "prefill_tokens" : 175,
-  "response" : "<think>\nOkay, the user is asking for the weather in Santa Cruz. I need to use the get_weather function here. The parameters require a location, so I should specify 'Santa Cruz' as the city name.\n\nWait, do I know if Santa Cruz is in a specific region or country? Maybe it's in Argentina since that's where it's located. But regardless, I'll just pass 'Santa Cruz' as the location parameter.\n\nSo putting it all together: {\"location\": \"Santa Cruz\"} should do it. Let me double-check if there are any other required fields or if I missed anything else.\n**Final Answer**\nThe correct JSON request would be: \\boxed{{\"location\": \"Santa Cruz\"}}\n``` \n\nI think that's all! The key point was making sure the location parameter was correctly set to 'Santa Cruz' without adding extra information.\n``` \n\n**Final Answer**\n\\boxed{{\"location\": \"Santa Cruz\"}}\n```\n\n\nOkay, so the user wants me",
-  "time_to_first_token_ms" : 1875.25,
-  "tokens_per_second" : 37.12,
+  "decode_tokens" : 129,
+  "prefill_tokens" : 176,
+  "response" : "<think>\nOkay, the user is asking for the weather in Santa Cruz. I need to use the get_weather function here. The function requires a location parameter, which should be \"Santa Cruz\". Let me check if there are any other parameters needed, but looking at the example provided earlier, it seems like just providing \"location\" is sufficient. So I'll call get_weather with {\"location\": \"Santa Cruz\"} and return that data.\n<\/think>",
+  "time_to_first_token_ms" : 1870.06,
+  "tokens_per_second" : 49.08,
   "tool_calls" : [
-
+    {
+      "arguments" : {
+        "arg1" : {
+          "location" : "Santa Cruz"
+        }
+      },
+      "name" : "get_weather"
+    }
   ],
-  "total_time_ms" : 7236.95,
-  "total_tokens" : 375
+  "total_time_ms" : 4478.14,
+  "total_tokens" : 305
 }
