@@ -41,6 +41,9 @@ public final class CactusLanguageModel {
   /// The ``Configuration`` for this model.
   public let configuration: Configuration
 
+  /// The ``Properties`` for this model.
+  public let properties: Properties
+
   /// The underlying model pointer.
   public let model: cactus_model_t
 
@@ -64,6 +67,9 @@ public final class CactusLanguageModel {
       let model = cactus_init(configuration.modelURL.nativePath, configuration.contextSize)
       guard let model else { throw ModelCreationError(configuration: configuration) }
       self.model = model
+      self.properties = try Properties(
+        contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
+      )
       CactusTelemetry.send(CactusTelemetry.LanguageModelInitEvent(configuration: configuration))
     } catch let error as ModelCreationError {
       CactusTelemetry.send(

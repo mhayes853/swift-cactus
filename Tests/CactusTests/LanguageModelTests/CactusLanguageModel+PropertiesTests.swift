@@ -14,7 +14,14 @@ struct `CactusLanguageModelProperties tests` {
       hidden_dim=640
       num_layers=18
       attention_heads=4
-      attention_kv_heads=1
+
+
+        attention_kv_heads=1
+
+      skjhjkhskjhks
+
+      unrelated=unrelated
+
       ffn_intermediate_dim=2048
       context_length=32768
       rope_theta=1000000.0
