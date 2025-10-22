@@ -48,7 +48,7 @@ struct `CactusLanguageModelProperties tests` {
       topExpertCount: 0,
       moeEveryNLayers: 0,
       shouldTieWordEmbeddings: true,
-      contextLength: 32768,
+      contextLengthTokens: 32768,
       modelType: .gemma,
       precision: .fp16
     )

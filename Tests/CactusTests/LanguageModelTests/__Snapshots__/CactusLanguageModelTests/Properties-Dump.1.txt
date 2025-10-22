@@ -3,7 +3,7 @@
   - attentionHeads: 16
   - attentionKVHeads: 8
   - beginningOfSequenceTokenId: 151643
-  - contextLength: 40960
+  - contextLengthTokens: 40960
   - endOfSequenceTokenId: 151645
   - expertCount: 0
   - ffnIntermediateDimensions: 3072
