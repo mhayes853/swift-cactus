@@ -33,6 +33,14 @@ extension BaseTestSuite {
     }
 
     @Test
+    func `Properties Dump`() async throws {
+      let modelURL = try await CactusLanguageModel.testModelURL()
+      let model = try CactusLanguageModel(from: modelURL)
+
+      assertSnapshot(of: model.properties, as: .dump)
+    }
+
+    @Test
     func `Throws Buffer Too Small Error When Buffer Size Too Small`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       let model = try CactusLanguageModel(from: modelURL)

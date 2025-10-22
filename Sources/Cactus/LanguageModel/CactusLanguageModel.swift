@@ -41,6 +41,9 @@ public final class CactusLanguageModel {
   /// The ``Configuration`` for this model.
   public let configuration: Configuration
 
+  /// The ``Properties`` for this model.
+  public let properties: Properties
+
   /// The underlying model pointer.
   public let model: cactus_model_t
 
@@ -64,6 +67,9 @@ public final class CactusLanguageModel {
       let model = cactus_init(configuration.modelURL.nativePath, configuration.contextSize)
       guard let model else { throw ModelCreationError(configuration: configuration) }
       self.model = model
+      self.properties = try Properties(
+        contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
+      )
       CactusTelemetry.send(CactusTelemetry.LanguageModelInitEvent(configuration: configuration))
     } catch let error as ModelCreationError {
       CactusTelemetry.send(
@@ -148,7 +154,8 @@ extension CactusLanguageModel {
   ///   - text: The text to generate embeddings for.
   ///   - maxBufferSize: The size of the buffer to allocate to store the embeddings.
   /// - Returns: An array of float values.
-  public func embeddings(for text: String, maxBufferSize: Int = 2048) throws -> [Float] {
+  public func embeddings(for text: String, maxBufferSize: Int? = nil) throws -> [Float] {
+    let maxBufferSize = maxBufferSize ?? self.bufferSize(for: text.utf8.count)
     let rawBuffer = UnsafeMutablePointer<Float>.allocate(capacity: maxBufferSize)
     defer { rawBuffer.deallocate() }
     var buffer = MutableSpan(_unsafeStart: rawBuffer, count: maxBufferSize)
@@ -258,8 +265,8 @@ extension CactusLanguageModel {
   /// - Returns: A ``ChatCompletion``.
   public func chatCompletion(
     messages: [ChatMessage],
-    options: ChatCompletion.Options = ChatCompletion.Options(),
-    maxBufferSize: Int = 2048,
+    options: ChatCompletion.Options? = nil,
+    maxBufferSize: Int? = nil,
     tools: [ToolDefinition] = [],
     onToken: @escaping (String) -> Void = { _ in }
   ) throws -> ChatCompletion {
@@ -268,6 +275,8 @@ extension CactusLanguageModel {
       message: "Response buffer too small",
       configuration: self.configuration
     )
+    let options = options ?? ChatCompletion.Options(modelType: self.properties.modelType)
+    let maxBufferSize = maxBufferSize ?? self.bufferSize(for: options.maxTokens)
     guard maxBufferSize > 0 else {
       CactusTelemetry.send(bufferTooSmallEvent)
       throw ChatCompletionError.bufferSizeTooSmall
@@ -369,7 +378,7 @@ extension CactusLanguageModel.ChatCompletion {
     public var topP: Float
 
     /// The k most probable options to limit the next word to.
-    public var topK: Float
+    public var topK: Int
 
     /// An array of stop sequence phrases.
     public var stopSequences: [String]
@@ -384,15 +393,33 @@ extension CactusLanguageModel.ChatCompletion {
     ///   - stopSequences: An array of stop sequence phrases.
     public init(
       maxTokens: Int = 200,
-      temperature: Float = 0.1,
+      temperature: Float = 0.6,
       topP: Float = 0.95,
-      topK: Float = 40,
+      topK: Int = 20,
       stopSequences: [String] = ["<|im_end|>", "<end_of_turn>"]
     ) {
       self.maxTokens = maxTokens
       self.temperature = temperature
       self.topP = topP
       self.topK = topK
+      self.stopSequences = stopSequences
+    }
+
+    /// Creates options for generating a ``CactusLanguageModel/ChatCompletion``.
+    ///
+    /// - Parameters:
+    ///   - maxTokens: The maximum number of tokens for the completion.
+    ///   - modelType: The model type.
+    ///   - stopSequences: An array of stop sequence phrases.
+    public init(
+      maxTokens: Int = 200,
+      modelType: CactusLanguageModel.ModelType,
+      stopSequences: [String] = ["<|im_end|>", "<end_of_turn>"]
+    ) {
+      self.maxTokens = maxTokens
+      self.temperature = modelType.defaultTemperature
+      self.topP = modelType.defaultTopP
+      self.topK = modelType.defaultTopK
       self.stopSequences = stopSequences
     }
 
@@ -451,5 +478,13 @@ extension CactusLanguageModel {
   /// Resets the context state of the model.
   public func reset() {
     cactus_reset(self.model)
+  }
+}
+
+// MARK: - Helpers
+
+extension CactusLanguageModel {
+  private func bufferSize(for contentLength: Int) -> Int {
+    max(contentLength * self.properties.precision.bits, 1024)
   }
 }
