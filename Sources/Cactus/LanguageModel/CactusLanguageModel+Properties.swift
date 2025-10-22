@@ -141,14 +141,14 @@ extension CactusLanguageModel {
 extension CactusLanguageModel {
   public struct ModelType: Hashable, Sendable, Codable {
     public var identifier: String
-    public var defaultTemperature: Double
-    public var defaultTopP: Double
+    public var defaultTemperature: Float
+    public var defaultTopP: Float
     public var defaultTopK: Int
 
     public init(
       identifier: String,
-      defaultTemperature: Double,
-      defaultTopP: Double,
+      defaultTemperature: Float,
+      defaultTopP: Float,
       defaultTopK: Int
     ) {
       self.identifier = identifier
