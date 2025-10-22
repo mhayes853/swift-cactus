@@ -58,26 +58,6 @@ extension BaseTestSuite {
       }
     }
 
-    @Test(
-      arguments: [
-        (CactusLanguageModel.SchemaType.number, "\"number\""),
-        (.string, "\"string\""),
-        (.boolean, "\"boolean\""),
-        (.null, "\"null\""),
-        (.array, "\"array\""),
-        (.object, "\"object\""),
-        (.types([.string, .number]), "[\"string\",\"number\"]")
-      ]
-    )
-    @available(*, deprecated)
-    func `Schema Type JSON`(value: CactusLanguageModel.SchemaType, json: String) throws {
-      let data = try JSONEncoder().encode(value)
-      expectNoDifference(String(decoding: data, as: UTF8.self), json)
-
-      let decodedValue = try JSONDecoder().decode(CactusLanguageModel.SchemaType.self, from: data)
-      expectNoDifference(value, decodedValue)
-    }
-
     @Test
     func `Basic Chat Completion`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()

@@ -1,12 +1,12 @@
 {
   "decode_tokens" : 200,
   "prefill_tokens" : 34,
-  "response" : "<think>\nOkay, the user asked \"What is the meaning of life?\" as a philosophical question. As a philosopher with a deep understanding in this area, I can vary across different perspectives on what's considered meaningful.\n\nFirstly, one might consider concepts such as 'New York', 'London', etc.'\", \"value\":\"string\"}},\n     \t\"parameters\": {\n       \t\"name\":\"location\",\n       \t\"description\":\"City name (e.g., 'New York', 'London', etc.)\", \"required\": true\"},\n   }\n 2\n]\n{\n   ...\n]\n\nNow, call weather for getting weather. The location is located at [1. If there are some data from which one?\n\nA\n\nThe user wants me as much better assistance.\n\nFirstly, perhaps first thing to get weather by location name. So I need is specified in JSON format where 'location') and its description says that they can use this function as long, but for our example shows an example like \"New York\",",
-  "time_to_first_token_ms" : 554.81,
-  "tokens_per_second" : 40.22,
+  "response" : "<think>\nOkay, so I need to figure out of life\" refers to be asked by definition: The Socratic perspective? Like \"What's possible interpretations.\n\nWait, let me think about how people approach it. Some might see meaning as the feeling in the text\", \"parameters\": {\"type\":\"person\",\"location\":{\"minLength\":100, 32:{\"location\":\"Santa Cruz],\n          output: [output: [weather_data\"\n         },\n      }]\n    },\n    ...}\n]\n\nOkay, let's answer the question here is asking about the weather in Santa Cruz. They provided a list of possible tools provided as a tool. The function named 'weather.\n\nFirst, I need to understand what the available tools provided by the user mentioned in the example code shows that's already set up until now, but no actual weather function implemented.\n\nSo my job is to create a tool if available functions are listed here.\n\nThe examples include input like [city_name parameter's output value being \"",
+  "time_to_first_token_ms" : 406.2,
+  "tokens_per_second" : 40.05,
   "tool_calls" : [
 
   ],
-  "total_time_ms" : 5502.25,
+  "total_time_ms" : 5374.89,
   "total_tokens" : 234
 }

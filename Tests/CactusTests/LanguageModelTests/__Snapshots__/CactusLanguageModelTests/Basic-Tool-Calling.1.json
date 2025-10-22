@@ -1,19 +1,12 @@
 {
-  "decode_tokens" : 129,
-  "prefill_tokens" : 176,
-  "response" : "<think>\nOkay, the user is asking for the weather in Santa Cruz. I need to use the get_weather function here. The function requires a location parameter, which should be \"Santa Cruz\". Let me check if there are any other parameters needed, but looking at the example provided earlier, it seems like just providing \"location\" is sufficient. So I'll call get_weather with {\"location\": \"Santa Cruz\"} and return that data.\n<\/think>",
-  "time_to_first_token_ms" : 1870.06,
-  "tokens_per_second" : 49.08,
+  "decode_tokens" : 200,
+  "prefill_tokens" : 160,
+  "response" : "<think>\nOkay, so the user is asking for the weather in Santa Cruz and wants me to use a tool called get_weather. Let me check what parameters that function requires. The description says it takes city name and location as parameters.\n\nWait, the examples show input like [\"city_name\", \"location\"], but looking at their examples, they have \"input\": [city_name], which might be missing location? Or maybe there was an error in formatting earlier? Hmm... Maybe it should be [\"city_name\", \"location\"] so that both parameters are required.\n\nOnce I confirm that both city name and location are needed (though in this case it's just the location), then I should structure an example input with those two values. For instance, if they want to get weather for \"Santa Cruz\" in a specific area, like \"San Francisco\", then maybe including both parameters would be better.\n\nBut looking at their examples provided earlier: The first example has an input of [city_name], which might",
+  "time_to_first_token_ms" : 1685.08,
+  "tokens_per_second" : 36.85,
   "tool_calls" : [
-    {
-      "arguments" : {
-        "arg1" : {
-          "location" : "Santa Cruz"
-        }
-      },
-      "name" : "get_weather"
-    }
+
   ],
-  "total_time_ms" : 4478.14,
-  "total_tokens" : 305
+  "total_time_ms" : 7085.9,
+  "total_tokens" : 360
 }
