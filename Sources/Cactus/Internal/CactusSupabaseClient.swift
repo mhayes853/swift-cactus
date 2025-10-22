@@ -25,7 +25,10 @@ final class CactusSupabaseClient: Sendable {
 extension CactusSupabaseClient {
   func availableModels() async throws -> [CactusLanguageModel.Metadata] {
     var components = URLComponents(string: self.baseURL(for: "/rest/v1/models").absoluteString)!
-    components.queryItems = [URLQueryItem(name: "select", value: "*")]
+    components.queryItems = [
+      URLQueryItem(name: "select", value: "*"),
+      URLQueryItem(name: "isLive", value: "eq.true")
+    ]
 
     let (data, _) = try await self.session.data(for: self.baseRequest(for: components.url!))
     return try self.supabaseJSONDecoder.decode([CactusLanguageModel.Metadata].self, from: data)
@@ -103,6 +106,7 @@ extension CactusSupabaseClient {
     request.addValue("Bearer \(self.cactusSupabaseKey)", forHTTPHeaderField: "Authorization")
     request.addValue("application/json", forHTTPHeaderField: "Content-Type")
     request.addValue("cactus", forHTTPHeaderField: "Content-Profile")
+    request.addValue("cactus", forHTTPHeaderField: "Accept-Profile")
     return request
   }
 }

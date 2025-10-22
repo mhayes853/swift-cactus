@@ -5,7 +5,7 @@ import Testing
 extension BaseTestSuite {
   @Suite
   struct `CactusLanguageModelMetadata tests` {
-    @Test(.disabled())
+    @Test
     func `Available Models`() async throws {
       let models = try await CactusLanguageModel.sharedAvailableModels()
       assertSnapshot(of: models, as: .json)
