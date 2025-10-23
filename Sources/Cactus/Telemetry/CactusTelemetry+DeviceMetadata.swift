@@ -15,7 +15,7 @@
 extension CactusTelemetry {
   /// Device info for telemetry.
   public struct DeviceMetadata: Hashable, Sendable, Codable {
-    /// The name of the device.
+    /// The model name of the device.
     public var model: String
 
     /// The operating system of the device.
@@ -33,7 +33,7 @@ extension CactusTelemetry {
     /// Creates device metadata.
     ///
     /// - Parameters:
-    ///   - name: The name of the device.
+    ///   - model: The model name of the device.
     ///   - os: The operating system of the device.
     ///   - osVersion: A stringified os version of the device.
     ///   - deviceId: A device vendor id.

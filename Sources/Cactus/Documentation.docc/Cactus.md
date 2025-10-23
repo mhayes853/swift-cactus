@@ -90,7 +90,7 @@ let completion = try model.chatCompletion(
           properties: [
             "location": .object(
               description: "City name, eg. 'San Francisco'",
-              type: .string(minLength: 1),
+              valueSchema: .string(minLength: 1),
               examples: ["San Francisco"]
             )
           ],
