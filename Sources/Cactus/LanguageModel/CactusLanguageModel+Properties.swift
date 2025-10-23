@@ -4,15 +4,11 @@ import Foundation
 
 extension CactusLanguageModel {
   /// A data type describing properties of a model.
+  ///
+  /// Generally, this information comes from the `config.txt` file inside the model's directory.
   public struct Properties: Hashable, Sendable {
     /// The size of the model vocabulary.
     public var vocabularySize: Int
-
-    /// The token id that marks the beginning of a sequence.
-    public var beginningOfSequenceTokenId: UInt32
-
-    /// The token id that marks the end of a sequence.
-    public var endOfSequenceTokenId: UInt32
 
     /// The number of layers.
     public var layerCount: Int
@@ -66,8 +62,6 @@ extension CactusLanguageModel {
     ///
     /// - Parameters:
     ///   - vocabularySize: The size of the model vocabulary.
-    ///   - beginningOfSequenceTokenId: The token id that marks the beginning of a sequence.
-    ///   - endOfSequenceTokenId: The token id that marks the end of a sequence.
     ///   - layerCount: The number of layers.
     ///   - hiddenDimensions: The number of hidden dimenstions.
     ///   - ffnIntermediateDimensions: The number of intermediate dimensions in the model’s
@@ -90,8 +84,6 @@ extension CactusLanguageModel {
     ///   - precision: The ``CactusLanguageModel/Precision`` of the model.
     public init(
       vocabularySize: Int,
-      beginningOfSequenceTokenId: UInt32 = 151643,
-      endOfSequenceTokenId: UInt32 = 151645,
       layerCount: Int,
       hiddenDimensions: Int,
       ffnIntermediateDimensions: Int,
@@ -110,8 +102,6 @@ extension CactusLanguageModel {
       precision: Precision
     ) {
       self.vocabularySize = vocabularySize
-      self.beginningOfSequenceTokenId = beginningOfSequenceTokenId
-      self.endOfSequenceTokenId = endOfSequenceTokenId
       self.layerCount = layerCount
       self.hiddenDimensions = hiddenDimensions
       self.ffnIntermediateDimensions = ffnIntermediateDimensions
@@ -199,10 +189,10 @@ extension CactusLanguageModel {
   public struct Precision: Hashable, Sendable {
     /// The number of bits used to represent each weight or activation value.
     public let bits: Int
-    
+
     /// Whether or not the precision format is a floating point format.
     public let isFloatingPoint: Bool
-    
+
     /// Creates a precision.
     ///
     /// - Parameters:
@@ -215,13 +205,13 @@ extension CactusLanguageModel {
 
     /// INT4 precision.
     public static let int4 = Self(bits: 4, isFloatingPoint: false)
-    
+
     /// INT8 precision.
     public static let int8 = Self(bits: 8, isFloatingPoint: false)
-    
+
     /// FP16 precision.
     public static let fp16 = Self(bits: 16, isFloatingPoint: true)
-    
+
     /// FP32 precision.
     public static let fp32 = Self(bits: 32, isFloatingPoint: true)
   }
@@ -234,16 +224,16 @@ extension CactusLanguageModel {
   public struct ModelType: Hashable, Sendable, Codable {
     /// A named identifier for the model (eg. `"gemma"`).
     public var identifier: String
-    
+
     /// The default temperature to use for chat completions.
     public var defaultTemperature: Float
-    
+
     /// The default nucleus sampling to use for chat completions.
     public var defaultTopP: Float
-    
+
     /// The default k most probable options to limit the next word to.
     public var defaultTopK: Int
-    
+
     /// Creates a model type.
     ///
     /// - Parameters:
