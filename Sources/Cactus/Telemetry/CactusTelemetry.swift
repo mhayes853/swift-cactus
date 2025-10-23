@@ -28,7 +28,9 @@ public enum CactusTelemetry {
   #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
     /// Configures telemetry with the specified token and default client.
     ///
-    /// - Parameter token: The telemetry token from the cactus dashboard.
+    /// - Parameters:
+    ///   - token: The telemetry token from the cactus dashboard.
+    ///   - logger: The logger to use for configuration.
     @MainActor
     public static func configure(
       _ token: String,
@@ -44,6 +46,7 @@ public enum CactusTelemetry {
     /// - Parameters:
     ///   - token: The telemetry token from the cactus dashboard.
     ///   - client: The ``Client`` to use.
+    ///   - logger: The logger to use for configuration.
     @MainActor
     public static func configure(
       _ token: String,
@@ -60,7 +63,7 @@ public enum CactusTelemetry {
   ///   - token: The telemetry token from the cactus dashboard.
   ///   - deviceMetadata: The ``DeviceMetadata`` of the current device.
   ///   - client: The ``Client`` to use.
-  ///   - logger: A `Logger` for this operation.
+  ///   - logger: The logger to use for configuration.
   public static func configure(
     _ token: String,
     deviceMetadata: DeviceMetadata,
@@ -82,7 +85,7 @@ public enum CactusTelemetry {
   ///
   /// - Parameters:
   ///   - event: The event to send.
-  ///   - logger: A `Logger` for this operation.
+  ///   - logger: The logger to use for this sending an event.
   public static func send(
     _ event: any Event & Sendable,
     logger: Logger = Logger(label: "cactus.telemetry.send.event")
@@ -102,9 +105,11 @@ public enum CactusTelemetry {
 
   /// Registers the specified ``DeviceMetadata``.
   ///
+  /// Calling ``configure(_:logger:)`` will register the current device information automatically.
+  ///
   /// - Parameters:
   ///   - metadata: The ``DeviceMetadata`` of the device.
-  ///   - logger: A `Logger` for this operation.
+  ///   - logger: The logger to use for registering a device.
   public static func registerDevice(
     _ metadata: DeviceMetadata,
     logger: Logger = Logger(label: "cactus.telemetry.register.device")

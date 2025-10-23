@@ -21,7 +21,8 @@ let package = Package(
     .package(url: "https://github.com/mhayes853/swift-operation", from: "0.1.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.4.3"),
     .package(url: "https://github.com/apple/swift-log", from: "1.6.4"),
-    .package(url: "https://github.com/apple/swift-crypto", from: "4.0.0")
+    .package(url: "https://github.com/apple/swift-crypto", from: "4.0.0"),
+    .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.1.0")
   ],
   targets: [
     .target(

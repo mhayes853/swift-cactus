@@ -69,10 +69,9 @@ extension CactusLanguageModel {
   /// You must manually start the download by calling ``DownloadTask/resume()``.
   ///
   /// - Parameters:
-  ///   - url: The slug of the model.
+  ///   - slug: The slug of the model.
   ///   - destination: The `URL` to download the model to.
   ///   - configuration: A `URLSessionConfiguration` for the download.
-  ///   - onProgress: A callback that is invoked when progress is made towards the download.
   /// - Returns: A ``DownloadTask``.
   public static func downloadModelTask(
     slug: String,
@@ -94,7 +93,6 @@ extension CactusLanguageModel {
   ///   - url: The source download `URL` of the model.
   ///   - destination: The `URL` to download the model to.
   ///   - configuration: A `URLSessionConfiguration` for the download.
-  ///   - onProgress: A callback that is invoked when progress is made towards the download.
   /// - Returns: A ``DownloadTask``.
   public static func downloadModelTask(
     from url: URL,
