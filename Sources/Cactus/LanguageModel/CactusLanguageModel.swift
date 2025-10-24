@@ -228,8 +228,12 @@ extension CactusLanguageModel {
     /// The total amount of tokens that make up the response.
     public let totalTokens: Int
 
+    private let functionCall: FunctionCall?
+
     /// A list of ``CactusLanguageModel/ToolCall`` instances from the model.
-    public let toolCalls: [ToolCall]
+    public var toolCalls: [ToolCall] {
+      self.functionCall.map { [$0.functionCall] } ?? []
+    }
 
     private let timeToFirstTokenMs: Double
     private let totalTimeMs: Double
@@ -242,6 +246,14 @@ extension CactusLanguageModel {
     /// The total generation time in seconds.
     public var totalTimeInterval: TimeInterval {
       self.totalTimeMs / 1000
+    }
+
+    private struct FunctionCall: Hashable, Sendable, Codable {
+      let functionCall: ToolCall
+
+      private enum CodingKeys: String, CodingKey {
+        case functionCall = "function_call"
+      }
     }
   }
 
@@ -441,8 +453,7 @@ extension CactusLanguageModel.ChatCompletion: Decodable {
     self.prefillTokens = try container.decode(Int.self, forKey: .prefillTokens)
     self.decodeTokens = try container.decode(Int.self, forKey: .decodeTokens)
     self.totalTokens = try container.decode(Int.self, forKey: .totalTokens)
-    self.toolCalls =
-      try container.decodeIfPresent([CactusLanguageModel.ToolCall].self, forKey: .toolCalls) ?? []
+    self.functionCall = try container.decodeIfPresent(FunctionCall.self, forKey: .functionCall)
     self.timeToFirstTokenMs = try container.decode(Double.self, forKey: .timeToFirstTokenMs)
     self.totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
   }
@@ -455,7 +466,7 @@ extension CactusLanguageModel.ChatCompletion: Encodable {
     case prefillTokens = "prefill_tokens"
     case decodeTokens = "decode_tokens"
     case totalTokens = "total_tokens"
-    case toolCalls = "tool_calls"
+    case functionCall = "function_call"
     case timeToFirstTokenMs = "time_to_first_token_ms"
     case totalTimeMs = "total_time_ms"
   }

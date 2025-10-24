@@ -1,17 +1,17 @@
 {
-  "decode_tokens" : 118,
-  "prefill_tokens" : 176,
-  "response" : "<think>\nOkay, the user is asking for the weather in Santa Cruz. I need to use the get_weather function here. The parameters required are location, so I should call it with \"Santa Cruz\" as the location. Let me check if there's any other info needed, but since they just asked for Santa Cruz's weather, that's all. Make sure to format it correctly with tool_call syntax.\n<\/think>",
-  "time_to_first_token_ms" : 1615.36,
-  "tokens_per_second" : 47.85,
-  "tool_calls" : [
-    {
+  "decode_tokens" : 182,
+  "function_call" : {
+    "function_call" : {
       "arguments" : {
-        "location" : ""
+        "location" : "Santa Cruz"
       },
       "name" : "get_weather"
     }
-  ],
-  "total_time_ms" : 4060.31,
-  "total_tokens" : 294
+  },
+  "prefill_tokens" : 158,
+  "response" : "<think>\nOkay, let's see. The user asked for the weather in Santa Cruz. I need to use the get_weather function here.\n\nThe function requires a location parameter, which is supposed to be a city name like \"San Francisco\". Since Santa Cruz is the city mentioned directly in the query without any additional context like state or country, I can input \"Santa Cruz\" into the function call. \n\nWait, does \"Santa Cruz\" qualify as a city name? Yes, it's a well-known location in South America. The function parameters specify the location as \"City name\", so using \"Santa Cruz\" should work. \n\nI don't see any other parameters needed here. Just call get_weather with location set to \"Santa Cruz\". That should retrieve the weather information for them.\n<\/think>",
+  "time_to_first_token_ms" : 857.05,
+  "tokens_per_second" : 23.32,
+  "total_time_ms" : 8619.87,
+  "total_tokens" : 340
 }
