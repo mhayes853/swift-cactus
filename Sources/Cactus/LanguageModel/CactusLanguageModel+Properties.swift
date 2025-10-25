@@ -284,5 +284,13 @@ extension CactusLanguageModel {
       defaultTopP: 0.95,
       defaultTopK: 20
     )
+
+    /// A model type for lfm2 models.
+    public static let lfm2 = Self(
+      identifier: "lfm2",
+      defaultTemperature: 0.3,
+      defaultTopP: 0.95,
+      defaultTopK: 20
+    )
   }
 }
