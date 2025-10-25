@@ -27,7 +27,7 @@ extension CactusSupabaseClient {
     var components = URLComponents(string: self.baseURL(for: "/rest/v1/models").absoluteString)!
     components.queryItems = [
       URLQueryItem(name: "select", value: "*"),
-      URLQueryItem(name: "isLive", value: "eq.true")
+      URLQueryItem(name: "is_live", value: "eq.true")
     ]
 
     let (data, _) = try await self.session.data(for: self.baseRequest(for: components.url!))

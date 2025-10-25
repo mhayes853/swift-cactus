@@ -1,17 +1,17 @@
 {
-  "decode_tokens" : 182,
+  "decode_tokens" : 33,
   "function_call" : {
     "function_call" : {
       "arguments" : {
-        "location" : "Santa Cruz"
+        "location" : ""
       },
       "name" : "get_weather"
     }
   },
-  "prefill_tokens" : 158,
-  "response" : "<think>\nOkay, let's see. The user asked for the weather in Santa Cruz. I need to use the get_weather function here.\n\nThe function requires a location parameter, which is supposed to be a city name like \"San Francisco\". Since Santa Cruz is the city mentioned directly in the query without any additional context like state or country, I can input \"Santa Cruz\" into the function call. \n\nWait, does \"Santa Cruz\" qualify as a city name? Yes, it's a well-known location in South America. The function parameters specify the location as \"City name\", so using \"Santa Cruz\" should work. \n\nI don't see any other parameters needed here. Just call get_weather with location set to \"Santa Cruz\". That should retrieve the weather information for them.\n<\/think>",
-  "time_to_first_token_ms" : 857.05,
-  "tokens_per_second" : 23.32,
-  "total_time_ms" : 8619.87,
-  "total_tokens" : 340
+  "prefill_tokens" : 143,
+  "response" : "ацию\n\n<\/think>",
+  "time_to_first_token_ms" : 764.74,
+  "tokens_per_second" : 27.03,
+  "total_time_ms" : 1948.67,
+  "total_tokens" : 176
 }
