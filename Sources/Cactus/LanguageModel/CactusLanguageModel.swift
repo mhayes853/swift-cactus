@@ -156,21 +156,29 @@ extension CactusLanguageModel {
   /// - Returns: An array of float values.
   public func embeddings(for text: String, maxBufferSize: Int? = nil) throws -> [Float] {
     let maxBufferSize = maxBufferSize ?? self.bufferSize(for: text.utf8.count)
-    let rawBuffer = UnsafeMutablePointer<Float>.allocate(capacity: maxBufferSize)
-    defer { rawBuffer.deallocate() }
-    var buffer = MutableSpan(_unsafeStart: rawBuffer, count: maxBufferSize)
-    let dimensions = try self.embeddings(for: text, buffer: &buffer)
+    let buffer = UnsafeMutableBufferPointer<Float>.allocate(capacity: maxBufferSize)
+    defer { buffer.deallocate() }
+    let dimensions = try self.embeddings(for: text, buffer: buffer)
     return (0..<dimensions).map { buffer[$0] }
   }
 
-  /// Generates embeddings for the specified `text` and stores them in the specified buffer.
-  ///
-  /// - Parameters:
-  ///   - text: The text to generate embeddings for.
-  ///   - buffer: A `MutableSpan` buffer.
-  /// - Returns: The number of dimensions.
-  @discardableResult
-  public func embeddings(for text: String, buffer: inout MutableSpan<Float>) throws -> Int {
+  #if swift(>=6.2)
+    /// Generates embeddings for the specified `text` and stores them in the specified buffer.
+    ///
+    /// - Parameters:
+    ///   - text: The text to generate embeddings for.
+    ///   - buffer: A `MutableSpan` buffer.
+    /// - Returns: The number of dimensions.
+    @discardableResult
+    public func embeddings(for text: String, buffer: inout MutableSpan<Float>) throws -> Int {
+      try buffer.withUnsafeMutableBufferPointer { try self.embeddings(for: text, buffer: $0) }
+    }
+  #endif
+
+  private func embeddings(
+    for text: String,
+    buffer: UnsafeMutableBufferPointer<Float>
+  ) throws -> Int {
     let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent(
       name: "embedding",
       message: "Buffer size too small",
@@ -181,29 +189,27 @@ extension CactusLanguageModel {
       CactusTelemetry.send(bufferTooSmallEvent)
       throw EmbeddingsError.bufferTooSmall
     }
-    return try buffer.withUnsafeMutableBufferPointer { ptr in
-      var dimensions = 0
-      let rawBufferSize = size * MemoryLayout<Float>.stride
-      switch cactus_embed(self.model, text, ptr.baseAddress, rawBufferSize, &dimensions) {
-      case -1:
-        let message = cactus_get_last_error().map { String(cString: $0) }
-        CactusTelemetry.send(
-          CactusTelemetry.LanguageModelErrorEvent(
-            name: "embedding",
-            message: message ?? "Unknown Error",
-            configuration: self.configuration
-          )
+    var dimensions = 0
+    let rawBufferSize = size * MemoryLayout<Float>.stride
+    switch cactus_embed(self.model, text, buffer.baseAddress, rawBufferSize, &dimensions) {
+    case -1:
+      let message = cactus_get_last_error().map { String(cString: $0) }
+      CactusTelemetry.send(
+        CactusTelemetry.LanguageModelErrorEvent(
+          name: "embedding",
+          message: message ?? "Unknown Error",
+          configuration: self.configuration
         )
-        throw EmbeddingsError.generation(message: message)
-      case -2:
-        CactusTelemetry.send(bufferTooSmallEvent)
-        throw EmbeddingsError.bufferTooSmall
-      default:
-        CactusTelemetry.send(
-          CactusTelemetry.LanguageModelEmbeddingsEvent(configuration: self.configuration)
-        )
-        return dimensions
-      }
+      )
+      throw EmbeddingsError.generation(message: message)
+    case -2:
+      CactusTelemetry.send(bufferTooSmallEvent)
+      throw EmbeddingsError.bufferTooSmall
+    default:
+      CactusTelemetry.send(
+        CactusTelemetry.LanguageModelEmbeddingsEvent(configuration: self.configuration)
+      )
+      return dimensions
     }
   }
 }
