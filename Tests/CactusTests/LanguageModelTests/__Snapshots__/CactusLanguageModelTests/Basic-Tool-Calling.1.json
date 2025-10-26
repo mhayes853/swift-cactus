@@ -1,17 +1,17 @@
 {
-  "decode_tokens" : 33,
+  "decode_tokens" : 169,
   "function_call" : {
     "function_call" : {
       "arguments" : {
-        "location" : ""
+        "arg1" : "Santa Cruz"
       },
       "name" : "get_weather"
     }
   },
   "prefill_tokens" : 143,
-  "response" : "ацию\n\n<\/think>",
-  "time_to_first_token_ms" : 764.74,
-  "tokens_per_second" : 27.03,
-  "total_time_ms" : 1948.67,
-  "total_tokens" : 176
+  "response" : "<think>\nAlright, let's see. The user is asking about Santa Cruz's weather now.\n\nI remember there's a function called get_weather provided in the tools list. The parameters require the location name, which is Santa Cruz here. So I need to call that function with \"location\": \"Santa Cruz\".\n\nWait, making sure there's no typos. The parameters specify a min length of 1 for location as a string. Santa Cruz fits that description perfectly. So the JSON object should be",
+  "time_to_first_token_ms" : 607.09,
+  "tokens_per_second" : 26.25,
+  "total_time_ms" : 7007.88,
+  "total_tokens" : 312
 }

@@ -36,7 +36,7 @@ public enum CactusTelemetry {
       _ token: String,
       logger: Logger = Logger(label: "cactus.telemetry.configure")
     ) {
-      Self.configure(token, deviceMetadata: .current, client: .default, logger: logger)
+      Self.configure(token, deviceMetadata: .current, client: DefaultClient.default, logger: logger)
     }
   #endif
 
