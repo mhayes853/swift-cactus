@@ -5,10 +5,10 @@ extension CactusLanguageModel {
   public struct ChatMessage: Hashable, Sendable, Encodable {
     /// The ``Role`` of the message.
     public var role: Role
-    
+
     /// The message content.
     public var content: String
-    
+
     /// Creates a chat message.
     ///
     /// - Parameters:
@@ -31,12 +31,12 @@ extension CactusLanguageModel.ChatMessage {
     /// Use this role when providing instructions to the model
     /// (eg. `"You are a helpful assistant..."`).
     public static let system = Role(rawValue: "system")
-    
+
     /// A user message role.
     ///
     /// Use this role when providing user created input to the model.
     public static let user = Role(rawValue: "user")
-    
+
     /// An assitant role.
     ///
     /// Use this role when providing the model with one of its previous responses.
@@ -48,7 +48,7 @@ extension CactusLanguageModel.ChatMessage {
       self.rawValue = rawValue
     }
   }
-  
+
   /// Creates a system message.
   ///
   /// Use this initializer when providing instructions to the model
@@ -62,7 +62,7 @@ extension CactusLanguageModel.ChatMessage {
 
   /// Creates a user message.
   ///
-  /// Use this intiializer when providing user created input to the model.
+  /// Use this initializer when providing user created input to the model.
   ///
   /// - Parameter content: The message content.
   /// - Returns: A ``CactusLanguageModel/ChatMessage``.
@@ -72,7 +72,7 @@ extension CactusLanguageModel.ChatMessage {
 
   /// Creates an assistant message.
   ///
-  /// Use this intiializer when providing the model with one of its previous responses.
+  /// Use this initializer when providing the model with one of its previous responses.
   ///
   /// - Parameter content: The message content.
   /// - Returns: A ``CactusLanguageModel/ChatMessage``.

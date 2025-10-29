@@ -31,6 +31,11 @@ public final class CactusModelsDirectory: Sendable {
     )
   #endif
 
+  private struct State {
+    var downloadTasks = [String: DownloadTaskEntry]()
+    var downloadTaskCreator: any DownloadTaskCreator
+  }
+
   private struct DownloadTaskEntry {
     let task: CactusLanguageModel.DownloadTask
     let subscription: CactusSubscription
@@ -39,27 +44,99 @@ public final class CactusModelsDirectory: Sendable {
   /// The base `URL` of this directory.
   public let baseURL: URL
 
-  private let downloadTasks = Lock([String: DownloadTaskEntry]())
-
-  private let downloadTask:
-    @Sendable (String, URL, URLSessionConfiguration) -> CactusLanguageModel.DownloadTask
+  private let state: Lock<State>
 
   /// Creates a model directory.
   ///
   /// - Parameter baseURL: The `URL` of the directory.
   public convenience init(baseURL: URL) {
-    self.init(baseURL: baseURL) { slug, dst, configuation in
-      CactusLanguageModel.downloadModelTask(slug: slug, to: dst, configuration: configuation)
-    }
+    self.init(baseURL: baseURL, downloadTaskCreator: DefaultDownloadTaskCreator())
   }
 
-  package init(
-    baseURL: URL,
-    downloadTask:
-      @escaping @Sendable (String, URL, URLSessionConfiguration) -> CactusLanguageModel.DownloadTask
-  ) {
+  /// Creates a model directory.
+  ///
+  /// - Parameters:
+  ///   - baseURL: The `URL` of the directory.
+  ///   - downloadTaskCreator: The ``DownloadTaskCreator`` to use for downloading models.
+  public init(baseURL: URL, downloadTaskCreator: sending any DownloadTaskCreator) {
     self.baseURL = baseURL
-    self.downloadTask = downloadTask
+    self.state = Lock(State(downloadTaskCreator: downloadTaskCreator))
+  }
+}
+
+// MARK: - DownloadTaskCreator
+
+extension CactusModelsDirectory {
+  /// A protocol for creating ``CactusLanguageModel/DownloadTask`` instances for use inside
+  /// ``CactusModelsDirectory``.
+  ///
+  /// ``DefaultDownloadTaskCreator`` will create tasks that download models from the cactus
+  /// platform. If you want to create tasks that download models from other sources, you can make a
+  /// custom conformance to this protocol to do so.
+  /// ```swift
+  /// struct MyDownloadTaskCreator: CactusModelsDirectory.DownloadTaskCreator {
+  ///   func downloadModelTask(
+  ///     slug: String,
+  ///     to destination: URL,
+  ///     configuration: URLSessionConfiguration
+  ///   ) -> CactusLanguageModel.DownloadTask {
+  ///     CactusLanguageModel.downloadModelTask(
+  ///       from: customDownloadURL(for: slug),
+  ///       to: destination,
+  ///       configuration: configuration
+  ///     )
+  ///   }
+  ///
+  ///   private func customDownloadURL(for slug: String) -> URL {
+  ///     // ...
+  ///   }
+  /// }
+  /// ```
+  public protocol DownloadTaskCreator {
+    /// Creates a ``CactusLanguageModel/DownloadTask``.
+    ///
+    /// - Parameters:
+    ///   - slug: The slug of the model to download.
+    ///   - destination: The destination `URL` of the download.
+    ///   - configuration: A `URLSessionConfiguration` for the download.
+    /// - Returns: A ``CactusLanguageModel/DownloadTask``.
+    func downloadModelTask(
+      slug: String,
+      to destination: URL,
+      configuration: URLSessionConfiguration
+    ) -> CactusLanguageModel.DownloadTask
+  }
+
+  /// The default ``DownloadTaskCreator``.
+  ///
+  /// This task creator will download models directly from the cactus platform. Create a custom
+  /// conformance to `DownloadTaskCreator` if you wish to download models from elsewhere.
+  public struct DefaultDownloadTaskCreator: DownloadTaskCreator, Sendable {
+    /// Creates a default download task creator.
+    public init() {}
+
+    public func downloadModelTask(
+      slug: String,
+      to destination: URL,
+      configuration: URLSessionConfiguration
+    ) -> CactusLanguageModel.DownloadTask {
+      CactusLanguageModel.downloadModelTask(
+        slug: slug,
+        to: destination,
+        configuration: configuration
+      )
+    }
+  }
+}
+
+extension CactusModelsDirectory.DownloadTaskCreator
+where Self == CactusModelsDirectory.DefaultDownloadTaskCreator {
+  /// The default ``DownloadTaskCreator``.
+  ///
+  /// This task creator will download models directly from the cactus platform. Create a custom
+  /// conformance to `DownloadTaskCreator` if you wish to download models from elsewhere.
+  public static var `default`: Self {
+    CactusModelsDirectory.DefaultDownloadTaskCreator()
   }
 }
 
@@ -107,23 +184,27 @@ extension CactusModelsDirectory {
     for slug: String,
     configuration: URLSessionConfiguration = .default
   ) throws -> CactusLanguageModel.DownloadTask {
-    if let task = self.downloadTasks.withLock({ $0[slug]?.task }) {
+    try self.state.withLock { state in
+      if let entry = state.downloadTasks[slug] {
+        return entry.task
+      }
+      try self.ensureDirectory()
+      let task = state.downloadTaskCreator.downloadModelTask(
+        slug: slug,
+        to: self.destinationURL(for: slug),
+        configuration: configuration
+      )
+      let subscription = task.onProgress { [weak self] progress in
+        switch progress {
+        case .failure, .success(.finished):
+          self?.state.withLock { _ = $0.downloadTasks.removeValue(forKey: slug) }
+        default:
+          break
+        }
+      }
+      state.downloadTasks[slug] = DownloadTaskEntry(task: task, subscription: subscription)
       return task
     }
-    try self.ensureDirectory()
-    let task = self.downloadTask(slug, self.destinationURL(for: slug), configuration)
-    let subscription = task.onProgress { [weak self] progress in
-      switch progress {
-      case .failure, .success(.finished):
-        self?.downloadTasks.withLock { _ = $0.removeValue(forKey: slug) }
-      default:
-        break
-      }
-    }
-    self.downloadTasks.withLock {
-      $0[slug] = DownloadTaskEntry(task: task, subscription: subscription)
-    }
-    return task
   }
 }
 

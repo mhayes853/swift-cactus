@@ -76,11 +76,28 @@
 
     @Test
     func `Returns Local URL When Loading Model For The Second Time`() async throws {
-      let downloadTaskCount = Lock(0)
-      let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory()) {
-        downloadTaskCount.withLock { $0 += 1 }
-        return CactusLanguageModel.downloadModelTask(slug: $0, to: $1, configuration: $2)
+      final class CountingCreator: CactusModelsDirectory.DownloadTaskCreator, Sendable {
+        let count = Lock(0)
+
+        func downloadModelTask(
+          slug: String,
+          to destination: URL,
+          configuration: URLSessionConfiguration
+        ) -> CactusLanguageModel.DownloadTask {
+          self.count.withLock { $0 += 1 }
+          return CactusLanguageModel.downloadModelTask(
+            slug: slug,
+            to: destination,
+            configuration: configuration
+          )
+        }
       }
+
+      let creator = CountingCreator()
+      let directory = CactusModelsDirectory(
+        baseURL: temporaryModelDirectory(),
+        downloadTaskCreator: creator
+      )
 
       let url = try await directory.modelURL(
         for: CactusLanguageModel.testModelSlug,
@@ -91,7 +108,7 @@
         configuration: self.configuration
       )
       expectNoDifference(url, url2)
-      downloadTaskCount.withLock { expectNoDifference($0, 1) }
+      creator.count.withLock { expectNoDifference($0, 1) }
     }
 
     private var configuration: URLSessionConfiguration {
