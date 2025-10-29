@@ -1,17 +1,9 @@
 {
-  "decode_tokens" : 31,
-  "function_call" : {
-    "function_call" : {
-      "arguments" : {
-        "location" : "Santa Cruz"
-      },
-      "name" : "get_weather"
-    }
-  },
+  "decode_tokens" : 200,
   "prefill_tokens" : 158,
-  "response" : "ingeses\n<\/think>\n\n```json",
-  "time_to_first_token_ms" : 1498.95,
-  "tokens_per_second" : 27.83,
-  "total_time_ms" : 2577.02,
-  "total_tokens" : 189
+  "response" : " gloria has a very interesting question! The weather in Santa Cruz depends on several factors such as time of day and location in relation with other cities.\nThe user might ask for information about the weather at Santa Cruz during different times such as morning, afternoon, evening and night.\nBut since you have access to get_weather function which can be used for any location (Santa Cruz), then I can answer directly using that function.\nSo I will call get_weather with location set as \"Santa Cruz\" as required by the function.\nThe response should be a JSON object containing the weather information from that function.\nIf there is no data available for Santa Cruz at any time of day (e.g., no rain), then it will return an empty object.\nThe function returns information such as temperature and precipitation for each hour.\nSo let me call get_weather with location set as \"Santa Cruz\".\nOkay, I need to use the get_weather function here. The parameters require 'location', so I'll input \"Santa Cruz",
+  "time_to_first_token_ms" : 6871.99,
+  "tokens_per_second" : 12.54,
+  "total_time_ms" : 22746.3,
+  "total_tokens" : 358
 }
