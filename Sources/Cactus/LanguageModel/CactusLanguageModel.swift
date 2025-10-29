@@ -175,7 +175,13 @@ extension CactusLanguageModel {
     }
   #endif
 
-  private func embeddings(
+  /// Generates embeddings for the specified `text` and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - text: The text to generate embeddings for.
+  ///   - buffer: An `UnsafeMutableBufferPointer` buffer.
+  /// - Returns: The number of dimensions.
+  public func embeddings(
     for text: String,
     buffer: UnsafeMutableBufferPointer<Float>
   ) throws -> Int {
