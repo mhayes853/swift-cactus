@@ -32,7 +32,7 @@ let completion = try model.chatCompletion(
 > [!NOTE]
 > The methods of `CactusLanguageModel` are synchronous and blocking, and the `CactusLanguageModel` class is also not Sendable. This gives you the flexibility to use the model in non-isolated and synchronous contexts, but you should almost certainly avoid using it directly on the main thread. If you need concurrent access to the model, you may want to consider wrapping it in an actor.
 > ```swift
-> final class LanguageModelActor {
+> final actor LanguageModelActor {
 >   let model: CactusLanguageModel
 >
 >   init(model: sending CactusLanguageModel) {
@@ -40,7 +40,7 @@ let completion = try model.chatCompletion(
 >   }
 >
 >   func withIsolation<T, E: Error>(
->     perform operation: (isolated Self) throws(E) -> sending T
+>     perform operation: (isolated LanguageModelActor) throws(E) -> sending T
 >   ) throws(E) -> sending T {
 >     try operation(self)
 >   }
@@ -50,7 +50,7 @@ let completion = try model.chatCompletion(
 > func chatInBackground(
 >   with modelActor: LanguageModelActor
 > ) async throws {
->   try await modelActor.withIsolation { modelActor in
+>   try await modelActor.withIsolation { @Sendable modelActor in
 >     // You can access the model directly because the closure
 >     // is isolated to modelActor.
 >     let model = modelActor.model
