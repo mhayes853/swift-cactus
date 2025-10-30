@@ -12,7 +12,7 @@ import Foundation
 /// actor due to the long runtimes. To access the model safely in the background, you can create a
 /// background actor to protect the model from data races.
 /// ```swift
-/// final class LanguageModelActor {
+/// final actor LanguageModelActor {
 ///   let model: CactusLanguageModel
 ///
 ///   init(model: sending CactusLanguageModel) {
@@ -20,17 +20,19 @@ import Foundation
 ///   }
 ///
 ///   func withIsolation<T, E: Error>(
-///     perform operation: (isolated Self) throws(E) -> sending T
+///     perform operation: (isolated LanguageModelActor) throws(E) -> sending T
 ///   ) throws(E) -> sending T {
 ///     try operation(self)
 ///   }
 /// }
 ///
 /// @concurrent
-/// func chatInBackground(with modelActor: LanguageModelActor) async throws {
-///   try await modelActor.withIsolation { modelActor in
-///     // You can access the model directly because the closure is isolated
-///     // to modelActor
+/// func chatInBackground(
+///   with modelActor: LanguageModelActor
+/// ) async throws {
+///   try await modelActor.withIsolation { @Sendable modelActor in
+///     // You can access the model directly because the closure
+///     // is isolated to modelActor.
 ///     let model = modelActor.model
 ///
 ///     // ...
