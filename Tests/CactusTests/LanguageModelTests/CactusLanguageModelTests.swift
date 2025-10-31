@@ -162,6 +162,58 @@ extension BaseTestSuite {
     }
 
     @Test
+    func `Multiple Tool Calls`() async throws {
+      let modelURL = try await CactusLanguageModel.testModelURL()
+      let model = try CactusLanguageModel(from: modelURL)
+
+      let completion = try model.chatCompletion(
+        messages: [
+          .system("You are a helpful weather assistant that can use tools."),
+          .user("What is the weather and population in Berkeley?")
+        ],
+        tools: [
+          CactusLanguageModel.ToolDefinition(
+            name: "get_weather",
+            description: "Get the weather in a given location",
+            parameters: .object(
+              valueSchema: .object(
+                properties: [
+                  "location": .object(
+                    description: "City name, eg. 'San Francisco'",
+                    valueSchema: .string(minLength: 1),
+                    examples: ["San Francisco"]
+                  ),
+                  "units": .object(valueSchema: .string(), enum: ["celsius", "farenheit"])
+                ],
+                required: ["location"]
+              )
+            )
+          ),
+          CactusLanguageModel.ToolDefinition(
+            name: "get_population",
+            description: "Gets the population of a given city",
+            parameters: .object(
+              valueSchema: .object(
+                properties: [
+                  "location": .object(
+                    description: "City name, eg. 'San Francisco'",
+                    valueSchema: .string(minLength: 1),
+                    examples: ["San Francisco"]
+                  )
+                ],
+                required: ["location"]
+              )
+            )
+          )
+        ]
+      )
+
+      withKnownIssue {
+        assertSnapshot(of: completion, as: .json, record: true)
+      }
+    }
+
+    @Test
     func `Derives Model Slug From Model URL If Not Provided`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       let configuration = CactusLanguageModel.Configuration(modelURL: modelURL)
