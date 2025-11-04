@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "1.0",
+  "artifacts": {
+    "cxxcactus": {
+      "type": "staticLibrary",
+      "version": "1.0.0",
+      "variants": [
+        {
+          "path": "dist/android/libcactus.a",
+          "supportedTriples": ["aarch64-unknown-linux-android"],
+          "staticLibraryMetadata": {
+            "headerPaths": ["include"],
+            "moduleMapPath": "include/module.modulemap"
+          }
+        },
+        {
+          "path": "dist/macos/libcactus.a",
+          "supportedTriples": ["arm64-apple-macosx"],
+          "staticLibraryMetadata": {
+            "headerPaths": ["include"],
+            "moduleMapPath": "include/module.modulemap"
+          }
+        },
+        {
+          "path": "dist/ios/libcactus.a",
+          "supportedTriples": ["arm64-apple-ios"],
+          "staticLibraryMetadata": {
+            "headerPaths": ["include"],
+            "moduleMapPath": "include/module.modulemap"
+          }
+        },
+        {
+          "path": "dist/ios-simulator/libcactus.a",
+          "supportedTriples": ["arm64-apple-ios-simulator"],
+          "staticLibraryMetadata": {
+            "headerPaths": ["include"],
+            "moduleMapPath": "include/module.modulemap"
+          }
+        },
+        {
+          "path": "dist/watchos/libcactus.a",
+          "supportedTriples": ["arm64-apple-watchos"],
+          "staticLibraryMetadata": {
+            "headerPaths": ["include"],
+            "moduleMapPath": "include/module.modulemap"
+          }
+        },
+        {
+          "path": "dist/watchos-simulator/libcactus.a",
+          "supportedTriples": ["arm64-apple-watchos-simulator"],
+          "staticLibraryMetadata": {
+            "headerPaths": ["include"],
+            "moduleMapPath": "include/module.modulemap"
+          }
+        },
+        {
+          "path": "dist/tvos/libcactus.a",
+          "supportedTriples": ["arm64-apple-tvos"],
+          "staticLibraryMetadata": {
+            "headerPaths": ["include"],
+            "moduleMapPath": "include/module.modulemap"
+          }
+        },
+        {
+          "path": "dist/tvos-simulator/libcactus.a",
+          "supportedTriples": ["arm64-apple-tvos-simulator"],
+          "staticLibraryMetadata": {
+            "headerPaths": ["include"],
+            "moduleMapPath": "include/module.modulemap"
+          }
+        },
+        {
+          "path": "dist/visionos/libcactus.a",
+          "supportedTriples": ["arm64-apple-visionos"],
+          "staticLibraryMetadata": {
+            "headerPaths": ["include"],
+            "moduleMapPath": "include/module.modulemap"
+          }
+        },
+        {
+          "path": "dist/visionos-simulator/libcactus.a",
+          "supportedTriples": ["arm64-apple-visionos-simulator"],
+          "staticLibraryMetadata": {
+            "headerPaths": ["include"],
+            "moduleMapPath": "include/module.modulemap"
+          }
+        }
+      ]
+    }
+  }
+}

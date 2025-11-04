@@ -1,6 +1,12 @@
 {
-  "decode_tokens" : 69,
+  "decode_tokens" : 158,
   "function_calls" : [
+    {
+      "arguments" : {
+        "location" : "Berkeley"
+      },
+      "name" : "get_weather"
+    },
     {
       "arguments" : {
         "location" : "Berkeley"
@@ -8,10 +14,10 @@
       "name" : "get_population"
     }
   ],
-  "prefill_tokens" : 254,
-  "response" : "assistance:\nutterance: What is the weather and population in Berkeley?\n\nThe assistant needs to use two functions: get_weather (for finding the weather) and get_population (for finding the population). The parameters for each are city names as strings.\n<\/think>",
-  "time_to_first_token_ms" : 1236.81,
-  "tokens_per_second" : 20.82,
-  "total_time_ms" : 4502.97,
-  "total_tokens" : 323
+  "prefill_tokens" : 252,
+  "response" : "To find both weather and population in Berkeley:\n\n1. **Weather**: Use `get_weather` function with location set to \"Berkeley\" and units as required (e.g., celsius\/farenheit).\n2. **Population**: Use `get_population` function with location set to \"Berkeley\".\n\nSince you asked for both pieces of information at once without specifying units (celsius\/farenheit), I'll assume standard units (fahrenheit) for the weather query but will include both function calls for completeness.\n```json\n{\"function_call\": {\"name\": \"get_weather\", \"arguments\": {\"location\": \"Berkeley\"}}}\n``` \nand \n```json",
+  "time_to_first_token_ms" : 1321.16,
+  "tokens_per_second" : 23.04,
+  "total_time_ms" : 8133.95,
+  "total_tokens" : 410
 }

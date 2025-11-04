@@ -25,14 +25,7 @@ let package = Package(
     .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.1.0")
   ],
   targets: [
-    .target(
-      name: "CXXCactus",
-      exclude: [
-        "cactus/apple", "cactus/android", "cactus/assets", "cactus/tests", "cactus/tools",
-        "cactus/.gitignore", "cactus/LICENSE", "cactus/README.md"
-      ],
-      cxxSettings: [.unsafeFlags(["-std=c++20", "-O3", "-march=armv8.2-a+fp16+simd+dotprod"])],
-    ),
+    .binaryTarget(name: "CXXCactus", path: "CXXCactus.artifactbundle"),
     .target(
       name: "Cactus",
       dependencies: [
