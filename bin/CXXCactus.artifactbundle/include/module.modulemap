@@ -1,5 +1,4 @@
 module CXXCactus {
     header "cactus.h"
-    header "cactus_ffi.h"
     export *
 }
