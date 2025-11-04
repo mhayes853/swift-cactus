@@ -25,11 +25,10 @@ let package = Package(
     .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.1.0")
   ],
   targets: [
-    .binaryTarget(name: "CXXCactus", path: "bin/CXXCactus.artifactbundle"),
     .target(
       name: "Cactus",
       dependencies: [
-        "CXXCactus",
+        "CXXCactusShims",
         .target(name: "cactus_util", condition: .when(platforms: [.iOS, .macOS])),
         .product(name: "Logging", package: "swift-log"),
         .product(name: "Zip", package: "Zip"),
@@ -51,6 +50,8 @@ let package = Package(
       resources: [.process("Resources")],
       swiftSettings: [supportsTelemetry]
     ),
+    .target(name: "CXXCactusShims", dependencies: ["CXXCactus"]),
+    .binaryTarget(name: "CXXCactus", path: "bin/CXXCactus.artifactbundle"),
     .binaryTarget(name: "cactus_util", path: "bin/cactus_util.xcframework")
   ]
 )

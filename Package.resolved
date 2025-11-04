@@ -1,5 +1,5 @@
 {
-  "originHash" : "84283ee3f61d1f97b9c70045ee1605dcfc818da50bf7abcd12f0cd098e159a7d",
+  "originHash" : "9302a3dbc8c617f6473acb7e2f26250ce7d86d8060951050a2fb8f5cd1dd2d84",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -69,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-crypto",
       "state" : {
-        "revision" : "bcd2b89f2a4446395830b82e4e192765edd71e18",
-        "version" : "4.0.0"
+        "revision" : "e8ed8867ec23bccf5f3bb9342148fa8deaff9b49",
+        "version" : "4.1.0"
       }
     },
     {
@@ -132,8 +132,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mhayes853/swift-operation",
       "state" : {
-        "revision" : "d50b3088e79c1d37e0b6ca8127b9dcee8360c2f5",
-        "version" : "0.1.0"
+        "revision" : "2d67288b5a30c89cd3776bec89ec5bc38bae79ef",
+        "version" : "0.2.0"
       }
     },
     {
