@@ -1,12 +1,23 @@
 {
-  "decode_tokens" : 57,
+  "decode_tokens" : 158,
   "function_calls" : [
-
+    {
+      "arguments" : {
+        "location" : "Berkeley"
+      },
+      "name" : "get_weather"
+    },
+    {
+      "arguments" : {
+        "location" : "Berkeley"
+      },
+      "name" : "get_population"
+    }
   ],
-  "prefill_tokens" : 237,
-  "response" : "The weather in Berkeley and its population are as follows:\n\n- **Weather**: The current weather in Berkeley (USA) is cloudy with light rain.\n- **Population**: The population of Berkeley is approximately 48100 people.\n\nPlease let me know if you need further details!",
-  "time_to_first_token_ms" : 1207.1,
-  "tokens_per_second" : 24.79,
-  "total_time_ms" : 3466.41,
-  "total_tokens" : 294
+  "prefill_tokens" : 252,
+  "response" : "To find both weather and population in Berkeley:\n\n1. **Weather**: Use `get_weather` function with location set to \"Berkeley\" and units as required (e.g., celsius\/farenheit).\n2. **Population**: Use `get_population` function with location set to \"Berkeley\".\n\nSince you asked for both pieces of information at once without specifying units (celsius\/farenheit), I'll assume standard units (fahrenheit) for the weather query but will include both function calls for completeness.\n```json\n{\"function_call\": {\"name\": \"get_weather\", \"arguments\": {\"location\": \"Berkeley\"}}}\n``` \nand \n```json",
+  "time_to_first_token_ms" : 1321.16,
+  "tokens_per_second" : 23.04,
+  "total_time_ms" : 8133.95,
+  "total_tokens" : 410
 }

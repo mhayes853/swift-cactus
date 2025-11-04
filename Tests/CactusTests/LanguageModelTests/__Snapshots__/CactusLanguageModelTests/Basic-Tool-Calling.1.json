@@ -1,17 +1,17 @@
 {
-  "decode_tokens" : 30,
+  "decode_tokens" : 22,
   "function_calls" : [
     {
       "arguments" : {
-        "location" : ""
+        "location" : "Santa Cruz"
       },
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 145,
+  "prefill_tokens" : 161,
   "response" : "",
-  "time_to_first_token_ms" : 955.39,
-  "tokens_per_second" : 22.28,
-  "total_time_ms" : 2256.85,
-  "total_tokens" : 175
+  "time_to_first_token_ms" : 1020.03,
+  "tokens_per_second" : 19.2,
+  "total_time_ms" : 2113.72,
+  "total_tokens" : 183
 }
