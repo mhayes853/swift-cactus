@@ -45,7 +45,7 @@ final class `CactusTelemetry tests` {
     let registerCount = Lock(0)
     let client = Client { registerCount.withLock { $0 += 1 } }
     CactusTelemetry.configure(testTelemetryToken, deviceMetadata: .mock(), client: client)
-    try await Task.sleep(for: .seconds(1))
+    try await Task.sleep(nanoseconds: NSEC_PER_SEC)
 
     registerCount.withLock { expectNoDifference($0, 0) }
   }

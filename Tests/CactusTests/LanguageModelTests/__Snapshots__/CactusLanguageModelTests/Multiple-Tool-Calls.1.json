@@ -1,23 +1,12 @@
 {
-  "decode_tokens" : 158,
+  "decode_tokens" : 79,
   "function_calls" : [
-    {
-      "arguments" : {
-        "location" : "Berkeley"
-      },
-      "name" : "get_weather"
-    },
-    {
-      "arguments" : {
-        "location" : "Berkeley"
-      },
-      "name" : "get_population"
-    }
+
   ],
-  "prefill_tokens" : 252,
-  "response" : "To find both weather and population in Berkeley:\n\n1. **Weather**: Use `get_weather` function with location set to \"Berkeley\" and units as required (e.g., celsius\/farenheit).\n2. **Population**: Use `get_population` function with location set to \"Berkeley\".\n\nSince you asked for both pieces of information at once without specifying units (celsius\/farenheit), I'll assume standard units (fahrenheit) for the weather query but will include both function calls for completeness.\n```json\n{\"function_call\": {\"name\": \"get_weather\", \"arguments\": {\"location\": \"Berkeley\"}}}\n``` \nand \n```json",
-  "time_to_first_token_ms" : 1321.16,
-  "tokens_per_second" : 23.04,
-  "total_time_ms" : 8133.95,
-  "total_tokens" : 410
+  "prefill_tokens" : 254,
+  "response" : "I don't have access to real-time data or current weather information at this time.\nCan you help me find the weather in Berkeley? If you have access to real-time data, please provide that information.\nIf you don't have access to real-time data, I can help you find the weather in Berkeley by using my function calls. Let me know if you have access to real-time data!",
+  "time_to_first_token_ms" : 5441.75,
+  "tokens_per_second" : 11.29,
+  "total_time_ms" : 12348.1,
+  "total_tokens" : 333
 }

@@ -50,7 +50,17 @@ let package = Package(
       resources: [.process("Resources")],
       swiftSettings: [supportsTelemetry]
     ),
-    .target(name: "CXXCactusShims", dependencies: ["CXXCactus"]),
+    .target(
+      name: "CXXCactusShims",
+      dependencies: [
+        .target(name: "CXXCactus", condition: .when(platforms: [.android])),
+        .target(
+          name: "CXXCactusDarwin",
+          condition: .when(platforms: [.iOS, .macOS, .visionOS, .tvOS, .watchOS, .macCatalyst])
+        )
+      ]
+    ),
+    .binaryTarget(name: "CXXCactusDarwin", path: "bin/CXXCactusDarwin.xcframework"),
     .binaryTarget(name: "CXXCactus", path: "bin/CXXCactus.artifactbundle"),
     .binaryTarget(name: "cactus_util", path: "bin/cactus_util.xcframework")
   ]

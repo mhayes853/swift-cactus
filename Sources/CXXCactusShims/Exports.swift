@@ -1,1 +1,5 @@
-@_exported import CXXCactus
+#if canImport(Darwin)
+  @_exported import CXXCactusDarwin
+#else
+  @_exported import CXXCactus
+#endif
