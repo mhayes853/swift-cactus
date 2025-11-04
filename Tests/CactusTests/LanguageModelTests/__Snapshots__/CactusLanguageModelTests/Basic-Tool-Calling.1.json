@@ -1,23 +1,17 @@
 {
-  "decode_tokens" : 85,
+  "decode_tokens" : 30,
   "function_calls" : [
     {
       "arguments" : {
-        "location" : "Santa Cruz"
-      },
-      "name" : "get_weather"
-    },
-    {
-      "arguments" : {
-        "location" : "Santa Cruz"
+        "location" : ""
       },
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 162,
-  "response" : "I am not sure if I can answer that question.\nBut since you are asking for help with weather information in Santa Cruz, I will use the get_weather function.\nMy function call would be:",
-  "time_to_first_token_ms" : 875.56,
-  "tokens_per_second" : 22.7,
-  "total_time_ms" : 4576.66,
-  "total_tokens" : 247
+  "prefill_tokens" : 145,
+  "response" : "",
+  "time_to_first_token_ms" : 955.39,
+  "tokens_per_second" : 22.28,
+  "total_time_ms" : 2256.85,
+  "total_tokens" : 175
 }

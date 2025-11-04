@@ -1,17 +1,12 @@
 {
-  "decode_tokens" : 69,
+  "decode_tokens" : 57,
   "function_calls" : [
-    {
-      "arguments" : {
-        "location" : "Berkeley"
-      },
-      "name" : "get_population"
-    }
+
   ],
-  "prefill_tokens" : 254,
-  "response" : "assistance:\nutterance: What is the weather and population in Berkeley?\n\nThe assistant needs to use two functions: get_weather (for finding the weather) and get_population (for finding the population). The parameters for each are city names as strings.\n<\/think>",
-  "time_to_first_token_ms" : 1236.81,
-  "tokens_per_second" : 20.82,
-  "total_time_ms" : 4502.97,
-  "total_tokens" : 323
+  "prefill_tokens" : 237,
+  "response" : "The weather in Berkeley and its population are as follows:\n\n- **Weather**: The current weather in Berkeley (USA) is cloudy with light rain.\n- **Population**: The population of Berkeley is approximately 48100 people.\n\nPlease let me know if you need further details!",
+  "time_to_first_token_ms" : 1207.1,
+  "tokens_per_second" : 24.79,
+  "total_time_ms" : 3466.41,
+  "total_tokens" : 294
 }
