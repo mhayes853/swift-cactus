@@ -25,7 +25,7 @@ let package = Package(
     .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.1.0")
   ],
   targets: [
-    .binaryTarget(name: "CXXCactus", path: "CXXCactus.artifactbundle"),
+    .binaryTarget(name: "CXXCactus", path: "bin/CXXCactus.artifactbundle"),
     .target(
       name: "Cactus",
       dependencies: [
@@ -51,6 +51,6 @@ let package = Package(
       resources: [.process("Resources")],
       swiftSettings: [supportsTelemetry]
     ),
-    .binaryTarget(name: "cactus_util", path: "cactus_util.xcframework")
+    .binaryTarget(name: "cactus_util", path: "bin/cactus_util.xcframework")
   ]
 )
