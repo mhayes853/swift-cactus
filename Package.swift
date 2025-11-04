@@ -10,7 +10,7 @@ let supportsTelemetry = SwiftSetting.define(
 
 let package = Package(
   name: "swift-cactus",
-  platforms: [.iOS(.v13), .macOS(.v10_15), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
+  platforms: [.iOS(.v13), .macOS(.v11), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
   products: [
     .library(name: "Cactus", targets: ["Cactus"])
   ],
