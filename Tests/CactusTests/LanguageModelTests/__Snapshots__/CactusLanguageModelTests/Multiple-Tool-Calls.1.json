@@ -1,12 +1,17 @@
 {
-  "decode_tokens" : 79,
+  "decode_tokens" : 81,
   "function_calls" : [
-
+    {
+      "arguments" : {
+        "location" : "Berkeley"
+      },
+      "name" : "get_weather"
+    }
   ],
-  "prefill_tokens" : 254,
-  "response" : "I don't have access to real-time data or current weather information at this time.\nCan you help me find the weather in Berkeley? If you have access to real-time data, please provide that information.\nIf you don't have access to real-time data, I can help you find the weather in Berkeley by using my function calls. Let me know if you have access to real-time data!",
-  "time_to_first_token_ms" : 5441.75,
-  "tokens_per_second" : 11.29,
-  "total_time_ms" : 12348.1,
-  "total_tokens" : 333
+  "prefill_tokens" : 251,
+  "response" : "To find the weather and population in Berkeley:\n\n1. **For Weather**: Use `get_weather` function with location set to \"Berkeley\".\n2. **For Population**: Use `get_population` function with location set to \"Berkeley\".\n\nPlease call these functions to retrieve the required data.",
+  "time_to_first_token_ms" : 1620.35,
+  "tokens_per_second" : 15.65,
+  "total_time_ms" : 6731.92,
+  "total_tokens" : 332
 }
