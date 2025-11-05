@@ -1,17 +1,12 @@
 {
-  "decode_tokens" : 32,
+  "decode_tokens" : 90,
   "function_calls" : [
-    {
-      "arguments" : {
-        "location" : "Berkeley"
-      },
-      "name" : "get_weather"
-    }
+
   ],
-  "prefill_tokens" : 236,
-  "response" : "",
-  "time_to_first_token_ms" : 1627.33,
-  "tokens_per_second" : 10.76,
-  "total_time_ms" : 4509.12,
-  "total_tokens" : 268
+  "prefill_tokens" : 252,
+  "response" : "I can retrieve both weather and population information for Berkeley using your tools.\n\n1. **Weather in Berkeley**:\n   - Use the `get_weather` function with location set to \"Berkeley\" and units specified (e.g., celsius or farenheit).\n\n2. **Population in Berkeley**:\n   - Use the `get_population` function with location set to \"Berkeley\".\n\nLet me know if you'd like specific units for weather!",
+  "time_to_first_token_ms" : 2006.02,
+  "tokens_per_second" : 16,
+  "total_time_ms" : 7569.18,
+  "total_tokens" : 342
 }

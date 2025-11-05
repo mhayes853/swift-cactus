@@ -1,5 +1,5 @@
 {
-  "decode_tokens" : 77,
+  "decode_tokens" : 22,
   "function_calls" : [
     {
       "arguments" : {
@@ -8,10 +8,10 @@
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 144,
-  "response" : "I don't have access to real-time weather data for Santa Cruz right now.\nHowever, you can check with your local weather service or app for updates.\nIf you'd like to know more about Santa Cruz's climate, feel free to ask!\n\nThe function call would be:",
-  "time_to_first_token_ms" : 1831.09,
-  "tokens_per_second" : 12.69,
-  "total_time_ms" : 7821.62,
-  "total_tokens" : 221
+  "prefill_tokens" : 160,
+  "response" : "",
+  "time_to_first_token_ms" : 1461.3,
+  "tokens_per_second" : 12.25,
+  "total_time_ms" : 3175.83,
+  "total_tokens" : 182
 }
