@@ -9,3 +9,5 @@ DerivedData/
 .swift-version
 profile.txt
 *.pkg
+bin/build
+bin/cactus.h
