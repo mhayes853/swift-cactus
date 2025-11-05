@@ -13,7 +13,7 @@ At the moment, this package provides a minimal and low-level Swifty interface ab
 
 ## Quick Start
 
-You first must download the model you want to use using ``CactusModelsDirectory``, then you can create an instance of ``CactusLanguageModel`` with a local model `URL` to start generating.
+You first must download the model you want to use using `CactusModelsDirectory`, then you can create an instance of `CactusLanguageModel` with a local model `URL` to start generating.
 ```swift
 import Cactus
 
@@ -62,7 +62,7 @@ let completion = try model.chatCompletion(
 
 ### Streaming
 
-The ``CactusLanguageModel/chatCompletion(messages:options:maxBufferSize:tools:onToken:)`` method provides a callback the allows you to stream tokens as they come in.
+The `CactusLanguageModel.chatCompletion` method provides a callback the allows you to stream tokens as they come in.
 
 ```swift
 let completion = try model.chatCompletion(
@@ -115,7 +115,7 @@ print(completion.functionCalls)
 ```
 
 > [!NOTE]
-> Smaller models may struggle to generate function arguments that match the ``JSONSchema`` you specify for the function. Therefore, the library provides a way to manually validate any value against the schema you provide to the model using the ``JSONSchema/Validator`` class.
+> Smaller models may struggle to generate function arguments that match the `JSONSchema` you specify for the function. Therefore, the library provides a way to manually validate any value against the schema you provide to the model using the `JSONSchema.Validator` class.
 > ```swift
 > let functionDefinition = CactusLanguageModel.FunctionDefinition(
 >   name: "search",
@@ -143,7 +143,7 @@ print(completion.functionCalls)
 
 ### Embeddings
 
-You can generate embeddings by passing a `MutableSpan` as a buffer to ``CactusLanguageModel/embeddings(for:buffer:)``, or you can alternatively obtain a `[Float]` directly by calling ``CactusLanguageModel/embeddings(for:maxBufferSize:)``.
+You can generate embeddings by passing a `MutableSpan` as a buffer to `CactusLanguageModel.embeddings`, or you can alternatively obtain a `[Float]` directly.
 
 ```swift
 let embeddings: [Float] = try model.embeddings(for: "This is some text")
@@ -187,7 +187,7 @@ print(cosineSimilarity(fancy, pretty))
 
 ### Telemetry (iOS and macOS Only)
 
-You can configure telemetry in the entry point of your app by calling ``CactusTelemetry/configure(_:logger:)``.
+You can configure telemetry in the entry point of your app by calling `CactusTelemetry.configure`.
 
 ```swift
 import Cactus
@@ -203,7 +203,7 @@ struct MyApp: App {
 }
 ```
 
-`CactusLanguageModel` will automatically record telemetry events for every model initialization, chat completion, and embeddings generation, but you can also send telemetry events manually using ``CactusTelemetry/send(_:logger:)``. You can view the telemetry data in the cactus dashboard.
+`CactusLanguageModel` will automatically record telemetry events for every model initialization, chat completion, and embeddings generation, but you can also send telemetry events manually using `CactusTelemetry.send`. You can view the telemetry data in the cactus dashboard.
 
 ## Documentation
 The documentation for releases and main are available here.

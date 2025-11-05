@@ -1,12 +1,17 @@
 {
-  "decode_tokens" : 137,
+  "decode_tokens" : 77,
   "function_calls" : [
-
+    {
+      "arguments" : {
+        "location" : "Santa Cruz"
+      },
+      "name" : "get_weather"
+    }
   ],
   "prefill_tokens" : 144,
-  "response" : "Ah! Let me check... Santa Cruz is a city in California that's known for its beautiful landscapes and mild climate. The weather there typically ranges from warm to cool depending on the season.\n\nIf you're asking for specific information like today's weather forecast or what it will be tomorrow, I would need more details to provide an accurate answer right now. However, Santa Cruz is generally a place where you can find weather information through various sources such as websites or apps provided by local meteorological services.\n\nIf you have any particular questions about Santa Cruz's weather in a specific time period or with additional details (like temperature ranges), please let me know so I can give you more tailored information.",
-  "time_to_first_token_ms" : 1336.1,
-  "tokens_per_second" : 13.53,
-  "total_time_ms" : 11385.87,
-  "total_tokens" : 281
+  "response" : "I don't have access to real-time weather data for Santa Cruz right now.\nHowever, you can check with your local weather service or app for updates.\nIf you'd like to know more about Santa Cruz's climate, feel free to ask!\n\nThe function call would be:",
+  "time_to_first_token_ms" : 1831.09,
+  "tokens_per_second" : 12.69,
+  "total_time_ms" : 7821.62,
+  "total_tokens" : 221
 }

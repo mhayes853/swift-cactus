@@ -1,4 +1,5 @@
-import CXXCactusShims
+// NB: @_implementationOnly since docc doesn't like access level imports for binary targets apparently.
+@_implementationOnly import CXXCactusShims
 import Foundation
 
 // MARK: - CactusLanguageModel
@@ -47,7 +48,7 @@ public final class CactusLanguageModel {
   public let properties: Properties
 
   /// The underlying model pointer.
-  public let model: cactus_model_t
+  public let model: UnsafeMutableRawPointer
 
   /// Loads a model from the specified `URL`.
   ///

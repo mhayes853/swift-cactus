@@ -58,7 +58,7 @@ let completion = try model.chatCompletion(
 
 ### Streaming
 
-The ``CactusLanguageModel/chatCompletion(messages:options:maxBufferSize:tools:onToken:)`` method provides a callback the allows you to stream tokens as they come in.
+The ``CactusLanguageModel/chatCompletion(messages:options:maxBufferSize:functions:onToken:)`` method provides a callback the allows you to stream tokens as they come in.
 
 ```swift
 let completion = try model.chatCompletion(
@@ -138,7 +138,7 @@ print(completion.functionCalls)
 
 ### Embeddings
 
-You can generate embeddings by passing a `MutableSpan` as a buffer to ``CactusLanguageModel/embeddings(for:buffer:)``, or you can alternatively obtain a `[Float]` directly by calling ``CactusLanguageModel/embeddings(for:maxBufferSize:)``.
+You can generate embeddings by passing a `MutableSpan` as a buffer to ``CactusLanguageModel/embeddings(for:buffer:)-(_,MutableSpan<Float>)``, or you can alternatively obtain a `[Float]` directly by calling ``CactusLanguageModel/embeddings(for:maxBufferSize:)``.
 
 ```swift
 let embeddings: [Float] = try model.embeddings(for: "This is some text")
@@ -220,16 +220,16 @@ struct MyApp: App {
 ### Chat Completions
 - ``CactusLanguageModel/ChatCompletion``
 - ``CactusLanguageModel/ChatCompletion/Options``
-- ``CactusLanguageModel/chatCompletion(messages:options:maxBufferSize:tools:onToken:)``
+- ``CactusLanguageModel/chatCompletion(messages:options:maxBufferSize:functions:onToken:)``
 - ``CactusLanguageModel/ChatMessage``
-- ``CactusLanguageModel/ChatMessage/Role``
+- ``CactusLanguageModel/MessageRole``
 - ``CactusLanguageModel/ChatMessage/assistant(_:)``
 - ``CactusLanguageModel/ChatMessage/system(_:)``
 - ``CactusLanguageModel/ChatMessage/user(_:)``
 
 ### Embeddings
 - ``CactusLanguageModel/embeddings(for:maxBufferSize:)``
-- ``CactusLanguageModel/embeddings(for:buffer:)``
+- ``CactusLanguageModel/embeddings(for:buffer:)-(_,MutableSpan<Float>)``
 
 ### Function Calling
 - ``CactusLanguageModel/FunctionDefinition``
