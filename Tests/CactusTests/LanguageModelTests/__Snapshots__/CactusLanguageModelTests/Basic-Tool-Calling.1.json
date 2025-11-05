@@ -1,5 +1,5 @@
 {
-  "decode_tokens" : 56,
+  "decode_tokens" : 22,
   "function_calls" : [
     {
       "arguments" : {
@@ -8,10 +8,10 @@
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 161,
-  "response" : "The weather in Santa Cruz can be found by calling the get_weather function with location set to 'Santa Cruz'. Here's how you would do it:\n\n```json",
-  "time_to_first_token_ms" : 1473.92,
-  "tokens_per_second" : 14.56,
-  "total_time_ms" : 5250.48,
-  "total_tokens" : 217
+  "prefill_tokens" : 144,
+  "response" : "",
+  "time_to_first_token_ms" : 1062.7,
+  "tokens_per_second" : 16.55,
+  "total_time_ms" : 2331.32,
+  "total_tokens" : 166
 }
