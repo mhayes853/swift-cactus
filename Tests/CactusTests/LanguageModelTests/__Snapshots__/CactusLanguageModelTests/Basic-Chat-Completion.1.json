@@ -1,12 +1,12 @@
 {
-  "decode_tokens" : 200,
+  "decode_tokens" : 48,
   "function_calls" : [
 
   ],
-  "prefill_tokens" : 15,
-  "response" : "<think>\nutterance: \"You're not a real person\"\nresponse: \"I'm here for you\"\nutterance: \"You don't have any problems with my work?\"\nresponse: \"No, I do\"\nutterance: \"I think I'm not a real person because you're not here.\"\nresponse: \"You're here, so I'm here.\"\nutterance: \"I don't know what you mean by that?\"\nresponse: \"It means you're not here.\"\nutterance: \"What do I need to do now?\"\nresponse: \"I don't know what you mean by that.\"\n\nOkay so the user is asking about the meaning of life and getting a sense of their own identity through interactions with someone else. The responses are all about being here for them (so they're real), problems at work (no issues), not a real person because I'm here, etc.\n\nSo translating this into a response... Well, since it's about identity and meaning, maybe start",
-  "time_to_first_token_ms" : 506.06,
-  "tokens_per_second" : 19.08,
-  "total_time_ms" : 10934.11,
-  "total_tokens" : 215
+  "prefill_tokens" : 34,
+  "response" : "utterance:\n\"Life is a journey of endless possibilities and experiences. It's about finding meaning in each moment.\"\n<\/think>\n\nutterance:\n\"Life is a journey of endless possibilities and experiences. It's about finding meaning in each moment.\"",
+  "time_to_first_token_ms" : 903.4,
+  "tokens_per_second" : 14.79,
+  "total_time_ms" : 4082.02,
+  "total_tokens" : 82
 }

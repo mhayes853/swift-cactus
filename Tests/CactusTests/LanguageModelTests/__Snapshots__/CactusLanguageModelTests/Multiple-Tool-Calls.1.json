@@ -1,5 +1,5 @@
 {
-  "decode_tokens" : 81,
+  "decode_tokens" : 22,
   "function_calls" : [
     {
       "arguments" : {
@@ -8,10 +8,10 @@
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 251,
-  "response" : "To find the weather and population in Berkeley:\n\n1. **For Weather**: Use `get_weather` function with location set to \"Berkeley\".\n2. **For Population**: Use `get_population` function with location set to \"Berkeley\".\n\nPlease call these functions to retrieve the required data.",
-  "time_to_first_token_ms" : 1620.35,
-  "tokens_per_second" : 15.65,
-  "total_time_ms" : 6731.92,
-  "total_tokens" : 332
+  "prefill_tokens" : 235,
+  "response" : "",
+  "time_to_first_token_ms" : 2261.98,
+  "tokens_per_second" : 10.69,
+  "total_time_ms" : 4226.89,
+  "total_tokens" : 257
 }

@@ -1,12 +1,17 @@
 {
-  "decode_tokens" : 200,
+  "decode_tokens" : 56,
   "function_calls" : [
-
+    {
+      "arguments" : {
+        "location" : "Santa Cruz"
+      },
+      "name" : "get_weather"
+    }
   ],
-  "prefill_tokens" : 144,
-  "response" : " vais à l'analyse du contexte de la question.\n\nThe user asks about what's currently weather in Santa Cruz, so we should use the get_weather function provided.\nThe parameters required for this function are 'location', which is a string representing the city name.\nSince Santa Cruz is the location mentioned, we need to pass it as an argument.\n\nTherefore, we should call the get_weather function with 'location' set to 'Santa Cruz'.\nThis will retrieve the current weather information for Santa Cruz.\nNow we can structure our response in JSON format as requested.\nThe function_call object includes the name 'get_weather' and the arguments for 'location' set to 'Santa Cruz'.\nThis should provide the user with accurate weather information in Santa Cruz.\nI need to make sure that all parameters are correctly formatted as specified in the function definition.\nOnce we get the function call result, we can present the weather details to the user.\nIn summary:\n- Identify that 'get_weather' is needed for retrieving",
-  "time_to_first_token_ms" : 1193.68,
-  "tokens_per_second" : 18.52,
-  "total_time_ms" : 11937.8,
-  "total_tokens" : 344
+  "prefill_tokens" : 161,
+  "response" : "The weather in Santa Cruz can be found by calling the get_weather function with location set to 'Santa Cruz'. Here's how you would do it:\n\n```json",
+  "time_to_first_token_ms" : 1473.92,
+  "tokens_per_second" : 14.56,
+  "total_time_ms" : 5250.48,
+  "total_tokens" : 217
 }
