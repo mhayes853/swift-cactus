@@ -1,0 +1,4 @@
+module CXXCactus {
+    header "cactus.h"
+    export *
+}

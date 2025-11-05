@@ -1,4 +1,4 @@
-import CXXCactus
+import CXXCactusShims
 import Foundation
 
 // MARK: - CactusLanguageModel

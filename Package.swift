@@ -10,7 +10,7 @@ let supportsTelemetry = SwiftSetting.define(
 
 let package = Package(
   name: "swift-cactus",
-  platforms: [.iOS(.v13), .macOS(.v10_15), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
+  platforms: [.iOS(.v13), .macOS(.v11), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
   products: [
     .library(name: "Cactus", targets: ["Cactus"])
   ],
@@ -26,17 +26,9 @@ let package = Package(
   ],
   targets: [
     .target(
-      name: "CXXCactus",
-      exclude: [
-        "cactus/apple", "cactus/android", "cactus/assets", "cactus/tests", "cactus/tools",
-        "cactus/.gitignore", "cactus/LICENSE", "cactus/README.md"
-      ],
-      cxxSettings: [.unsafeFlags(["-std=c++20", "-O3", "-march=armv8.2-a+fp16+simd+dotprod"])],
-    ),
-    .target(
       name: "Cactus",
       dependencies: [
-        "CXXCactus",
+        "CXXCactusShims",
         .target(name: "cactus_util", condition: .when(platforms: [.iOS, .macOS])),
         .product(name: "Logging", package: "swift-log"),
         .product(name: "Zip", package: "Zip"),
@@ -58,6 +50,18 @@ let package = Package(
       resources: [.process("Resources")],
       swiftSettings: [supportsTelemetry]
     ),
-    .binaryTarget(name: "cactus_util", path: "cactus_util.xcframework")
+    .target(
+      name: "CXXCactusShims",
+      dependencies: [
+        .target(name: "CXXCactus", condition: .when(platforms: [.android])),
+        .target(
+          name: "CXXCactusDarwin",
+          condition: .when(platforms: [.iOS, .macOS, .visionOS, .tvOS, .watchOS, .macCatalyst])
+        )
+      ]
+    ),
+    .binaryTarget(name: "CXXCactusDarwin", path: "bin/CXXCactusDarwin.xcframework"),
+    .binaryTarget(name: "CXXCactus", path: "bin/CXXCactus.artifactbundle"),
+    .binaryTarget(name: "cactus_util", path: "bin/cactus_util.xcframework")
   ]
 )

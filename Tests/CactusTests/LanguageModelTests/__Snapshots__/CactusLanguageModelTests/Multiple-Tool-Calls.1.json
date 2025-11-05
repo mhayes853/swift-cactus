@@ -1,17 +1,17 @@
 {
-  "decode_tokens" : 69,
+  "decode_tokens" : 22,
   "function_calls" : [
     {
       "arguments" : {
         "location" : "Berkeley"
       },
-      "name" : "get_population"
+      "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 254,
-  "response" : "assistance:\nutterance: What is the weather and population in Berkeley?\n\nThe assistant needs to use two functions: get_weather (for finding the weather) and get_population (for finding the population). The parameters for each are city names as strings.\n<\/think>",
-  "time_to_first_token_ms" : 1236.81,
-  "tokens_per_second" : 20.82,
-  "total_time_ms" : 4502.97,
-  "total_tokens" : 323
+  "prefill_tokens" : 235,
+  "response" : "",
+  "time_to_first_token_ms" : 2261.98,
+  "tokens_per_second" : 10.69,
+  "total_time_ms" : 4226.89,
+  "total_tokens" : 257
 }
