@@ -13,7 +13,7 @@ At the moment, this package provides a minimal and low-level Swifty interface ab
 
 ## Quick Start
 
-You first must download the model you want to use using `CactusModelsDirectory`, then you can create an instance of `CactusLanguageModel` with a local model `URL` to start generating.
+You first must download the model you want to use using ``CactusModelsDirectory``, then you can create an instance of ``CactusLanguageModel`` with a local model `URL` to start generating.
 ```swift
 import Cactus
 
@@ -62,7 +62,7 @@ let completion = try model.chatCompletion(
 
 ### Streaming
 
-The `chatCompletion` method provides a callback the allows you to stream tokens as they come in.
+The ``CactusLanguageModel/chatCompletion(messages:options:maxBufferSize:tools:onToken:)`` method provides a callback the allows you to stream tokens as they come in.
 
 ```swift
 let completion = try model.chatCompletion(
@@ -75,9 +75,9 @@ let completion = try model.chatCompletion(
 }
 ```
 
-### Tool Calling
+### Function Calling
 
-You can pass a list of tool definitions to the model, which the model can then invoke based on the schema of arguments you provide. The tool calling format is based on the [JSON Schema format](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01).
+You can pass a list of function definitions to the model, which the model can then invoke based on the schema of arguments you provide. The function calling format is based on the [JSON Schema format](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01).
 
 ```swift
 let completion = try model.chatCompletion(
@@ -85,8 +85,8 @@ let completion = try model.chatCompletion(
     .system("You are a helpful assistant that can use tools."),
     .user("What is the weather in San Francisco?")
   ],
-  tools: [
-    CactusLanguageModel.ToolDefinition(
+  functions: [
+    CactusLanguageModel.FunctionDefinition(
       name: "get_weather",
       description: "Get the weather in a given location",
       parameters: .object(
@@ -106,18 +106,18 @@ let completion = try model.chatCompletion(
 )
 
 // [
-//   CactusLanguageModel.ToolCall(
+//   CactusLanguageModel.FunctionCall(
 //     name: "get_weather",
 //     arguments: ["location": "San Francisco"]
 //   )
 // ]
-print(completion.toolCalls)
+print(completion.functionCalls)
 ```
 
 > [!NOTE]
-> Smaller models may struggle to generate tool arguments that match the `JSONSchema` you specify for the tool. Therefore, the library provides a way to manually validate any value against the schema you provide to the model using the `JSONSchema.Validator` class.
+> Smaller models may struggle to generate function arguments that match the ``JSONSchema`` you specify for the function. Therefore, the library provides a way to manually validate any value against the schema you provide to the model using the ``JSONSchema/Validator`` class.
 > ```swift
-> let toolDefinition = CactusLanguageModel.ToolDefinition(
+> let functionDefinition = CactusLanguageModel.FunctionDefinition(
 >   name: "search",
 >   description: "Find something",
 >   parameters: .object(
@@ -130,20 +130,20 @@ print(completion.toolCalls)
 > )
 > let completion = try model.chatCompletion(
 >   messages: messages,
->   tools: [toolDefinition]
+>   functions: [functionDefinition]
 > )
 >
-> for toolCall in completion.toolCalls {
+> for functionCall in completion.functionCalls {
 >   try JSONSchema.Validator.shared.validate(
->     value: .object(toolCall.arguments),
->     with: toolDefinition.parameters
+>     value: .object(functionCall.arguments),
+>     with: functionDefinition.parameters
 >   )
 > }
 > ```
 
 ### Embeddings
 
-You can generate embeddings by passing a `MutableSpan` as a buffer to `embeddings`, or you can alternatively obtain a `[Float]` directly.
+You can generate embeddings by passing a `MutableSpan` as a buffer to ``CactusLanguageModel/embeddings(for:buffer:)``, or you can alternatively obtain a `[Float]` directly by calling ``CactusLanguageModel/embeddings(for:maxBufferSize:)``.
 
 ```swift
 let embeddings: [Float] = try model.embeddings(for: "This is some text")
@@ -187,7 +187,7 @@ print(cosineSimilarity(fancy, pretty))
 
 ### Telemetry (iOS and macOS Only)
 
-You can configure telemetry in the entry point of your app by calling `CactusTelemetry.configure`.
+You can configure telemetry in the entry point of your app by calling ``CactusTelemetry/configure(_:logger:)``.
 
 ```swift
 import Cactus
@@ -203,7 +203,7 @@ struct MyApp: App {
 }
 ```
 
-`CactusLanguageModel` will automatically record telemetry events for every model initialization, chat completion, and embeddings generation, but you can also send telemetry events manually using `CactusTelemetry.send`. You can view the telemetry data in the cactus dashboard.
+`CactusLanguageModel` will automatically record telemetry events for every model initialization, chat completion, and embeddings generation, but you can also send telemetry events manually using ``CactusTelemetry/send(_:logger:)``. You can view the telemetry data in the cactus dashboard.
 
 ## Documentation
 The documentation for releases and main are available here.

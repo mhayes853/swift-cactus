@@ -127,7 +127,7 @@ extension BaseTestSuite {
     }
 
     @Test
-    func `Basic Tool Calling`() async throws {
+    func `Basic Function Calling`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       let model = try CactusLanguageModel(from: modelURL)
 
@@ -136,8 +136,8 @@ extension BaseTestSuite {
           .system("You are a helpful weather assistant that can use tools."),
           .user("What is the weather in Santa Cruz?")
         ],
-        tools: [
-          CactusLanguageModel.ToolDefinition(
+        functions: [
+          CactusLanguageModel.FunctionDefinition(
             name: "get_weather",
             description: "Get the weather in a given location",
             parameters: .object(
@@ -162,7 +162,7 @@ extension BaseTestSuite {
     }
 
     @Test
-    func `Multiple Tool Calls`() async throws {
+    func `Multiple Function Calls`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       let model = try CactusLanguageModel(from: modelURL)
 
@@ -171,8 +171,8 @@ extension BaseTestSuite {
           .system("You are a helpful weather assistant that can use tools."),
           .user("What is the weather and population in Berkeley?")
         ],
-        tools: [
-          CactusLanguageModel.ToolDefinition(
+        functions: [
+          CactusLanguageModel.FunctionDefinition(
             name: "get_weather",
             description: "Get the weather in a given location",
             parameters: .object(
@@ -189,7 +189,7 @@ extension BaseTestSuite {
               )
             )
           ),
-          CactusLanguageModel.ToolDefinition(
+          CactusLanguageModel.FunctionDefinition(
             name: "get_population",
             description: "Gets the population of a given city",
             parameters: .object(

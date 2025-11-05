@@ -1,0 +1,17 @@
+{
+  "decode_tokens" : 32,
+  "function_calls" : [
+    {
+      "arguments" : {
+        "location" : "Berkeley"
+      },
+      "name" : "get_weather"
+    }
+  ],
+  "prefill_tokens" : 236,
+  "response" : "",
+  "time_to_first_token_ms" : 1627.33,
+  "tokens_per_second" : 10.76,
+  "total_time_ms" : 4509.12,
+  "total_tokens" : 268
+}

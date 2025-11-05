@@ -71,9 +71,9 @@ let completion = try model.chatCompletion(
 }
 ```
 
-### Tool Calling
+### Function Calling
 
-You can pass a list of tool definitions to the model, which the model can then invoke based on the schema of arguments you provide. The tool calling format is based on the [JSON Schema format](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01).
+You can pass a list of function definitions to the model, which the model can then invoke based on the schema of arguments you provide. The function calling format is based on the [JSON Schema format](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01).
 
 ```swift
 let completion = try model.chatCompletion(
@@ -81,8 +81,8 @@ let completion = try model.chatCompletion(
     .system("You are a helpful assistant that can use tools."),
     .user("What is the weather in San Francisco?")
   ],
-  tools: [
-    CactusLanguageModel.ToolDefinition(
+  functions: [
+    CactusLanguageModel.FunctionDefinition(
       name: "get_weather",
       description: "Get the weather in a given location",
       parameters: .object(
@@ -102,17 +102,17 @@ let completion = try model.chatCompletion(
 )
 
 // [
-//   CactusLanguageModel.ToolCall(
+//   CactusLanguageModel.FunctionCall(
 //     name: "get_weather",
 //     arguments: ["location": "San Francisco"]
 //   )
 // ]
-print(completion.toolCalls)
+print(completion.functionCalls)
 ```
 
-> Note: Smaller models may struggle to generate tool arguments that match the ``JSONSchema`` you specify for the tool. Therefore, the library provides a way to manually validate any value against the schema you provide to the model using the ``JSONSchema/Validator`` class.
+> Note: Smaller models may struggle to generate function arguments that match the ``JSONSchema`` you specify for the function. Therefore, the library provides a way to manually validate any value against the schema you provide to the model using the ``JSONSchema/Validator`` class.
 > ```swift
-> let toolDefinition = CactusLanguageModel.ToolDefinition(
+> let functionDefinition = CactusLanguageModel.FunctionDefinition(
 >   name: "search",
 >   description: "Find something",
 >   parameters: .object(
@@ -125,13 +125,13 @@ print(completion.toolCalls)
 > )
 > let completion = try model.chatCompletion(
 >   messages: messages,
->   tools: [toolDefinition]
+>   functions: [functionDefinition]
 > )
 >
-> for toolCall in completion.toolCalls {
+> for functionCall in completion.functionCalls {
 >   try JSONSchema.Validator.shared.validate(
->     value: .object(toolCall.arguments),
->     with: toolDefinition.parameters
+>     value: .object(functionCall.arguments),
+>     with: functionDefinition.parameters
 >   )
 > }
 > ```
@@ -231,9 +231,9 @@ struct MyApp: App {
 - ``CactusLanguageModel/embeddings(for:maxBufferSize:)``
 - ``CactusLanguageModel/embeddings(for:buffer:)``
 
-### Tool Calling
-- ``CactusLanguageModel/ToolDefinition``
-- ``CactusLanguageModel/ToolCall``
+### Function Calling
+- ``CactusLanguageModel/FunctionDefinition``
+- ``CactusLanguageModel/FunctionCall``
 
 ### Structured Output
 - ``JSONSchema``
