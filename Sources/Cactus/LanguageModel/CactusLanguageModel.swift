@@ -1,4 +1,5 @@
-import CXXCactusShims
+// NB: @_implementationOnly since docc doesn't like access level imports for binary targets apparently.
+@_implementationOnly import CXXCactusShims
 import Foundation
 
 // MARK: - CactusLanguageModel
@@ -47,7 +48,7 @@ public final class CactusLanguageModel {
   public let properties: Properties
 
   /// The underlying model pointer.
-  public let model: cactus_model_t
+  public let model: UnsafeMutableRawPointer
 
   /// Loads a model from the specified `URL`.
   ///
@@ -164,18 +165,16 @@ extension CactusLanguageModel {
     return (0..<dimensions).map { buffer[$0] }
   }
 
-  #if swift(>=6.2)
-    /// Generates embeddings for the specified `text` and stores them in the specified buffer.
-    ///
-    /// - Parameters:
-    ///   - text: The text to generate embeddings for.
-    ///   - buffer: A `MutableSpan` buffer.
-    /// - Returns: The number of dimensions.
-    @discardableResult
-    public func embeddings(for text: String, buffer: inout MutableSpan<Float>) throws -> Int {
-      try buffer.withUnsafeMutableBufferPointer { try self.embeddings(for: text, buffer: $0) }
-    }
-  #endif
+  /// Generates embeddings for the specified `text` and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - text: The text to generate embeddings for.
+  ///   - buffer: A `MutableSpan` buffer.
+  /// - Returns: The number of dimensions.
+  @discardableResult
+  public func embeddings(for text: String, buffer: inout MutableSpan<Float>) throws -> Int {
+    try buffer.withUnsafeMutableBufferPointer { try self.embeddings(for: text, buffer: $0) }
+  }
 
   /// Generates embeddings for the specified `text` and stores them in the specified buffer.
   ///
@@ -242,8 +241,8 @@ extension CactusLanguageModel {
     /// The total amount of tokens that make up the response.
     public let totalTokens: Int
 
-    /// A list of ``CactusLanguageModel/ToolCall`` instances from the model.
-    public let toolCalls: [ToolCall]
+    /// A list of ``CactusLanguageModel/FunctionCall`` instances from the model.
+    public let functionCalls: [FunctionCall]
 
     private let timeToFirstTokenMs: Double
     private let totalTimeMs: Double
@@ -274,14 +273,14 @@ extension CactusLanguageModel {
   ///   - messages: The list of ``ChatMessage`` instances.
   ///   - options: The ``ChatCompletion/Options``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
-  ///   - tools: A list of ``ToolDefinition`` instances.
+  ///   - functions: A list of ``FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
   /// - Returns: A ``ChatCompletion``.
   public func chatCompletion(
     messages: [ChatMessage],
     options: ChatCompletion.Options? = nil,
     maxBufferSize: Int? = nil,
-    tools: [ToolDefinition] = [],
+    functions: [FunctionDefinition] = [],
     onToken: @escaping (String) -> Void = { _ in }
   ) throws -> ChatCompletion {
     let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent(
@@ -299,9 +298,9 @@ extension CactusLanguageModel {
     let buffer = UnsafeMutablePointer<CChar>.allocate(capacity: maxBufferSize)
     defer { buffer.deallocate() }
 
-    let tools = tools.map { _ToolDefinition(function: $0) }
-    let toolsJSON =
-      tools.isEmpty ? nil : String(decoding: try JSONEncoder().encode(tools), as: UTF8.self)
+    let functions = functions.map { _FunctionDefinition(function: $0) }
+    let functionsJSON =
+      functions.isEmpty ? nil : String(decoding: try JSONEncoder().encode(functions), as: UTF8.self)
 
     let box = Unmanaged.passRetained(TokenCallbackBox(onToken))
     defer { box.release() }
@@ -311,7 +310,7 @@ extension CactusLanguageModel {
       buffer,
       maxBufferSize * MemoryLayout<CChar>.stride,
       String(decoding: try JSONEncoder().encode(options), as: UTF8.self),
-      toolsJSON,
+      functionsJSON,
       { token, _, ptr in
         guard let ptr, let token else { return }
         let box = Unmanaged<TokenCallbackBox>.fromOpaque(ptr).takeUnretainedValue()
@@ -362,8 +361,8 @@ extension CactusLanguageModel {
     return decoder
   }()
 
-  private struct _ToolDefinition: Codable {
-    var function: ToolDefinition
+  private struct _FunctionDefinition: Codable {
+    var function: FunctionDefinition
   }
 
   private final class TokenCallbackBox {
@@ -382,6 +381,9 @@ extension CactusLanguageModel {
 extension CactusLanguageModel.ChatCompletion {
   /// Options for generating a ``CactusLanguageModel/ChatCompletion``
   public struct Options: Hashable, Sendable, Codable {
+    /// A default array of common stop sequences.
+    public static let defaultStopSequences = ["<|im_end|>", "<end_of_turn>"]
+
     /// The maximum number of tokens for the completion.
     public var maxTokens: Int
 
@@ -410,7 +412,7 @@ extension CactusLanguageModel.ChatCompletion {
       temperature: Float = 0.6,
       topP: Float = 0.95,
       topK: Int = 20,
-      stopSequences: [String] = ["<|im_end|>", "<end_of_turn>"]
+      stopSequences: [String] = Self.defaultStopSequences
     ) {
       self.maxTokens = maxTokens
       self.temperature = temperature
@@ -428,7 +430,7 @@ extension CactusLanguageModel.ChatCompletion {
     public init(
       maxTokens: Int = 200,
       modelType: CactusLanguageModel.ModelType,
-      stopSequences: [String] = ["<|im_end|>", "<end_of_turn>"]
+      stopSequences: [String] = Self.defaultStopSequences
     ) {
       self.maxTokens = maxTokens
       self.temperature = modelType.defaultTemperature
@@ -455,8 +457,9 @@ extension CactusLanguageModel.ChatCompletion: Decodable {
     self.prefillTokens = try container.decode(Int.self, forKey: .prefillTokens)
     self.decodeTokens = try container.decode(Int.self, forKey: .decodeTokens)
     self.totalTokens = try container.decode(Int.self, forKey: .totalTokens)
-    self.toolCalls =
-      try container.decodeIfPresent([CactusLanguageModel.ToolCall].self, forKey: .toolCalls) ?? []
+    self.functionCalls =
+      try container.decodeIfPresent([CactusLanguageModel.FunctionCall].self, forKey: .functionCalls)
+      ?? []
     self.timeToFirstTokenMs = try container.decode(Double.self, forKey: .timeToFirstTokenMs)
     self.totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
   }
@@ -469,7 +472,7 @@ extension CactusLanguageModel.ChatCompletion: Encodable {
     case prefillTokens = "prefill_tokens"
     case decodeTokens = "decode_tokens"
     case totalTokens = "total_tokens"
-    case toolCalls = "function_calls"
+    case functionCalls = "function_calls"
     case timeToFirstTokenMs = "time_to_first_token_ms"
     case totalTimeMs = "total_time_ms"
   }

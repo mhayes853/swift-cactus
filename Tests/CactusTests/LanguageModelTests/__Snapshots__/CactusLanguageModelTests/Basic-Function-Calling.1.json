@@ -8,10 +8,10 @@
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 144,
+  "prefill_tokens" : 160,
   "response" : "",
-  "time_to_first_token_ms" : 1062.7,
-  "tokens_per_second" : 16.55,
-  "total_time_ms" : 2331.32,
-  "total_tokens" : 166
+  "time_to_first_token_ms" : 1461.3,
+  "tokens_per_second" : 12.25,
+  "total_time_ms" : 3175.83,
+  "total_tokens" : 182
 }
