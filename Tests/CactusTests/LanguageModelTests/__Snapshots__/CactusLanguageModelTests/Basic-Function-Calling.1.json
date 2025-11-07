@@ -10,8 +10,8 @@
   ],
   "prefill_tokens" : 160,
   "response" : "",
-  "time_to_first_token_ms" : 1461.3,
-  "tokens_per_second" : 12.25,
-  "total_time_ms" : 3175.83,
+  "time_to_first_token_ms" : 6742.71,
+  "tokens_per_second" : 14.14,
+  "total_time_ms" : 8227.37,
   "total_tokens" : 182
 }
