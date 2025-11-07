@@ -281,7 +281,7 @@ extension CactusLanguageModel {
     options: ChatCompletion.Options? = nil,
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
-    onToken: @escaping (String) -> Void = { _ in }
+    onToken: (String) -> Void = { _ in }
   ) throws -> ChatCompletion {
     let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent(
       name: "completion",
@@ -302,22 +302,24 @@ extension CactusLanguageModel {
     let functionsJSON =
       functions.isEmpty ? nil : String(decoding: try JSONEncoder().encode(functions), as: UTF8.self)
 
-    let box = Unmanaged.passRetained(TokenCallbackBox(onToken))
-    defer { box.release() }
-    let result = cactus_complete(
-      self.model,
-      String(decoding: try JSONEncoder().encode(messages), as: UTF8.self),
-      buffer,
-      maxBufferSize * MemoryLayout<CChar>.stride,
-      String(decoding: try JSONEncoder().encode(options), as: UTF8.self),
-      functionsJSON,
-      { token, _, ptr in
-        guard let ptr, let token else { return }
-        let box = Unmanaged<TokenCallbackBox>.fromOpaque(ptr).takeUnretainedValue()
-        box.callback(String(cString: token))
-      },
-      box.toOpaque()
-    )
+    let result = try withoutActuallyEscaping(onToken) { onToken in
+      let box = Unmanaged.passRetained(TokenCallbackBox(onToken))
+      defer { box.release() }
+      return cactus_complete(
+        self.model,
+        String(decoding: try JSONEncoder().encode(messages), as: UTF8.self),
+        buffer,
+        maxBufferSize * MemoryLayout<CChar>.stride,
+        String(decoding: try JSONEncoder().encode(options), as: UTF8.self),
+        functionsJSON,
+        { token, _, ptr in
+          guard let ptr, let token else { return }
+          let box = Unmanaged<TokenCallbackBox>.fromOpaque(ptr).takeUnretainedValue()
+          box.callback(String(cString: token))
+        },
+        box.toOpaque()
+      )
+    }
 
     var responseData = Data()
     for i in 0..<strnlen(buffer, maxBufferSize) {
