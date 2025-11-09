@@ -5,7 +5,7 @@ extension JSONSchema {
   ///
   /// You can use this to validate tool parameter output from a ``CactusLanguageModel``.
   /// ```swift
-  /// let toolDefinition = CactusLanguageModel.ToolDefinition(
+  /// let functionDefinition = CactusLanguageModel.FunctionDefinition(
   ///   name: "search",
   ///   description: "Find something",
   ///   parameters: .object(
@@ -18,13 +18,13 @@ extension JSONSchema {
   /// )
   /// let completion = try model.chatCompletion(
   ///   messages: messages,
-  ///   tools: [toolDefinition]
+  ///   functions: [functionDefinition]
   /// )
   ///
-  /// for toolCall in completion.toolCalls {
+  /// for functionCall in completion.functionCalls {
   ///   try JSONSchema.Validator.shared.validate(
-  ///     value: .object(toolCall.arguments),
-  ///     with: toolDefinition.parameters
+  ///     value: .object(functionCall.arguments),
+  ///     with: functionDefinition.parameters
   ///   )
   /// }
   /// ```

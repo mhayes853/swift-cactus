@@ -86,7 +86,7 @@ let completion = try model.chatCompletion(
       name: "get_weather",
       description: "Get the weather in a given location",
       parameters: .object(
-        type: .object(
+        valueSchema: .object(
           properties: [
             "location": .object(
               description: "City name, eg. 'San Francisco'",
