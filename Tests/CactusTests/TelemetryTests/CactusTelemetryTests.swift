@@ -51,7 +51,7 @@ final class `CactusTelemetry tests` {
   }
 }
 
-private let nanosecondsPerSecond = UInt64(1_000_000_000)
+let nanosecondsPerSecond = UInt64(1_000_000_000)
 
 #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
   final class CactusDefaultTelemetryTests: XCTestCase {

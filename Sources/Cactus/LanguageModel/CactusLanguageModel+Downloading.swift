@@ -172,29 +172,41 @@ extension CactusLanguageModel {
     /// - Returns: The destination`URL` of the downloaded model.
     @discardableResult
     public func waitForCompletion() async throws -> URL {
-      let state = Lock<(UnsafeContinuation<URL, any Error>?, CactusSubscription?)>((nil, nil))
+      let state = Lock<WaitForCompletionState>(WaitForCompletionState())
       return try await withTaskCancellationHandler {
         try await withUnsafeThrowingContinuation { continuation in
-          state.withLock {
+          state.withLock { innerState in
             if let finalResult = self.delegate.state.withLock(\.finalResult) {
               continuation.resume(with: finalResult)
               return
             }
-            $0.0 = continuation
-            $0.1 = self.onProgress { result in
-              switch result {
-              case .success(.finished(let url)):
-                continuation.resume(returning: url)
-              case .failure(let error):
-                continuation.resume(throwing: error)
-              default:
-                break
+            innerState.continuation = continuation
+            innerState.subscription = self.onProgress { result in
+              state.withLock { state in
+                switch result {
+                case .success(.finished(let url)):
+                  state.resume(with: .success(url))
+                case .failure(let error):
+                  state.resume(with: .failure(error))
+                default:
+                  break
+                }
               }
             }
           }
         }
       } onCancel: {
-        state.withLock { $0.0?.resume(throwing: CancellationError()) }
+        state.withLock { $0.resume(with: .failure(CancellationError())) }
+      }
+    }
+
+    private struct WaitForCompletionState {
+      var continuation: UnsafeContinuation<URL, any Error>?
+      var subscription: CactusSubscription?
+
+      mutating func resume(with result: Result<URL, any Error>) {
+        self.continuation?.resume(with: result)
+        self.continuation = nil
       }
     }
 

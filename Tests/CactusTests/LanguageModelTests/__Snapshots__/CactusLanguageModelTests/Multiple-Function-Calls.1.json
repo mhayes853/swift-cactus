@@ -1,35 +1,12 @@
 {
-  "decode_tokens" : 183,
+  "decode_tokens" : 55,
   "function_calls" : [
-    {
-      "arguments" : {
-        "arg1" : "Berkeley"
-      },
-      "name" : "get_weather"
-    },
-    {
-      "arguments" : {
-        "arg1" : "Berkeley"
-      },
-      "name" : "get_population"
-    },
-    {
-      "arguments" : {
-        "arg1" : "Berkeley"
-      },
-      "name" : "get_weather"
-    },
-    {
-      "arguments" : {
-        "arg1 " : "Berkeley"
-      },
-      "name" : "get_population"
-    }
+
   ],
-  "prefill_tokens" : 236,
-  "response" : "To find out both the weather and population in Berkeley:\n\n1. Use `get_weather` with location set to 'Berkeley' for weather.\n2. Use `get_population` with location set to 'Berkeley' for population data.\n\nHere's how you can make both calls:\n\nFor weather:\n```json\n{\"function_call\": {\"name\": \"get_weather\", \"arguments\": {\"arg1\": \"Berkeley\"}}}\n```\n\nFor population:\n```json\n{\"function_call\": {\"name\": \"get_population\", \"arguments\": {\"arg1\": \"Berkeley\"}}}\n```\n\nEach call will return the respective data about Berkeley's weather and population in detail.\n<\/think>\n{\"function_call\": {\"name\": \"get_weather\", \"arguments\": {\"arg1\": \"Berkeley\"}}}",
-  "time_to_first_token_ms" : 7019.21,
-  "tokens_per_second" : 17.52,
-  "total_time_ms" : 17405.65,
-  "total_tokens" : 419
+  "prefill_tokens" : 235,
+  "response" : "<\/think>\n\n- **Weather in Berkeley**: The current weather in Berkeley (CA) is partly cloudy with light rain expected.\n- **Population of Berkeley**: Approximately 3800 residents as per recent data from the U.S.-based Census Bureau (2024).",
+  "time_to_first_token_ms" : 5614.95,
+  "tokens_per_second" : 14.93,
+  "total_time_ms" : 9232.37,
+  "total_tokens" : 290
 }
