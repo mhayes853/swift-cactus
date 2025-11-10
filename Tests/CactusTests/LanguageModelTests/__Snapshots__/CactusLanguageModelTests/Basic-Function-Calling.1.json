@@ -1,17 +1,17 @@
 {
-  "decode_tokens" : 54,
+  "decode_tokens" : 140,
   "function_calls" : [
     {
       "arguments" : {
-        "arg1" : "Santa Cruz"
+        "location" : "Santa Cruz"
       },
       "name" : "get_weather"
     }
   ],
   "prefill_tokens" : 144,
-  "response" : "The weather in Santa Cruz is currently sunny with a high temperature around 25°C (77°F). There are no heavy rain showers expected today.",
-  "time_to_first_token_ms" : 4521.35,
-  "tokens_per_second" : 15.41,
-  "total_time_ms" : 7961.03,
-  "total_tokens" : 198
+  "response" : "Based on your query and the available tools, here's a detailed response:\n\nThe weather in Santa Cruz can be found using one of our provided functions.\n\n1. **Function Call**:\n   - The function `get_weather` is used to retrieve weather information for a given location.\n   - The required parameter is a string named \"location\", which we will use as \"Santa Cruz\".\n\nHere is the JSON object representing this function call:\n\n```json",
+  "time_to_first_token_ms" : 5343.71,
+  "tokens_per_second" : 16.82,
+  "total_time_ms" : 13605.25,
+  "total_tokens" : 284
 }

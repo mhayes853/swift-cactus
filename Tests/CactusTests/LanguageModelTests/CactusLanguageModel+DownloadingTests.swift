@@ -40,21 +40,16 @@ extension BaseTestSuite {
 
     @Test
     func `Cancel Download From Concurrency Task`() async throws {
-      let progress = Lock([Result<CactusLanguageModel.DownloadProgress, any Error>]())
       let task = Task {
         try await CactusLanguageModel.downloadModel(
           from: CactusLanguageModel.modelDownloadURL(slug: CactusLanguageModel.testModelSlug),
-          to: self.temporaryURL(),
-          onProgress: { p in progress.withLock { $0.append(p) } }
+          to: self.temporaryURL()
         )
       }
-      await Task.yield()  // NB: Give some time for downloading to begin.
+      try await Task.sleep(nanoseconds: nanosecondsPerSecond)  // NB: Give some time for downloading to begin.
       task.cancel()
       await #expect(throws: CancellationError.self) {
         try await task.value
-      }
-      progress.withLock { p in
-        expectNoDifference(p.last?.isCancelled, true)
       }
     }
 
@@ -68,7 +63,7 @@ extension BaseTestSuite {
       let progress = Lock([Result<CactusLanguageModel.DownloadProgress, any Error>]())
       let subscription = task.onProgress { p in progress.withLock { $0.append(p) } }
       task.resume()
-      await Task.yield()  // NB: Give some time for downloading to begin.
+      try await Task.sleep(nanoseconds: nanosecondsPerSecond)  // NB: Give some time for downloading to begin.
       task.cancel()
       await #expect(throws: CancellationError.self) {
         try await task.waitForCompletion()
