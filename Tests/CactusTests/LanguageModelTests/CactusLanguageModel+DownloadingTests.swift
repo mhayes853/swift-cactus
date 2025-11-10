@@ -5,7 +5,7 @@ import Testing
 
 extension BaseTestSuite {
   @Suite
-  struct `CactusLanguageModel+Downloading tests` {
+  struct `CactusLanguageModelDownloading tests` {
     @Test
     func `Task Not Finished By Default`() async throws {
       let task = CactusLanguageModel.downloadModelTask(

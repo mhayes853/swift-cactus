@@ -1,17 +1,17 @@
 {
-  "decode_tokens" : 22,
+  "decode_tokens" : 54,
   "function_calls" : [
     {
       "arguments" : {
-        "location" : "Santa Cruz"
+        "arg1" : "Santa Cruz"
       },
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 160,
-  "response" : "",
-  "time_to_first_token_ms" : 6742.71,
-  "tokens_per_second" : 14.14,
-  "total_time_ms" : 8227.37,
-  "total_tokens" : 182
+  "prefill_tokens" : 144,
+  "response" : "The weather in Santa Cruz is currently sunny with a high temperature around 25°C (77°F). There are no heavy rain showers expected today.",
+  "time_to_first_token_ms" : 4521.35,
+  "tokens_per_second" : 15.41,
+  "total_time_ms" : 7961.03,
+  "total_tokens" : 198
 }

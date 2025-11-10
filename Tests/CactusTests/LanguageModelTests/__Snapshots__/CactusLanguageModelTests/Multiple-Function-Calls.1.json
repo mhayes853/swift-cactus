@@ -1,35 +1,17 @@
 {
-  "decode_tokens" : 183,
+  "decode_tokens" : 26,
   "function_calls" : [
     {
       "arguments" : {
-        "arg1" : "Berkeley"
+        "location" : "Berkeley"
       },
       "name" : "get_weather"
-    },
-    {
-      "arguments" : {
-        "arg1" : "Berkeley"
-      },
-      "name" : "get_population"
-    },
-    {
-      "arguments" : {
-        "arg1" : "Berkeley"
-      },
-      "name" : "get_weather"
-    },
-    {
-      "arguments" : {
-        "arg1 " : "Berkeley"
-      },
-      "name" : "get_population"
     }
   ],
-  "prefill_tokens" : 236,
-  "response" : "To find out both the weather and population in Berkeley:\n\n1. Use `get_weather` with location set to 'Berkeley' for weather.\n2. Use `get_population` with location set to 'Berkeley' for population data.\n\nHere's how you can make both calls:\n\nFor weather:\n```json\n{\"function_call\": {\"name\": \"get_weather\", \"arguments\": {\"arg1\": \"Berkeley\"}}}\n```\n\nFor population:\n```json\n{\"function_call\": {\"name\": \"get_population\", \"arguments\": {\"arg1\": \"Berkeley\"}}}\n```\n\nEach call will return the respective data about Berkeley's weather and population in detail.\n<\/think>\n{\"function_call\": {\"name\": \"get_weather\", \"arguments\": {\"arg1\": \"Berkeley\"}}}",
-  "time_to_first_token_ms" : 7019.21,
-  "tokens_per_second" : 17.52,
-  "total_time_ms" : 17405.65,
-  "total_tokens" : 419
+  "prefill_tokens" : 237,
+  "response" : "```json",
+  "time_to_first_token_ms" : 5259.57,
+  "tokens_per_second" : 14.11,
+  "total_time_ms" : 7030.94,
+  "total_tokens" : 263
 }
