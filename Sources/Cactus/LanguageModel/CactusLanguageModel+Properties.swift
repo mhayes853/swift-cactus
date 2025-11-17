@@ -1,7 +1,5 @@
 import Foundation
 
-// MARK: - Properties
-
 extension CactusLanguageModel {
   /// A data type describing properties of a model.
   ///
@@ -146,45 +144,23 @@ extension CactusLanguageModel.Properties {
 
   init(file: CactusLanguageModel.ConfigurationFile) {
     self.init(
-      vocabularySize: file.integer(forKey: "vocab_size") ?? 151936,
-      layerCount: file.integer(forKey: "num_layers") ?? 28,
-      hiddenDimensions: file.integer(forKey: "hidden_dim") ?? 1024,
-      ffnIntermediateDimensions: file.integer(forKey: "ffn_intermediate_dim") ?? 3072,
-      attentionHeads: file.integer(forKey: "attention_heads") ?? 16,
-      attentionKVHeads: file.integer(forKey: "attention_kv_heads") ?? 8,
-      attentionHeadDimensions: file.integer(forKey: "attention_head_dim") ?? 128,
-      layerNormEpsilon: file.double(forKey: "layer_norm_eps") ?? 1e-6,
-      ropeTheta: file.double(forKey: "rope_theta") ?? 1000000.0,
-      expertCount: file.integer(forKey: "num_experts") ?? 0,
-      sharedExpertCount: file.integer(forKey: "shared_experts") ?? 0,
-      topExpertCount: file.integer(forKey: "top_experts") ?? 0,
-      moeEveryNLayers: file.integer(forKey: "moe_every_n_layers") ?? 0,
-      shouldTieWordEmbeddings: file.boolean(forKey: "tie_word_embeddings") ?? false,
-      contextLengthTokens: file.integer(forKey: "context_length") ?? 32768,
-      modelType: file.modelType(forKey: "model_type"),
-      precision: file.precision(forKey: "precision") ?? .fp32
+      vocabularySize: file.vocabularySize ?? 151936,
+      layerCount: file.layerCount ?? 28,
+      hiddenDimensions: file.hiddenDimensions ?? 1024,
+      ffnIntermediateDimensions: file.ffnIntermediateDimensions ?? 3072,
+      attentionHeads: file.attentionHeads ?? 16,
+      attentionKVHeads: file.attentionKVHeads ?? 8,
+      attentionHeadDimensions: file.attentionHeadDimensions ?? 128,
+      layerNormEpsilon: file.layerNormEpsilon ?? 1e-6,
+      ropeTheta: file.ropeTheta ?? 1000000.0,
+      expertCount: file.expertCount ?? 0,
+      sharedExpertCount: file.sharedExpertCount ?? 0,
+      topExpertCount: file.topExpertCount ?? 0,
+      moeEveryNLayers: file.moeEveryNLayers ?? 0,
+      shouldTieWordEmbeddings: file.shouldTieWordEmbeddings ?? false,
+      contextLengthTokens: file.contextLengthTokens ?? 32768,
+      modelType: file.modelType ?? .qwen,
+      precision: file.precision ?? .fp32
     )
-  }
-}
-
-// MARK: - Helpers
-
-extension CactusLanguageModel.ConfigurationFile {
-  fileprivate func modelType(forKey key: String) -> CactusLanguageModel.ModelType {
-    switch self.string(forKey: "model_type")?.lowercased() {
-    case "gemma": .gemma
-    case "bert": .nomic
-    case "smol": .smol
-    default: .qwen
-    }
-  }
-
-  fileprivate func precision(forKey key: String) -> CactusLanguageModel.Precision? {
-    switch self.string(forKey: key)?.lowercased() {
-    case "int4": .int4
-    case "int8": .int8
-    case "fp16": .fp16
-    default: nil
-    }
   }
 }

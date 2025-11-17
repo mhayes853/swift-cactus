@@ -33,6 +33,7 @@ extension BaseTestSuite {
     }
 
     @Test
+    @available(*, deprecated)
     func `Properties Dump`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL()
       let model = try CactusLanguageModel(from: modelURL)

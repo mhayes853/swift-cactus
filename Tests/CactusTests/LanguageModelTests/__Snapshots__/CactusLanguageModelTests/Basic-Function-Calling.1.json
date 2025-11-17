@@ -1,12 +1,17 @@
 {
-  "decode_tokens" : 44,
+  "decode_tokens" : 24,
   "function_calls" : [
-
+    {
+      "arguments" : {
+        "location" : "Santa Cruz"
+      },
+      "name" : "get_weather"
+    }
   ],
-  "prefill_tokens" : 161,
-  "response" : "I can check the weather for you. Please provide me with more details or specify what kind of information you need.\n\nIf there are any specific questions about the weather in Santa Cruz or other locations, please let me know!",
-  "time_to_first_token_ms" : 1533.89,
-  "tokens_per_second" : 16.66,
-  "total_time_ms" : 4115.27,
-  "total_tokens" : 205
+  "prefill_tokens" : 144,
+  "response" : "<\/think>",
+  "time_to_first_token_ms" : 1328.2,
+  "tokens_per_second" : 15.06,
+  "total_time_ms" : 2855.41,
+  "total_tokens" : 168
 }

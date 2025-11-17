@@ -1,17 +1,23 @@
 {
-  "decode_tokens" : 40,
+  "decode_tokens" : 144,
   "function_calls" : [
     {
       "arguments" : {
         "location" : "Berkeley"
       },
       "name" : "get_weather"
+    },
+    {
+      "arguments" : {
+        "location" : "Berkeley"
+      },
+      "name" : "get_population"
     }
   ],
-  "prefill_tokens" : 254,
-  "response" : "The weather in Berkeley and population data are not available at this time.\n```json",
-  "time_to_first_token_ms" : 2027.56,
-  "tokens_per_second" : 15.72,
-  "total_time_ms" : 4508.03,
-  "total_tokens" : 294
+  "prefill_tokens" : 236,
+  "response" : "To answer your question about the weather and population in Berkeley:\n\n1. **Weather**: Use the `get_weather` function with location set to \"Berkeley\". This will provide current weather conditions.\n2. **Population**: Use the `get_population` function with location set to \"Berkeley\" to retrieve the population number.\n\nHere are the JSON objects representing these function calls:\n\n```json\n{\"function_call\": {\"name\": \"get_weather\", \"arguments\": {\"location\": \"Berkeley\"}}}\n```\n\n```json",
+  "time_to_first_token_ms" : 1780.69,
+  "tokens_per_second" : 16.89,
+  "total_time_ms" : 10249.06,
+  "total_tokens" : 380
 }
