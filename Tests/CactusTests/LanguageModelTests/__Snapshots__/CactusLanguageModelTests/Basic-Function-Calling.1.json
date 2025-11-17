@@ -1,17 +1,12 @@
 {
-  "decode_tokens" : 140,
+  "decode_tokens" : 44,
   "function_calls" : [
-    {
-      "arguments" : {
-        "location" : "Santa Cruz"
-      },
-      "name" : "get_weather"
-    }
+
   ],
-  "prefill_tokens" : 144,
-  "response" : "Based on your query and the available tools, here's a detailed response:\n\nThe weather in Santa Cruz can be found using one of our provided functions.\n\n1. **Function Call**:\n   - The function `get_weather` is used to retrieve weather information for a given location.\n   - The required parameter is a string named \"location\", which we will use as \"Santa Cruz\".\n\nHere is the JSON object representing this function call:\n\n```json",
-  "time_to_first_token_ms" : 5343.71,
-  "tokens_per_second" : 16.82,
-  "total_time_ms" : 13605.25,
-  "total_tokens" : 284
+  "prefill_tokens" : 161,
+  "response" : "I can check the weather for you. Please provide me with more details or specify what kind of information you need.\n\nIf there are any specific questions about the weather in Santa Cruz or other locations, please let me know!",
+  "time_to_first_token_ms" : 1533.89,
+  "tokens_per_second" : 16.66,
+  "total_time_ms" : 4115.27,
+  "total_tokens" : 205
 }

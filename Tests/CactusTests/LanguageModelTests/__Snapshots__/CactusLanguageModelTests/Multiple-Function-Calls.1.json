@@ -1,12 +1,17 @@
 {
-  "decode_tokens" : 55,
+  "decode_tokens" : 40,
   "function_calls" : [
-
+    {
+      "arguments" : {
+        "location" : "Berkeley"
+      },
+      "name" : "get_weather"
+    }
   ],
-  "prefill_tokens" : 235,
-  "response" : "<\/think>\n\n- **Weather in Berkeley**: The current weather in Berkeley (CA) is partly cloudy with light rain expected.\n- **Population of Berkeley**: Approximately 3800 residents as per recent data from the U.S.-based Census Bureau (2024).",
-  "time_to_first_token_ms" : 5614.95,
-  "tokens_per_second" : 14.93,
-  "total_time_ms" : 9232.37,
-  "total_tokens" : 290
+  "prefill_tokens" : 254,
+  "response" : "The weather in Berkeley and population data are not available at this time.\n```json",
+  "time_to_first_token_ms" : 2027.56,
+  "tokens_per_second" : 15.72,
+  "total_time_ms" : 4508.03,
+  "total_tokens" : 294
 }

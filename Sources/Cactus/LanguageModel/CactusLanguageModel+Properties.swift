@@ -6,6 +6,7 @@ extension CactusLanguageModel {
   /// A data type describing properties of a model.
   ///
   /// Generally, this information comes from the `config.txt` file inside the model's directory.
+  @available(*, deprecated, message: "Use `CactusLanguageModel.ConfigurationFile` instead.")
   public struct Properties: Hashable, Sendable {
     /// The size of the model vocabulary.
     public var vocabularySize: Int
@@ -122,6 +123,7 @@ extension CactusLanguageModel {
   }
 }
 
+@available(*, deprecated)
 extension CactusLanguageModel.Properties {
   /// Reads the properties from a model configuration file.
   ///
@@ -139,36 +141,41 @@ extension CactusLanguageModel.Properties {
   ///
   /// - Parameter rawData: The raw model configuration data.
   public init(rawData: Data) {
-    let configData = ModelConfigData(rawData: rawData)
+    self.init(file: CactusLanguageModel.ConfigurationFile(rawData: rawData))
+  }
+
+  init(file: CactusLanguageModel.ConfigurationFile) {
     self.init(
-      vocabularySize: configData.integer(forKey: "vocab_size") ?? 151936,
-      layerCount: configData.integer(forKey: "num_layers") ?? 28,
-      hiddenDimensions: configData.integer(forKey: "hidden_dim") ?? 1024,
-      ffnIntermediateDimensions: configData.integer(forKey: "ffn_intermediate_dim") ?? 3072,
-      attentionHeads: configData.integer(forKey: "attention_heads") ?? 16,
-      attentionKVHeads: configData.integer(forKey: "attention_kv_heads") ?? 8,
-      attentionHeadDimensions: configData.integer(forKey: "attention_head_dim") ?? 128,
-      layerNormEpsilon: configData.double(forKey: "layer_norm_eps") ?? 1e-6,
-      ropeTheta: configData.double(forKey: "rope_theta") ?? 1000000.0,
-      expertCount: configData.integer(forKey: "num_experts") ?? 0,
-      sharedExpertCount: configData.integer(forKey: "shared_experts") ?? 0,
-      topExpertCount: configData.integer(forKey: "top_experts") ?? 0,
-      moeEveryNLayers: configData.integer(forKey: "moe_every_n_layers") ?? 0,
-      shouldTieWordEmbeddings: configData.boolean(forKey: "tie_word_embeddings") ?? false,
-      contextLengthTokens: configData.integer(forKey: "context_length") ?? 32768,
-      modelType: configData.modelType(forKey: "model_type") ?? .qwen,
-      precision: configData.precision(forKey: "precision") ?? .fp32
+      vocabularySize: file.integer(forKey: "vocab_size") ?? 151936,
+      layerCount: file.integer(forKey: "num_layers") ?? 28,
+      hiddenDimensions: file.integer(forKey: "hidden_dim") ?? 1024,
+      ffnIntermediateDimensions: file.integer(forKey: "ffn_intermediate_dim") ?? 3072,
+      attentionHeads: file.integer(forKey: "attention_heads") ?? 16,
+      attentionKVHeads: file.integer(forKey: "attention_kv_heads") ?? 8,
+      attentionHeadDimensions: file.integer(forKey: "attention_head_dim") ?? 128,
+      layerNormEpsilon: file.double(forKey: "layer_norm_eps") ?? 1e-6,
+      ropeTheta: file.double(forKey: "rope_theta") ?? 1000000.0,
+      expertCount: file.integer(forKey: "num_experts") ?? 0,
+      sharedExpertCount: file.integer(forKey: "shared_experts") ?? 0,
+      topExpertCount: file.integer(forKey: "top_experts") ?? 0,
+      moeEveryNLayers: file.integer(forKey: "moe_every_n_layers") ?? 0,
+      shouldTieWordEmbeddings: file.boolean(forKey: "tie_word_embeddings") ?? false,
+      contextLengthTokens: file.integer(forKey: "context_length") ?? 32768,
+      modelType: file.modelType(forKey: "model_type"),
+      precision: file.precision(forKey: "precision") ?? .fp32
     )
   }
 }
 
-extension ModelConfigData {
-  fileprivate func modelType(forKey key: String) -> CactusLanguageModel.ModelType? {
+// MARK: - Helpers
+
+extension CactusLanguageModel.ConfigurationFile {
+  fileprivate func modelType(forKey key: String) -> CactusLanguageModel.ModelType {
     switch self.string(forKey: "model_type")?.lowercased() {
     case "gemma": .gemma
     case "bert": .nomic
     case "smol": .smol
-    default: nil
+    default: .qwen
     }
   }
 
@@ -179,118 +186,5 @@ extension ModelConfigData {
     case "fp16": .fp16
     default: nil
     }
-  }
-}
-
-// MARK: - Precision
-
-extension CactusLanguageModel {
-  /// The precision of a model's weights and activation values.
-  public struct Precision: Hashable, Sendable {
-    /// The number of bits used to represent each weight or activation value.
-    public let bits: Int
-
-    /// Whether or not the precision format is a floating point format.
-    public let isFloatingPoint: Bool
-
-    /// Creates a precision.
-    ///
-    /// - Parameters:
-    ///   - bits: The number of bits used to represent each weight.
-    ///   - isFloatingPoint: Whether or not the precision format is a floating point format.
-    public init(bits: Int, isFloatingPoint: Bool) {
-      self.bits = bits
-      self.isFloatingPoint = isFloatingPoint
-    }
-
-    /// INT4 precision.
-    public static let int4 = Self(bits: 4, isFloatingPoint: false)
-
-    /// INT8 precision.
-    public static let int8 = Self(bits: 8, isFloatingPoint: false)
-
-    /// FP16 precision.
-    public static let fp16 = Self(bits: 16, isFloatingPoint: true)
-
-    /// FP32 precision.
-    public static let fp32 = Self(bits: 32, isFloatingPoint: true)
-  }
-}
-
-// MARK: - ModelType
-
-extension CactusLanguageModel {
-  /// The type of a model.
-  public struct ModelType: Hashable, Sendable, Codable {
-    /// A named identifier for the model (eg. `"gemma"`).
-    public var identifier: String
-
-    /// The default temperature to use for chat completions.
-    public var defaultTemperature: Float
-
-    /// The default nucleus sampling to use for chat completions.
-    public var defaultTopP: Float
-
-    /// The default k most probable options to limit the next word to.
-    public var defaultTopK: Int
-
-    /// Creates a model type.
-    ///
-    /// - Parameters:
-    ///   - identifier: A named identifier for the model (eg. `"gemma"`).
-    ///   - defaultTemperature: The default temperature to use for chat completions.
-    ///   - defaultTopP: The default nucleus sampling to use for chat completions.
-    ///   - defaultTopK: The default k most probable options to limit the next word to.
-    public init(
-      identifier: String,
-      defaultTemperature: Float,
-      defaultTopP: Float,
-      defaultTopK: Int
-    ) {
-      self.identifier = identifier
-      self.defaultTemperature = defaultTemperature
-      self.defaultTopP = defaultTopP
-      self.defaultTopK = defaultTopK
-    }
-
-    /// A model type for qwen models.
-    public static let qwen = Self(
-      identifier: "qwen",
-      defaultTemperature: 0.6,
-      defaultTopP: 0.95,
-      defaultTopK: 20
-    )
-
-    /// A model type for gemma models.
-    public static let gemma = Self(
-      identifier: "gemma",
-      defaultTemperature: 1.0,
-      defaultTopP: 0.95,
-      defaultTopK: 64
-    )
-
-    /// A model type for smol models.
-    public static let smol = Self(
-      identifier: "smol",
-      defaultTemperature: 0.2,
-      defaultTopP: 0.95,
-      defaultTopK: 20
-    )
-
-    /// A model type for nomic models.
-    public static let nomic = Self(
-      identifier: "bert",
-      defaultTemperature: 0.6,
-      defaultTopP: 0.95,
-      defaultTopK: 20
-    )
-
-    /// A model type for lfm2 models.
-    public static let lfm2 = Self(
-      identifier: "lfm2",
-      defaultTemperature: 0.3,
-      defaultTopP: 0.95,
-      defaultTopK: 20
-    )
   }
 }
