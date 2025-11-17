@@ -45,7 +45,11 @@ public final class CactusLanguageModel {
   public let configuration: Configuration
 
   /// The ``Properties`` for this model.
+  @available(*, deprecated, message: "Use `configurationFile` instead.")
   public let properties: Properties
+
+  /// The ``ConfigurationFile`` for this model.
+  public let configurationFile: ConfigurationFile
 
   /// The underlying model pointer.
   public let model: UnsafeMutableRawPointer
@@ -70,9 +74,11 @@ public final class CactusLanguageModel {
       let model = cactus_init(configuration.modelURL.nativePath, configuration.contextSize)
       guard let model else { throw ModelCreationError(configuration: configuration) }
       self.model = model
-      self.properties = try Properties(
+      let configFile = try ConfigurationFile(
         contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
       )
+      self.configurationFile = configFile
+      self.properties = Properties(file: configFile)
       CactusTelemetry.send(CactusTelemetry.LanguageModelInitEvent(configuration: configuration))
     } catch let error as ModelCreationError {
       CactusTelemetry.send(
@@ -288,7 +294,8 @@ extension CactusLanguageModel {
       message: "Response buffer too small",
       configuration: self.configuration
     )
-    let options = options ?? ChatCompletion.Options(modelType: self.properties.modelType)
+    let options =
+      options ?? ChatCompletion.Options(modelType: self.configurationFile.modelType ?? .qwen)
     let maxBufferSize = maxBufferSize ?? self.bufferSize(for: options.maxTokens)
     guard maxBufferSize > 0 else {
       CactusTelemetry.send(bufferTooSmallEvent)
@@ -504,6 +511,6 @@ extension CactusLanguageModel {
 
 extension CactusLanguageModel {
   private func bufferSize(for contentLength: Int) -> Int {
-    max(contentLength * self.properties.precision.bits, 1024)
+    max(contentLength * (self.configurationFile.precision?.bits ?? 32), 1024)
   }
 }

@@ -6,6 +6,7 @@ import Testing
 @Suite
 struct `CactusLanguageModelProperties tests` {
   @Test
+  @available(*, deprecated)
   func `Reads Raw Config Data`() {
     let data = Data(
       """
