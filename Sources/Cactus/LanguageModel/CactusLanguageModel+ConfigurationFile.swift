@@ -139,16 +139,7 @@ extension CactusLanguageModel {
 
     /// The ``CactusLanguageModel/ModelType`` of the model.
     public var modelType: ModelType? {
-      self.modelType(forKey: "model_type")
-    }
-
-    /// The ``CactusLanguageModel/Precision`` of the model.
-    public var precision: Precision? {
-      self.precision(forKey: "precision")
-    }
-
-    private func modelType(forKey key: String) -> CactusLanguageModel.ModelType? {
-      switch self.string(forKey: key)?.lowercased() {
+      switch self.string(forKey: "model_type")?.lowercased() {
       case "gemma": .gemma
       case "bert": .nomic
       case "smol": .smol
@@ -156,12 +147,23 @@ extension CactusLanguageModel {
       }
     }
 
-    private func precision(forKey key: String) -> CactusLanguageModel.Precision? {
-      switch self.string(forKey: key)?.lowercased() {
+    /// The ``CactusLanguageModel/Precision`` of the model.
+    public var precision: Precision? {
+      switch self.string(forKey: "precision")?.lowercased() {
       case "int4": .int4
       case "int8": .int8
       case "fp16": .fp16
       default: nil
+      }
+    }
+
+    /// The ``CactusLanguageModel/ModelVariant`` of the model.
+    public var modelVariant: ModelVariant {
+      switch self.string(forKey: "model_variant")?.lowercased() {
+      case "vlm": .vlm
+      case "extract": .extract
+      case "rag": .rag
+      default: .default
       }
     }
   }
@@ -277,5 +279,30 @@ extension CactusLanguageModel {
       defaultTopP: 0.95,
       defaultTopK: 20
     )
+  }
+}
+
+// MARK: - ModelVariant
+
+extension CactusLanguageModel {
+  /// A variant of language model.
+  public struct ModelVariant: RawRepresentable, Hashable, Sendable {
+    /// A visual language model.
+    public static let vlm = Self(rawValue: "vlm")
+
+    /// A RAG model.
+    public static let rag = Self(rawValue: "rag")
+
+    /// An extract model.
+    public static let extract = Self(rawValue: "extract")
+
+    /// The default model variant.
+    public static let `default` = Self(rawValue: "default")
+
+    public var rawValue: String
+
+    public init(rawValue: String) {
+      self.rawValue = rawValue
+    }
   }
 }

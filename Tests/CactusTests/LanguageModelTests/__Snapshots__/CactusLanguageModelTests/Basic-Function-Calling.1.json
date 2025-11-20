@@ -1,17 +1,17 @@
 {
-  "decode_tokens" : 54,
+  "decode_tokens" : 25,
   "function_calls" : [
     {
       "arguments" : {
-        "location" : "Santa Cruz"
+        "location" : "San Francisco"
       },
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 161,
-  "response" : "The weather in Santa Cruz can be determined by calling a function that provides this information.\n\nI will call the get_weather function with location set as Santa Cruz.\n",
-  "time_to_first_token_ms" : 6231.33,
-  "tokens_per_second" : 14.67,
-  "total_time_ms" : 9845.04,
-  "total_tokens" : 215
+  "prefill_tokens" : 141,
+  "response" : "<\/think>\n\n",
+  "time_to_first_token_ms" : 5929.11,
+  "tokens_per_second" : 15.89,
+  "total_time_ms" : 7439.12,
+  "total_tokens" : 166
 }

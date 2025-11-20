@@ -60,7 +60,13 @@ public final class CactusLanguageModel {
   ///   - url: The local `URL` of the model.
   ///   - contextSize: The context size.
   ///   - modelSlug: The model slug.
-  public convenience init(from url: URL, contextSize: Int = 2048, modelSlug: String? = nil) throws {
+  ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
+  public convenience init(
+    from url: URL,
+    contextSize: Int = 2048,
+    modelSlug: String? = nil,
+    corpusDirectoryURL: URL? = nil
+  ) throws {
     let configuration = Configuration(modelURL: url, contextSize: contextSize, modelSlug: modelSlug)
     try self.init(configuration: configuration)
   }
@@ -71,7 +77,11 @@ public final class CactusLanguageModel {
   public init(configuration: Configuration) throws {
     do {
       self.configuration = configuration
-      let model = cactus_init(configuration.modelURL.nativePath, configuration.contextSize, nil)
+      let model = cactus_init(
+        configuration.modelURL.nativePath,
+        configuration.contextSize,
+        configuration.corpusDirectoryURL?.nativePath
+      )
       guard let model else { throw ModelCreationError(configuration: configuration) }
       self.model = model
       let configFile = try ConfigurationFile(
@@ -109,13 +119,22 @@ extension CactusLanguageModel {
     /// The model slug.
     public var modelSlug: String
 
+    /// A `URL` to a corpus directory of documents for RAG models.
+    public var corpusDirectoryURL: URL?
+
     /// Creates a configuration.
     ///
     /// - Parameters:
     ///   - modelURL: The local `URL` of the model.
     ///   - contextSize: The context size.
     ///   - modelSlug: The model slug.
-    public init(modelURL: URL, contextSize: Int = 2048, modelSlug: String? = nil) {
+    ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
+    public init(
+      modelURL: URL,
+      contextSize: Int = 2048,
+      modelSlug: String? = nil,
+      corpusDirectoryURL: URL? = nil
+    ) {
       self.modelURL = modelURL
       self.contextSize = contextSize
       if let modelSlug {
@@ -123,6 +142,7 @@ extension CactusLanguageModel {
       } else {
         self.modelSlug = modelURL.lastPathComponent
       }
+      self.corpusDirectoryURL = corpusDirectoryURL
     }
   }
 }
