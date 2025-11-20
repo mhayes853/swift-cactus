@@ -1,5 +1,14 @@
 [
   {
+    "created_at" : 777686695.975939,
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/qwen3-0.6.zip",
+    "name" : "Qwen 3 0.6B",
+    "size_mb" : 394,
+    "slug" : "qwen3-0.6",
+    "supports_tool_calling" : true,
+    "supports_vision" : false
+  },
+  {
     "created_at" : 779218283,
     "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/qwen3-0.6-embed.zip",
     "name" : "Qwen 3 0.6B Embed",
@@ -27,24 +36,6 @@
     "supports_vision" : false
   },
   {
-    "created_at" : 777686695.975939,
-    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/qwen3-0.6.zip",
-    "name" : "Qwen 3 0.6B",
-    "size_mb" : 394,
-    "slug" : "qwen3-0.6",
-    "supports_tool_calling" : true,
-    "supports_vision" : false
-  },
-  {
-    "created_at" : 782069136.302133,
-    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/gemma3-1b.zip",
-    "name" : "Gemma 3 1B",
-    "size_mb" : 642,
-    "slug" : "gemma3-1b",
-    "supports_tool_calling" : false,
-    "supports_vision" : false
-  },
-  {
     "created_at" : 783022335.056461,
     "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-350m.zip",
     "name" : "LFM 2 350M",
@@ -68,6 +59,15 @@
     "name" : "LFM 2 1.2B",
     "size_mb" : 722,
     "slug" : "lfm2-1.2b",
+    "supports_tool_calling" : false,
+    "supports_vision" : false
+  },
+  {
+    "created_at" : 782069136.302133,
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/gemma3-1b.zip",
+    "name" : "Gemma 3 1B",
+    "size_mb" : 642,
+    "slug" : "gemma3-1b",
     "supports_tool_calling" : false,
     "supports_vision" : false
   },

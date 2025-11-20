@@ -1,3 +1,5 @@
+import Foundation
+
 // MARK: - ChatMessage
 
 extension CactusLanguageModel {
@@ -18,10 +20,12 @@ extension CactusLanguageModel {
     ///
     /// Use this initializer when providing user created input to the model.
     ///
-    /// - Parameter content: The message content.
+    /// - Parameters:
+    ///   - content: The message content.
+    ///   - images: An array of `URL`s to locally stored images.
     /// - Returns: A ``CactusLanguageModel/ChatMessage``.
-    public static func user(_ content: String) -> Self {
-      Self(role: .user, content: content)
+    public static func user(_ content: String, images: [URL]? = nil) -> Self {
+      Self(role: .user, content: content, images: images)
     }
 
     /// Creates an assistant message.
@@ -40,14 +44,19 @@ extension CactusLanguageModel {
     /// The message content.
     public var content: String
 
+    /// An array of `URL`s to locally stored images.
+    public var images: [URL]?
+
     /// Creates a chat message.
     ///
     /// - Parameters:
     ///   - role: The ``MessageRole`` of the message.
     ///   - content: The message content.
-    public init(role: MessageRole, content: String) {
+    ///   - images: An array of `URL`s to locally stored images.
+    public init(role: MessageRole, content: String, images: [URL]? = nil) {
       self.role = role
       self.content = content
+      self.images = images
     }
   }
 }
