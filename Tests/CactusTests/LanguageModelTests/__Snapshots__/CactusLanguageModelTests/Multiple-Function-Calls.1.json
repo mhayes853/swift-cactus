@@ -1,12 +1,17 @@
 {
-  "decode_tokens" : 93,
+  "decode_tokens" : 25,
   "function_calls" : [
-
+    {
+      "arguments" : {
+        "location" : "San Francisco"
+      },
+      "name" : "get_weather"
+    }
   ],
-  "prefill_tokens" : 242,
-  "response" : "I don't have access to real-time data or tools that can provide current weather and population information for Berkeley at any time.\nYou may have access to these functions if you're using an API:\n1. get_weather: To retrieve weather information for a specific location (e.g., 'San Francisco').\n2. get_population: To retrieve population data for a specific city (e.g., 'San Francisco').\n\nLet me know if you have any other questions!<|im_end|>",
-  "time_to_first_token_ms" : 6217.66,
-  "tokens_per_second" : 15.98,
-  "total_time_ms" : 11975.92,
-  "total_tokens" : 335
+  "prefill_tokens" : 234,
+  "response" : "<\/think>\n\n",
+  "time_to_first_token_ms" : 1832.35,
+  "tokens_per_second" : 18.29,
+  "total_time_ms" : 3144.69,
+  "total_tokens" : 259
 }

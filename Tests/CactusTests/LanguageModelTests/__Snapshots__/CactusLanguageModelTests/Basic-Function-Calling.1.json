@@ -1,17 +1,12 @@
 {
-  "decode_tokens" : 25,
+  "decode_tokens" : 27,
   "function_calls" : [
-    {
-      "arguments" : {
-        "location" : "San Francisco"
-      },
-      "name" : "get_weather"
-    }
+
   ],
-  "prefill_tokens" : 141,
-  "response" : "<\/think>\n\n",
-  "time_to_first_token_ms" : 5929.11,
-  "tokens_per_second" : 15.89,
-  "total_time_ms" : 7439.12,
-  "total_tokens" : 166
+  "prefill_tokens" : 142,
+  "response" : "I'm not able to use any of the tools you've provided. Could you please explain more clearly what you're looking for?<|im_end|>",
+  "time_to_first_token_ms" : 1563.86,
+  "tokens_per_second" : 18.23,
+  "total_time_ms" : 2989.89,
+  "total_tokens" : 169
 }

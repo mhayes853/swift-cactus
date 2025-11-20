@@ -67,7 +67,12 @@ public final class CactusLanguageModel {
     modelSlug: String? = nil,
     corpusDirectoryURL: URL? = nil
   ) throws {
-    let configuration = Configuration(modelURL: url, contextSize: contextSize, modelSlug: modelSlug)
+    let configuration = Configuration(
+      modelURL: url,
+      contextSize: contextSize,
+      modelSlug: modelSlug,
+      corpusDirectoryURL: corpusDirectoryURL
+    )
     try self.init(configuration: configuration)
   }
 
