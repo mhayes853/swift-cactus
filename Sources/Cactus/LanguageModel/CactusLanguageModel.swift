@@ -71,7 +71,7 @@ public final class CactusLanguageModel {
   public init(configuration: Configuration) throws {
     do {
       self.configuration = configuration
-      let model = cactus_init(configuration.modelURL.nativePath, configuration.contextSize)
+      let model = cactus_init(configuration.modelURL.nativePath, configuration.contextSize, nil)
       guard let model else { throw ModelCreationError(configuration: configuration) }
       self.model = model
       let configFile = try ConfigurationFile(

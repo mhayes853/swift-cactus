@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(Cactus LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(SOURCE_DIR ${CMAKE_SOURCE_DIR}/build/cactus/cactus)
@@ -24,6 +24,7 @@ set(HEADER_FILES
     ${SOURCE_DIR}/kernel/kernel.h
     ${SOURCE_DIR}/kernel/kernel_utils.h
     ${SOURCE_DIR}/ffi/cactus_ffi.h
+    ${SOURCE_DIR}/ffi/ffi_utils.h
     ${SOURCE_DIR}/models/model.h
 )
 
@@ -48,7 +49,7 @@ set_target_properties(CXXCactusDarwin PROPERTIES
     VERSION 1.0.0
     SOVERSION 1.0.0
     OUTPUT_NAME "CXXCactusDarwin"
-    PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/cactus.h"
+    PUBLIC_HEADER "${CMAKE_SOURCE_DIR}/build/cactus.h"
 )
 
 add_custom_command(TARGET CXXCactusDarwin POST_BUILD
@@ -63,7 +64,7 @@ add_custom_command(TARGET CXXCactusDarwin POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory
         "$<TARGET_FILE_DIR:CXXCactusDarwin>/Headers"
     COMMAND ${CMAKE_COMMAND} -E copy
-        "${CMAKE_SOURCE_DIR}/cactus.h"
+        "${CMAKE_SOURCE_DIR}/build/cactus.h"
         "$<TARGET_FILE_DIR:CXXCactusDarwin>/Headers/CXXCactusDarwin.h"
 )
 
