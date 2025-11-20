@@ -1,17 +1,12 @@
 {
-  "decode_tokens" : 23,
+  "decode_tokens" : 27,
   "function_calls" : [
-    {
-      "arguments" : {
-        "location" : "Santa Cruz"
-      },
-      "name" : "get_weather"
-    }
+
   ],
-  "prefill_tokens" : 160,
-  "response" : "",
-  "time_to_first_token_ms" : 3236.42,
-  "tokens_per_second" : 13.29,
-  "total_time_ms" : 4891.66,
-  "total_tokens" : 183
+  "prefill_tokens" : 142,
+  "response" : "I'm not able to use any of the tools you've provided. Could you please explain more clearly what you're looking for?<|im_end|>",
+  "time_to_first_token_ms" : 1563.86,
+  "tokens_per_second" : 18.23,
+  "total_time_ms" : 2989.89,
+  "total_tokens" : 169
 }

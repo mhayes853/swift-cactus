@@ -1,5 +1,5 @@
 {
-  "decode_tokens" : 73,
+  "decode_tokens" : 25,
   "function_calls" : [
     {
       "arguments" : {
@@ -8,10 +8,10 @@
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 232,
-  "response" : "The current weather in San Francisco can be found using a function called get_weather with parameters location (string) and units (celsius or farenheit). The user hasn't specified the units yet; we'll assume celsius as default.\n<\/think>\n\n",
-  "time_to_first_token_ms" : 3861.05,
-  "tokens_per_second" : 15.69,
-  "total_time_ms" : 8451.03,
-  "total_tokens" : 305
+  "prefill_tokens" : 234,
+  "response" : "<\/think>\n\n",
+  "time_to_first_token_ms" : 1832.35,
+  "tokens_per_second" : 18.29,
+  "total_time_ms" : 3144.69,
+  "total_tokens" : 259
 }

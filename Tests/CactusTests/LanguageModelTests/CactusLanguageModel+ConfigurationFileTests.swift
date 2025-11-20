@@ -30,6 +30,7 @@ struct `CactusLanguageModelConfigurationFile tests` {
       tie_word_embeddings=true
       model_type=gemma
       precision=FP16
+      use_image_tokens=1
       """
       .utf8
     )
@@ -46,6 +47,7 @@ struct `CactusLanguageModelConfigurationFile tests` {
     expectNoDifference(file.modelType, .gemma)
     expectNoDifference(file.precision, .fp16)
     expectNoDifference(file.ropeTheta, 1000000.0)
+    expectNoDifference(file.isUsingImageTokens, true)
 
     expectNoDifference(file.layerNormEpsilon, nil)
   }

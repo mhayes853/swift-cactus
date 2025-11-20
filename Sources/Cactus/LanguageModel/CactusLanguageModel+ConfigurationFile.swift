@@ -59,7 +59,7 @@ extension CactusLanguageModel {
     /// - Parameter key: The key to look up.
     /// - Returns: A boolean value, or `nil` if the value cannot be converted to a boolean.
     public func boolean(forKey key: String) -> Bool? {
-      self.string(forKey: key).flatMap { Bool($0) }
+      self.string(forKey: key).flatMap { (Bool($0) ?? false) || $0 == "1" }
     }
 
     /// The size of the model vocabulary.
@@ -165,6 +165,152 @@ extension CactusLanguageModel {
       case "rag": .rag
       default: .default
       }
+    }
+
+    /// The dimensionality of hidden representations in the vision encoder.
+    public var visionHiddenDimensions: Int? {
+      self.integer(forKey: "vision_hidden_dim")
+    }
+
+    /// The number of layers in the vision encoder.
+    public var visionLayerCount: Int? {
+      self.integer(forKey: "vision_num_layers")
+    }
+
+    /// The number of attention heads used in each vision encoder layer.
+    public var visionAttentionHeads: Int? {
+      self.integer(forKey: "vision_attention_heads")
+    }
+
+    /// The input image size.
+    public var visionImageSize: Int? {
+      self.integer(forKey: "vision_image_size")
+    }
+
+    /// The side length of each square patch used by the vision patch embedding layer.
+    public var visionPatchSize: Int? {
+      self.integer(forKey: "vision_patch_size")
+    }
+
+    /// The number of input channels to the vision encoder (eg. `3` for RGB).
+    public var visionChannelCount: Int? {
+      self.integer(forKey: "vision_num_channels")
+    }
+
+    /// The dimensionality of the visual embedding space produced by the patch embedding layer.
+    public var visionEmbedDimensions: Int? {
+      self.integer(forKey: "vision_embed_dim")
+    }
+
+    /// The number of visual tokens generated for each image after patching and preprocessing.
+    public var visionTokensPerImage: Int? {
+      self.integer(forKey: "vision_tokens_per_img")
+    }
+
+    /// Indicates whether pixel shuffle upsampling is used in the vision pipeline.
+    public var isUsingPixelShuffle: Bool? {
+      self.boolean(forKey: "use_pixel_shuffle")
+    }
+
+    /// The spatial upsampling factor used when applying pixel shuffle.
+    public var pixelShuffleFactor: Int? {
+      self.integer(forKey: "pixel_shuffle_factor")
+    }
+
+    /// Indicates whether the model inserts explicit `<image>` tokens into the text sequence.
+    public var isUsingImageTokens: Bool? {
+      self.boolean(forKey: "use_image_tokens")
+    }
+
+    /// Indicates whether layout tags are used to describe document structure.
+    public var isUsingLayoutTags: Bool? {
+      self.boolean(forKey: "use_layout_tags")
+    }
+
+    /// The maximum number of sequence positions reserved for image features.
+    public var imageSequenceLength: Int? {
+      self.integer(forKey: "image_seq_len")
+    }
+
+    /// The size of a global image view used alongside tiles.
+    public var globalImageSize: Int? {
+      self.integer(forKey: "global_image_size")
+    }
+
+    /// The maximum tile side length when splitting large images into smaller regions.
+    public var maxTileSize: Int? {
+      self.integer(forKey: "max_tile_size")
+    }
+
+    /// A scaling factor applied when resizing or normalizing images for the vision encoder.
+    public var rescaleFactor: Double? {
+      self.double(forKey: "rescale_factor")
+    }
+
+    /// The mean value used to normalize image pixel intensities.
+    ///
+    /// Typically applied per channel as part of standard image preprocessing.
+    public var imageMean: Double? {
+      self.double(forKey: "image_mean")
+    }
+
+    /// The standard deviation used to normalize image pixel intensities.
+    ///
+    /// Typically applied per channel as part of standard image preprocessing.
+    public var imageStd: Double? {
+      self.double(forKey: "image_std")
+    }
+
+    /// The integer factor by which the input image is downsampled before encoding.
+    public var downsampleFactor: Int? {
+      self.integer(forKey: "downsample_factor")
+    }
+
+    /// The minimum number of tiles to generate when splitting an image.
+    public var minTiles: Int? {
+      self.integer(forKey: "min_tiles")
+    }
+
+    /// The maximum number of tiles to generate when splitting an image.
+    public var maxTiles: Int? {
+      self.integer(forKey: "max_tiles")
+    }
+
+    /// Indicates whether a low-resolution thumbnail view of the image is used.
+    public var isUsingThumbnail: Bool? {
+      self.boolean(forKey: "use_thumbnail")
+    }
+
+    /// The minimum number of image tokens required for a valid visual input.
+    public var minImageTokens: Int? {
+      self.integer(forKey: "min_image_tokens")
+    }
+
+    /// The maximum number of image tokens the model is allowed to attend to for a single image.
+    public var maxImageTokens: Int? {
+      self.integer(forKey: "max_image_tokens")
+    }
+
+    /// The maximum number of image patches that can be produced when tiling.
+    public var maxPatchesCount: Int? {
+      self.integer(forKey: "max_num_patches")
+    }
+
+    /// The side length (in pixels) of each tile when splitting an image into a grid.
+    public var tileSize: Int? {
+      self.integer(forKey: "tile_size")
+    }
+
+    /// The allowed relative error in total pixel coverage when approximating the image with tiles.
+    ///
+    /// This is used to decide whether a tiling configuration is close enough to the original image area.
+    public var maxPixelsTolerance: Double? {
+      self.double(forKey: "max_pixels_tolerance")
+    }
+
+    /// Indicates whether the image can be split into multiple tiles instead of using a single global view.
+    public var isImageSplitting: Bool? {
+      self.boolean(forKey: "do_image_splitting")
     }
   }
 }
