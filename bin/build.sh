@@ -6,6 +6,14 @@ BUILD_DIR="$SCRIPT_DIR/build"
 rm -drf "$BUILD_DIR"
 mkdir "$BUILD_DIR"
 
+if [ -z "$ANDROID_NDK_HOME" ]; then
+    if [ -n "$ANDROID_HOME" ]; then
+        ANDROID_NDK_HOME=$(ls -d "$ANDROID_HOME/ndk/"* 2>/dev/null | sort -V | tail -1)
+    elif [ -d "$HOME/Library/Android/sdk" ]; then
+        ANDROID_NDK_HOME=$(ls -d "$HOME/Library/Android/sdk/ndk/"* 2>/dev/null | sort -V | tail -1)
+    fi
+fi
+
 echo "🔧 Cloning Cactus Repo"
 CACTUS_ROOT_DIR="$BUILD_DIR/cactus"
 git clone git@github.com:cactus-compute/cactus.git "$CACTUS_ROOT_DIR"
@@ -22,24 +30,26 @@ XCFRAMEWORK_PATH="$OUTPUT_DIR/CXXCactusDarwin.xcframework"
 echo "🗑️ Removing Existing Binaries"
 rm -drf "$ARTIFACT_BUNDLE_PATH" "$XCFRAMEWORK_PATH"
 
-sed -i "" "49a\\
+sed -i "" "50a\\
 CACTUS_FFI_EXPORT const char* cactus_get_last_error();
 " "$SOURCE_DIR/ffi/cactus_ffi.h"
 
-cp "$SOURCE_DIR/ffi/cactus_ffi.h" "$SCRIPT_DIR/cactus.h"
+cp "$SOURCE_DIR/ffi/cactus_ffi.h" "$BUILD_DIR/cactus.h"
 
 n_cpu=$(sysctl -n hw.logicalcpu 2>/dev/null || echo 4)
 
 function build_android_artifactbundle() {
     rm -drf "$OUTPUT_DIR/CXXCactus.artifactbundle"
     echo "🤖 Building Cactus artifactbundle for Android platforms..."
-    $ANDROID_DIR/build.sh
 
+    sed -i.bak 's/set(CMAKE_CXX_STANDARD *17)/set(CMAKE_CXX_STANDARD 20)/' "$ANDROID_DIR/CMakeLists.txt"
+
+    $ANDROID_DIR/build.sh
     mkdir "$ARTIFACT_BUNDLE_PATH"
     mkdir -p "$ARTIFACT_BUNDLE_PATH/dist/android"
     cp -r "$ANDROID_DIR/libcactus.a" "$ARTIFACT_BUNDLE_PATH/dist/android/libcactus.a"
     mkdir -p "$ARTIFACT_BUNDLE_PATH/include"
-    cp -r "$SCRIPT_DIR/cactus.h" "$ARTIFACT_BUNDLE_PATH/include/cactus.h"
+    cp -r "$BUILD_DIR/cactus.h" "$ARTIFACT_BUNDLE_PATH/include/cactus.h"
 
     cat > "$ARTIFACT_BUNDLE_PATH/include/module.modulemap" << 'EOF'
 module CXXCactus {
@@ -182,5 +192,4 @@ function build_apple_xcframework() {
 build_android_artifactbundle
 build_apple_xcframework
 
-rm "$SCRIPT_DIR/cactus.h"
 rm -drf $BUILD_DIR
