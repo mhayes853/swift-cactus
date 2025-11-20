@@ -248,15 +248,11 @@ extension CactusLanguageModel {
     }
 
     /// The mean value used to normalize image pixel intensities.
-    ///
-    /// Typically applied per channel as part of standard image preprocessing.
     public var imageMean: Double? {
       self.double(forKey: "image_mean")
     }
 
     /// The standard deviation used to normalize image pixel intensities.
-    ///
-    /// Typically applied per channel as part of standard image preprocessing.
     public var imageStd: Double? {
       self.double(forKey: "image_std")
     }
@@ -296,14 +292,12 @@ extension CactusLanguageModel {
       self.integer(forKey: "max_num_patches")
     }
 
-    /// The side length (in pixels) of each tile when splitting an image into a grid.
+    /// The side length of each tile when splitting an image into a grid.
     public var tileSize: Int? {
       self.integer(forKey: "tile_size")
     }
 
     /// The allowed relative error in total pixel coverage when approximating the image with tiles.
-    ///
-    /// This is used to decide whether a tiling configuration is close enough to the original image area.
     public var maxPixelsTolerance: Double? {
       self.double(forKey: "max_pixels_tolerance")
     }
