@@ -12,7 +12,8 @@ let package = Package(
   name: "swift-cactus",
   platforms: [.iOS(.v13), .macOS(.v11), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
   products: [
-    .library(name: "Cactus", targets: ["Cactus"])
+    .library(name: "Cactus", targets: ["Cactus"]),
+    .library(name: "CXXCactusShims", targets: ["CXXCactusShims"])
   ],
   dependencies: [
     .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.7"),
