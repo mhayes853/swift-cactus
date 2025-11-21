@@ -50,31 +50,6 @@ struct `CactusLanguageModel tests` {
   }
 
   @Test
-  func `Throws Buffer Too Small Error When Buffer Size Zero`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
-    let model = try CactusLanguageModel(from: modelURL)
-    #expect(throws: CactusLanguageModel.EmbeddingsError.bufferTooSmall) {
-      try model.embeddings(for: "This is some text.", maxBufferSize: 0)
-    }
-  }
-
-  @Test
-  func `Basic Chat Completion`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
-    let model = try CactusLanguageModel(from: modelURL)
-
-    let completion = try model.chatCompletion(
-      messages: [
-        .system("You are a philosopher, philosophize about any questions you are asked."),
-        .user("What is the meaning of life?")
-      ]
-    )
-    withKnownIssue {
-      assertSnapshot(of: completion, as: .json, record: true)
-    }
-  }
-
-  @Test
   func `Streams Same Response Content`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL()
     let model = try CactusLanguageModel(from: modelURL)
@@ -123,6 +98,51 @@ struct `CactusLanguageModel tests` {
         ],
         maxBufferSize: 0
       )
+    }
+  }
+
+  @Test
+  func `Derives Model Slug From Model URL If Not Provided`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let configuration = CactusLanguageModel.Configuration(modelURL: modelURL)
+    expectNoDifference(configuration.modelSlug, CactusLanguageModel.testModelSlug)
+  }
+
+  @Test
+  func `Overrides Default Model Slug`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let configuration = CactusLanguageModel.Configuration(
+      modelURL: modelURL,
+      modelSlug: "custom-model"
+    )
+    expectNoDifference(configuration.modelSlug, "custom-model")
+  }
+}
+
+@Suite(.serialized)
+struct `CactusLanguageModelGenerationSnapshot tests` {
+  @Test
+  func `Throws Buffer Too Small Error When Buffer Size Zero`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+    #expect(throws: CactusLanguageModel.EmbeddingsError.bufferTooSmall) {
+      try model.embeddings(for: "This is some text.", maxBufferSize: 0)
+    }
+  }
+
+  @Test
+  func `Basic Chat Completion`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+
+    let completion = try model.chatCompletion(
+      messages: [
+        .system("You are a philosopher, philosophize about any questions you are asked."),
+        .user("What is the meaning of life?")
+      ]
+    )
+    withKnownIssue {
+      assertSnapshot(of: completion, as: .json, record: true)
     }
   }
 
@@ -213,20 +233,4 @@ struct `CactusLanguageModel tests` {
     }
   }
 
-  @Test
-  func `Derives Model Slug From Model URL If Not Provided`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
-    let configuration = CactusLanguageModel.Configuration(modelURL: modelURL)
-    expectNoDifference(configuration.modelSlug, CactusLanguageModel.testModelSlug)
-  }
-
-  @Test
-  func `Overrides Default Model Slug`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
-    let configuration = CactusLanguageModel.Configuration(
-      modelURL: modelURL,
-      modelSlug: "custom-model"
-    )
-    expectNoDifference(configuration.modelSlug, "custom-model")
-  }
 }

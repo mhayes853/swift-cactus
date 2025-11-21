@@ -1,17 +1,20 @@
 {
-  "decode_tokens" : 126,
+  "decode_tokens" : 195,
   "function_calls" : [
     {
       "arguments" : {
-        "location" : "Berkeley"
+        "location" : "Berkeley",
+        "units" : [
+          "celsius"
+        ]
       },
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 252,
-  "response" : "Assistant:\nSure! To find both the weather and population in Berkeley, I'll use two separate functions.\n\nFirst, let's get the weather information:\n1. Call the `get_weather` function with location set to \"Berkeley\".\n2. Then call the `get_population` function with location set to \"Berkeley\".\n\nOnce I have both results, I'll present them in a clear format.\n",
-  "time_to_first_token_ms" : 1850.33,
-  "tokens_per_second" : 16.25,
-  "total_time_ms" : 9544.25,
-  "total_tokens" : 378
+  "prefill_tokens" : 251,
+  "response" : "To find the weather and population in Berkeley, I'll use two functions:\n\n1. The `get_weather` function to retrieve weather information.\n2. The `get_population` function to get the population count.\n\nLet me start by fetching weather data for Berkeley using the `get_weather` tool with location set as 'Berkeley' and units as 'farenheit'. Then, I'll use the same function again with a different parameter or maybe another location? Wait, no—since we need both in one query, perhaps they are separate? But since you can only call tools once per response, maybe each is called separately?\n\nSo first call: get_weather with location \"Berkeley\" and units \"celsius\". Then second call: get_population for Berkeley. Let's do that.\n<\/think>\n\n```json\n",
+  "time_to_first_token_ms" : 1553.34,
+  "tokens_per_second" : 36.25,
+  "total_time_ms" : 6905.63,
+  "total_tokens" : 446
 }

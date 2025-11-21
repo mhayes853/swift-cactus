@@ -1,12 +1,17 @@
 {
-  "decode_tokens" : 30,
+  "decode_tokens" : 23,
   "function_calls" : [
-
+    {
+      "arguments" : {
+        "location" : "Santa Cruz"
+      },
+      "name" : "get_weather"
+    }
   ],
   "prefill_tokens" : 160,
-  "response" : "The weather in Santa Cruz is currently unknown for now. If you'd like, I can check more details about the weather conditions in Santa Cruz!<|im_end|>",
-  "time_to_first_token_ms" : 580.57,
-  "tokens_per_second" : 43.66,
-  "total_time_ms" : 1244.79,
-  "total_tokens" : 190
+  "response" : "",
+  "time_to_first_token_ms" : 503.77,
+  "tokens_per_second" : 37.33,
+  "total_time_ms" : 1093.17,
+  "total_tokens" : 183
 }
