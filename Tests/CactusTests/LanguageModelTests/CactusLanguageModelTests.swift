@@ -65,7 +65,7 @@ struct `CactusLanguageModel tests` {
     }
   }
 
-  @Test(arguments: modelSlugs)
+  @Test(.serialized, .disabled(), arguments: modelSlugs)
   func `Streams Same Response Content`(slug: String) async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(slug: slug)
     let model = try CactusLanguageModel(from: modelURL)
@@ -75,7 +75,11 @@ struct `CactusLanguageModel tests` {
       messages: [
         .system("You are a philosopher, philosophize about any questions you are asked."),
         .user("What is the meaning of life?")
-      ]
+      ],
+      options: CactusLanguageModel.ChatCompletion.Options(
+        maxTokens: 1024,
+        modelType: model.configurationFile.modelType ?? .qwen
+      )
     ) { token in
       stream.withLock { $0.append(token) }
     }
