@@ -1,0 +1,62 @@
+[
+  {
+    "completion" : {
+      "decode_tokens" : 47,
+      "function_calls" : [
+
+      ],
+      "prefill_tokens" : 9,
+      "response" : "Hello! It seems like your message might have been cut off. Could you please provide more details so I can assist you better? Whether it's a question, request for information, or something else, I'm here to help!<|im_end|>",
+      "time_to_first_token_ms" : 415.14,
+      "tokens_per_second" : 46.35,
+      "total_time_ms" : 1407.68,
+      "total_tokens" : 56
+    },
+    "slug" : "lfm2-1.2b"
+  },
+  {
+    "completion" : {
+      "decode_tokens" : 200,
+      "function_calls" : [
+
+      ],
+      "prefill_tokens" : 13,
+      "response" : "<think>\nOkay, the user is asking about a specific type of fruit. First, I need to confirm if they're referring to an actual fruit or maybe a different concept. The term \"fruit\" can be ambiguous here.\n\nI should start by acknowledging their question and providing some context. Then, I'll break down the possible interpretations: whether it's a real fruit like an apple or another variety, or perhaps something else like a berry or even an unusual species.\n\nIt's important to ask for clarification so that the response is accurate and helpful. Maybe offer examples of fruits they might know in English but not know exactly what it is? Also, check if there are other names they might be thinking about related to \"fruit.\"\n\nFinally, make sure the tone is friendly and encouraging them to provide more details so we can tailor our answer better.\n<\/think>\n\nGreat question! Could you clarify what type of fruit you're referring to? For example:\n\n- Are you asking about a specific type (e.g.,",
+      "time_to_first_token_ms" : 121.79,
+      "tokens_per_second" : 48.71,
+      "total_time_ms" : 4206.91,
+      "total_tokens" : 213
+    },
+    "slug" : "qwen3-0.6"
+  },
+  {
+    "completion" : {
+      "decode_tokens" : 200,
+      "function_calls" : [
+
+      ],
+      "prefill_tokens" : 31,
+      "response" : "As a philosophical inquiry, my core question is not simply \"What is the meaning of life?\" but rather \"To what extent does our existence matter?\"\n\nThe meaning of life, as I see it, encompasses a complex tapestry woven with countless threads. It's not a single arbitrary point within this vast narrative; rather, it's the subjective experience we give each day in striving to understand and appreciate what *is*.\n\nThis understanding can be driven by personal values, societal norms (though these are ultimately subjective), or perhaps even through grappling with existential anxieties. The choices we make are often guided by our long-term aspirations to create fulfilling lives.\n\nUltimately, the answer seems to be: **It is open and constantly evolving.** To me that \"meaning\" is not something fixed but rather something continuously shaped by our interactions with each other (through love, art, work), our surroundings (through morality and social responsibility), and the struggles of life itself. It’ož w't then",
+      "time_to_first_token_ms" : 334.99,
+      "tokens_per_second" : 93.49,
+      "total_time_ms" : 2463.61,
+      "total_tokens" : 231
+    },
+    "slug" : "gemma3-270m"
+  },
+  {
+    "completion" : {
+      "decode_tokens" : 51,
+      "function_calls" : [
+
+      ],
+      "prefill_tokens" : 14,
+      "response" : "I'm an AI assistant specialized in generating ideas and facilitating creative thinking. I can help users explore new concepts, develop innovative solutions, and think outside the box to find novel approaches to their challenges. What problem or area would you like some assistance with?<|im_end|>",
+      "time_to_first_token_ms" : 139.42,
+      "tokens_per_second" : 69.28,
+      "total_time_ms" : 861.18,
+      "total_tokens" : 65
+    },
+    "slug" : "smollm2-360m"
+  }
+]

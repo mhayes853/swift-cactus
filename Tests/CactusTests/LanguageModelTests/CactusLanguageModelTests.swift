@@ -3,9 +3,19 @@ import CustomDump
 import Foundation
 import SnapshotTesting
 import Testing
+import XCTest
 
 @Suite
 struct `CactusLanguageModel tests` {
+  @Test
+  func `Throws Buffer Too Small Error When Buffer Size Zero`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+    #expect(throws: CactusLanguageModel.EmbeddingsError.bufferTooSmall) {
+      try model.embeddings(for: "This is some text.", maxBufferSize: 0)
+    }
+  }
+
   @Test
   func `Attempt To Create Model From Non-Existent URL, Throws Error`() async throws {
     let error = #expect(throws: CactusLanguageModel.ModelCreationError.self) {
@@ -22,13 +32,19 @@ struct `CactusLanguageModel tests` {
     }
   }
 
-  @Test
-  func `Generates Embeddings`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+  @Test(.serialized, arguments: modelSlugs)
+  func `Generates Embeddings`(slug: String) async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL(slug: slug)
     let model = try CactusLanguageModel(from: modelURL)
 
     let embeddings = try model.embeddings(for: "This is some text.")
-    assertSnapshot(of: embeddings, as: .dump)
+
+    struct Embedding: Codable {
+      let slug: String
+      let vector: [Float]
+    }
+
+    assertSnapshot(of: Embedding(slug: slug, vector: embeddings), as: .json)
   }
 
   @Test
@@ -49,9 +65,9 @@ struct `CactusLanguageModel tests` {
     }
   }
 
-  @Test
-  func `Streams Same Response Content`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+  @Test(arguments: modelSlugs)
+  func `Streams Same Response Content`(slug: String) async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL(slug: slug)
     let model = try CactusLanguageModel(from: modelURL)
 
     let stream = Lock("")
@@ -119,36 +135,35 @@ struct `CactusLanguageModel tests` {
   }
 }
 
-@Suite(.serialized)
-struct `CactusLanguageModelGenerationSnapshot tests` {
-  @Test
-  func `Throws Buffer Too Small Error When Buffer Size Zero`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
-    let model = try CactusLanguageModel(from: modelURL)
-    #expect(throws: CactusLanguageModel.EmbeddingsError.bufferTooSmall) {
-      try model.embeddings(for: "This is some text.", maxBufferSize: 0)
+final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
+  func testBasicChatCompletion() async throws {
+    struct Completion: Codable {
+      let slug: String
+      let completion: CactusLanguageModel.ChatCompletion
     }
-  }
 
-  @Test
-  func `Basic Chat Completion`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
-    let model = try CactusLanguageModel(from: modelURL)
+    var completions = [Completion]()
 
-    let completion = try model.chatCompletion(
-      messages: [
-        .system("You are a philosopher, philosophize about any questions you are asked."),
-        .user("What is the meaning of life?")
-      ]
-    )
+    for slug in modelSlugs {
+      let modelURL = try await CactusLanguageModel.testModelURL(slug: slug)
+      let model = try CactusLanguageModel(from: modelURL)
+      let completion = try model.chatCompletion(
+        messages: [
+          .system("You are a philosopher, philosophize about any questions you are asked."),
+          .user("What is the meaning of life?")
+        ]
+      )
+      completions.append(Completion(slug: slug, completion: completion))
+    }
     withKnownIssue {
-      assertSnapshot(of: completion, as: .json, record: true)
+      assertSnapshot(of: completions, as: .json, record: true)
     }
   }
 
-  @Test
-  func `Basic Function Calling`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+  func testBasicFunctionCalling() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL(
+      slug: CactusLanguageModel.testFunctionCallingModelSlug
+    )
     let model = try CactusLanguageModel(from: modelURL)
 
     let completion = try model.chatCompletion(
@@ -164,7 +179,7 @@ struct `CactusLanguageModelGenerationSnapshot tests` {
             valueSchema: .object(
               properties: [
                 "location": .object(
-                  description: "City name, eg. 'San Francisco'",
+                  description: "City name",
                   valueSchema: .string(minLength: 1),
                   examples: ["San Francisco"]
                 )
@@ -181,9 +196,10 @@ struct `CactusLanguageModelGenerationSnapshot tests` {
     }
   }
 
-  @Test
-  func `Multiple Function Calls`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+  func testMultipleFunctionCalls() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL(
+      slug: CactusLanguageModel.testFunctionCallingModelSlug
+    )
     let model = try CactusLanguageModel(from: modelURL)
 
     let completion = try model.chatCompletion(
@@ -199,7 +215,7 @@ struct `CactusLanguageModelGenerationSnapshot tests` {
             valueSchema: .object(
               properties: [
                 "location": .object(
-                  description: "City name, eg. 'San Francisco'",
+                  description: "City name",
                   valueSchema: .string(minLength: 1),
                   examples: ["San Francisco"]
                 ),
@@ -216,7 +232,7 @@ struct `CactusLanguageModelGenerationSnapshot tests` {
             valueSchema: .object(
               properties: [
                 "location": .object(
-                  description: "City name, eg. 'San Francisco'",
+                  description: "City name",
                   valueSchema: .string(minLength: 1),
                   examples: ["San Francisco"]
                 )
@@ -233,8 +249,7 @@ struct `CactusLanguageModelGenerationSnapshot tests` {
     }
   }
 
-  @Test
-  func `Image Analysis`() async throws {
+  func testImageAnalysis() async throws {
     let url = try await CactusLanguageModel.testModelURL(slug: CactusLanguageModel.testVLMSlug)
     let model = try CactusLanguageModel(from: url)
 
@@ -256,5 +271,6 @@ struct `CactusLanguageModelGenerationSnapshot tests` {
       assertSnapshot(of: completion, as: .json, record: true)
     }
   }
-
 }
+
+private let modelSlugs = ["lfm2-1.2b", "qwen3-0.6", "gemma3-270m", "smollm2-360m"]
