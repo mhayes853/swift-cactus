@@ -3,16 +3,15 @@
   "function_calls" : [
     {
       "arguments" : {
-        "location" : "Paris",
-        "units" : "celsius"
+        "location" : "Delhi"
       },
-      "name" : "get_weather"
+      "name" : "get_population"
     }
   ],
   "prefill_tokens" : 218,
-  "response" : "",
-  "time_to_first_token_ms" : 598.22,
-  "tokens_per_second" : 42.69,
-  "total_time_ms" : 1090.09,
+  "response" : "```json\n",
+  "time_to_first_token_ms" : 626.7,
+  "tokens_per_second" : 46.75,
+  "total_time_ms" : 1075.88,
   "total_tokens" : 240
 }

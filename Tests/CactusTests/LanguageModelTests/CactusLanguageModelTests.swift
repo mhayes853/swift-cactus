@@ -1,6 +1,7 @@
 import Cactus
 import CustomDump
 import Foundation
+import IssueReporting
 import SnapshotTesting
 import Testing
 import XCTest
@@ -159,7 +160,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
       )
       completions.append(Completion(slug: slug, completion: completion))
     }
-    withKnownIssue {
+    withExpectedIssue {
       assertSnapshot(of: completions, as: .json, record: true)
     }
   }
@@ -195,7 +196,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
       ]
     )
 
-    withKnownIssue {
+    withExpectedIssue {
       assertSnapshot(of: completion, as: .json, record: true)
     }
   }
@@ -248,7 +249,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
       ]
     )
 
-    withKnownIssue {
+    withExpectedIssue {
       assertSnapshot(of: completion, as: .json, record: true)
     }
   }
@@ -271,7 +272,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
       ]
     )
 
-    withKnownIssue {
+    withExpectedIssue {
       assertSnapshot(of: completion, as: .json, record: true)
     }
   }
