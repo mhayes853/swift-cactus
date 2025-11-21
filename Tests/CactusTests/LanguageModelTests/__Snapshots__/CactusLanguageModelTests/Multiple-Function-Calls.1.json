@@ -1,17 +1,17 @@
 {
-  "decode_tokens" : 25,
+  "decode_tokens" : 126,
   "function_calls" : [
     {
       "arguments" : {
-        "location" : "San Francisco"
+        "location" : "Berkeley"
       },
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 234,
-  "response" : "<\/think>\n\n",
-  "time_to_first_token_ms" : 1832.35,
-  "tokens_per_second" : 18.29,
-  "total_time_ms" : 3144.69,
-  "total_tokens" : 259
+  "prefill_tokens" : 252,
+  "response" : "Assistant:\nSure! To find both the weather and population in Berkeley, I'll use two separate functions.\n\nFirst, let's get the weather information:\n1. Call the `get_weather` function with location set to \"Berkeley\".\n2. Then call the `get_population` function with location set to \"Berkeley\".\n\nOnce I have both results, I'll present them in a clear format.\n",
+  "time_to_first_token_ms" : 1850.33,
+  "tokens_per_second" : 16.25,
+  "total_time_ms" : 9544.25,
+  "total_tokens" : 378
 }

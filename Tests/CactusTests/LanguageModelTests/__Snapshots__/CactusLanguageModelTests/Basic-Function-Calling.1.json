@@ -1,12 +1,12 @@
 {
-  "decode_tokens" : 27,
+  "decode_tokens" : 30,
   "function_calls" : [
 
   ],
-  "prefill_tokens" : 142,
-  "response" : "I'm not able to use any of the tools you've provided. Could you please explain more clearly what you're looking for?<|im_end|>",
-  "time_to_first_token_ms" : 1563.86,
-  "tokens_per_second" : 18.23,
-  "total_time_ms" : 2989.89,
-  "total_tokens" : 169
+  "prefill_tokens" : 160,
+  "response" : "The weather in Santa Cruz is currently unknown for now. If you'd like, I can check more details about the weather conditions in Santa Cruz!<|im_end|>",
+  "time_to_first_token_ms" : 580.57,
+  "tokens_per_second" : 43.66,
+  "total_time_ms" : 1244.79,
+  "total_tokens" : 190
 }

@@ -63,6 +63,24 @@
     "supports_vision" : false
   },
   {
+    "created_at" : 785370488.312368,
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-vl-450m.zip",
+    "name" : "LFM 2 VL 450M",
+    "size_mb" : 420,
+    "slug" : "lfm2-vl-450m",
+    "supports_tool_calling" : false,
+    "supports_vision" : true
+  },
+  {
+    "created_at" : 785370564.980696,
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-vl-1.6b.zip",
+    "name" : "LFM 2 VL 1.6B",
+    "size_mb" : 1440,
+    "slug" : "lfm2-vl-1.6b",
+    "supports_tool_calling" : false,
+    "supports_vision" : true
+  },
+  {
     "created_at" : 782069136.302133,
     "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/gemma3-1b.zip",
     "name" : "Gemma 3 1B",
