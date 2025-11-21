@@ -1,0 +1,12 @@
+{
+  "decode_tokens" : 86,
+  "function_calls" : [
+
+  ],
+  "prefill_tokens" : 272,
+  "response" : "The image depicts a young man with a cheerful expression, holding two books in his hands. He is smiling and appears to be in good spirits. The background of the image is plain white, which helps to focus attention on the subject. The man's attire consists of a light-colored shirt with rolled-up sleeves and a pocket on the left side, suggesting casual yet neat clothing suitable for academic activities or outdoor settings.<|im_end|>",
+  "time_to_first_token_ms" : 3964.31,
+  "tokens_per_second" : 101.08,
+  "total_time_ms" : 4805.22,
+  "total_tokens" : 358
+}

@@ -1,0 +1,17 @@
+{
+  "decode_tokens" : 23,
+  "function_calls" : [
+    {
+      "arguments" : {
+        "location" : "New York"
+      },
+      "name" : "get_weather"
+    }
+  ],
+  "prefill_tokens" : 134,
+  "response" : "",
+  "time_to_first_token_ms" : 478.4,
+  "tokens_per_second" : 38.02,
+  "total_time_ms" : 1057,
+  "total_tokens" : 157
+}
