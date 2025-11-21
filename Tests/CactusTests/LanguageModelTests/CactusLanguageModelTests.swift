@@ -66,7 +66,7 @@ struct `CactusLanguageModel tests` {
     }
   }
 
-  @Test(.serialized, .disabled(), arguments: modelSlugs)
+  @Test(arguments: modelSlugs)
   func `Streams Same Response Content`(slug: String) async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(slug: slug)
     let model = try CactusLanguageModel(from: modelURL)
@@ -84,7 +84,7 @@ struct `CactusLanguageModel tests` {
     ) { token in
       stream.withLock { $0.append(token) }
     }
-    stream.withLock { expectNoDifference($0, completion.response) }
+    stream.withLock { expectNoDifference($0, completion.cleanedResponse) }
   }
 
   @Test
@@ -279,3 +279,13 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
 }
 
 private let modelSlugs = ["lfm2-1.2b", "qwen3-0.6", "gemma3-270m", "smollm2-360m"]
+
+extension CactusLanguageModel.ChatCompletion {
+  fileprivate var cleanedResponse: String {
+    var response = self.response
+    for sequence in CactusLanguageModel.ChatCompletion.Options.defaultStopSequences {
+      response = response.replacingOccurrences(of: sequence, with: "")
+    }
+    return response
+  }
+}

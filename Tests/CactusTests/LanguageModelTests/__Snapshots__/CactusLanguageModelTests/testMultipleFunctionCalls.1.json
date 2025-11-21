@@ -1,17 +1,18 @@
 {
-  "decode_tokens" : 22,
+  "decode_tokens" : 180,
   "function_calls" : [
     {
       "arguments" : {
-        "location" : "Delhi"
+        "location" : "",
+        "units" : ""
       },
-      "name" : "get_population"
+      "name" : "get_weather"
     }
   ],
   "prefill_tokens" : 218,
-  "response" : "```json\n",
-  "time_to_first_token_ms" : 626.7,
-  "tokens_per_second" : 46.75,
-  "total_time_ms" : 1075.88,
-  "total_tokens" : 240
+  "response" : "uis\n\nOkay, the user is asking about getting weather information and population data. Let me check the available tools.\n\nFirst, there's a function called get_weather which requires parameters for location and units. The user hasn't specified a city yet, so I need to ask for that. Then there's get_population which needs a city name as well.\n\nSince the user didn't provide specific details like location or units, I should prompt them to give more info. For example, \"Please specify the city and unit (Celsius\/Fahrenheit) you're interested in.\" That way they can fill in their request properly.\n\nI should make sure to respond with JSON format when calling functions if possible, but since they haven't provided arguments yet, maybe just asking is better here.\n<\/think>\n\n",
+  "time_to_first_token_ms" : 537.22,
+  "tokens_per_second" : 46.68,
+  "total_time_ms" : 4371.6,
+  "total_tokens" : 398
 }
