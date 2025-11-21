@@ -1,12 +1,17 @@
 {
-  "decode_tokens" : 194,
+  "decode_tokens" : 22,
   "function_calls" : [
-
+    {
+      "arguments" : {
+        "location" : "Delhi"
+      },
+      "name" : "get_population"
+    }
   ],
-  "prefill_tokens" : 208,
-  "response" : "Okay, let's see. The user mentioned using the get_weather function. I need to check if that's available in the tools provided.\n\nLooking at the functions, there is a get_weather function with parameters for location and units. The parameters require 'location' as a string and 'units' as an enum between celsius or fahrenheit.\n\nThe user hasn't specified any particular city or unit yet. So I should ask them to provide both location and units so I can use it properly.\n\nWait, but maybe they just want me to prompt for those details? Since they haven't given any specific info yet, I should respond by requesting that information.\n<\/think>\n\nTo use the `get_weather` function, please provide:\n1. **Location** (e.g., \"London\", \"Paris\")\n2. **Units** (e.g., \"celsius\", \"farenheit\")\n\nOnce you supply these details, I'll retrieve the weather information for you!<|im_end|>",
-  "time_to_first_token_ms" : 656.26,
-  "tokens_per_second" : 42.76,
-  "total_time_ms" : 5170.09,
-  "total_tokens" : 402
+  "prefill_tokens" : 218,
+  "response" : "```json\n",
+  "time_to_first_token_ms" : 626.7,
+  "tokens_per_second" : 46.75,
+  "total_time_ms" : 1075.88,
+  "total_tokens" : 240
 }

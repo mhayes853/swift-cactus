@@ -1,12 +1,12 @@
 {
-  "decode_tokens" : 200,
+  "decode_tokens" : 75,
   "function_calls" : [
 
   ],
   "prefill_tokens" : 272,
-  "response" : "The image depicts a young man with a cheerful expression, holding two books in his hands. He is smiling and appears to be in good spirits. The background of the image is plain white, which puts the focus entirely on him. The man's attire consists of a light-colored shirt with rolled-up sleeves and a pocket on the left side, along with carrying straps over his shoulders that suggest he might be carrying something like a backpack or purse.\n\nThe lighting in the photograph highlights his face and upper body clearly while casting soft shadows behind him, adding depth to the image. His posture is relaxed yet confident as he holds up one book towards his chest level while looking directly at the camera with an engaging smile.\n\nThere are no other discernible objects or elements in this photograph that provide additional context or information about the setting, such as location, time of day, weather conditions, or any specific event happening around him. The simplicity of the background and lack of other elements keeps all attention",
-  "time_to_first_token_ms" : 3775.95,
-  "tokens_per_second" : 100.54,
-  "total_time_ms" : 5755.34,
-  "total_tokens" : 472
+  "response" : "The image depicts a young man with a cheerful expression, holding two books in his hands. He is smiling and wearing a light-colored shirt with rolled-up sleeves. The background of the image is plain white, which highlights the subject and makes him stand out. The man's attire suggests that he might be engaged in some form of learning or study-related activity.<|im_end|>",
+  "time_to_first_token_ms" : 4053.59,
+  "tokens_per_second" : 99.33,
+  "total_time_ms" : 4798.62,
+  "total_tokens" : 347
 }
