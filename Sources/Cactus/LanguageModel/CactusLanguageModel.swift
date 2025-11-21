@@ -330,19 +330,23 @@ extension CactusLanguageModel {
     let buffer = UnsafeMutablePointer<CChar>.allocate(capacity: maxBufferSize)
     defer { buffer.deallocate() }
 
-    let functions = functions.map { _FunctionDefinition(function: $0) }
+    let functions = functions.map { FFIFunctionDefinition(function: $0) }
     let functionsJSON =
-      functions.isEmpty ? nil : String(decoding: try JSONEncoder().encode(functions), as: UTF8.self)
+      functions.isEmpty
+      ? nil
+      : String(decoding: try Self.chatCompletionEncoder.encode(functions), as: UTF8.self)
+
+    let messages = messages.map { FFIMessage(message: $0) }
 
     let result = try withoutActuallyEscaping(onToken) { onToken in
       let box = Unmanaged.passRetained(TokenCallbackBox(onToken))
       defer { box.release() }
       return cactus_complete(
         self.model,
-        String(decoding: try JSONEncoder().encode(messages), as: UTF8.self),
+        String(decoding: try Self.chatCompletionEncoder.encode(messages), as: UTF8.self),
         buffer,
         maxBufferSize * MemoryLayout<CChar>.stride,
-        String(decoding: try JSONEncoder().encode(options), as: UTF8.self),
+        String(decoding: try Self.chatCompletionEncoder.encode(options), as: UTF8.self),
         functionsJSON,
         { token, _, ptr in
           guard let ptr, let token else { return }
@@ -395,7 +399,13 @@ extension CactusLanguageModel {
     return decoder
   }()
 
-  private struct _FunctionDefinition: Codable {
+  private static let chatCompletionEncoder = {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.withoutEscapingSlashes]
+    return encoder
+  }()
+
+  private struct FFIFunctionDefinition: Codable {
     var function: FunctionDefinition
   }
 
@@ -409,6 +419,18 @@ extension CactusLanguageModel {
 
   private struct CompletionErrorResponse: Decodable {
     let error: String
+  }
+
+  private struct FFIMessage: Codable {
+    let role: MessageRole
+    let content: String
+    let images: [String]?
+
+    init(message: ChatMessage) {
+      self.role = message.role
+      self.content = message.content
+      self.images = message.images?.map(\.nativePath)
+    }
   }
 }
 

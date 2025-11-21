@@ -16,7 +16,7 @@ fi
 
 echo "🔧 Cloning Cactus Repo"
 CACTUS_ROOT_DIR="$BUILD_DIR/cactus"
-git clone git@github.com:cactus-compute/cactus.git "$CACTUS_ROOT_DIR"
+git clone --branch fix-image-paths --single-branch git@github.com:mhayes853/cactus.git "$CACTUS_ROOT_DIR"
 
 CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release}
 ANDROID_DIR="$CACTUS_ROOT_DIR/android"

@@ -32,6 +32,7 @@ extension CactusLanguageModel {
   }
 
   static let testModelSlug = "qwen3-0.6"
+  static let testVLMSlug = "lfm2-vl-450m"
 
   @QueryRequest
   private static func downloadQuery(for slug: String) async throws -> URL {

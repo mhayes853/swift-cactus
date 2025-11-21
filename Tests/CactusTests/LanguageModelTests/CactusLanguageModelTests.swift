@@ -233,4 +233,28 @@ struct `CactusLanguageModelGenerationSnapshot tests` {
     }
   }
 
+  @Test
+  func `Image Analysis`() async throws {
+    let url = try await CactusLanguageModel.testModelURL(slug: CactusLanguageModel.testVLMSlug)
+    let model = try CactusLanguageModel(from: url)
+
+    let imageURL = Bundle.module.url(forResource: "joe", withExtension: "png")!
+
+    let completion = try model.chatCompletion(
+      messages: [
+        .system(
+          """
+          You are an assistant who can analyze images of people, and predict their future after \
+          they drink a Red Bull and a monster on the night before a final exam.
+          """
+        ),
+        .user("What happens to the guy in the first image?", images: [imageURL])
+      ]
+    )
+
+    withKnownIssue {
+      assertSnapshot(of: completion, as: .json, record: true)
+    }
+  }
+
 }

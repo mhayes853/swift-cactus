@@ -1,0 +1,12 @@
+{
+  "decode_tokens" : 57,
+  "function_calls" : [
+
+  ],
+  "prefill_tokens" : 314,
+  "response" : "As an AI, I can't predict the future or provide advice on how to avoid bad habits. However, if you're looking for a healthy lifestyle, consider incorporating regular exercise into your routine. Additionally, maintaining a balanced diet and getting enough sleep are crucial for overall well-being.<|im_end|>",
+  "time_to_first_token_ms" : 3865.44,
+  "tokens_per_second" : 81.12,
+  "total_time_ms" : 4555.74,
+  "total_tokens" : 371
+}
