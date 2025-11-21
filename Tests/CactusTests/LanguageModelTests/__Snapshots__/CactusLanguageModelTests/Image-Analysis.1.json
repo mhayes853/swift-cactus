@@ -1,12 +1,12 @@
 {
-  "decode_tokens" : 65,
+  "decode_tokens" : 74,
   "function_calls" : [
 
   ],
-  "prefill_tokens" : 272,
-  "response" : "The image depicts a young man smiling and holding a notebook in his hands. He is wearing a light-colored shirt with rolled-up sleeves, suggesting he might be dressed for school or an outdoor activity. The background is plain white, which puts the focus entirely on him. His posture and expression convey confidence and approachability.<|im_end|>",
-  "time_to_first_token_ms" : 3960.53,
-  "tokens_per_second" : 96.25,
-  "total_time_ms" : 4625.49,
-  "total_tokens" : 337
+  "prefill_tokens" : 314,
+  "response" : "The guy is smiling and appears to be happy, which suggests he might have had a good day or is excited about something he's about to do. He seems well-prepared with his backpack and books, indicating he might be going on an adventure or studying for an exam. His posture is relaxed yet confident, suggesting he feels comfortable and ready for whatever comes next.<|im_end|>",
+  "time_to_first_token_ms" : 3801.05,
+  "tokens_per_second" : 95.04,
+  "total_time_ms" : 4569.18,
+  "total_tokens" : 388
 }

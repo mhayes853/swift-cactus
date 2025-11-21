@@ -558,6 +558,9 @@ extension CactusLanguageModel {
 
 extension CactusLanguageModel {
   private func bufferSize(for contentLength: Int) -> Int {
-    max(contentLength * (self.configurationFile.precision?.bits ?? 32), 1024)
+    max(
+      contentLength * (self.configurationFile.precision?.bits ?? 32),
+      self.configurationFile.hiddenDimensions ?? 1024
+    )
   }
 }

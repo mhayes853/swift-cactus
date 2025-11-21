@@ -143,6 +143,8 @@ extension CactusLanguageModel {
       case "gemma": .gemma
       case "bert": .nomic
       case "smol": .smol
+      case "lfm2": .lfm2
+      case "qwen": .qwen
       default: nil
       }
     }
