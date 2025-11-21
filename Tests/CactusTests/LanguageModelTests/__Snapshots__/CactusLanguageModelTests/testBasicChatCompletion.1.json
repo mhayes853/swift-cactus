@@ -7,25 +7,25 @@
       ],
       "prefill_tokens" : 9,
       "response" : "Hello! It seems like your message might have been cut off. Could you please provide more details so I can assist you better? Whether it's a question, request for information, or something else, I'm here to help!<|im_end|>",
-      "time_to_first_token_ms" : 415.14,
-      "tokens_per_second" : 46.35,
-      "total_time_ms" : 1407.68,
+      "time_to_first_token_ms" : 106.35,
+      "tokens_per_second" : 44.67,
+      "total_time_ms" : 1136.1,
       "total_tokens" : 56
     },
     "slug" : "lfm2-1.2b"
   },
   {
     "completion" : {
-      "decode_tokens" : 200,
+      "decode_tokens" : 126,
       "function_calls" : [
 
       ],
       "prefill_tokens" : 13,
-      "response" : "<think>\nOkay, the user is asking about a specific type of fruit. First, I need to confirm if they're referring to an actual fruit or maybe a different concept. The term \"fruit\" can be ambiguous here.\n\nI should start by acknowledging their question and providing some context. Then, I'll break down the possible interpretations: whether it's a real fruit like an apple or another variety, or perhaps something else like a berry or even an unusual species.\n\nIt's important to ask for clarification so that the response is accurate and helpful. Maybe offer examples of fruits they might know in English but not know exactly what it is? Also, check if there are other names they might be thinking about related to \"fruit.\"\n\nFinally, make sure the tone is friendly and encouraging them to provide more details so we can tailor our answer better.\n<\/think>\n\nGreat question! Could you clarify what type of fruit you're referring to? For example:\n\n- Are you asking about a specific type (e.g.,",
-      "time_to_first_token_ms" : 121.79,
-      "tokens_per_second" : 48.71,
-      "total_time_ms" : 4206.91,
-      "total_tokens" : 213
+      "response" : "<think>\nOkay, the user is asking about a specific query related to a system. They mentioned \"system\" but didn't provide the exact question. I need to ask for more details so I can assist effectively.\n\nFirst, I should prompt them to specify what part of the system they're referring to and what question they have. Maybe suggest breaking down their request into smaller parts if needed.\n<\/think>\n\nCould you please clarify which part of the system you are referring to? For example, are you asking about a technical issue (like server problems), an application problem (like coding errors), or something else? Let me know!<|im_end|>",
+      "time_to_first_token_ms" : 553.05,
+      "tokens_per_second" : 51.62,
+      "total_time_ms" : 2974.49,
+      "total_tokens" : 139
     },
     "slug" : "qwen3-0.6"
   },
@@ -36,26 +36,26 @@
 
       ],
       "prefill_tokens" : 31,
-      "response" : "As a philosophical inquiry, my core question is not simply \"What is the meaning of life?\" but rather \"To what extent does our existence matter?\"\n\nThe meaning of life, as I see it, encompasses a complex tapestry woven with countless threads. It's not a single arbitrary point within this vast narrative; rather, it's the subjective experience we give each day in striving to understand and appreciate what *is*.\n\nThis understanding can be driven by personal values, societal norms (though these are ultimately subjective), or perhaps even through grappling with existential anxieties. The choices we make are often guided by our long-term aspirations to create fulfilling lives.\n\nUltimately, the answer seems to be: **It is open and constantly evolving.** To me that \"meaning\" is not something fixed but rather something continuously shaped by our interactions with each other (through love, art, work), our surroundings (through morality and social responsibility), and the struggles of life itself. It’ož w't then",
-      "time_to_first_token_ms" : 334.99,
-      "tokens_per_second" : 93.49,
-      "total_time_ms" : 2463.61,
+      "response" : "Ah, the question of \"What is the meaning of life?\" - a timeless and multifaceted inquiry. This is a question that has resonated across millennia, sparking endless debate and grappling with fundamental human experiences.\n\nFor many, it can be seen as a source of immense awe and wonder. The sheer vastness of existence feels like an unfathomable expanse; we are privileged beings possessing an extraordinary capacity for knowledge and understanding. To find meaning in this subjective sense offers us solace through mindfulness practices aimed at cultivating inner compasses upon the task at hand - seeking answers rather than self-satisfaction on earthly pursuits.\n\nHowever, this perspective often overlooks the challenging realities placed upon individuals who grapple with profound questions about their own identity, purpose, worthiness in comparison to others who find only fleeting pleasures in the external world – physical possessions or social status may seem less intrinsically valuable depending on one'fusion's context towards life.\n\nPerhaps more importantly, if we approach our inquiries with a detached curiosity meant to provoke",
+      "time_to_first_token_ms" : 109.08,
+      "tokens_per_second" : 82.66,
+      "total_time_ms" : 2516.5,
       "total_tokens" : 231
     },
     "slug" : "gemma3-270m"
   },
   {
     "completion" : {
-      "decode_tokens" : 51,
+      "decode_tokens" : 96,
       "function_calls" : [
 
       ],
       "prefill_tokens" : 14,
-      "response" : "I'm an AI assistant specialized in generating ideas and facilitating creative thinking. I can help users explore new concepts, develop innovative solutions, and think outside the box to find novel approaches to their challenges. What problem or area would you like some assistance with?<|im_end|>",
-      "time_to_first_token_ms" : 139.42,
-      "tokens_per_second" : 69.28,
-      "total_time_ms" : 861.18,
-      "total_tokens" : 65
+      "response" : "I'm an AI assistant specialized in providing support and guidance to users. I don't provide personal advice or opinions, but rather assist with problem-solving, offer suggestions for further learning, and help users navigate complex information.\n\nYou can ask me any questions you have about data analysis tools like Excel or SQL databases; statistical concepts such as regression analysis or hypothesis testing; data visualization techniques like bar charts and scatter plots; machine learning algorithms such as decision trees or clustering methods.<|im_end|>",
+      "time_to_first_token_ms" : 80.94,
+      "tokens_per_second" : 70.11,
+      "total_time_ms" : 1435.86,
+      "total_tokens" : 110
     },
     "slug" : "smollm2-360m"
   }

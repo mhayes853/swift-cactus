@@ -159,7 +159,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
       )
       completions.append(Completion(slug: slug, completion: completion))
     }
-    withKnownIssue {
+    XCTExpectFailure {
       assertSnapshot(of: completions, as: .json, record: true)
     }
   }
@@ -195,7 +195,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
       ]
     )
 
-    withKnownIssue {
+    XCTExpectFailure {
       assertSnapshot(of: completion, as: .json, record: true)
     }
   }
@@ -248,7 +248,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
       ]
     )
 
-    withKnownIssue {
+    XCTExpectFailure {
       assertSnapshot(of: completion, as: .json, record: true)
     }
   }
@@ -271,7 +271,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
       ]
     )
 
-    withKnownIssue {
+    XCTExpectFailure {
       assertSnapshot(of: completion, as: .json, record: true)
     }
   }
