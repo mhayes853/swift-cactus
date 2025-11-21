@@ -1,12 +1,12 @@
 {
-  "decode_tokens" : 57,
+  "decode_tokens" : 65,
   "function_calls" : [
 
   ],
-  "prefill_tokens" : 314,
-  "response" : "As an AI, I can't predict the future or provide advice on how to avoid bad habits. However, if you're looking for a healthy lifestyle, consider incorporating regular exercise into your routine. Additionally, maintaining a balanced diet and getting enough sleep are crucial for overall well-being.<|im_end|>",
-  "time_to_first_token_ms" : 3865.44,
-  "tokens_per_second" : 81.12,
-  "total_time_ms" : 4555.74,
-  "total_tokens" : 371
+  "prefill_tokens" : 272,
+  "response" : "The image depicts a young man smiling and holding a notebook in his hands. He is wearing a light-colored shirt with rolled-up sleeves, suggesting he might be dressed for school or an outdoor activity. The background is plain white, which puts the focus entirely on him. His posture and expression convey confidence and approachability.<|im_end|>",
+  "time_to_first_token_ms" : 3960.53,
+  "tokens_per_second" : 96.25,
+  "total_time_ms" : 4625.49,
+  "total_tokens" : 337
 }
