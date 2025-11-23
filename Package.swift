@@ -14,6 +14,7 @@ let package = Package(
   platforms: [.iOS(.v13), .macOS(.v11), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
   products: [
     .library(name: "Cactus", targets: ["Cactus"]),
+    .library(name: "CactusCore", targets: ["CactusCore"]),
     .library(name: "CXXCactusShims", targets: ["CXXCactusShims"])
   ],
   dependencies: [
