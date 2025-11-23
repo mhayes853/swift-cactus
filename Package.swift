@@ -29,8 +29,9 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.6.4")
   ],
   targets: [
+    .target(name: "Cactus", dependencies: ["CactusCore", "CactusMacros"]),
     .target(
-      name: "Cactus",
+      name: "CactusCore",
       dependencies: [
         "CXXCactusShims",
         .target(name: "cactus_util", condition: .when(platforms: [.iOS, .macOS])),
