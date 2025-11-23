@@ -1,5 +1,5 @@
 {
-  "originHash" : "57ec774b3c224b6fca151011c19d8edd4996185a75c59eb9d10e464fd636baaf",
+  "originHash" : "e82b243f91d3ef377223e961a7b81f3809a3a7e436104e9ff8344f14fdaa0e27",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -125,6 +125,15 @@
       "state" : {
         "revision" : "ce592ae52f982c847a4efc0dd881cc9eb32d29f2",
         "version" : "1.6.4"
+      }
+    },
+    {
+      "identity" : "swift-macro-testing",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swift-macro-testing",
+      "state" : {
+        "revision" : "9ab11325daa51c7c5c10fcf16c92bac906717c7e",
+        "version" : "0.6.4"
       }
     },
     {

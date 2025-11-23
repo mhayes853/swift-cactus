@@ -1,6 +1,7 @@
 // swift-tools-version: 6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
+import CompilerPluginSupport
 import PackageDescription
 
 let supportsTelemetry = SwiftSetting.define(
@@ -23,7 +24,9 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.4.3"),
     .package(url: "https://github.com/apple/swift-log", from: "1.6.4"),
     .package(url: "https://github.com/apple/swift-crypto", from: "4.0.0"),
-    .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.1.0")
+    .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.1.0"),
+    .package(url: "https://github.com/swiftlang/swift-syntax", "601.0.0"..<"603.0.0"),
+    .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.6.4")
   ],
   targets: [
     .target(
@@ -59,6 +62,20 @@ let package = Package(
           name: "CXXCactusDarwin",
           condition: .when(platforms: [.iOS, .macOS, .visionOS, .tvOS, .watchOS, .macCatalyst])
         )
+      ]
+    ),
+    .macro(
+      name: "CactusMacros",
+      dependencies: [
+        .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+        .product(name: "SwiftSyntaxMacros", package: "swift-syntax")
+      ]
+    ),
+    .testTarget(
+      name: "CactusMacrosTests",
+      dependencies: [
+        "CactusMacros",
+        .product(name: "MacroTesting", package: "swift-macro-testing")
       ]
     ),
     .binaryTarget(name: "CXXCactusDarwin", path: "bin/CXXCactusDarwin.xcframework"),
