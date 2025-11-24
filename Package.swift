@@ -17,6 +17,9 @@ let package = Package(
     .library(name: "CactusCore", targets: ["CactusCore"]),
     .library(name: "CXXCactusShims", targets: ["CXXCactusShims"])
   ],
+  traits: [
+    .trait(name: "SwiftCactusTOON", description: "TOON Encoding brought by TOONEncoder")
+  ],
   dependencies: [
     .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.7"),
     .package(url: "https://github.com/vapor-community/Zip", from: "2.2.7"),
@@ -27,7 +30,8 @@ let package = Package(
     .package(url: "https://github.com/apple/swift-crypto", from: "4.0.0"),
     .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.1.0"),
     .package(url: "https://github.com/swiftlang/swift-syntax", "601.0.0"..<"603.0.0"),
-    .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.6.4")
+    .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.6.4"),
+    .package(url: "https://github.com/mattt/TOONEncoder", from: "0.1.1")
   ],
   targets: [
     .target(name: "Cactus", dependencies: ["CactusCore", "CactusMacros"]),
@@ -39,7 +43,12 @@ let package = Package(
         .product(name: "Logging", package: "swift-log"),
         .product(name: "Zip", package: "Zip"),
         .product(name: "IssueReporting", package: "xctest-dynamic-overlay"),
-        .product(name: "Crypto", package: "swift-crypto", condition: .when(platforms: [.android]))
+        .product(name: "Crypto", package: "swift-crypto", condition: .when(platforms: [.android])),
+        .product(
+          name: "TOONEncoder",
+          package: "TOONEncoder",
+          condition: .when(traits: ["SwiftCactusTOON"])
+        )
       ],
       swiftSettings: [supportsTelemetry]
     ),
