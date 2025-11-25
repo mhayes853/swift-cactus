@@ -87,12 +87,3 @@ extension CactusPromptContent {
     try MessageComponents(content: self)
   }
 }
-
-// MARK: - Language Model Message
-
-extension CactusLanguageModel.ChatMessage {
-  public init(role: CactusLanguageModel.MessageRole, content: CactusPromptContent) throws {
-    let components = try content.messageComponents()
-    self.init(role: role, content: components.text, images: components.images)
-  }
-}
