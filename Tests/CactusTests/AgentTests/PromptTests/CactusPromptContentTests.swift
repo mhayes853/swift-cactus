@@ -183,4 +183,18 @@ struct `CactusPromptContent tests` {
     expectNoDifference(components.text, "hello")
     expectNoDifference(components.images, [])
   }
+
+  @Test
+  func `Prompt With Custom Separator`() throws {
+    let content = CactusPromptContent {
+      GroupContent {
+        "Hello"
+        "World"
+      }
+      .separated(by: " ")
+    }
+    let components = try content.messageComponents()
+    expectNoDifference(components.text, "Hello World")
+    expectNoDifference(components.images, [])
+  }
 }

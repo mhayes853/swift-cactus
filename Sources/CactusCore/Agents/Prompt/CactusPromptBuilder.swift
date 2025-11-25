@@ -4,12 +4,12 @@
 public struct CactusPromptBuilder {
   public static func buildBlock<each P: CactusPromptRepresentable>(
     _ components: repeat each P
-  ) -> _JoinedPromptContent {
+  ) -> _JoinedContent {
     var contents = [any CactusPromptRepresentable]()
     for component in repeat each components {
       contents.append(component)
     }
-    return _JoinedPromptContent(contents: contents)
+    return _JoinedContent(contents: contents)
   }
 
   public static func buildExpression<P: CactusPromptRepresentable>(_ expression: P) -> P {
@@ -30,34 +30,34 @@ public struct CactusPromptBuilder {
 
   public static func buildOptional<P: CactusPromptRepresentable>(
     _ component: P?
-  ) -> _OptionalPromptContent<P> {
-    _OptionalPromptContent(content: component)
+  ) -> _OptionalContent<P> {
+    _OptionalContent(content: component)
   }
 
   public static func buildArray(
     _ components: [some CactusPromptRepresentable]
-  ) -> _JoinedPromptContent {
-    _JoinedPromptContent(contents: components)
+  ) -> _JoinedContent {
+    _JoinedContent(contents: components)
   }
 }
 
 // MARK: - Helpers
 
-public struct _JoinedPromptContent: CactusPromptRepresentable {
+public struct _JoinedContent: CactusPromptRepresentable {
   let contents: [any CactusPromptRepresentable]
 
   public var promptContent: CactusPromptContent {
     get throws {
       var prompt = CactusPromptContent()
       for content in self.contents {
-        prompt.join(with: try content.promptContent)
+        prompt.join(with: try content.promptContent, separator: PromptSeparatorLocal.current)
       }
       return prompt
     }
   }
 }
 
-public struct _OptionalPromptContent<
+public struct _OptionalContent<
   Content: CactusPromptRepresentable
 >: CactusPromptRepresentable {
   let content: Content?
