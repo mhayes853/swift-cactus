@@ -51,74 +51,39 @@ extension CactusPromptContent {
 // MARK: - MessageComponents
 
 extension CactusPromptContent {
-  public struct MessageComponents: Sendable {
-    private enum TextBlock: Sendable {
-      case text(String)
-      case separator(String)
-
-      var text: String {
-        switch self {
-        case .text(let text): text
-        case .separator(let separator): separator
-        }
-      }
-
-      var isSeparator: Bool {
-        switch self {
-        case .separator: true
-        default: false
-        }
-      }
-    }
-
-    private var textBlocks = [TextBlock]()
-
+  public struct MessageComponents: Hashable, Sendable {
     public private(set) var text = ""
     public private(set) var images = [URL]()
 
     public init(content: CactusPromptContent) throws {
+      var currentSeparator: String?
       for block in content.blocks {
         switch block {
         case .text(let text):
-          self.textBlocks.append(.text(text))
+          self.appendText(text, currentSeparator: &currentSeparator)
         case .separator(let separator):
-          if self.textBlocks.last?.isSeparator == true {
-            self.textBlocks[self.textBlocks.count - 1] = .separator(separator)
-          } else {
-            self.textBlocks.append(.separator(separator))
-          }
+          guard !self.text.isEmpty else { continue }
+          currentSeparator = separator
         case .images(let urls):
           self.images.append(contentsOf: urls)
         case .representable(let representable):
           let components = try representable.promptContent.messageComponents()
-
-          // NB: Sub-TextBlocks are trimmed by this point, so we shouldn't have duplicate separators.
-          self.textBlocks.append(contentsOf: components.textBlocks)
+          self.appendText(components.text, currentSeparator: &currentSeparator)
           self.images.append(contentsOf: components.images)
         }
       }
+    }
 
-      self.textBlocks.trimming(while: \.isSeparator)
-      for block in self.textBlocks {
-        self.text += block.text
+    private mutating func appendText(_ text: String, currentSeparator: inout String?) {
+      if let separator = currentSeparator {
+        self.text += separator
+        currentSeparator = nil
       }
+      self.text += text
     }
   }
 
   public func messageComponents() throws -> MessageComponents {
     try MessageComponents(content: self)
-  }
-}
-
-extension CactusPromptContent.MessageComponents: Equatable {
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.text == rhs.text && lhs.images == rhs.images
-  }
-}
-
-extension CactusPromptContent.MessageComponents: Hashable {
-  public func hash(into hasher: inout Hasher) {
-    hasher.combine(self.text)
-    hasher.combine(self.images)
   }
 }

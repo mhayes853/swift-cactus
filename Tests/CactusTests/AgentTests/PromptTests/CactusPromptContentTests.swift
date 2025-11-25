@@ -54,14 +54,14 @@ struct `CactusPromptContent tests` {
   }
 
   @Test
-  func `Prompt Builder Joins Content With New Lines`() throws {
+  func `Prompt Builder Joins Text Content With New Lines`() throws {
     let imageURL = temporaryModelDirectory().appendingPathComponent("image.png")
     let imageURL2 = temporaryModelDirectory().appendingPathComponent("image2.png")
     let content = CactusPromptContent {
       "Hello world"
       CactusPromptContent(images: [imageURL])
-      "This is cool"
       CactusPromptContent(images: [imageURL2])
+      "This is cool"
     }
     let components = try content.messageComponents()
     expectNoDifference(components.text, "Hello world\nThis is cool")
