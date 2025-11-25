@@ -1,14 +1,15 @@
 // MARK: - CactusPromptRepresentable
 
 public protocol CactusPromptRepresentable {
-  var promptContent: CactusPromptContent { get }
+  associatedtype PromptContentFailure: Error
+  var promptContent: CactusPromptContent { get throws(PromptContentFailure) }
 }
 
 // MARK: - Base Conformances
 
 extension String: CactusPromptRepresentable {
   public var promptContent: CactusPromptContent {
-    CactusPromptContent(stringLiteral: self)
+    CactusPromptContent(content: self)
   }
 }
 

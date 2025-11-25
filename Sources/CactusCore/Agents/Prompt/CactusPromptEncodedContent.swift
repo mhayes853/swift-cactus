@@ -5,7 +5,9 @@ public struct CactusPromptEncodedContent<Encoder: TopLevelEncoder>: CactusPrompt
   public let encoder: Encoder
 
   public var promptContent: CactusPromptContent {
-    fatalError()
+    get throws {
+      fatalError()
+    }
   }
 
   public init(content: some ConvertibleToJSONValue, encoder: Encoder) {

@@ -3,12 +3,7 @@ import Foundation
 // MARK: - CactusPromptContent
 
 public struct CactusPromptContent: Sendable {
-  public var content: String
-  public var images: [URL]
-
   public init(content: String, images: [URL] = []) {
-    self.content = content
-    self.images = images
   }
 
   public init(_ content: some CactusPromptRepresentable) {
