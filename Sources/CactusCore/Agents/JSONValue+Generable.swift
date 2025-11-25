@@ -3,7 +3,9 @@ import Foundation
 // MARK: - ConvertibleToJSONValue
 
 public protocol ConvertibleToJSONValue: CactusPromptRepresentable {
-  var jsonValue: JSONValue { get }
+  associatedtype JSONFailure: Error
+
+  var jsonValue: JSONValue { get throws(JSONFailure) }
 }
 
 extension ConvertibleToJSONValue {
@@ -29,5 +31,19 @@ extension JSONValue {
 
   public protocol Generable: Convertible {
     static var jsonSchema: JSONSchema { get }
+  }
+}
+
+// MARK: - JSONValue
+
+extension JSONValue: ConvertibleToJSONValue {
+  public var jsonValue: JSONValue {
+    self
+  }
+}
+
+extension JSONValue: ConvertibleFromJSONValue {
+  public init(jsonValue: JSONValue) {
+    self = jsonValue
   }
 }
