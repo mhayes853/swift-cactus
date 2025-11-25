@@ -19,7 +19,7 @@ public struct CactusPromptEncodedContent<Encoder: TopLevelEncoder>: CactusPrompt
 // MARK: - ConvertibleToJSONValue
 
 extension ConvertibleToJSONValue {
-  public func encoder<Encoder>(_ encoder: Encoder) -> CactusPromptEncodedContent<Encoder> {
+  public func encoded<Encoder>(with encoder: Encoder) -> CactusPromptEncodedContent<Encoder> {
     CactusPromptEncodedContent(content: self, encoder: encoder)
   }
 }
