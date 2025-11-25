@@ -1,6 +1,10 @@
+import Foundation
+
 // MARK: - CactusPromptEncodedContent
 
-public struct CactusPromptEncodedContent<Encoder: TopLevelEncoder>: CactusPromptRepresentable {
+public struct CactusPromptEncodedContent<
+  Encoder: TopLevelEncoder<Data>
+>: CactusPromptRepresentable {
   public let content: JSONValue
   public let encoder: Encoder
 

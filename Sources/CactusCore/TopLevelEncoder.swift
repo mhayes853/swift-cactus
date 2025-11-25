@@ -6,7 +6,7 @@ import Foundation
 
 // MARK: - TopLevelEncoder
 
-public protocol TopLevelEncoder {
+public protocol TopLevelEncoder<Output> {
   associatedtype Output
   func encode<T: Encodable>(_ value: T) throws -> Output
 }

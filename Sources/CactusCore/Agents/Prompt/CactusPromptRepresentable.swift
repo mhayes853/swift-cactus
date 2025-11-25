@@ -9,7 +9,7 @@ public protocol CactusPromptRepresentable {
 
 extension String: CactusPromptRepresentable {
   public var promptContent: CactusPromptContent {
-    CactusPromptContent(content: self)
+    CactusPromptContent(text: self)
   }
 }
 
