@@ -155,4 +155,19 @@ struct `CactusPromptContent tests` {
     expectNoDifference(components.text, "Hello blob!\nHello blob!")
     expectNoDifference(components.images, [])
   }
+
+  @Test(arguments: [(true, 0), (false, 1)])
+  func `Prompt With Conditional Content`(isTrue: Bool, expected: Int) throws {
+    let values = ["first", "second"]
+    let content = CactusPromptContent {
+      if isTrue {
+        values[0]
+      } else {
+        values[1]
+      }
+    }
+    let components = try content.messageComponents()
+    expectNoDifference(components.text, values[expected])
+    expectNoDifference(components.images, [])
+  }
 }

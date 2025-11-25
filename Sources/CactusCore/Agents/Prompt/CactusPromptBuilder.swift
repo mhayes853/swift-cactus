@@ -9,6 +9,22 @@ public struct CactusPromptBuilder {
     }
     return _JoinedPromptContent(contents: contents)
   }
+
+  public static func buildExpression<P: CactusPromptRepresentable>(_ expression: P) -> P {
+    expression
+  }
+
+  public static func buildLimitedAvailability<P: CactusPromptRepresentable>(_ expression: P) -> P {
+    expression
+  }
+
+  public static func buildEither<P: CactusPromptRepresentable>(first component: P) -> P {
+    component
+  }
+
+  public static func buildEither<P: CactusPromptRepresentable>(second component: P) -> P {
+    component
+  }
 }
 
 public struct _JoinedPromptContent: CactusPromptRepresentable {
