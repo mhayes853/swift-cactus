@@ -170,4 +170,17 @@ struct `CactusPromptContent tests` {
     expectNoDifference(components.text, values[expected])
     expectNoDifference(components.images, [])
   }
+
+  @Test
+  func `Prompt With Optional Content`() throws {
+    let value: String? = nil
+    let value2: String? = "hello"
+    let content = CactusPromptContent {
+      value
+      value2
+    }
+    let components = try content.messageComponents()
+    expectNoDifference(components.text, "hello")
+    expectNoDifference(components.images, [])
+  }
 }

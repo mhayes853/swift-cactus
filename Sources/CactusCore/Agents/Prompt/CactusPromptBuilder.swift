@@ -1,3 +1,5 @@
+// MARK: - CactusPromptBuilder
+
 @resultBuilder
 public struct CactusPromptBuilder {
   public static func buildBlock<each P: CactusPromptRepresentable>(
@@ -25,7 +27,21 @@ public struct CactusPromptBuilder {
   public static func buildEither<P: CactusPromptRepresentable>(second component: P) -> P {
     component
   }
+
+  public static func buildOptional<P: CactusPromptRepresentable>(
+    _ component: P?
+  ) -> _OptionalPromptContent<P> {
+    _OptionalPromptContent(content: component)
+  }
+
+  public static func buildArray(
+    _ components: [some CactusPromptRepresentable]
+  ) -> _JoinedPromptContent {
+    _JoinedPromptContent(contents: components)
+  }
 }
+
+// MARK: - Helpers
 
 public struct _JoinedPromptContent: CactusPromptRepresentable {
   let contents: [any CactusPromptRepresentable]
@@ -38,5 +54,15 @@ public struct _JoinedPromptContent: CactusPromptRepresentable {
       }
       return prompt
     }
+  }
+}
+
+public struct _OptionalPromptContent<
+  Content: CactusPromptRepresentable
+>: CactusPromptRepresentable {
+  let content: Content?
+
+  public var promptContent: CactusPromptContent {
+    get throws { try self.content?.promptContent ?? CactusPromptContent() }
   }
 }

@@ -18,3 +18,15 @@ extension CactusPromptContent: CactusPromptRepresentable {
     self
   }
 }
+
+extension Optional: CactusPromptRepresentable where Wrapped: CactusPromptRepresentable {
+  public var promptContent: CactusPromptContent {
+    get throws(Wrapped.PromptContentFailure) {
+      if let unwrapped = self {
+        try unwrapped.promptContent
+      } else {
+        CactusPromptContent()
+      }
+    }
+  }
+}
