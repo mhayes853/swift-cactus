@@ -1,29 +1,32 @@
 import Foundation
 
+// MARK: - CactusPromptRepresentable
+
+extension CactusPromptRepresentable {
+  public func encoded<Encoder: SendableMetatype>(
+    with encoder: @escaping @autoclosure @Sendable () -> Encoder
+  ) -> _CactusPromptEncodedContent<Self, Encoder> {
+    _CactusPromptEncodedContent(content: self, encoder: encoder)
+  }
+}
+
 // MARK: - CactusPromptEncodedContent
 
-public struct CactusPromptEncodedContent<
-  Encoder: TopLevelEncoder<Data>
+public struct _CactusPromptEncodedContent<
+  Content: CactusPromptRepresentable,
+  Encoder: TopLevelEncoder<Data> & SendableMetatype
 >: CactusPromptRepresentable {
-  public let content: JSONValue
-  public let encoder: Encoder
+  let content: Content
+  let encoder: @Sendable () -> Encoder
 
   public var promptContent: CactusPromptContent {
     get throws {
-      fatalError()
+      let encoder = self.encoder
+      return try PromptContentEncoder.$current.withValue(PromptContentEncoder(encoder())) {
+        try content.promptContent
+      }
     }
   }
-
-  public init(content: some ConvertibleToJSONValue, encoder: Encoder) {
-    self.content = content.jsonValue
-    self.encoder = encoder
-  }
 }
 
-// MARK: - ConvertibleToJSONValue
-
-extension ConvertibleToJSONValue {
-  public func encoded<Encoder>(with encoder: Encoder) -> CactusPromptEncodedContent<Encoder> {
-    CactusPromptEncodedContent(content: self, encoder: encoder)
-  }
-}
+extension _CactusPromptEncodedContent: Sendable where Encoder: Sendable, Content: Sendable {}

@@ -2,12 +2,12 @@ import Foundation
 
 // MARK: - CactusPromptContent
 
-public struct CactusPromptContent: Sendable {
-  private enum Block: Sendable {
+public struct CactusPromptContent {
+  private enum Block {
     case text(String)
     case separator(String)
     case images([URL])
-    case representable(any CactusPromptRepresentable & Sendable)
+    case representable(any CactusPromptRepresentable)
   }
 
   private var blocks = [Block]()
@@ -22,12 +22,12 @@ public struct CactusPromptContent: Sendable {
 
   public init() {}
 
-  public init(_ content: some CactusPromptRepresentable & Sendable) {
+  public init(_ content: some CactusPromptRepresentable) {
     self.blocks.append(.representable(content))
   }
 
   public init<E: Error>(
-    @CactusPromptBuilder build: () throws(E) -> some CactusPromptRepresentable & Sendable
+    @CactusPromptBuilder build: () throws(E) -> some CactusPromptRepresentable
   ) throws(E) {
     self.blocks.append(.representable(try build()))
   }
@@ -89,8 +89,8 @@ extension CactusPromptContent {
           }
         case .images(let urls):
           self.images.append(contentsOf: urls)
-        case .representable(let content):
-          let components = try content.promptContent.messageComponents()
+        case .representable(let representable):
+          let components = try representable.promptContent.messageComponents()
 
           // NB: Sub-TextBlocks are trimmed by this point, so we shouldn't have duplicate separators.
           self.textBlocks.append(contentsOf: components.textBlocks)

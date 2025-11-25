@@ -1,3 +1,5 @@
+import Foundation
+
 // MARK: - ConvertibleToJSONValue
 
 public protocol ConvertibleToJSONValue: CactusPromptRepresentable {
@@ -6,7 +8,10 @@ public protocol ConvertibleToJSONValue: CactusPromptRepresentable {
 
 extension ConvertibleToJSONValue {
   public var promptContent: CactusPromptContent {
-    fatalError()
+    get throws {
+      let data = try PromptContentEncoder.current.encode(self.jsonValue)
+      return CactusPromptContent(text: String(decoding: data, as: UTF8.self))
+    }
   }
 }
 

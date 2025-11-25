@@ -1,5 +1,6 @@
 import Cactus
 import CustomDump
+import Foundation
 import Testing
 
 @Suite
@@ -104,5 +105,54 @@ struct `CactusPromptContent tests` {
 
     let content = CactusPromptContent(Representable())
     #expect(throws: SomeError.self) { try content.messageComponents() }
+  }
+
+  @Test
+  func `Prompt With Custom Encoder`() throws {
+    struct CustomEncoder: TopLevelEncoder {
+      func encode(_ value: some Encodable) throws -> Data {
+        Data("Hello blob!".utf8)
+      }
+    }
+    struct MyType: ConvertibleToJSONValue {
+      let jsonValue: JSONValue
+    }
+
+    let jsonEncoder = JSONEncoder()
+    jsonEncoder.outputFormatting = .sortedKeys
+
+    let content = CactusPromptContent {
+      MyType(jsonValue: ["a": 1, "b": "hello"])
+        .encoded(with: CustomEncoder())
+      MyType(jsonValue: ["a": 1, "b": "hello"])
+        .encoded(with: jsonEncoder)
+    }
+
+    let components = try content.messageComponents()
+    expectNoDifference(components.text, "Hello blob!\n{\"a\":1,\"b\":\"hello\"}")
+    expectNoDifference(components.images, [])
+  }
+
+  @Test
+  func `Prompt With Custom Grouped Encoder`() throws {
+    struct CustomEncoder: TopLevelEncoder {
+      func encode(_ value: some Encodable) throws -> Data {
+        Data("Hello blob!".utf8)
+      }
+    }
+    struct MyType: ConvertibleToJSONValue {
+      let jsonValue: JSONValue
+    }
+
+    let content = CactusPromptContent {
+      GroupContent {
+        MyType(jsonValue: ["a": 1, "b": "hello"])
+        MyType(jsonValue: ["a": 1, "b": "hello"])
+      }
+      .encoded(with: CustomEncoder())
+    }
+    let components = try content.messageComponents()
+    expectNoDifference(components.text, "Hello blob!\nHello blob!")
+    expectNoDifference(components.images, [])
   }
 }
