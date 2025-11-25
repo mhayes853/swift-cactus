@@ -11,6 +11,10 @@ public struct CactusModelAgent<
 
   }
 
+  public init(configuration: CactusLanguageModel.Configuration) {
+
+  }
+
   public func stream(
     isolation: isolated (any Actor)?,
     input: Input,
