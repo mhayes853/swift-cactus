@@ -30,6 +30,8 @@ extension JSONValue {
   public typealias Convertible = ConvertibleToJSONValue & ConvertibleFromJSONValue
 
   public protocol Generable: Convertible {
+    associatedtype Partial: Generable = Self
+
     static var jsonSchema: JSONSchema { get }
   }
 }
