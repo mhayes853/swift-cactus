@@ -572,74 +572,8 @@ extension CactusLanguageModel {
 }
 
 extension CactusLanguageModel.ChatCompletion {
-  /// Options for generating a ``CactusLanguageModel/ChatCompletion``
-  public struct Options: Hashable, Sendable, Codable {
-    /// A default array of common stop sequences.
-    public static let defaultStopSequences = ["<|im_end|>", "<end_of_turn>"]
-
-    /// The maximum number of tokens for the completion.
-    public var maxTokens: Int
-
-    /// The temperature.
-    public var temperature: Float
-
-    /// The nucleus sampling.
-    public var topP: Float
-
-    /// The k most probable options to limit the next word to.
-    public var topK: Int
-
-    /// An array of stop sequence phrases.
-    public var stopSequences: [String]
-
-    /// Creates options for generating a ``CactusLanguageModel/ChatCompletion``.
-    ///
-    /// - Parameters:
-    ///   - maxTokens: The maximum number of tokens for the completion.
-    ///   - temperature: The temperature.
-    ///   - topP: The nucleus sampling.
-    ///   - topK: The k most probable options to limit the next word to.
-    ///   - stopSequences: An array of stop sequence phrases.
-    public init(
-      maxTokens: Int = 200,
-      temperature: Float = 0.6,
-      topP: Float = 0.95,
-      topK: Int = 20,
-      stopSequences: [String] = Self.defaultStopSequences
-    ) {
-      self.maxTokens = maxTokens
-      self.temperature = temperature
-      self.topP = topP
-      self.topK = topK
-      self.stopSequences = stopSequences
-    }
-
-    /// Creates options for generating a ``CactusLanguageModel/ChatCompletion``.
-    ///
-    /// - Parameters:
-    ///   - maxTokens: The maximum number of tokens for the completion.
-    ///   - modelType: The model type.
-    ///   - stopSequences: An array of stop sequence phrases.
-    public init(
-      maxTokens: Int = 200,
-      modelType: CactusLanguageModel.ModelType,
-      stopSequences: [String] = Self.defaultStopSequences
-    ) {
-      self.maxTokens = maxTokens
-      self.temperature = modelType.defaultTemperature
-      self.topP = modelType.defaultTopP
-      self.topK = modelType.defaultTopK
-      self.stopSequences = stopSequences
-    }
-
-    private enum CodingKeys: String, CodingKey {
-      case maxTokens = "max_tokens"
-      case temperature
-      case topP = "top_p"
-      case topK = "top_k"
-      case stopSequences = "stop_sequences"
-    }
-  }
+  /// Options for generating a ``CactusLanguageModel/ChatCompletion``.
+  public typealias Options = CactusLanguageModel.InferenceOptions
 }
 
 extension CactusLanguageModel.ChatCompletion: Decodable {
@@ -668,6 +602,79 @@ extension CactusLanguageModel.ChatCompletion: Encodable {
     case functionCalls = "function_calls"
     case timeToFirstTokenMs = "time_to_first_token_ms"
     case totalTimeMs = "total_time_ms"
+  }
+}
+
+// MARK: - InferenceOptions
+
+extension CactusLanguageModel {
+  /// Options for generating a inferences.
+  public struct InferenceOptions: Hashable, Sendable, Codable {
+    /// A default array of common stop sequences.
+    public static let defaultStopSequences = ["<|im_end|>", "<end_of_turn>"]
+
+    /// The maximum number of tokens for the completion.
+    public var maxTokens: Int
+
+    /// The temperature.
+    public var temperature: Float
+
+    /// The nucleus sampling.
+    public var topP: Float
+
+    /// The k most probable options to limit the next word to.
+    public var topK: Int
+
+    /// An array of stop sequence phrases.
+    public var stopSequences: [String]
+
+    /// Creates options for generating inferences.
+    ///
+    /// - Parameters:
+    ///   - maxTokens: The maximum number of tokens for the completion.
+    ///   - temperature: The temperature.
+    ///   - topP: The nucleus sampling.
+    ///   - topK: The k most probable options to limit the next word to.
+    ///   - stopSequences: An array of stop sequence phrases.
+    public init(
+      maxTokens: Int = 200,
+      temperature: Float = 0.6,
+      topP: Float = 0.95,
+      topK: Int = 20,
+      stopSequences: [String] = Self.defaultStopSequences
+    ) {
+      self.maxTokens = maxTokens
+      self.temperature = temperature
+      self.topP = topP
+      self.topK = topK
+      self.stopSequences = stopSequences
+    }
+
+    /// Creates options for generating inferences.
+    ///
+    /// - Parameters:
+    ///   - maxTokens: The maximum number of tokens for the completion.
+    ///   - modelType: The model type.
+    ///   - stopSequences: An array of stop sequence phrases.
+    public init(
+      maxTokens: Int = 200,
+      modelType: CactusLanguageModel.ModelType,
+      stopSequences: [String] = Self.defaultStopSequences
+    ) {
+      self.maxTokens = maxTokens
+      self.temperature = modelType.defaultTemperature
+      self.topP = modelType.defaultTopP
+      self.topK = modelType.defaultTopK
+      self.stopSequences = stopSequences
+    }
+
+    private enum CodingKeys: String, CodingKey {
+      case maxTokens = "max_tokens"
+      case temperature
+      case topP = "top_p"
+      case topK = "top_k"
+      case stopSequences = "stop_sequences"
+    }
   }
 }
 
