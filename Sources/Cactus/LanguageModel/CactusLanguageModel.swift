@@ -179,6 +179,12 @@ extension CactusLanguageModel {
     /// The buffer size for the generated embeddings was too small.
     case bufferTooSmall
 
+    /// The model doesn't support image embeddings.
+    case imageNotSupported
+
+    /// The model doesn't support audio embeddings.
+    case audioNotSupported
+
     /// A generation error.
     case generation(message: String?)
   }
@@ -353,7 +359,14 @@ extension CactusLanguageModel {
           configuration: self.configuration
         )
       )
-      throw EmbeddingsError.generation(message: message)
+
+      if message?.contains("Image embeddings") == true {
+        throw EmbeddingsError.imageNotSupported
+      } else if message?.contains("Audio embeddings") == true {
+        throw EmbeddingsError.audioNotSupported
+      } else {
+        throw EmbeddingsError.generation(message: message)
+      }
     case -2:
       CactusTelemetry.send(bufferTooSmallEvent)
       throw EmbeddingsError.bufferTooSmall

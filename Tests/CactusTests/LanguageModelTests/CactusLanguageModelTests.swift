@@ -74,6 +74,16 @@ struct `CactusLanguageModel tests` {
     }
   }
 
+  @Test
+  func `Throws Error When Trying To Embed Image With Non-VLM`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+
+    #expect(throws: CactusLanguageModel.EmbeddingsError.imageNotSupported) {
+      try model.imageEmbeddings(for: testImageURL)
+    }
+  }
+
   @Test(.snapshots(record: .failed))
   func `Audio Embeddings`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(
@@ -86,6 +96,16 @@ struct `CactusLanguageModel tests` {
 
     withKnownIssue {
       assertSnapshot(of: embedding, as: .json, record: true)
+    }
+  }
+
+  @Test
+  func `Throws Error When Trying To Embed Audio With Non-Audio Model`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+
+    #expect(throws: CactusLanguageModel.EmbeddingsError.audioNotSupported) {
+      try model.audioEmbeddings(for: testAudioURL)
     }
   }
 
