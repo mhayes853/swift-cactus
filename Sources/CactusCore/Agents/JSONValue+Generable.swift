@@ -19,9 +19,15 @@ extension ConvertibleToJSONValue {
 
 // MARK: - ConvertibleFromJSONValue
 
-public protocol ConvertibleFromJSONValue {
+public protocol ConvertibleFromJSONValue: ConvertibleFromCactusResponse {
   associatedtype JSONFailure: Error
   init(jsonValue: JSONValue) throws(JSONFailure)
+}
+
+extension ConvertibleFromJSONValue {
+  public init(cactusResponse: String) throws {
+    fatalError("TODO")
+  }
 }
 
 // MARK: - Combined Protocols
