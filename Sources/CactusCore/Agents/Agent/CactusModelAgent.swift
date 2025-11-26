@@ -1,14 +1,15 @@
+import Foundation
+
 public struct CactusModelAgent<
   Input: CactusPromptRepresentable,
   Output: ConvertibleFromJSONValue
 >: CactusAgent {
-
-  public init(slug: String, in directory: CactusModelsDirectory) {
+  public init(_ model: CactusLanguageModel) {
 
   }
 
-  public init(_ model: CactusLanguageModel) {
-
+  public init(url: URL) {
+    self.init(configuration: CactusLanguageModel.Configuration(modelURL: url))
   }
 
   public init(configuration: CactusLanguageModel.Configuration) {
