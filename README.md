@@ -141,9 +141,43 @@ print(completion.functionCalls)
 > }
 > ```
 
+### Vision
+
+VLMs allow you to pass images to the model for analysis. You can pass an array of URLs to image files when creating a `CactusLanguageModel.ChatMessage`.
+
+```swift
+let modelURL = try await CactusModelsDirectory.shared
+  .modelURL(for: "lfm2-vl-450m")
+let model = try CactusLanguageModel(from: modelURL)
+
+let completion = try model.chatCompletion(
+  messages: [
+    .system("You are a helpful assistant."),
+    .user("What is going on here?", images: [imageURL])
+  ]
+)
+```
+
+### Audio Transcription
+
+Audio models allow you to transcribe audio files. You can pass the `URL` of an audio file to `CactusLanguageModel.transcribe` in order to transcribe it.
+
+```swift
+let modelURL = try await CactusModelsDirectory.shared
+  .modelURL(for: "whisper-small")
+let model = try CactusLanguageModel(from: modelURL)
+
+// See https://huggingface.co/openai/whisper-small#usage for more info on how to structure a 
+// whisper prompt.
+let transcription = try model.transcribe(
+  audio: audioFileURL, 
+  prompt: "<|startoftranscript|><|en|><|transcribe|><|notimestamps|>"
+)
+```
+
 ### Embeddings
 
-You can generate embeddings by passing a `MutableSpan` as a buffer to `CactusLanguageModel.embeddings`, or you can alternatively obtain a `[Float]` directly.
+You can generate embeddings by passing a `MutableSpan` as a buffer to `CactusLanguageModel.embeddings`, or you can alternatively obtain a `[Float]` directly by calling `CactusLanguageModel.embeddings`.
 
 ```swift
 let embeddings: [Float] = try model.embeddings(for: "This is some text")
@@ -153,6 +187,20 @@ let embeddings: [Float] = try model.embeddings(for: "This is some text")
 var embeddings = [2048 of Float](repeating: 0)
 var span = embeddings.mutableSpan
 try model.embeddings(for: "This is some text", buffer: &span)
+```
+
+Audio models and VLMs also support audio and image embeddings respectively.
+
+```swift
+let imageEmbeddings = try model.imageEmbeddings(for: imageURL)
+let audioEmbeddings = try model.audioEmbeddings(for: audioFileURL)
+
+// OR (Using InlineArray)
+
+var embeddings = [2048 of Float](repeating: 0)
+var span = embeddings.mutableSpan
+try model.imageEmbeddings(for: imageURL, buffer: &span)
+try model.imageEmbeddings(for: audioFileURL, buffer: &span)
 ```
 
 You can use embeddings to match similar strings for searching purposes using algorithms such as cosine similarity.

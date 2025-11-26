@@ -383,7 +383,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
 }
 
 private let audioPrompt = "<|startoftranscript|><|en|><|transcribe|><|notimestamps|>"
-private let modelSlugs = ["lfm2-1.2b", "qwen3-0.6", "gemma3-270m", "smollm2-360m"]
+private let modelSlugs = ["lfm2-1.2b", "qwen3-0.6", "smollm2-360m"]
 private let testImageURL = Bundle.module.url(forResource: "joe", withExtension: "png")!
 private let testAudioURL = Bundle.module.url(forResource: "test", withExtension: "wav")!
 

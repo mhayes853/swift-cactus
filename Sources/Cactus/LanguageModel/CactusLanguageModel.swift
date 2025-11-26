@@ -616,6 +616,15 @@ extension CactusLanguageModel {
     }
   }
 
+  /// Transcribes the specified `audio` file.
+  ///
+  /// - Parameters:
+  ///   - audio: The audio file to transcribe.
+  ///   - prompt: The prompt to use for transcription.
+  ///   - options: The ``Transcription/Options``.
+  ///   - maxBufferSize: The maximum buffer size to store the completion.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Returns: A ``Transcription``.
   public func transcribe(
     audio: URL,
     prompt: String,
@@ -695,6 +704,7 @@ extension CactusLanguageModel {
 }
 
 extension CactusLanguageModel.Transcription {
+  /// Options for generating a ``CactusLanguageModel/Transcription``.
   public typealias Options = CactusLanguageModel.InferenceOptions
 }
 
