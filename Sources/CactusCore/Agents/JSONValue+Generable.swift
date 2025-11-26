@@ -19,9 +19,15 @@ extension ConvertibleToJSONValue {
 
 // MARK: - ConvertibleFromJSONValue
 
-public protocol ConvertibleFromJSONValue {
+public protocol ConvertibleFromJSONValue: ConvertibleFromCactusResponse {
   associatedtype JSONFailure: Error
   init(jsonValue: JSONValue) throws(JSONFailure)
+}
+
+extension ConvertibleFromJSONValue {
+  public init(cactusResponse: String) throws {
+    fatalError("TODO")
+  }
 }
 
 // MARK: - Combined Protocols
@@ -30,8 +36,6 @@ extension JSONValue {
   public typealias Convertible = ConvertibleToJSONValue & ConvertibleFromJSONValue
 
   public protocol Generable: Convertible {
-    associatedtype Partial: Generable = Self
-
     static var jsonSchema: JSONSchema { get }
   }
 }

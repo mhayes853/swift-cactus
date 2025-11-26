@@ -1,25 +1,19 @@
 // MARK: - CactusAgentStream
 
-public struct CactusAgentStream<Output> {
+public struct CactusAgentStream<Output: ConvertibleFromCactusResponse> {
 }
 
 // MARK: - Collect
 
-extension CactusAgentStream where Output: ConvertibleFromJSONValue {
+extension CactusAgentStream {
   public func collect() async throws -> Output {
-    fatalError()
-  }
-}
-
-extension CactusAgentStream where Output == String {
-  public func collect() async throws -> String {
     fatalError()
   }
 }
 
 // MARK: - AsyncSequence
 
-extension CactusAgentStream: AsyncSequence where Output: JSONValue.Generable {
+extension CactusAgentStream: AsyncSequence {
   public struct AsyncIterator: AsyncIteratorProtocol {
     public mutating func next() async throws -> Output.Partial? {
       fatalError()

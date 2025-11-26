@@ -1,6 +1,6 @@
 public struct EmptyAgent<
   Input: CactusPromptRepresentable,
-  Output: ConvertibleFromJSONValue
+  Output: ConvertibleFromCactusResponse
 >: CactusAgent {
   @inlinable
   public init() {}
