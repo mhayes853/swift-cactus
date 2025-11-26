@@ -53,6 +53,21 @@ struct `Qwen3Response tests` {
   }
 
   @Test
+  func `Loads Custom Response Type From String With Partial Thinking Content`() throws {
+    let response = Qwen3Response<TestResponse>(cactusResponse: samplePartialThinkingResponse)
+    expectNoDifference(
+      response,
+      Qwen3Response(
+        thinkingContent:
+          "Okay, the user is asking about the meaning of life. First, I need to acknowledge that this",
+        response: TestResponse(
+          text: ""
+        )
+      )
+    )
+  }
+
+  @Test
   func `Formats Prompt Content Without Thinking Content`() throws {
     let response = Qwen3Response<String>(cactusResponse: "This is cool")
     let components = try response.promptContent.messageComponents()
@@ -106,4 +121,9 @@ private let sampleThinkingResponse = """
 
   1. **Subjectivity**: The pursuit of meaning is not universal; it varies widely based on \
   cultural context, personal aspirations (e.g.,
+  """
+
+private let samplePartialThinkingResponse = """
+  <think>
+  Okay, the user is asking about the meaning of life. First, I need to acknowledge that this
   """

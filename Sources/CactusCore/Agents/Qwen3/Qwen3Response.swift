@@ -20,8 +20,13 @@ public struct Qwen3Response<Base: ConvertibleFromCactusResponse>: ConvertibleFro
   public init(cactusResponse: String) throws(Base.ConversionFailure) {
     let matches = thinkingContentRegex.matchGroups(from: cactusResponse)
     if matches.isEmpty {
-      self.thinkingContent = nil
-      self.response = try Base(cactusResponse: cactusResponse)
+      let thinkingPrefix = "<think>\n"
+      let thinkingContent =
+        cactusResponse.starts(with: thinkingPrefix)
+        ? String(cactusResponse.dropFirst(thinkingPrefix.count))
+        : nil
+      self.thinkingContent = thinkingContent
+      self.response = try Base(cactusResponse: thinkingContent != nil ? "" : cactusResponse)
     } else {
       self.thinkingContent = String(matches[0])
       let baseResponse = matches.count > 1 ? matches[1] : ""
