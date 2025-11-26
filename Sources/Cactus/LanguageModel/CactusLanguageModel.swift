@@ -46,7 +46,9 @@ public final class CactusLanguageModel {
 
   /// The ``Properties`` for this model.
   @available(*, deprecated, message: "Use `configurationFile` instead.")
-  public let properties: Properties
+  public var properties: Properties {
+    Properties(file: self.configurationFile)
+  }
 
   /// The ``ConfigurationFile`` for this model.
   public let configurationFile: ConfigurationFile
@@ -93,7 +95,6 @@ public final class CactusLanguageModel {
         contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
       )
       self.configurationFile = configFile
-      self.properties = Properties(file: configFile)
       CactusTelemetry.send(CactusTelemetry.LanguageModelInitEvent(configuration: configuration))
     } catch let error as ModelCreationError {
       CactusTelemetry.send(
@@ -189,11 +190,7 @@ extension CactusLanguageModel {
   ///   - maxBufferSize: The size of the buffer to allocate to store the embeddings.
   /// - Returns: An array of float values.
   public func embeddings(for text: String, maxBufferSize: Int? = nil) throws -> [Float] {
-    let maxBufferSize = maxBufferSize ?? self.bufferSize(for: text.utf8.count)
-    let buffer = UnsafeMutableBufferPointer<Float>.allocate(capacity: maxBufferSize)
-    defer { buffer.deallocate() }
-    let dimensions = try self.embeddings(for: text, buffer: buffer)
-    return (0..<dimensions).map { buffer[$0] }
+    try self.embeddings(for: .text(text), maxBufferSize: maxBufferSize)
   }
 
   /// Generates embeddings for the specified `text` and stores them in the specified buffer.
@@ -204,7 +201,7 @@ extension CactusLanguageModel {
   /// - Returns: The number of dimensions.
   @discardableResult
   public func embeddings(for text: String, buffer: inout MutableSpan<Float>) throws -> Int {
-    try buffer.withUnsafeMutableBufferPointer { try self.embeddings(for: text, buffer: $0) }
+    try self.embeddings(for: .text(text), buffer: &buffer)
   }
 
   /// Generates embeddings for the specified `text` and stores them in the specified buffer.
@@ -215,6 +212,100 @@ extension CactusLanguageModel {
   /// - Returns: The number of dimensions.
   public func embeddings(
     for text: String,
+    buffer: UnsafeMutableBufferPointer<Float>
+  ) throws -> Int {
+    try self.embeddings(for: .text(text), buffer: buffer)
+  }
+
+  /// Generates embeddings for the specified `image`.
+  ///
+  /// - Parameters:
+  ///   - image: The path of the image to generate embeddings for.
+  ///   - maxBufferSize: The size of the buffer to allocate to store the embeddings.
+  /// - Returns: An array of float values.
+  public func imageEmbeddings(for image: URL, maxBufferSize: Int? = nil) throws -> [Float] {
+    try self.embeddings(for: .image(image), maxBufferSize: maxBufferSize)
+  }
+
+  /// Generates embeddings for the specified `image` and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - image: The path of the image to generate embeddings for.
+  ///   - buffer: A `MutableSpan` buffer.
+  /// - Returns: The number of dimensions.
+  @discardableResult
+  public func imageEmbeddings(for image: URL, buffer: inout MutableSpan<Float>) throws -> Int {
+    try self.embeddings(for: .image(image), buffer: &buffer)
+  }
+
+  /// Generates embeddings for the specified `image` and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - image: The path of the image to generate embeddings for.
+  ///   - buffer: An `UnsafeMutableBufferPointer` buffer.
+  /// - Returns: The number of dimensions.
+  public func imageEmbeddings(
+    for image: URL,
+    buffer: UnsafeMutableBufferPointer<Float>
+  ) throws -> Int {
+    try self.embeddings(for: .image(image), buffer: buffer)
+  }
+
+  /// Generates embeddings for the specified `audio`.
+  ///
+  /// - Parameters:
+  ///   - audio: The `URL` of the audio file to generate embeddings for.
+  ///   - maxBufferSize: The size of the buffer to allocate to store the embeddings.
+  /// - Returns: An array of float values.
+  public func audioEmbeddings(for audio: URL, maxBufferSize: Int? = nil) throws -> [Float] {
+    try self.embeddings(for: .audio(audio), maxBufferSize: maxBufferSize)
+  }
+
+  /// Generates embeddings for the specified `audio` and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - audio: The `URL` of the audio file to generate embeddings for.
+  ///   - buffer: A `MutableSpan` buffer.
+  /// - Returns: The number of dimensions.
+  @discardableResult
+  public func audioEmbeddings(for audio: URL, buffer: inout MutableSpan<Float>) throws -> Int {
+    try self.embeddings(for: .audio(audio), buffer: &buffer)
+  }
+
+  /// Generates embeddings for the specified `audio` and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - audio: The `URL` of the audio file to generate embeddings for.
+  ///   - buffer: An `UnsafeMutableBufferPointer` buffer.
+  /// - Returns: The number of dimensions.
+  public func audioEmbeddings(
+    for audio: URL,
+    buffer: UnsafeMutableBufferPointer<Float>
+  ) throws -> Int {
+    try self.embeddings(for: .audio(audio), buffer: buffer)
+  }
+
+  private func embeddings(
+    for request: EmbeddingsRequest,
+    maxBufferSize: Int?
+  ) throws -> [Float] {
+    let maxBufferSize = maxBufferSize ?? self.defaultEmbeddingsBufferSize
+    let buffer = UnsafeMutableBufferPointer<Float>.allocate(capacity: maxBufferSize)
+    defer { buffer.deallocate() }
+    let dimensions = try self.embeddings(for: request, buffer: buffer)
+    return (0..<dimensions).map { buffer[$0] }
+  }
+
+  @discardableResult
+  private func embeddings(
+    for request: EmbeddingsRequest,
+    buffer: inout MutableSpan<Float>
+  ) throws -> Int {
+    try buffer.withUnsafeMutableBufferPointer { try self.embeddings(for: request, buffer: $0) }
+  }
+
+  private func embeddings(
+    for request: EmbeddingsRequest,
     buffer: UnsafeMutableBufferPointer<Float>
   ) throws -> Int {
     let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent(
@@ -229,7 +320,30 @@ extension CactusLanguageModel {
     }
     var dimensions = 0
     let rawBufferSize = size * MemoryLayout<Float>.stride
-    switch cactus_embed(self.model, text, buffer.baseAddress, rawBufferSize, &dimensions) {
+
+    let resultCode =
+      switch request {
+      case .text(let text):
+        cactus_embed(self.model, text, buffer.baseAddress, rawBufferSize, &dimensions)
+      case .image(let image):
+        cactus_image_embed(
+          self.model,
+          image.nativePath,
+          buffer.baseAddress,
+          rawBufferSize,
+          &dimensions
+        )
+      case .audio(let audio):
+        cactus_audio_embed(
+          self.model,
+          audio.nativePath,
+          buffer.baseAddress,
+          rawBufferSize,
+          &dimensions
+        )
+      }
+
+    switch resultCode {
     case -1:
       let message = cactus_get_last_error().map { String(cString: $0) }
       CactusTelemetry.send(
@@ -249,6 +363,16 @@ extension CactusLanguageModel {
       )
       return dimensions
     }
+  }
+
+  private enum EmbeddingsRequest {
+    case text(String)
+    case image(URL)
+    case audio(URL)
+  }
+
+  private var defaultEmbeddingsBufferSize: Int {
+    self.configurationFile.hiddenDimensions ?? 1024
   }
 }
 

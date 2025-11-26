@@ -40,11 +40,6 @@ struct `CactusLanguageModel tests` {
 
     let embeddings = try model.embeddings(for: "This is some text.")
 
-    struct Embedding: Codable {
-      let slug: String
-      let vector: [Float]
-    }
-
     assertSnapshot(of: Embedding(slug: slug, vector: embeddings), as: .json)
   }
 
@@ -64,6 +59,22 @@ struct `CactusLanguageModel tests` {
     #expect(throws: CactusLanguageModel.EmbeddingsError.bufferTooSmall) {
       try model.embeddings(for: "This is some text.", maxBufferSize: 20)
     }
+  }
+
+  @Test(.snapshots(record: .failed))
+  func `Image Embeddings`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL(slug: CactusLanguageModel.testVLMSlug)
+    let model = try CactusLanguageModel(from: modelURL)
+
+    let embeddings = try model.imageEmbeddings(for: testImageURL)
+    let embedding = Embedding(slug: model.configuration.modelSlug, vector: embeddings)
+
+    assertSnapshot(of: embedding, as: .json)
+  }
+
+  private struct Embedding: Codable {
+    let slug: String
+    let vector: [Float]
   }
 
   @Test(arguments: modelSlugs)
@@ -258,8 +269,6 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     let url = try await CactusLanguageModel.testModelURL(slug: CactusLanguageModel.testVLMSlug)
     let model = try CactusLanguageModel(from: url)
 
-    let imageURL = Bundle.module.url(forResource: "joe", withExtension: "png")!
-
     let completion = try model.chatCompletion(
       messages: [
         .system(
@@ -268,7 +277,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
           they drink a Red Bull and a monster on the night before a final exam.
           """
         ),
-        .user("What happens to the guy in the first image?", images: [imageURL])
+        .user("What happens to the guy in the first image?", images: [testImageURL])
       ]
     )
 
@@ -279,6 +288,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
 }
 
 private let modelSlugs = ["lfm2-1.2b", "qwen3-0.6", "gemma3-270m", "smollm2-360m"]
+private let testImageURL = Bundle.module.url(forResource: "joe", withExtension: "png")!
 
 extension CactusLanguageModel.ChatCompletion {
   fileprivate var cleanedResponse: String {
