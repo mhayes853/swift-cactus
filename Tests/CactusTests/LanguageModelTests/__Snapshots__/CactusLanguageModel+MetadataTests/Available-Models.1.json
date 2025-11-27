@@ -48,30 +48,6 @@
     "suppports_completion" : true
   },
   {
-    "created_at" : 783022335.056461,
-    "description" : "A compact and efficient model from the LFM 2 series, ideal for fast, on-device chat and simple tasks.",
-    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-350m.zip",
-    "name" : "LFM 2 350M",
-    "quantization" : 8,
-    "size_mb" : 233,
-    "slug" : "lfm2-350m",
-    "supports_tool_calling" : false,
-    "supports_vision" : false,
-    "suppports_completion" : true
-  },
-  {
-    "created_at" : 783022407.642922,
-    "description" : "A versatile mid-size model from the LFM 2 family, offering a strong balance of performance and resource efficiency.",
-    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-700m.zip",
-    "name" : "LFM 2 700M",
-    "quantization" : 8,
-    "size_mb" : 467,
-    "slug" : "lfm2-700m",
-    "supports_tool_calling" : false,
-    "supports_vision" : false,
-    "suppports_completion" : true
-  },
-  {
     "created_at" : 783022439.778701,
     "description" : "The most capable model in this LFM 2 series, designed for handling more complex reasoning and tasks directly on-device.",
     "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-1.2b.zip",
@@ -79,13 +55,13 @@
     "quantization" : 8,
     "size_mb" : 722,
     "slug" : "lfm2-1.2b",
-    "supports_tool_calling" : false,
+    "supports_tool_calling" : true,
     "supports_vision" : false,
     "suppports_completion" : true
   },
   {
     "created_at" : 785370488.312368,
-    "description" : "The most capable model in this LFM 2 series, designed for handling more complex reasoning and tasks directly on-device.",
+    "description" : "A compact and efficient model from the LFM 2 series, ideal for adding vision capabilities.",
     "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-vl-450m.zip",
     "name" : "LFM 2 VL 450M",
     "quantization" : 8,
@@ -97,7 +73,7 @@
   },
   {
     "created_at" : 785370564.980696,
-    "description" : "The most capable model in this LFM 2 series, designed for handling more complex reasoning and tasks directly on-device.",
+    "description" : "The most capable vision model in LFM 2 series, designed for handling more complex image inputs.",
     "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-vl-1.6b.zip",
     "name" : "LFM 2 VL 1.6B",
     "quantization" : 8,
@@ -106,6 +82,18 @@
     "supports_tool_calling" : false,
     "supports_vision" : true,
     "suppports_completion" : true
+  },
+  {
+    "created_at" : 782341266.242916,
+    "description" : "Excellent embedding-only model.",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/nomic2-embed-300m.zip",
+    "name" : "Nomic Embed V2 300M",
+    "quantization" : 8,
+    "size_mb" : 533,
+    "slug" : "nomic2-embed-300m",
+    "supports_tool_calling" : false,
+    "supports_vision" : false,
+    "suppports_completion" : false
   },
   {
     "created_at" : 782069136.302133,
@@ -128,6 +116,42 @@
     "size_mb" : 227,
     "slug" : "smollm2-360m",
     "supports_tool_calling" : false,
+    "supports_vision" : false,
+    "suppports_completion" : true
+  },
+  {
+    "created_at" : 785548350.351919,
+    "description" : "",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-1.2b-rag.zip",
+    "name" : "LFM 2 1.2B RAG",
+    "quantization" : 8,
+    "size_mb" : 722,
+    "slug" : "lfm2-1.2b-rag",
+    "supports_tool_calling" : true,
+    "supports_vision" : false,
+    "suppports_completion" : true
+  },
+  {
+    "created_at" : 783022335.056461,
+    "description" : "A compact and efficient model from the LFM 2 series, ideal for fast, on-device chat and simple tasks.",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-350m.zip",
+    "name" : "LFM 2 350M",
+    "quantization" : 8,
+    "size_mb" : 233,
+    "slug" : "lfm2-350m",
+    "supports_tool_calling" : true,
+    "supports_vision" : false,
+    "suppports_completion" : true
+  },
+  {
+    "created_at" : 783022407.642922,
+    "description" : "A versatile mid-size model from the LFM 2 family, offering a strong balance of performance and resource efficiency.",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-700m.zip",
+    "name" : "LFM 2 700M",
+    "quantization" : 8,
+    "size_mb" : 467,
+    "slug" : "lfm2-700m",
+    "supports_tool_calling" : true,
     "supports_vision" : false,
     "suppports_completion" : true
   }

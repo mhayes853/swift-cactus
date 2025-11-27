@@ -64,6 +64,24 @@
             audioDuration: nil,
             mode: "LOCAL"
           )
+        case let event as CactusTelemetry.LanguageModelTranscriptionEvent:
+          CactusTelemetry.Batcher.Event(
+            eventType: event.name,
+            projectId: data.projectId,
+            deviceId: data.deviceId,
+            ttft: event.transcription.timeIntervalToFirstToken * 1000,
+            tps: event.transcription.tokensPerSecond,
+            responseTime: event.transcription.totalTimeInterval,
+            model: event.configuration.modelSlug,
+            tokens: event.transcription.totalTokens,
+            framework: frameworkName,
+            frameworkVersion: swiftCactusVersion,
+            success: true,
+            message: nil,
+            telemetryToken: data.token,
+            audioDuration: nil,
+            mode: "LOCAL"
+          )
         case let event as CactusTelemetry.LanguageModelEmbeddingsEvent:
           CactusTelemetry.Batcher.Event(
             eventType: event.name,

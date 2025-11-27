@@ -136,6 +136,40 @@ print(completion.functionCalls)
 > }
 > ```
 
+### Vision
+
+VLMs allow you to pass images to the model for analysis. You can pass an array of URLs to image files when creating a ``CactusLanguageModel/ChatMessage``.
+
+```swift
+let modelURL = try await CactusModelsDirectory.shared
+  .modelURL(for: "lfm2-vl-450m")
+let model = try CactusLanguageModel(from: modelURL)
+
+let completion = try model.chatCompletion(
+  messages: [
+    .system("You are a helpful assistant."),
+    .user("What is going on here?", images: [imageURL])
+  ]
+)
+```
+
+### Audio Transcription
+
+Audio models allow you to transcribe audio files. You can pass the `URL` of an audio file to ``CactusLanguageModel/transcribe(audio:prompt:options:maxBufferSize:onToken:)`` in order to transcribe it.
+
+```swift
+let modelURL = try await CactusModelsDirectory.shared
+  .modelURL(for: "whisper-small")
+let model = try CactusLanguageModel(from: modelURL)
+
+// See https://huggingface.co/openai/whisper-small#usage for more info on how to structure a 
+// whisper prompt.
+let transcription = try model.transcribe(
+  audio: audioFileURL, 
+  prompt: "<|startoftranscript|><|en|><|transcribe|><|notimestamps|>"
+)
+```
+
 ### Embeddings
 
 You can generate embeddings by passing a `MutableSpan` as a buffer to ``CactusLanguageModel/embeddings(for:buffer:)-(_,MutableSpan<Float>)``, or you can alternatively obtain a `[Float]` directly by calling ``CactusLanguageModel/embeddings(for:maxBufferSize:)``.
@@ -148,6 +182,20 @@ let embeddings: [Float] = try model.embeddings(for: "This is some text")
 var embeddings = [2048 of Float](repeating: 0)
 var span = embeddings.mutableSpan
 try model.embeddings(for: "This is some text", buffer: &span)
+```
+
+Audio models and VLMs also support audio and image embeddings respectively.
+
+```swift
+let imageEmbeddings = try model.imageEmbeddings(for: imageURL)
+let audioEmbeddings = try model.audioEmbeddings(for: audioFileURL)
+
+// OR (Using InlineArray)
+
+var embeddings = [2048 of Float](repeating: 0)
+var span = embeddings.mutableSpan
+try model.imageEmbeddings(for: imageURL, buffer: &span)
+try model.imageEmbeddings(for: audioFileURL, buffer: &span)
 ```
 
 You can use embeddings to match similar strings for searching purposes using algorithms such as cosine similarity.
@@ -213,8 +261,10 @@ struct MyApp: App {
 ### Language Models
 - ``CactusLanguageModel``
 - ``CactusLanguageModel/Properties``
+- ``CactusLanguageModel/ConfigurationFile``
 - ``CactusLanguageModel/Configuration``
 - ``CactusLanguageModel/ModelType``
+- ``CactusLanguageModel/ModelVariant``
 - ``CactusLanguageModel/Precision``
 
 ### Chat Completions
@@ -225,11 +275,22 @@ struct MyApp: App {
 - ``CactusLanguageModel/MessageRole``
 - ``CactusLanguageModel/ChatMessage/assistant(_:)``
 - ``CactusLanguageModel/ChatMessage/system(_:)``
-- ``CactusLanguageModel/ChatMessage/user(_:)``
+- ``CactusLanguageModel/ChatMessage/user(_:images:)``
+
+### Audio Transcriptions
+- ``CactusLanguageModel/Transcription``
+- ``CactusLanguageModel/transcribe(audio:prompt:options:maxBufferSize:onToken:)``
 
 ### Embeddings
 - ``CactusLanguageModel/embeddings(for:maxBufferSize:)``
 - ``CactusLanguageModel/embeddings(for:buffer:)-(_,MutableSpan<Float>)``
+- ``CactusLanguageModel/embeddings(for:buffer:)-(_,UnsafeMutableBufferPointer<Float>)``
+- ``CactusLanguageModel/imageEmbeddings(for:maxBufferSize:)``
+- ``CactusLanguageModel/imageEmbeddings(for:buffer:)-(_,MutableSpan<Float>)``
+- ``CactusLanguageModel/imageEmbeddings(for:buffer:)-(_,UnsafeMutableBufferPointer<Float>)``
+- ``CactusLanguageModel/audioEmbeddings(for:maxBufferSize:)``
+- ``CactusLanguageModel/audioEmbeddings(for:buffer:)-(_,MutableSpan<Float>)``
+- ``CactusLanguageModel/audioEmbeddings(for:buffer:)-(_,UnsafeMutableBufferPointer<Float>)``
 
 ### Function Calling
 - ``CactusLanguageModel/FunctionDefinition``
