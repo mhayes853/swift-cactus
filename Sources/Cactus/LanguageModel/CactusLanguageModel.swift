@@ -1,5 +1,4 @@
-// NB: @_implementationOnly since docc doesn't like access level imports for binary targets apparently.
-@_implementationOnly import CXXCactusShims
+import CXXCactusShims
 import Foundation
 
 // MARK: - CactusLanguageModel
