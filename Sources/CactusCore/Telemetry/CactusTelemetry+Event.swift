@@ -32,6 +32,28 @@ extension CactusTelemetry {
   }
 }
 
+// MARK: - TranscriptionEvent
+
+extension CactusTelemetry {
+  /// A telemetry event for a transcription.
+  public struct LanguageModelTranscriptionEvent: Event, Sendable {
+    public private(set) var name = "transcription"
+    public let transcription: CactusLanguageModel.Transcription
+    public let options: CactusLanguageModel.Transcription.Options
+    public let configuration: CactusLanguageModel.Configuration
+
+    public init(
+      transcription: CactusLanguageModel.Transcription,
+      options: CactusLanguageModel.Transcription.Options,
+      configuration: CactusLanguageModel.Configuration
+    ) {
+      self.transcription = transcription
+      self.options = options
+      self.configuration = configuration
+    }
+  }
+}
+
 // MARK: - EmbeddingsEvent
 
 extension CactusTelemetry {
@@ -73,6 +95,17 @@ extension CactusTelemetry {
       self.name = name
       self.message = message
       self.configuration = configuration
+    }
+
+    static func responseBufferTooSmall(
+      name: String,
+      configuration: CactusLanguageModel.Configuration
+    ) -> Self {
+      Self(
+        name: name,
+        message: "Response buffer too small",
+        configuration: configuration
+      )
     }
   }
 }
