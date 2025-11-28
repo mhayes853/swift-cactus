@@ -1,11 +1,11 @@
 ▿ Properties
   - attentionHeadDimensions: 64
-  - attentionHeads: 32
+  - attentionHeads: 16
   - attentionKVHeads: 8
   - contextLengthTokens: 128000
   - expertCount: 0
-  - ffnIntermediateDimensions: 12288
-  - hiddenDimensions: 2048
+  - ffnIntermediateDimensions: 6656
+  - hiddenDimensions: 1024
   - layerCount: 16
   - layerNormEpsilon: 1e-05
   ▿ modelType: ModelType

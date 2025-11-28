@@ -105,6 +105,19 @@ extension CactusModelsDirectory {
       to destination: URL,
       configuration: URLSessionConfiguration
     ) -> CactusLanguageModel.DownloadTask
+
+    /// Creates a ``CactusLanguageModel/DownloadTask`` for an audio model.
+    ///
+    /// - Parameters:
+    ///   - slug: The slug of the model to download.
+    ///   - destination: The destination `URL` of the download.
+    ///   - configuration: A `URLSessionConfiguration` for the download.
+    /// - Returns: A ``CactusLanguageModel/DownloadTask``.
+    func downloadAudioModelTask(
+      slug: String,
+      to destination: URL,
+      configuration: URLSessionConfiguration
+    ) -> CactusLanguageModel.DownloadTask
   }
 
   /// The default ``DownloadTaskCreator``.
@@ -114,18 +127,32 @@ extension CactusModelsDirectory {
   public struct DefaultDownloadTaskCreator: DownloadTaskCreator, Sendable {
     /// Creates a default download task creator.
     public init() {}
+  }
+}
 
-    public func downloadModelTask(
-      slug: String,
-      to destination: URL,
-      configuration: URLSessionConfiguration
-    ) -> CactusLanguageModel.DownloadTask {
-      CactusLanguageModel.downloadModelTask(
-        slug: slug,
-        to: destination,
-        configuration: configuration
-      )
-    }
+extension CactusModelsDirectory.DownloadTaskCreator {
+  public func downloadModelTask(
+    slug: String,
+    to destination: URL,
+    configuration: URLSessionConfiguration
+  ) -> CactusLanguageModel.DownloadTask {
+    CactusLanguageModel.downloadModelTask(
+      slug: slug,
+      to: destination,
+      configuration: configuration
+    )
+  }
+
+  public func downloadAudioModelTask(
+    slug: String,
+    to destination: URL,
+    configuration: URLSessionConfiguration
+  ) -> CactusLanguageModel.DownloadTask {
+    CactusLanguageModel.downloadAudioModelTask(
+      slug: slug,
+      to: destination,
+      configuration: configuration
+    )
   }
 }
 
@@ -159,10 +186,48 @@ extension CactusModelsDirectory {
       @escaping @Sendable (Result<CactusLanguageModel.DownloadProgress, any Error>) -> Void = { _ in
       }
   ) async throws -> URL {
+    try await self.modelURL(
+      for: slug,
+      configuration: configuration,
+      createTask: self.modelDownloadTask(for:configuration:)
+    )
+  }
+
+  /// Returns an audio model `URL` for the specified `slug`.
+  ///
+  /// If this directory doesn't have a model stored with the specified `slug`, then the model is
+  /// downloaded and stored in this directory.
+  ///
+  /// - Parameters:
+  ///   - slug: The model slug.
+  ///   - configuration: A `URLSessionConfiguration` to use for downloading.
+  ///   - onDownloadProgress: A callback for download progress.
+  public func audioModelURL(
+    for slug: String,
+    configuration: URLSessionConfiguration = .default,
+    onDownloadProgress:
+      @escaping @Sendable (Result<CactusLanguageModel.DownloadProgress, any Error>) -> Void = { _ in
+      }
+  ) async throws -> URL {
+    try await self.modelURL(
+      for: slug,
+      configuration: configuration,
+      createTask: self.audioModelDownloadTask(for:configuration:)
+    )
+  }
+
+  private func modelURL(
+    for slug: String,
+    configuration: URLSessionConfiguration = .default,
+    createTask: (String, URLSessionConfiguration) throws -> CactusLanguageModel.DownloadTask,
+    onDownloadProgress:
+      @escaping @Sendable (Result<CactusLanguageModel.DownloadProgress, any Error>) -> Void = { _ in
+      }
+  ) async throws -> URL {
     if let url = self.storedModelURL(for: slug) {
       return url
     }
-    let task = try self.modelDownloadTask(for: slug, configuration: configuration)
+    let task = try createTask(slug, configuration)
     task.resume()
     let subscription = task.onProgress(onDownloadProgress)
     defer { subscription.cancel() }
@@ -184,15 +249,47 @@ extension CactusModelsDirectory {
     for slug: String,
     configuration: URLSessionConfiguration = .default
   ) throws -> CactusLanguageModel.DownloadTask {
+    try self.modelDownloadTask(for: slug, configuration: configuration) {
+      $3.downloadModelTask(slug: $0, to: $1, configuration: $2)
+    }
+  }
+
+  /// Returns a ``CactusLanguageModel/DownloadTask`` for an audio model with the specified `slug`.
+  ///
+  /// If another download task is in progress, then this method will return the in-progress download task.
+  ///
+  /// - Parameters:
+  ///   - slug: The model slug.
+  ///   - configuration: A `URLSessionConfiguration` to use for downloading.
+  public func audioModelDownloadTask(
+    for slug: String,
+    configuration: URLSessionConfiguration = .default
+  ) throws -> CactusLanguageModel.DownloadTask {
+    try self.modelDownloadTask(for: slug, configuration: configuration) {
+      $3.downloadAudioModelTask(slug: $0, to: $1, configuration: $2)
+    }
+  }
+
+  private func modelDownloadTask(
+    for slug: String,
+    configuration: URLSessionConfiguration = .default,
+    createTask: (
+      String,
+      URL,
+      URLSessionConfiguration,
+      any DownloadTaskCreator
+    ) throws -> CactusLanguageModel.DownloadTask
+  ) throws -> CactusLanguageModel.DownloadTask {
     try self.state.withLock { state in
       if let entry = state.downloadTasks[slug] {
         return entry.task
       }
       try self.ensureDirectory()
-      let task = state.downloadTaskCreator.downloadModelTask(
-        slug: slug,
-        to: self.destinationURL(for: slug),
-        configuration: configuration
+      let task = try createTask(
+        slug,
+        self.destinationURL(for: slug),
+        configuration,
+        state.downloadTaskCreator
       )
       let subscription = task.onProgress { [weak self] progress in
         switch progress {

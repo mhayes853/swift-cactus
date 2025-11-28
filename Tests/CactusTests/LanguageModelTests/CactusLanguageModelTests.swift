@@ -69,7 +69,7 @@ struct `CactusLanguageModel tests` {
     let embeddings = try model.imageEmbeddings(for: testImageURL)
     let embedding = Embedding(slug: model.configuration.modelSlug, vector: embeddings)
 
-    withKnownIssue {
+    withExpectedIssue {
       assertSnapshot(of: embedding, as: .json, record: true)
     }
   }
@@ -86,7 +86,7 @@ struct `CactusLanguageModel tests` {
 
   @Test(.snapshots(record: .failed))
   func `Audio Embeddings`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(
+    let modelURL = try await CactusLanguageModel.testAudioModelURL(
       slug: CactusLanguageModel.testTranscribeSlug
     )
     let model = try CactusLanguageModel(from: modelURL)
@@ -172,7 +172,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Streams Same Response As Audio Transcription`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(
+    let modelURL = try await CactusLanguageModel.testAudioModelURL(
       slug: CactusLanguageModel.testTranscribeSlug
     )
     let model = try CactusLanguageModel(from: modelURL)
@@ -186,7 +186,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Throws Transcription Error When Buffer Size Is Zero`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(
+    let modelURL = try await CactusLanguageModel.testAudioModelURL(
       slug: CactusLanguageModel.testTranscribeSlug
     )
     let model = try CactusLanguageModel(from: modelURL)
@@ -365,7 +365,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
       let transcription: CactusLanguageModel.Transcription
     }
 
-    let url = try await CactusLanguageModel.testModelURL(
+    let url = try await CactusLanguageModel.testAudioModelURL(
       slug: CactusLanguageModel.testTranscribeSlug
     )
     let model = try CactusLanguageModel(from: url)
@@ -383,7 +383,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
 }
 
 private let audioPrompt = "<|startoftranscript|><|en|><|transcribe|><|notimestamps|>"
-private let modelSlugs = ["lfm2-1.2b", "qwen3-0.6", "smollm2-360m"]
+private let modelSlugs = ["lfm2-350m", "qwen3-0.6", "smollm2-360m", "gemma3-270m"]
 private let testImageURL = Bundle.module.url(forResource: "joe", withExtension: "png")!
 
 extension CactusLanguageModel.ChatCompletion {

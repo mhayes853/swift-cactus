@@ -33,6 +33,14 @@ extension CactusSupabaseClient {
     let (data, _) = try await self.session.data(for: self.baseRequest(for: components.url!))
     return try self.supabaseJSONDecoder.decode([CactusLanguageModel.Metadata].self, from: data)
   }
+
+  func availableAudioModels() async throws -> [CactusLanguageModel.AudioMetadata] {
+    var components = URLComponents(string: self.baseURL(for: "/rest/v1/whisper").absoluteString)!
+    components.queryItems = [URLQueryItem(name: "select", value: "*")]
+
+    let (data, _) = try await self.session.data(for: self.baseRequest(for: components.url!))
+    return try self.supabaseJSONDecoder.decode([CactusLanguageModel.AudioMetadata].self, from: data)
+  }
 }
 
 // MARK: - Model Download URL
@@ -40,6 +48,12 @@ extension CactusSupabaseClient {
 extension CactusSupabaseClient {
   func modelDownloadURL(for slug: String) -> URL {
     URL(string: "\(self.cactusSupabaseURL)/storage/v1/object/public/cactus-models/\(slug).zip")!
+  }
+
+  func audioModelDownloadURL(for slug: String) -> URL {
+    URL(
+      string: "\(self.cactusSupabaseURL)/storage/v1/object/public/voice-models/\(slug).zip"
+    )!
   }
 }
 

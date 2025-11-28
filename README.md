@@ -164,7 +164,7 @@ Audio models allow you to transcribe audio files. You can pass the `URL` of an a
 
 ```swift
 let modelURL = try await CactusModelsDirectory.shared
-  .modelURL(for: "whisper-small")
+  .audioModelURL(for: "whisper-small")
 let model = try CactusLanguageModel(from: modelURL)
 
 // See https://huggingface.co/openai/whisper-small#usage for more info on how to structure a 

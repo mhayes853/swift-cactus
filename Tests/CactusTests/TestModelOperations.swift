@@ -2,28 +2,6 @@ import Cactus
 import Foundation
 import Operation
 
-// MARK: - AvailableModelsQuery
-
-extension CactusLanguageModel {
-  private static let availableModelsStore = OperationStore.detached(
-    query: $availableModelsQuery.deduplicated(),
-    initialValue: nil
-  )
-
-  static func sharedAvailableModels() async throws -> [Metadata] {
-    let store = Self.availableModelsStore
-    if let currentMetadata = store.currentValue {
-      return currentMetadata
-    }
-    return try await store.fetch()
-  }
-
-  @QueryRequest
-  private static func availableModelsQuery() async throws -> [Metadata] {
-    try await CactusLanguageModel.availableModels()
-  }
-}
-
 // MARK: - TestModelDownloadQuery
 
 extension CactusLanguageModel {
@@ -31,8 +9,12 @@ extension CactusLanguageModel {
     try await client.store(for: $downloadQuery(for: slug)).fetch()
   }
 
+  static func testAudioModelURL(slug: String = testModelSlug) async throws -> URL {
+    try await client.store(for: $audioDownloadQuery(for: slug)).fetch()
+  }
+
   static let testFunctionCallingModelSlug = "qwen3-0.6"
-  static let testModelSlug = "lfm2-1.2b"
+  static let testModelSlug = "lfm2-350m"
   static let testVLMSlug = "lfm2-vl-450m"
   static let testTranscribeSlug = "whisper-small"
 
@@ -44,6 +26,17 @@ extension CactusLanguageModel {
     print("=== Downloading Test Model (\(slug)) ===")
     let url = try await CactusModelsDirectory.testModels.modelURL(for: slug)
     print("=== Finished Downloading Test Model (\(slug)) ===")
+    return url
+  }
+
+  @QueryRequest
+  private static func audioDownloadQuery(for slug: String) async throws -> URL {
+    if let url = CactusModelsDirectory.testModels.storedModelURL(for: slug) {
+      return url
+    }
+    print("=== Downloading Test Audio Model (\(slug)) ===")
+    let url = try await CactusModelsDirectory.testModels.audioModelURL(for: slug)
+    print("=== Finished Downloading Test Audio Model (\(slug)) ===")
     return url
   }
 }
