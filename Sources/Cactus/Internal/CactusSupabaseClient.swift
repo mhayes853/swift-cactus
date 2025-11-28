@@ -49,6 +49,12 @@ extension CactusSupabaseClient {
   func modelDownloadURL(for slug: String) -> URL {
     URL(string: "\(self.cactusSupabaseURL)/storage/v1/object/public/cactus-models/\(slug).zip")!
   }
+
+  func audioModelDownloadURL(for slug: String) -> URL {
+    URL(
+      string: "\(self.cactusSupabaseURL)/storage/v1/object/public/voice-models/\(slug).zip"
+    )!
+  }
 }
 
 // MARK: - Register Device

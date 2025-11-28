@@ -15,6 +15,13 @@ extension CactusLanguageModel {
     CactusSupabaseClient.shared.modelDownloadURL(for: slug)
   }
 
+  /// Returns the download `URL` for an audio model slug.
+  ///
+  /// - Parameter slug: The slug of the model.
+  public static func audioModelDownloadURL(slug: String) -> URL {
+    CactusSupabaseClient.shared.audioModelDownloadURL(for: slug)
+  }
+
   /// Downloads the model for the provided `slug` to the provided destination `URL`.
   ///
   /// - Parameters:
@@ -32,6 +39,29 @@ extension CactusLanguageModel {
   ) async throws -> URL {
     try await Self.downloadModel(
       from: Self.modelDownloadURL(slug: slug),
+      to: destination,
+      configuration: configuration,
+      onProgress: onProgress
+    )
+  }
+
+  /// Downloads the audio model for the provided `slug` to the provided destination `URL`.
+  ///
+  /// - Parameters:
+  ///   - slug: The slug of the model.
+  ///   - destination: The `URL` to download the model to.
+  ///   - configuration: A `URLSessionConfiguration` for the download.
+  ///   - onProgress: A callback that is invoked when progress is made towards the download.
+  /// - Returns: The destination`URL` of the downloaded model.
+  @discardableResult
+  public static func downloadAudioModel(
+    slug: String,
+    to destination: URL,
+    configuration: URLSessionConfiguration = .default,
+    onProgress: @escaping @Sendable (Result<DownloadProgress, any Error>) -> Void = { _ in }
+  ) async throws -> URL {
+    try await Self.downloadModel(
+      from: Self.audioModelDownloadURL(slug: slug),
       to: destination,
       configuration: configuration,
       onProgress: onProgress
@@ -80,6 +110,27 @@ extension CactusLanguageModel {
   ) -> DownloadTask {
     Self.downloadModelTask(
       from: Self.modelDownloadURL(slug: slug),
+      to: destination,
+      configuration: configuration
+    )
+  }
+
+  /// Returns a ``DownloadTask`` for the audio model with the specified `slug`.
+  ///
+  /// You must manually start the download by calling ``DownloadTask/resume()``.
+  ///
+  /// - Parameters:
+  ///   - slug: The slug of the model.
+  ///   - destination: The `URL` to download the model to.
+  ///   - configuration: A `URLSessionConfiguration` for the download.
+  /// - Returns: A ``DownloadTask``.
+  public static func downloadAudioModelTask(
+    slug: String,
+    to destination: URL,
+    configuration: URLSessionConfiguration = .default
+  ) -> DownloadTask {
+    Self.downloadModelTask(
+      from: Self.audioModelDownloadURL(slug: slug),
       to: destination,
       configuration: configuration
     )
