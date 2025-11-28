@@ -1,12 +1,12 @@
 {
-  "decode_tokens" : 110,
+  "decode_tokens" : 52,
   "function_calls" : [
 
   ],
-  "prefill_tokens" : 272,
-  "response" : "The image depicts a young man with a cheerful expression, holding two books in his hands. He is smiling and appears to be happy. The man has short hair and is wearing a light-colored shirt with rolled-up sleeves, suggesting casual attire suitable for academic activities or outdoor work. His posture and the way he holds the books indicate that he might be preparing for an exam or studying for an upcoming assignment. The background of the image is plain white, which puts emphasis on the subject without any distractions from other elements in the scene.<|im_end|>",
-  "time_to_first_token_ms" : 3120.32,
-  "tokens_per_second" : 99.06,
-  "total_time_ms" : 4220.69,
-  "total_tokens" : 382
+  "prefill_tokens" : 314,
+  "response" : "The guy in the first image is smiling and appears to be happy. He is holding a notebook and a book, suggesting he might be preparing for or has just finished studying. His posture and expression indicate he might be excited about his upcoming exam or assignment.<|im_end|>",
+  "time_to_first_token_ms" : 3717.51,
+  "tokens_per_second" : 103.27,
+  "total_time_ms" : 4211.37,
+  "total_tokens" : 366
 }

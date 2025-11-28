@@ -1,16 +1,16 @@
 [
   {
     "completion" : {
-      "decode_tokens" : 43,
+      "decode_tokens" : 170,
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 9,
-      "response" : "That's correct! What would you like to discuss or explore next? Are you interested in a specific topic, perhaps technology, literature, history, or something else? Let me know how I can assist you.<|im_end|>",
-      "time_to_first_token_ms" : 40.03,
-      "tokens_per_second" : 113.34,
-      "total_time_ms" : 410.59,
-      "total_tokens" : 52
+      "prefill_tokens" : 35,
+      "response" : "The meaning of life is a profound and often elusive question that has puzzled philosophers, theologians, and individuals for centuries. It's a question that varies widely from person to person based on their beliefs, values, and experiences. Some may find it in relationships with others or the pursuit of knowledge; others might seek fulfillment through personal growth or contributing to society.\n\nPhilosophically speaking, one could argue that the meaning of life lies in achieving self-actualization—fulfilling one's potential by living authentically while making meaningful contributions to oneself and society. However, this perspective is deeply subjective; what constitutes \"meaning\" can differ greatly from someone else's understanding of existence itself. Ultimately, the search for meaning is a deeply personal journey that requires introspection and a willingness to explore one’s own truth about purpose and fulfillment.<|im_end|>",
+      "time_to_first_token_ms" : 505.2,
+      "tokens_per_second" : 101.01,
+      "total_time_ms" : 2178.24,
+      "total_tokens" : 205
     },
     "slug" : "lfm2-350m"
   },
@@ -20,42 +20,42 @@
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 13,
-      "response" : "<think>\nOkay, the user wants to know how to make a coffee cup. Let me start by breaking down what they need. First, they probably need a basic set of materials: cups and maybe some utensils like chopsticks or spoons.\n\nI should mention different types of cups since there are many styles out there. Maybe suggest something everyday like a ceramic mug or an aluminum one for durability and heat resistance. Also, considering the user's preference for specific features—like color or size—should be mentioned as options.\n\nWait, but I should ask if they want it made from recycled materials first because that's part of sustainability in modern times. Then move on to the process step by step: choosing materials, preparing the cup (if needed), assembling it with tools and screws, testing its functionality before using.\n\nOh right! Including tips on how to test if it works well is important so they know before finalizing their project. Also, making sure to cover any potential issues like leaks or improper",
-      "time_to_first_token_ms" : 65.04,
-      "tokens_per_second" : 50.29,
-      "total_time_ms" : 4021.74,
-      "total_tokens" : 213
+      "prefill_tokens" : 34,
+      "response" : "<think>\nOkay, the user is asking about the meaning of life. I need to approach this carefully. First, I should acknowledge that there's no single answer and that different people might have different perspectives.\n\nI remember a quote from Socrates: \"The unexamined life is not worth living.\" That's relevant here because it touches on the complexity of defining one's purpose beyond personal experiences or values.\n\nBut how do I explain this? Maybe start by emphasizing that meaning can vary widely depending on individual experiences and philosophical views. It could include things like personal goals, relationships, contributions to society or nature.\n\nIt's important to highlight that without a shared understanding of what \"meaning\" entails, there might be no definitive answer. Also, acknowledging the challenges in finding an objective sense of purpose can add depth to the response.\n\nI should make sure my explanation is clear and accessible for someone asking about it without prior knowledge. Avoid jargon but still convey philosophical insight.\n<\/think>\n\nThe question of life’s meaning",
+      "time_to_first_token_ms" : 811.3,
+      "tokens_per_second" : 50.3,
+      "total_time_ms" : 4767.65,
+      "total_tokens" : 234
     },
     "slug" : "qwen3-0.6"
   },
   {
     "completion" : {
-      "decode_tokens" : 37,
+      "decode_tokens" : 195,
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 14,
-      "response" : "I'm an AI assistant specialized in providing assistance with programming tasks. I can help you write, review, and debug code across various programming languages. What's your question or issue?<|im_end|>",
-      "time_to_first_token_ms" : 58.29,
-      "tokens_per_second" : 66.35,
-      "total_time_ms" : 600.84,
-      "total_tokens" : 51
+      "prefill_tokens" : 35,
+      "response" : "The meaning of life is a profound and subjective question that has been debated by philosophers, theologians, and individuals for centuries. The answer to this question can be complex and multifaceted, as it depends on various factors such as personal beliefs, cultural values, philosophical perspectives, scientific understanding of the universe or human existence in relation to the natural world (including biology), ethics (e.g., morality), existentialism (e.g., what is one's purpose or meaning in life?), spirituality\/religion\/deity(s) etc..\n\nPhilosophers have proposed different answers over time: \n1) Eudaimonic approach - which focuses on living a good life with happiness and fulfillment; 2) Hedonistic approach - which prioritizes pleasure; 3) Virtue-centric approach - which emphasizes character development and moral virtues; 4 ) Aesthetic-centric approach - which prioritizes beauty, art, and aesthetics as means of fulfilling human desires.<|im_end|>",
+      "time_to_first_token_ms" : 628.98,
+      "tokens_per_second" : 72.29,
+      "total_time_ms" : 3312.57,
+      "total_tokens" : 230
     },
     "slug" : "smollm2-360m"
   },
   {
     "completion" : {
-      "decode_tokens" : 37,
+      "decode_tokens" : 90,
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 9,
-      "response" : "请根据您的具体需求，我可以为您提供更个性化的建议。您想让我帮您讨论什么呢？如果您想具体想我，请告诉我您想讨论什么。<end_of_turn>",
-      "time_to_first_token_ms" : 27.88,
-      "tokens_per_second" : 115.67,
-      "total_time_ms" : 339.1,
-      "total_tokens" : 46
+      "prefill_tokens" : 31,
+      "response" : "As a philosopher, I grapple with questions that transcend the realm of scientific understanding. They touch on fundamental concepts like existence, consciousness, ethics, and the nature of reality.\n\nMy inquiries are not about finding definitive answers but rather about seeking to understand our place in the cosmos and to explore perspectives that challenge our existing frameworks. Perhaps one day we will be able to unravel these profound mysteries in greater depth than we currently do by grappling with them?\n<end_of_turn>",
+      "time_to_first_token_ms" : 387.38,
+      "tokens_per_second" : 116.51,
+      "total_time_ms" : 1151.24,
+      "total_tokens" : 121
     },
     "slug" : "gemma3-270m"
   }
