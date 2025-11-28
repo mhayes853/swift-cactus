@@ -91,7 +91,7 @@ struct `CactusLanguageModel tests` {
     )
     let model = try CactusLanguageModel(from: modelURL)
 
-    let embeddings = try model.audioEmbeddings(for: testAudioURL)
+    let embeddings = try model.audioEmbeddings(for: .testAudio)
     let embedding = Embedding(slug: model.configuration.modelSlug, vector: embeddings)
 
     withKnownIssue {
@@ -105,7 +105,7 @@ struct `CactusLanguageModel tests` {
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.EmbeddingsError.audioNotSupported) {
-      try model.audioEmbeddings(for: testAudioURL)
+      try model.audioEmbeddings(for: .testAudio)
     }
   }
 
@@ -178,7 +178,7 @@ struct `CactusLanguageModel tests` {
     let model = try CactusLanguageModel(from: modelURL)
 
     var stream = ""
-    let transcription = try model.transcribe(audio: testAudioURL, prompt: audioPrompt) {
+    let transcription = try model.transcribe(audio: .testAudio, prompt: audioPrompt) {
       stream.append($0)
     }
     expectNoDifference(stream, transcription.response)
@@ -192,7 +192,7 @@ struct `CactusLanguageModel tests` {
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.TranscriptionError.bufferSizeTooSmall) {
-      try model.transcribe(audio: testAudioURL, prompt: audioPrompt, maxBufferSize: 0)
+      try model.transcribe(audio: .testAudio, prompt: audioPrompt, maxBufferSize: 0)
     }
   }
 
@@ -202,7 +202,7 @@ struct `CactusLanguageModel tests` {
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.TranscriptionError.notSupported) {
-      try model.transcribe(audio: testAudioURL, prompt: audioPrompt)
+      try model.transcribe(audio: .testAudio, prompt: audioPrompt)
     }
   }
 
@@ -370,7 +370,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     )
     let model = try CactusLanguageModel(from: url)
 
-    let transcription = try model.transcribe(audio: testAudioURL, prompt: audioPrompt)
+    let transcription = try model.transcribe(audio: .testAudio, prompt: audioPrompt)
 
     withExpectedIssue {
       assertSnapshot(
@@ -385,7 +385,6 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
 private let audioPrompt = "<|startoftranscript|><|en|><|transcribe|><|notimestamps|>"
 private let modelSlugs = ["lfm2-1.2b", "qwen3-0.6", "smollm2-360m"]
 private let testImageURL = Bundle.module.url(forResource: "joe", withExtension: "png")!
-private let testAudioURL = Bundle.module.url(forResource: "test", withExtension: "wav")!
 
 extension CactusLanguageModel.ChatCompletion {
   fileprivate var cleanedResponse: String {

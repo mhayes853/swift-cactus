@@ -10,7 +10,7 @@ struct `WhisperTranscriptPrompt tests` {
     let prompt = WhisperTranscribePrompt(
       language: .english,
       includeTimestamps: true,
-      audioURL: testAudioURL
+      audioURL: .testAudio
     )
     let components = try prompt.promptContent.messageComponents()
     expectNoDifference(components.text, "<|startoftranscript|><|en|><|transcribe|>")
@@ -22,12 +22,10 @@ struct `WhisperTranscriptPrompt tests` {
     let prompt = WhisperTranscribePrompt(
       language: .french,
       includeTimestamps: false,
-      audioURL: testAudioURL
+      audioURL: .testAudio
     )
     let components = try prompt.promptContent.messageComponents()
     expectNoDifference(components.text, "<|startoftranscript|><|fr|><|transcribe|><|notimestamps|>")
     expectNoDifference(components.images, [])
   }
 }
-
-private let testAudioURL = URL(string: "blob")!
