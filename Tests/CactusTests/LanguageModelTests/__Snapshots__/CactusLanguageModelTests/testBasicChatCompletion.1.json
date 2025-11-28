@@ -1,18 +1,18 @@
 [
   {
     "completion" : {
-      "decode_tokens" : 47,
+      "decode_tokens" : 43,
       "function_calls" : [
 
       ],
       "prefill_tokens" : 9,
-      "response" : "Hello! It seems like your message might have been cut off. Could you please provide more details so I can assist you better? Whether it's a question, request for information, or something else, I'm here to help!<|im_end|>",
-      "time_to_first_token_ms" : 1323.49,
-      "tokens_per_second" : 48.12,
-      "total_time_ms" : 2279.41,
-      "total_tokens" : 56
+      "response" : "That's correct! What would you like to discuss or explore next? Are you interested in a specific topic, perhaps technology, literature, history, or something else? Let me know how I can assist you.<|im_end|>",
+      "time_to_first_token_ms" : 40.03,
+      "tokens_per_second" : 113.34,
+      "total_time_ms" : 410.59,
+      "total_tokens" : 52
     },
-    "slug" : "lfm2-1.2b"
+    "slug" : "lfm2-350m"
   },
   {
     "completion" : {
@@ -21,27 +21,42 @@
 
       ],
       "prefill_tokens" : 13,
-      "response" : "<think>\nOkay, the user is asking about the impact of using a robot on society. First, I need to break down what they might be looking for. They could be interested in how robots are changing everyday life or their role in different sectors.\n\nI should start by acknowledging that robots have brought many benefits but also raised questions about their potential to replace human roles. It's important to highlight both positive and negative aspects.\n\nMaybe mention specific examples like healthcare advancements with AI and robotics in manufacturing or service industries. Also, address concerns around job displacement and ethical issues like bias or privacy.\n\nI need to make sure my response covers these points clearly without being too technical. Keep it conversational so the user feels helpful.\n<\/think>\n\nUsing a robot on society has had profound impacts across various fields, offering significant benefits while raising thoughtful questions about its broader implications:\n\n### **Positive Impacts:**\n1. **Healthcare:** Robots like surgical robots (e.g., da Vinci) have improved precision in surgeries, reducing",
-      "time_to_first_token_ms" : 888.91,
-      "tokens_per_second" : 50.48,
-      "total_time_ms" : 4830.86,
+      "response" : "<think>\nOkay, the user wants to know how to make a coffee cup. Let me start by breaking down what they need. First, they probably need a basic set of materials: cups and maybe some utensils like chopsticks or spoons.\n\nI should mention different types of cups since there are many styles out there. Maybe suggest something everyday like a ceramic mug or an aluminum one for durability and heat resistance. Also, considering the user's preference for specific features—like color or size—should be mentioned as options.\n\nWait, but I should ask if they want it made from recycled materials first because that's part of sustainability in modern times. Then move on to the process step by step: choosing materials, preparing the cup (if needed), assembling it with tools and screws, testing its functionality before using.\n\nOh right! Including tips on how to test if it works well is important so they know before finalizing their project. Also, making sure to cover any potential issues like leaks or improper",
+      "time_to_first_token_ms" : 65.04,
+      "tokens_per_second" : 50.29,
+      "total_time_ms" : 4021.74,
       "total_tokens" : 213
     },
     "slug" : "qwen3-0.6"
   },
   {
     "completion" : {
-      "decode_tokens" : 54,
+      "decode_tokens" : 37,
       "function_calls" : [
 
       ],
       "prefill_tokens" : 14,
-      "response" : "I'm an AI assistant specialized in generating ideas and facilitating creative thinking. I can help users explore new concepts, develop innovative solutions, and think outside the box to find novel approaches to their challenges. What's your problem or area where you'd like some fresh perspectives?<|im_end|>",
-      "time_to_first_token_ms" : 699.76,
-      "tokens_per_second" : 73.32,
-      "total_time_ms" : 1422.57,
-      "total_tokens" : 68
+      "response" : "I'm an AI assistant specialized in providing assistance with programming tasks. I can help you write, review, and debug code across various programming languages. What's your question or issue?<|im_end|>",
+      "time_to_first_token_ms" : 58.29,
+      "tokens_per_second" : 66.35,
+      "total_time_ms" : 600.84,
+      "total_tokens" : 51
     },
     "slug" : "smollm2-360m"
+  },
+  {
+    "completion" : {
+      "decode_tokens" : 37,
+      "function_calls" : [
+
+      ],
+      "prefill_tokens" : 9,
+      "response" : "请根据您的具体需求，我可以为您提供更个性化的建议。您想让我帮您讨论什么呢？如果您想具体想我，请告诉我您想讨论什么。<end_of_turn>",
+      "time_to_first_token_ms" : 27.88,
+      "tokens_per_second" : 115.67,
+      "total_time_ms" : 339.1,
+      "total_tokens" : 46
+    },
+    "slug" : "gemma3-270m"
   }
 ]
