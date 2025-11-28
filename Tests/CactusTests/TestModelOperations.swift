@@ -34,6 +34,7 @@ extension CactusLanguageModel {
   static let testFunctionCallingModelSlug = "qwen3-0.6"
   static let testModelSlug = "lfm2-1.2b"
   static let testVLMSlug = "lfm2-vl-450m"
+  static let testTranscribeSlug = "whisper-small"
 
   @QueryRequest
   private static func downloadQuery(for slug: String) async throws -> URL {

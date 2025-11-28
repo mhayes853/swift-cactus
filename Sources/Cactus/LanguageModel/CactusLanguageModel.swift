@@ -1,5 +1,4 @@
-// NB: @_implementationOnly since docc doesn't like access level imports for binary targets apparently.
-@_implementationOnly import CXXCactusShims
+import CXXCactusShims
 import Foundation
 
 // MARK: - CactusLanguageModel
@@ -46,7 +45,9 @@ public final class CactusLanguageModel {
 
   /// The ``Properties`` for this model.
   @available(*, deprecated, message: "Use `configurationFile` instead.")
-  public let properties: Properties
+  public var properties: Properties {
+    Properties(file: self.configurationFile)
+  }
 
   /// The ``ConfigurationFile`` for this model.
   public let configurationFile: ConfigurationFile
@@ -93,7 +94,6 @@ public final class CactusLanguageModel {
         contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
       )
       self.configurationFile = configFile
-      self.properties = Properties(file: configFile)
       CactusTelemetry.send(CactusTelemetry.LanguageModelInitEvent(configuration: configuration))
     } catch let error as ModelCreationError {
       CactusTelemetry.send(
@@ -178,6 +178,12 @@ extension CactusLanguageModel {
     /// The buffer size for the generated embeddings was too small.
     case bufferTooSmall
 
+    /// The model doesn't support image embeddings.
+    case imageNotSupported
+
+    /// The model doesn't support audio embeddings.
+    case audioNotSupported
+
     /// A generation error.
     case generation(message: String?)
   }
@@ -189,11 +195,7 @@ extension CactusLanguageModel {
   ///   - maxBufferSize: The size of the buffer to allocate to store the embeddings.
   /// - Returns: An array of float values.
   public func embeddings(for text: String, maxBufferSize: Int? = nil) throws -> [Float] {
-    let maxBufferSize = maxBufferSize ?? self.bufferSize(for: text.utf8.count)
-    let buffer = UnsafeMutableBufferPointer<Float>.allocate(capacity: maxBufferSize)
-    defer { buffer.deallocate() }
-    let dimensions = try self.embeddings(for: text, buffer: buffer)
-    return (0..<dimensions).map { buffer[$0] }
+    try self.embeddings(for: .text(text), maxBufferSize: maxBufferSize)
   }
 
   /// Generates embeddings for the specified `text` and stores them in the specified buffer.
@@ -204,7 +206,7 @@ extension CactusLanguageModel {
   /// - Returns: The number of dimensions.
   @discardableResult
   public func embeddings(for text: String, buffer: inout MutableSpan<Float>) throws -> Int {
-    try buffer.withUnsafeMutableBufferPointer { try self.embeddings(for: text, buffer: $0) }
+    try self.embeddings(for: .text(text), buffer: &buffer)
   }
 
   /// Generates embeddings for the specified `text` and stores them in the specified buffer.
@@ -215,6 +217,100 @@ extension CactusLanguageModel {
   /// - Returns: The number of dimensions.
   public func embeddings(
     for text: String,
+    buffer: UnsafeMutableBufferPointer<Float>
+  ) throws -> Int {
+    try self.embeddings(for: .text(text), buffer: buffer)
+  }
+
+  /// Generates embeddings for the specified `image`.
+  ///
+  /// - Parameters:
+  ///   - image: The path of the image to generate embeddings for.
+  ///   - maxBufferSize: The size of the buffer to allocate to store the embeddings.
+  /// - Returns: An array of float values.
+  public func imageEmbeddings(for image: URL, maxBufferSize: Int? = nil) throws -> [Float] {
+    try self.embeddings(for: .image(image), maxBufferSize: maxBufferSize)
+  }
+
+  /// Generates embeddings for the specified `image` and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - image: The path of the image to generate embeddings for.
+  ///   - buffer: A `MutableSpan` buffer.
+  /// - Returns: The number of dimensions.
+  @discardableResult
+  public func imageEmbeddings(for image: URL, buffer: inout MutableSpan<Float>) throws -> Int {
+    try self.embeddings(for: .image(image), buffer: &buffer)
+  }
+
+  /// Generates embeddings for the specified `image` and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - image: The path of the image to generate embeddings for.
+  ///   - buffer: An `UnsafeMutableBufferPointer` buffer.
+  /// - Returns: The number of dimensions.
+  public func imageEmbeddings(
+    for image: URL,
+    buffer: UnsafeMutableBufferPointer<Float>
+  ) throws -> Int {
+    try self.embeddings(for: .image(image), buffer: buffer)
+  }
+
+  /// Generates embeddings for the specified `audio`.
+  ///
+  /// - Parameters:
+  ///   - audio: The `URL` of the audio file to generate embeddings for.
+  ///   - maxBufferSize: The size of the buffer to allocate to store the embeddings.
+  /// - Returns: An array of float values.
+  public func audioEmbeddings(for audio: URL, maxBufferSize: Int? = nil) throws -> [Float] {
+    try self.embeddings(for: .audio(audio), maxBufferSize: maxBufferSize)
+  }
+
+  /// Generates embeddings for the specified `audio` and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - audio: The `URL` of the audio file to generate embeddings for.
+  ///   - buffer: A `MutableSpan` buffer.
+  /// - Returns: The number of dimensions.
+  @discardableResult
+  public func audioEmbeddings(for audio: URL, buffer: inout MutableSpan<Float>) throws -> Int {
+    try self.embeddings(for: .audio(audio), buffer: &buffer)
+  }
+
+  /// Generates embeddings for the specified `audio` and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - audio: The `URL` of the audio file to generate embeddings for.
+  ///   - buffer: An `UnsafeMutableBufferPointer` buffer.
+  /// - Returns: The number of dimensions.
+  public func audioEmbeddings(
+    for audio: URL,
+    buffer: UnsafeMutableBufferPointer<Float>
+  ) throws -> Int {
+    try self.embeddings(for: .audio(audio), buffer: buffer)
+  }
+
+  private func embeddings(
+    for request: EmbeddingsRequest,
+    maxBufferSize: Int?
+  ) throws -> [Float] {
+    let maxBufferSize = maxBufferSize ?? self.defaultEmbeddingsBufferSize
+    let buffer = UnsafeMutableBufferPointer<Float>.allocate(capacity: maxBufferSize)
+    defer { buffer.deallocate() }
+    let dimensions = try self.embeddings(for: request, buffer: buffer)
+    return (0..<dimensions).map { buffer[$0] }
+  }
+
+  @discardableResult
+  private func embeddings(
+    for request: EmbeddingsRequest,
+    buffer: inout MutableSpan<Float>
+  ) throws -> Int {
+    try buffer.withUnsafeMutableBufferPointer { try self.embeddings(for: request, buffer: $0) }
+  }
+
+  private func embeddings(
+    for request: EmbeddingsRequest,
     buffer: UnsafeMutableBufferPointer<Float>
   ) throws -> Int {
     let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent(
@@ -229,7 +325,30 @@ extension CactusLanguageModel {
     }
     var dimensions = 0
     let rawBufferSize = size * MemoryLayout<Float>.stride
-    switch cactus_embed(self.model, text, buffer.baseAddress, rawBufferSize, &dimensions) {
+
+    let resultCode =
+      switch request {
+      case .text(let text):
+        cactus_embed(self.model, text, buffer.baseAddress, rawBufferSize, &dimensions)
+      case .image(let image):
+        cactus_image_embed(
+          self.model,
+          image.nativePath,
+          buffer.baseAddress,
+          rawBufferSize,
+          &dimensions
+        )
+      case .audio(let audio):
+        cactus_audio_embed(
+          self.model,
+          audio.nativePath,
+          buffer.baseAddress,
+          rawBufferSize,
+          &dimensions
+        )
+      }
+
+    switch resultCode {
     case -1:
       let message = cactus_get_last_error().map { String(cString: $0) }
       CactusTelemetry.send(
@@ -239,7 +358,14 @@ extension CactusLanguageModel {
           configuration: self.configuration
         )
       )
-      throw EmbeddingsError.generation(message: message)
+
+      if message?.contains("Image embeddings") == true {
+        throw EmbeddingsError.imageNotSupported
+      } else if message?.contains("Audio embeddings") == true {
+        throw EmbeddingsError.audioNotSupported
+      } else {
+        throw EmbeddingsError.generation(message: message)
+      }
     case -2:
       CactusTelemetry.send(bufferTooSmallEvent)
       throw EmbeddingsError.bufferTooSmall
@@ -249,6 +375,16 @@ extension CactusLanguageModel {
       )
       return dimensions
     }
+  }
+
+  private enum EmbeddingsRequest {
+    case text(String)
+    case image(URL)
+    case audio(URL)
+  }
+
+  private var defaultEmbeddingsBufferSize: Int {
+    self.configurationFile.hiddenDimensions ?? 1024
   }
 }
 
@@ -314,11 +450,8 @@ extension CactusLanguageModel {
     functions: [FunctionDefinition] = [],
     onToken: (String) -> Void = { _ in }
   ) throws -> ChatCompletion {
-    let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent(
-      name: "completion",
-      message: "Response buffer too small",
-      configuration: self.configuration
-    )
+    let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent
+      .responseBufferTooSmall(name: "completion", configuration: self.configuration)
     let options =
       options ?? ChatCompletion.Options(modelType: self.configurationFile.modelType ?? .qwen)
     let maxBufferSize = maxBufferSize ?? self.bufferSize(for: options.maxTokens)
@@ -334,26 +467,20 @@ extension CactusLanguageModel {
     let functionsJSON =
       functions.isEmpty
       ? nil
-      : String(decoding: try Self.chatCompletionEncoder.encode(functions), as: UTF8.self)
+      : String(decoding: try Self.inferenceEncoder.encode(functions), as: UTF8.self)
 
     let messages = messages.map { FFIMessage(message: $0) }
 
-    let result = try withoutActuallyEscaping(onToken) { onToken in
-      let box = Unmanaged.passRetained(TokenCallbackBox(onToken))
-      defer { box.release() }
-      return cactus_complete(
+    let result = try withTokenCallback(onToken) { userData, onToken in
+      cactus_complete(
         self.model,
-        String(decoding: try Self.chatCompletionEncoder.encode(messages), as: UTF8.self),
+        String(decoding: try Self.inferenceEncoder.encode(messages), as: UTF8.self),
         buffer,
         maxBufferSize * MemoryLayout<CChar>.stride,
-        String(decoding: try Self.chatCompletionEncoder.encode(options), as: UTF8.self),
+        String(decoding: try Self.inferenceEncoder.encode(options), as: UTF8.self),
         functionsJSON,
-        { token, _, ptr in
-          guard let ptr, let token else { return }
-          let box = Unmanaged<TokenCallbackBox>.fromOpaque(ptr).takeUnretainedValue()
-          box.callback(String(cString: token))
-        },
-        box.toOpaque()
+        onToken,
+        userData
       )
     }
 
@@ -363,11 +490,11 @@ extension CactusLanguageModel {
     }
 
     guard result != -1 else {
-      let response = try? Self.chatCompletionDecoder.decode(
-        CompletionErrorResponse.self,
+      let response = try? Self.inferenceDecoder.decode(
+        InferenceErrorResponse.self,
         from: responseData
       )
-      if response?.error == "Response buffer too small" {
+      if response?.error.contains(bufferTooSmallEvent.message) == true {
         CactusTelemetry.send(bufferTooSmallEvent)
         throw ChatCompletionError.bufferSizeTooSmall
       }
@@ -380,7 +507,7 @@ extension CactusLanguageModel {
       )
       throw ChatCompletionError.generation(message: response?.error)
     }
-    let completion = try Self.chatCompletionDecoder.decode(ChatCompletion.self, from: responseData)
+    let completion = try Self.inferenceDecoder.decode(ChatCompletion.self, from: responseData)
     CactusTelemetry.send(
       CactusTelemetry.LanguageModelCompletionEvent(
         chatCompletion: completion,
@@ -391,34 +518,8 @@ extension CactusLanguageModel {
     return completion
   }
 
-  private static let chatCompletionDecoder = {
-    let decoder = JSONDecoder()
-    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-      decoder.allowsJSON5 = true
-    }
-    return decoder
-  }()
-
-  private static let chatCompletionEncoder = {
-    let encoder = JSONEncoder()
-    encoder.outputFormatting = [.withoutEscapingSlashes]
-    return encoder
-  }()
-
   private struct FFIFunctionDefinition: Codable {
     var function: FunctionDefinition
-  }
-
-  private final class TokenCallbackBox {
-    let callback: (String) -> Void
-
-    init(_ callback: @escaping (String) -> Void) {
-      self.callback = callback
-    }
-  }
-
-  private struct CompletionErrorResponse: Decodable {
-    let error: String
   }
 
   private struct FFIMessage: Codable {
@@ -435,74 +536,8 @@ extension CactusLanguageModel {
 }
 
 extension CactusLanguageModel.ChatCompletion {
-  /// Options for generating a ``CactusLanguageModel/ChatCompletion``
-  public struct Options: Hashable, Sendable, Codable {
-    /// A default array of common stop sequences.
-    public static let defaultStopSequences = ["<|im_end|>", "<end_of_turn>"]
-
-    /// The maximum number of tokens for the completion.
-    public var maxTokens: Int
-
-    /// The temperature.
-    public var temperature: Float
-
-    /// The nucleus sampling.
-    public var topP: Float
-
-    /// The k most probable options to limit the next word to.
-    public var topK: Int
-
-    /// An array of stop sequence phrases.
-    public var stopSequences: [String]
-
-    /// Creates options for generating a ``CactusLanguageModel/ChatCompletion``.
-    ///
-    /// - Parameters:
-    ///   - maxTokens: The maximum number of tokens for the completion.
-    ///   - temperature: The temperature.
-    ///   - topP: The nucleus sampling.
-    ///   - topK: The k most probable options to limit the next word to.
-    ///   - stopSequences: An array of stop sequence phrases.
-    public init(
-      maxTokens: Int = 200,
-      temperature: Float = 0.6,
-      topP: Float = 0.95,
-      topK: Int = 20,
-      stopSequences: [String] = Self.defaultStopSequences
-    ) {
-      self.maxTokens = maxTokens
-      self.temperature = temperature
-      self.topP = topP
-      self.topK = topK
-      self.stopSequences = stopSequences
-    }
-
-    /// Creates options for generating a ``CactusLanguageModel/ChatCompletion``.
-    ///
-    /// - Parameters:
-    ///   - maxTokens: The maximum number of tokens for the completion.
-    ///   - modelType: The model type.
-    ///   - stopSequences: An array of stop sequence phrases.
-    public init(
-      maxTokens: Int = 200,
-      modelType: CactusLanguageModel.ModelType,
-      stopSequences: [String] = Self.defaultStopSequences
-    ) {
-      self.maxTokens = maxTokens
-      self.temperature = modelType.defaultTemperature
-      self.topP = modelType.defaultTopP
-      self.topK = modelType.defaultTopK
-      self.stopSequences = stopSequences
-    }
-
-    private enum CodingKeys: String, CodingKey {
-      case maxTokens = "max_tokens"
-      case temperature
-      case topP = "top_p"
-      case topK = "top_k"
-      case stopSequences = "stop_sequences"
-    }
-  }
+  /// Options for generating a ``CactusLanguageModel/ChatCompletion``.
+  public typealias Options = CactusLanguageModel.InferenceOptions
 }
 
 extension CactusLanguageModel.ChatCompletion: Decodable {
@@ -534,6 +569,242 @@ extension CactusLanguageModel.ChatCompletion: Encodable {
   }
 }
 
+// MARK: - Transcribe
+
+extension CactusLanguageModel {
+  /// An error thrown when trying to generate a ``Transcription``.
+  public enum TranscriptionError: Error, Hashable {
+    /// The buffer size for the completion was too small.
+    case bufferSizeTooSmall
+
+    /// The model does not support transcription.
+    case notSupported
+
+    /// A generation error.
+    case generation(message: String?)
+  }
+
+  /// A transcription result.
+  public struct Transcription: Hashable, Sendable {
+    /// The raw response text from the model.
+    public let response: String
+
+    /// The tokens per second rate.
+    public let tokensPerSecond: Double
+
+    /// The number of prefilled tokens.
+    public let prefillTokens: Int
+
+    /// The number of tokens decoded.
+    public let decodeTokens: Int
+
+    /// The total amount of tokens that make up the response.
+    public let totalTokens: Int
+
+    private let timeToFirstTokenMs: Double
+    private let totalTimeMs: Double
+
+    /// The amount of time in seconds to generate the first token.
+    public var timeIntervalToFirstToken: TimeInterval {
+      self.timeToFirstTokenMs / 1000
+    }
+
+    /// The total generation time in seconds.
+    public var totalTimeInterval: TimeInterval {
+      self.totalTimeMs / 1000
+    }
+  }
+
+  /// Transcribes the specified `audio` file.
+  ///
+  /// - Parameters:
+  ///   - audio: The audio file to transcribe.
+  ///   - prompt: The prompt to use for transcription.
+  ///   - options: The ``Transcription/Options``.
+  ///   - maxBufferSize: The maximum buffer size to store the completion.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Returns: A ``Transcription``.
+  public func transcribe(
+    audio: URL,
+    prompt: String,
+    options: Transcription.Options? = nil,
+    maxBufferSize: Int? = nil,
+    onToken: (String) -> Void = { _ in }
+  ) throws -> Transcription {
+    guard self.configurationFile.modelType == .whisper else {
+      CactusTelemetry.send(
+        CactusTelemetry.LanguageModelErrorEvent(
+          name: "transcription",
+          message: "Transcription not supported",
+          configuration: self.configuration
+        )
+      )
+      throw TranscriptionError.notSupported
+    }
+
+    let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent
+      .responseBufferTooSmall(name: "transcription", configuration: self.configuration)
+    let options = options ?? Transcription.Options(modelType: .whisper)
+    let maxBufferSize = maxBufferSize ?? self.bufferSize(for: options.maxTokens)
+    guard maxBufferSize > 0 else {
+      CactusTelemetry.send(bufferTooSmallEvent)
+      throw TranscriptionError.bufferSizeTooSmall
+    }
+
+    let buffer = UnsafeMutablePointer<CChar>.allocate(capacity: maxBufferSize)
+    defer { buffer.deallocate() }
+
+    let result = try withTokenCallback(onToken) { userData, onToken in
+      cactus_transcribe(
+        self.model,
+        audio.nativePath,
+        prompt,
+        buffer,
+        maxBufferSize * MemoryLayout<CChar>.stride,
+        String(decoding: try Self.inferenceEncoder.encode(options), as: UTF8.self),
+        onToken,
+        userData
+      )
+    }
+
+    var responseData = Data()
+    for i in 0..<strnlen(buffer, maxBufferSize) {
+      responseData.append(UInt8(bitPattern: buffer[i]))
+    }
+
+    guard result != -1 else {
+      let response = try? Self.inferenceDecoder.decode(
+        InferenceErrorResponse.self,
+        from: responseData
+      )
+      if response?.error.contains(bufferTooSmallEvent.message) == true {
+        CactusTelemetry.send(bufferTooSmallEvent)
+        throw TranscriptionError.bufferSizeTooSmall
+      }
+      CactusTelemetry.send(
+        CactusTelemetry.LanguageModelErrorEvent(
+          name: "transcription",
+          message: response?.error ?? "Unknown error",
+          configuration: self.configuration
+        )
+      )
+      throw TranscriptionError.generation(message: response?.error)
+    }
+    let transcription = try Self.inferenceDecoder.decode(Transcription.self, from: responseData)
+    CactusTelemetry.send(
+      CactusTelemetry.LanguageModelTranscriptionEvent(
+        transcription: transcription,
+        options: options,
+        configuration: self.configuration
+      )
+    )
+    return transcription
+  }
+}
+
+extension CactusLanguageModel.Transcription {
+  /// Options for generating a ``CactusLanguageModel/Transcription``.
+  public typealias Options = CactusLanguageModel.InferenceOptions
+}
+
+extension CactusLanguageModel.Transcription: Decodable {
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.response = try container.decode(String.self, forKey: .response)
+    self.tokensPerSecond = try container.decode(Double.self, forKey: .tokensPerSecond)
+    self.prefillTokens = try container.decode(Int.self, forKey: .prefillTokens)
+    self.decodeTokens = try container.decode(Int.self, forKey: .decodeTokens)
+    self.totalTokens = try container.decode(Int.self, forKey: .totalTokens)
+    self.timeToFirstTokenMs = try container.decode(Double.self, forKey: .timeToFirstTokenMs)
+    self.totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
+  }
+}
+
+extension CactusLanguageModel.Transcription: Encodable {
+  private enum CodingKeys: String, CodingKey {
+    case response
+    case tokensPerSecond = "tokens_per_second"
+    case prefillTokens = "prefill_tokens"
+    case decodeTokens = "decode_tokens"
+    case totalTokens = "total_tokens"
+    case timeToFirstTokenMs = "time_to_first_token_ms"
+    case totalTimeMs = "total_time_ms"
+  }
+}
+
+// MARK: - InferenceOptions
+
+extension CactusLanguageModel {
+  /// Options for generating inferences.
+  public struct InferenceOptions: Hashable, Sendable, Codable {
+    /// A default array of common stop sequences.
+    public static let defaultStopSequences = ["<|im_end|>", "<end_of_turn>"]
+
+    /// The maximum number of tokens for the completion.
+    public var maxTokens: Int
+
+    /// The temperature.
+    public var temperature: Float
+
+    /// The nucleus sampling.
+    public var topP: Float
+
+    /// The k most probable options to limit the next word to.
+    public var topK: Int
+
+    /// An array of stop sequence phrases.
+    public var stopSequences: [String]
+
+    /// Creates options for generating inferences.
+    ///
+    /// - Parameters:
+    ///   - maxTokens: The maximum number of tokens for the completion.
+    ///   - temperature: The temperature.
+    ///   - topP: The nucleus sampling.
+    ///   - topK: The k most probable options to limit the next word to.
+    ///   - stopSequences: An array of stop sequence phrases.
+    public init(
+      maxTokens: Int = 200,
+      temperature: Float = 0.6,
+      topP: Float = 0.95,
+      topK: Int = 20,
+      stopSequences: [String] = Self.defaultStopSequences
+    ) {
+      self.maxTokens = maxTokens
+      self.temperature = temperature
+      self.topP = topP
+      self.topK = topK
+      self.stopSequences = stopSequences
+    }
+
+    /// Creates options for generating inferences.
+    ///
+    /// - Parameters:
+    ///   - maxTokens: The maximum number of tokens for the completion.
+    ///   - modelType: The model type.
+    ///   - stopSequences: An array of stop sequence phrases.
+    public init(
+      maxTokens: Int = 200,
+      modelType: CactusLanguageModel.ModelType,
+      stopSequences: [String] = Self.defaultStopSequences
+    ) {
+      self.maxTokens = maxTokens
+      self.temperature = modelType.defaultTemperature
+      self.topP = modelType.defaultTopP
+      self.topK = modelType.defaultTopK
+      self.stopSequences = stopSequences
+    }
+
+    private enum CodingKeys: String, CodingKey {
+      case maxTokens = "max_tokens"
+      case temperature
+      case topP = "top_p"
+      case topK = "top_k"
+      case stopSequences = "stop_sequences"
+    }
+  }
+}
+
 // MARK: - Stop
 
 extension CactusLanguageModel {
@@ -562,5 +833,50 @@ extension CactusLanguageModel {
       contentLength * (self.configurationFile.precision?.bits ?? 32),
       self.configurationFile.hiddenDimensions ?? 1024
     )
+  }
+}
+
+extension CactusLanguageModel {
+  private struct InferenceErrorResponse: Decodable {
+    let error: String
+  }
+
+  private static let inferenceDecoder = {
+    let decoder = JSONDecoder()
+    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+      decoder.allowsJSON5 = true
+    }
+    return decoder
+  }()
+
+  private static let inferenceEncoder = {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.withoutEscapingSlashes]
+    return encoder
+  }()
+}
+
+// MARK: - Token Callback
+
+private func withTokenCallback<T>(
+  _ callback: (String) -> Void,
+  perform operation: (UnsafeMutableRawPointer, cactus_token_callback) throws -> T
+) rethrows -> T {
+  try withoutActuallyEscaping(callback) { onToken in
+    let box = Unmanaged.passRetained(TokenCallbackBox(onToken))
+    defer { box.release() }
+    return try operation(box.toOpaque()) { token, _, ptr in
+      guard let ptr, let token else { return }
+      let box = Unmanaged<TokenCallbackBox>.fromOpaque(ptr).takeUnretainedValue()
+      box.callback(String(cString: token))
+    }
+  }
+}
+
+private final class TokenCallbackBox {
+  let callback: (String) -> Void
+
+  init(_ callback: @escaping (String) -> Void) {
+    self.callback = callback
   }
 }

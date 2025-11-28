@@ -30,7 +30,7 @@ XCFRAMEWORK_PATH="$OUTPUT_DIR/CXXCactusDarwin.xcframework"
 echo "🗑️ Removing Existing Binaries"
 rm -drf "$ARTIFACT_BUNDLE_PATH" "$XCFRAMEWORK_PATH"
 
-sed -i "" "50a\\
+sed -i "" "77a\\
 CACTUS_FFI_EXPORT const char* cactus_get_last_error();
 " "$SOURCE_DIR/ffi/cactus_ffi.h"
 
