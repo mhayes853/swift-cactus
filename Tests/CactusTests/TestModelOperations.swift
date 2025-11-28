@@ -2,28 +2,6 @@ import Cactus
 import Foundation
 import Operation
 
-// MARK: - AvailableModelsQuery
-
-extension CactusLanguageModel {
-  private static let availableModelsStore = OperationStore.detached(
-    query: $availableModelsQuery.deduplicated(),
-    initialValue: nil
-  )
-
-  static func sharedAvailableModels() async throws -> [Metadata] {
-    let store = Self.availableModelsStore
-    if let currentMetadata = store.currentValue {
-      return currentMetadata
-    }
-    return try await store.fetch()
-  }
-
-  @QueryRequest
-  private static func availableModelsQuery() async throws -> [Metadata] {
-    try await CactusLanguageModel.availableModels()
-  }
-}
-
 // MARK: - TestModelDownloadQuery
 
 extension CactusLanguageModel {
