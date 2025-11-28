@@ -3,5 +3,5 @@ import SwiftSyntaxMacros
 
 @main
 struct OperationMacrosPlugin: CompilerPlugin {
-  let providingMacros: [any Macro.Type] = []
+  let providingMacros: [any Macro.Type] = [CactusEntryMacro.self]
 }

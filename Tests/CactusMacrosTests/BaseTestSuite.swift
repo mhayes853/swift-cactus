@@ -7,7 +7,7 @@ import Testing
 @Suite(
   .serialized,
   .macros(
-    [],
+    ["CactusEntry": CactusEntryMacro.self],
     record: .failed
   )
 ) struct BaseTestSuite {}

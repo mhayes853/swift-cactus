@@ -23,12 +23,12 @@ struct `CactusEnvironmentValues tests` {
     expectNoDifference(values.description, "[]")
 
     values.test = _defaultValue + 200
-    expectNoDifference(values.description, "[CactusEnvironmentValues.TestKey = \(values.test)]")
+    expectNoDifference(values.description, "[CactusEnvironmentValues.__Key_test = \(values.test)]")
 
     values.test2 = "Vlov"
     let expected = Set([
-      "[CactusEnvironmentValues.TestKey = \(values.test), CactusEnvironmentValues.Test2Key = Vlov]",
-      "[CactusEnvironmentValues.Test2Key = Vlov, CactusEnvironmentValues.TestKey = \(values.test)]"
+      "[CactusEnvironmentValues.__Key_test = \(values.test), CactusEnvironmentValues.Test2Key = Vlov]",
+      "[CactusEnvironmentValues.Test2Key = Vlov, CactusEnvironmentValues.__Key_test = \(values.test)]"
     ])
     expectNoDifference(expected.contains(values.description), true)
   }
@@ -37,14 +37,7 @@ struct `CactusEnvironmentValues tests` {
 private let _defaultValue = 100
 
 extension CactusEnvironmentValues {
-  fileprivate var test: Int {
-    get { self[TestKey.self] }
-    set { self[TestKey.self] = newValue }
-  }
-
-  private enum TestKey: Key {
-    static let defaultValue = _defaultValue
-  }
+  @CactusEntry fileprivate var test = _defaultValue
 
   fileprivate var test2: String {
     get { self[Test2Key.self] }
