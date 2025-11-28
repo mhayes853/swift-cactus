@@ -1,5 +1,5 @@
 {
-  "originHash" : "57ec774b3c224b6fca151011c19d8edd4996185a75c59eb9d10e464fd636baaf",
+  "originHash" : "b6e8e99122b0c57918bf39a6e7ea15d536ee82415897e2bd3d2aea25712d7cd2",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -128,6 +128,15 @@
       }
     },
     {
+      "identity" : "swift-macro-testing",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swift-macro-testing",
+      "state" : {
+        "revision" : "9ab11325daa51c7c5c10fcf16c92bac906717c7e",
+        "version" : "0.6.4"
+      }
+    },
+    {
       "identity" : "swift-operation",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mhayes853/swift-operation",
@@ -170,6 +179,15 @@
       "state" : {
         "revision" : "f99ae8aa18f0cf0d53481901f88a0991dc3bd4a2",
         "version" : "601.0.1"
+      }
+    },
+    {
+      "identity" : "toonencoder",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mattt/TOONEncoder",
+      "state" : {
+        "revision" : "643f4f26483f0d16f54738a6faf3ee78b92c4366",
+        "version" : "0.1.1"
       }
     },
     {

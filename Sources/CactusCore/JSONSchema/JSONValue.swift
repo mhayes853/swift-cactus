@@ -1,47 +1,50 @@
 // MARK: - Value
 
-extension JSONSchema {
-  /// A value for a ``JSONSchema``.
-  public enum Value: Hashable, Sendable {
-    /// A string value.
-    case string(String)
+/// An individual raw JSON value.
+public enum JSONValue: Hashable, Sendable {
+  /// A string value.
+  case string(String)
 
-    /// A boolean value.
-    case boolean(Bool)
+  /// A boolean value.
+  case boolean(Bool)
 
-    /// An array value.
-    case array([Self])
+  /// An array value.
+  case array([Self])
 
-    /// An object value.
-    case object([String: Self])
+  /// An object value.
+  case object([String: Self])
 
-    /// A numerical value.
-    case number(Double)
+  /// A numerical value.
+  case number(Double)
 
-    /// An integer value.
-    case integer(Int)
+  /// An integer value.
+  case integer(Int)
 
-    /// A null value.
-    case null
+  /// A null value.
+  case null
 
-    /// The ``ValueType`` of this value.
-    public var type: ValueType {
-      switch self {
-      case .string: .string
-      case .boolean: .boolean
-      case .array: .array
-      case .object: .object
-      case .number: .number
-      case .integer: .integer
-      case .null: .null
-      }
+  /// The ``JSONSchema/ValueType`` of this value.
+  public var type: JSONSchema.ValueType {
+    switch self {
+    case .string: .string
+    case .boolean: .boolean
+    case .array: .array
+    case .object: .object
+    case .number: .number
+    case .integer: .integer
+    case .null: .null
     }
   }
 }
 
+extension JSONSchema {
+  /// A value for a ``JSONSchema``.
+  public typealias Value = JSONValue
+}
+
 // MARK: - Encodable
 
-extension JSONSchema.Value: Encodable {
+extension JSONValue: Encodable {
   public func encode(to encoder: any Encoder) throws {
     var container = encoder.singleValueContainer()
     switch self {
@@ -58,7 +61,7 @@ extension JSONSchema.Value: Encodable {
 
 // MARK: - Decodable
 
-extension JSONSchema.Value: Decodable {
+extension JSONValue: Decodable {
   public init(from decoder: any Decoder) throws {
     let container = try decoder.singleValueContainer()
     if let bool = try? container.decode(Bool.self) {
@@ -83,7 +86,7 @@ extension JSONSchema.Value: Decodable {
 
 // MARK: - ExpressibleByStringLiteral
 
-extension JSONSchema.Value: ExpressibleByStringLiteral {
+extension JSONValue: ExpressibleByStringLiteral {
   public init(stringLiteral value: String) {
     self = .string(value)
   }
@@ -91,7 +94,7 @@ extension JSONSchema.Value: ExpressibleByStringLiteral {
 
 // MARK: - ExpressibleByBooleanLiteral
 
-extension JSONSchema.Value: ExpressibleByBooleanLiteral {
+extension JSONValue: ExpressibleByBooleanLiteral {
   public init(booleanLiteral value: Bool) {
     self = .boolean(value)
   }
@@ -99,7 +102,7 @@ extension JSONSchema.Value: ExpressibleByBooleanLiteral {
 
 // MARK: - ExpressibleByFloatLiteral
 
-extension JSONSchema.Value: ExpressibleByFloatLiteral {
+extension JSONValue: ExpressibleByFloatLiteral {
   public init(floatLiteral value: Double) {
     self = .number(value)
   }
@@ -107,7 +110,7 @@ extension JSONSchema.Value: ExpressibleByFloatLiteral {
 
 // MARK: - ExpressibleByIntegerLiteral
 
-extension JSONSchema.Value: ExpressibleByIntegerLiteral {
+extension JSONValue: ExpressibleByIntegerLiteral {
   public init(integerLiteral value: Int) {
     self = .integer(value)
   }
@@ -115,7 +118,7 @@ extension JSONSchema.Value: ExpressibleByIntegerLiteral {
 
 // MARK: - ExpressibleByArrayLiteral
 
-extension JSONSchema.Value: ExpressibleByArrayLiteral {
+extension JSONValue: ExpressibleByArrayLiteral {
   public init(arrayLiteral elements: Self...) {
     self = .array(elements)
   }
@@ -123,7 +126,7 @@ extension JSONSchema.Value: ExpressibleByArrayLiteral {
 
 // MARK: - ExpressibleByDictionaryLiteral
 
-extension JSONSchema.Value: ExpressibleByDictionaryLiteral {
+extension JSONValue: ExpressibleByDictionaryLiteral {
   public init(dictionaryLiteral elements: (String, Self)...) {
     self = .object(Dictionary(uniqueKeysWithValues: elements))
   }
