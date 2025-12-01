@@ -30,7 +30,7 @@ extension CactusEnvironmentValues {
 
 extension CactusEnvironmentValues {
   public protocol Key<Value> {
-    associatedtype Value: Sendable
+    associatedtype Value
     static var defaultValue: Value { get }
   }
 }
