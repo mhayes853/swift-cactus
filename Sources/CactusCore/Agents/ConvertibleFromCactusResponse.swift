@@ -1,6 +1,6 @@
 // MARK: - ConvertibleFromCactusResponse
 
-public protocol ConvertibleFromCactusResponse: CactusPromptRepresentable {
+public protocol ConvertibleFromCactusResponse {
   associatedtype Partial: ConvertibleFromCactusResponse = Self
   associatedtype ConversionFailure: Error
 

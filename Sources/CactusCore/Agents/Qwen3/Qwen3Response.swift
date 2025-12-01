@@ -1,21 +1,8 @@
-public struct Qwen3Response<Base: ConvertibleFromCactusResponse>: ConvertibleFromCactusResponse {
+public struct Qwen3Response<
+  Base: ConvertibleFromCactusResponse
+>: ConvertibleFromCactusResponse {
   public let thinkingContent: String?
   public let response: Base
-
-  public var promptContent: CactusPromptContent {
-    get throws(Base.PromptContentFailure) {
-      let baseContent = try self.response.promptContent
-      return CactusPromptContent {
-        GroupContent {
-          if let thinkingContent {
-            "<think>\n\(thinkingContent)\n</think>"
-          }
-          baseContent
-        }
-        .separated(by: "\n\n")
-      }
-    }
-  }
 
   public init(cactusResponse: String) throws(Base.ConversionFailure) {
     let matches = thinkingContentRegex.matchGroups(from: cactusResponse)
@@ -40,10 +27,27 @@ public struct Qwen3Response<Base: ConvertibleFromCactusResponse>: ConvertibleFro
   }
 }
 
+private let thinkingContentRegex = try! RegularExpression(
+  "<think>\n([\\s\\S]*?)\n<\\/think>\n\n([\\s\\S]*)"
+)
+
 extension Qwen3Response: Sendable where Base: Sendable {}
 extension Qwen3Response: Equatable where Base: Equatable {}
 extension Qwen3Response: Hashable where Base: Hashable {}
 
-private let thinkingContentRegex = try! RegularExpression(
-  "<think>\n([\\s\\S]*?)\n<\\/think>\n\n([\\s\\S]*)"
-)
+extension Qwen3Response: CactusPromptRepresentable where Base: CactusPromptRepresentable {
+  public var promptContent: CactusPromptContent {
+    get throws(Base.PromptContentFailure) {
+      let baseContent = try self.response.promptContent
+      return CactusPromptContent {
+        GroupContent {
+          if let thinkingContent {
+            "<think>\n\(thinkingContent)\n</think>"
+          }
+          baseContent
+        }
+        .separated(by: "\n\n")
+      }
+    }
+  }
+}
