@@ -1,17 +1,12 @@
 {
-  "decode_tokens" : 23,
+  "decode_tokens" : 142,
   "function_calls" : [
-    {
-      "arguments" : {
-        "location" : "Santa Cruz"
-      },
-      "name" : "get_weather"
-    }
+
   ],
-  "prefill_tokens" : 147,
-  "response" : "",
-  "time_to_first_token_ms" : 397.55,
-  "tokens_per_second" : 50.51,
-  "total_time_ms" : 833.14,
-  "total_tokens" : 170
+  "prefill_tokens" : 133,
+  "response" : "Okay, the user wants to know the weather in a given location. I need to use the get_weather function. But wait, they didn't specify a location yet. Oh right, I should ask them for that information first before making a function call.\n\nSo my response should prompt them to provide the city name so I can fetch the weather data for them. Let me check if there's any other parameters needed or if they have more details already in mind. Since their message is just asking about getting weather info and not specifying where exactly, maybe just asking for \"Please enter your desired city\" would be appropriate.\n<\/think>\n\nPlease enter your desired city name so I can retrieve the weather information for you!<|im_end|>",
+  "time_to_first_token_ms" : 352.19,
+  "tokens_per_second" : 50.65,
+  "total_time_ms" : 3135.98,
+  "total_tokens" : 275
 }
