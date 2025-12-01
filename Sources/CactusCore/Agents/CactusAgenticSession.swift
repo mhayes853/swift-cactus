@@ -13,7 +13,7 @@ public final class CactusAgenticSession {
 
   public init(
     functions: [any CactusFunction] = [],
-    modelStore: any CactusModelStore = SessionModelStore(),
+    modelStore: any CactusAgentModelStore = SessionModelStore(),
     @CactusPromptBuilder systemPrompt: () -> CactusPromptContent
   ) {
 
@@ -21,7 +21,7 @@ public final class CactusAgenticSession {
 
   public init(
     functions: [any CactusFunction] = [],
-    modelStore: any CactusModelStore = SessionModelStore(),
+    modelStore: any CactusAgentModelStore = SessionModelStore(),
     transcript: CactusTranscript
   ) {
 

@@ -6,19 +6,24 @@ import Testing
 struct `WhisperTranscriptionResponse tests` {
   @Test
   func `Empty String Response`() {
-    let response = WhisperTranscriptionResponse(cactusResponse: "")
-    expectNoDifference(response, .fullTranscript(""))
+    let response = WhisperTranscriptionResponse(
+      cactusResponse: CactusResponse(id: CactusGenerationID(), content: "")
+    )
+    expectNoDifference(response.content, .fullTranscript(""))
   }
 
   @Test
   func `No Timestamps Response`() {
     let response = WhisperTranscriptionResponse(
-      cactusResponse: """
-         How? The power of a god cannot be overcome. Zanzan, this is the providence of the world. \
-        Even gods are merely beings restricted to the limited power determined by prophets. That \
-        power, although great, is not unlimited. That voice, Albrecht! How dare you!\
-        <|startoftranscript|>
-        """
+      cactusResponse: CactusResponse(
+        id: CactusGenerationID(),
+        content: """
+           How? The power of a god cannot be overcome. Zanzan, this is the providence of the world. \
+          Even gods are merely beings restricted to the limited power determined by prophets. That \
+          power, although great, is not unlimited. That voice, Albrecht! How dare you!\
+          <|startoftranscript|>
+          """
+      )
     )
 
     let transcript = """
@@ -26,23 +31,26 @@ struct `WhisperTranscriptionResponse tests` {
       Even gods are merely beings restricted to the limited power determined by prophets. That \
       power, although great, is not unlimited. That voice, Albrecht! How dare you!
       """
-    expectNoDifference(response, .fullTranscript(transcript))
+    expectNoDifference(response.content, .fullTranscript(transcript))
   }
 
   @Test
   func `Timestamps Response`() {
     let response = WhisperTranscriptionResponse(
-      cactusResponse: """
-        <|0.00|> How? The power of a god cannot be overcome.\
-        <|3.14|> Zanzan, this is the providence of the world. Even gods are merely beings \
-        restricted to the limited power determined by prophets.\
-        <|6.56|> That power, although great, is not unlimited. \
-        <|9.31|> That voice, Albrecht! How dare you!\
-        <|startoftranscript|>
-        """
+      cactusResponse: CactusResponse(
+        id: CactusGenerationID(),
+        content: """
+          <|0.00|> How? The power of a god cannot be overcome.\
+          <|3.14|> Zanzan, this is the providence of the world. Even gods are merely beings \
+          restricted to the limited power determined by prophets.\
+          <|6.56|> That power, although great, is not unlimited. \
+          <|9.31|> That voice, Albrecht! How dare you!\
+          <|startoftranscript|>
+          """
+      )
     )
     expectNoDifference(
-      response,
+      response.content,
       .timestamps([
         WhisperTranscriptionResponse.Timestamp(
           seconds: 0,
