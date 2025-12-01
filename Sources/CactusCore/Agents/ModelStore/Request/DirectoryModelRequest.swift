@@ -17,7 +17,7 @@ public struct DirectoryModelRequest: CactusAgentModelRequest {
     )
   }
 
-  public func loadModel(in store: any CactusAgentModelStore) throws -> CactusLanguageModel {
+  public func loadModel() throws -> CactusLanguageModel {
     fatalError()
   }
 }

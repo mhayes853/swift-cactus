@@ -5,15 +5,9 @@ public struct CactusModelAgent<
   Output: ConvertibleFromJSONValue
 >: CactusAgent {
   public init(_ model: CactusLanguageModel) {
-
   }
 
-  public init(url: URL) {
-    self.init(configuration: CactusLanguageModel.Configuration(modelURL: url))
-  }
-
-  public init(configuration: CactusLanguageModel.Configuration) {
-
+  public init(_ request: any CactusAgentModelRequest) {
   }
 
   public func stream(
