@@ -4,20 +4,27 @@ public struct Qwen3Response<
   public let thinkingContent: String?
   public let response: Base
 
-  public init(cactusResponse: String) throws(Base.ConversionFailure) {
-    let matches = thinkingContentRegex.matchGroups(from: cactusResponse)
+  public init(cactusResponse: CactusResponse) throws(Base.ConversionFailure) {
+    let matches = thinkingContentRegex.matchGroups(from: cactusResponse.content)
     if matches.isEmpty {
       let thinkingPrefix = "<think>\n"
       let thinkingContent =
-        cactusResponse.starts(with: thinkingPrefix)
-        ? String(cactusResponse.dropFirst(thinkingPrefix.count))
+        cactusResponse.content.starts(with: thinkingPrefix)
+        ? String(cactusResponse.content.dropFirst(thinkingPrefix.count))
         : nil
       self.thinkingContent = thinkingContent
-      self.response = try Base(cactusResponse: thinkingContent != nil ? "" : cactusResponse)
+      self.response = try Base(
+        cactusResponse: CactusResponse(
+          id: cactusResponse.id,
+          content: thinkingContent != nil ? "" : cactusResponse.content
+        )
+      )
     } else {
       self.thinkingContent = String(matches[0])
       let baseResponse = matches.count > 1 ? matches[1] : ""
-      self.response = try Base(cactusResponse: String(baseResponse))
+      self.response = try Base(
+        cactusResponse: CactusResponse(id: cactusResponse.id, content: String(baseResponse))
+      )
     }
   }
 

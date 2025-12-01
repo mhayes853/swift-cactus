@@ -14,8 +14,11 @@ public enum WhisperTranscriptionResponse: Hashable, Sendable, ConvertibleFromCac
   case fullTranscript(String)
   case timestamps([Timestamp])
 
-  public init(cactusResponse: String) {
-    let fullTranscript = cactusResponse.replacingOccurrences(of: "<|startoftranscript|>", with: "")
+  public init(cactusResponse: CactusResponse) {
+    let fullTranscript = cactusResponse.content.replacingOccurrences(
+      of: "<|startoftranscript|>",
+      with: ""
+    )
     let matchGroups = responseRegex.matchGroups(from: fullTranscript)
 
     if matchGroups.isEmpty {

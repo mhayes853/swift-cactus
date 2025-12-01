@@ -25,7 +25,7 @@ public protocol ConvertibleFromJSONValue: ConvertibleFromCactusResponse {
 }
 
 extension ConvertibleFromJSONValue {
-  public init(cactusResponse: String) throws {
+  public init(cactusResponse: CactusResponse) throws {
     fatalError("TODO")
   }
 }

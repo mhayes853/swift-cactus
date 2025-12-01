@@ -6,13 +6,17 @@ import Testing
 struct `Qwen3Response tests` {
   @Test
   func `Loads Response From Plain String`() throws {
-    let response = Qwen3Response<String>(cactusResponse: "Hello world")
+    let response = Qwen3Response<String>(
+      cactusResponse: CactusResponse(id: CactusGenerationID(), content: "Hello world")
+    )
     expectNoDifference(response, Qwen3Response(thinkingContent: nil, response: "Hello world"))
   }
 
   @Test
   func `Loads Custom Response Type From Plain String`() throws {
-    let response = Qwen3Response<TestResponse>(cactusResponse: "blob")
+    let response = Qwen3Response<TestResponse>(
+      cactusResponse: CactusResponse(id: CactusGenerationID(), content: "blob")
+    )
     expectNoDifference(
       response,
       Qwen3Response(thinkingContent: nil, response: TestResponse(text: "blob"))
@@ -21,7 +25,9 @@ struct `Qwen3Response tests` {
 
   @Test
   func `Loads Custom Response Type From String With Thinking Content`() throws {
-    let response = Qwen3Response<TestResponse>(cactusResponse: sampleThinkingResponse)
+    let response = Qwen3Response<TestResponse>(
+      cactusResponse: CactusResponse(id: CactusGenerationID(), content: sampleThinkingResponse)
+    )
     expectNoDifference(
       response,
       Qwen3Response(
@@ -54,7 +60,12 @@ struct `Qwen3Response tests` {
 
   @Test
   func `Loads Custom Response Type From String With Partial Thinking Content`() throws {
-    let response = Qwen3Response<TestResponse>(cactusResponse: samplePartialThinkingResponse)
+    let response = Qwen3Response<TestResponse>(
+      cactusResponse: CactusResponse(
+        id: CactusGenerationID(),
+        content: samplePartialThinkingResponse
+      )
+    )
     expectNoDifference(
       response,
       Qwen3Response(
@@ -69,7 +80,9 @@ struct `Qwen3Response tests` {
 
   @Test
   func `Formats Prompt Content Without Thinking Content`() throws {
-    let response = Qwen3Response<String>(cactusResponse: "This is cool")
+    let response = Qwen3Response<String>(
+      cactusResponse: CactusResponse(id: CactusGenerationID(), content: "This is cool")
+    )
     let components = try response.promptContent.messageComponents()
     expectNoDifference(components.text, "This is cool")
     expectNoDifference(components.images, [])
@@ -77,7 +90,9 @@ struct `Qwen3Response tests` {
 
   @Test
   func `Formats Prompt Content With Thinking Content`() throws {
-    let response = Qwen3Response<String>(cactusResponse: sampleThinkingResponse)
+    let response = Qwen3Response<String>(
+      cactusResponse: CactusResponse(id: CactusGenerationID(), content: sampleThinkingResponse)
+    )
     let components = try response.promptContent.messageComponents()
     expectNoDifference(components.text, sampleThinkingResponse)
     expectNoDifference(components.images, [])
@@ -95,8 +110,8 @@ private struct TestResponse: Hashable, Sendable, ConvertibleFromCactusResponse {
     CactusPromptContent(text: self.text)
   }
 
-  init(cactusResponse: String) {
-    self.text = cactusResponse
+  init(cactusResponse: CactusResponse) {
+    self.text = cactusResponse.content
   }
 }
 
