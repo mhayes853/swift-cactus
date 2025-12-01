@@ -6,13 +6,13 @@ import Testing
 struct `WhisperTranscriptionResponse tests` {
   @Test
   func `Empty String Response`() {
-    let response = WhipserTranscriptionResponse(cactusResponse: "")
+    let response = WhisperTranscriptionResponse(cactusResponse: "")
     expectNoDifference(response, .fullTranscript(""))
   }
 
   @Test
   func `No Timestamps Response`() {
-    let response = WhipserTranscriptionResponse(
+    let response = WhisperTranscriptionResponse(
       cactusResponse: """
          How? The power of a god cannot be overcome. Zanzan, this is the providence of the world. \
         Even gods are merely beings restricted to the limited power determined by prophets. That \
@@ -31,7 +31,7 @@ struct `WhisperTranscriptionResponse tests` {
 
   @Test
   func `Timestamps Response`() {
-    let response = WhipserTranscriptionResponse(
+    let response = WhisperTranscriptionResponse(
       cactusResponse: """
         <|0.00|> How? The power of a god cannot be overcome.\
         <|3.14|> Zanzan, this is the providence of the world. Even gods are merely beings \
@@ -44,22 +44,22 @@ struct `WhisperTranscriptionResponse tests` {
     expectNoDifference(
       response,
       .timestamps([
-        WhipserTranscriptionResponse.Timestamp(
+        WhisperTranscriptionResponse.Timestamp(
           seconds: 0,
           transcript: " How? The power of a god cannot be overcome."
         ),
-        WhipserTranscriptionResponse.Timestamp(
+        WhisperTranscriptionResponse.Timestamp(
           seconds: 3.14,
           transcript: """
              Zanzan, this is the providence of the world. Even gods are merely beings \
             restricted to the limited power determined by prophets.
             """
         ),
-        WhipserTranscriptionResponse.Timestamp(
+        WhisperTranscriptionResponse.Timestamp(
           seconds: 6.56,
           transcript: " That power, although great, is not unlimited. "
         ),
-        WhipserTranscriptionResponse.Timestamp(
+        WhisperTranscriptionResponse.Timestamp(
           seconds: 9.31,
           transcript: " That voice, Albrecht! How dare you!"
         )

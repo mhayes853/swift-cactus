@@ -1,6 +1,6 @@
 import Foundation
 
-public enum WhipserTranscriptionResponse: Hashable, Sendable, ConvertibleFromCactusResponse {
+public enum WhisperTranscriptionResponse: Hashable, Sendable, ConvertibleFromCactusResponse {
   public struct Timestamp: Hashable, Sendable {
     public let seconds: TimeInterval
     public let transcript: String
