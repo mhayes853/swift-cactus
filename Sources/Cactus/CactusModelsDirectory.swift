@@ -303,6 +303,12 @@ extension CactusModelsDirectory {
       return task
     }
   }
+
+  /// All active ``CactusLanguageModel/DownloadTask`` instances currently managed by this
+  /// directory.
+  public var activeDownloadTasks: [String: CactusLanguageModel.DownloadTask] {
+    self.state.withLock { state in state.downloadTasks.mapValues(\.task) }
+  }
 }
 
 // MARK: - Stored Models
