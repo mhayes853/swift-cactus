@@ -1,12 +1,11 @@
 // MARK: - CactusAgentStream
 
 public struct CactusAgentStream<Output: ConvertibleFromCactusResponse> {
-}
+  public let continuation = Continuation()
 
-// MARK: - Collect
+  public init() {}
 
-extension CactusAgentStream {
-  public func collect() async throws -> Output {
+  public func collectResponse() async throws -> Output {
     fatalError()
   }
 }
