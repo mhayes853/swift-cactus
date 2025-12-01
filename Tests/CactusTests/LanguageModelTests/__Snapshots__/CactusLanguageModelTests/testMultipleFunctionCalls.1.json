@@ -1,17 +1,12 @@
 {
-  "decode_tokens" : 35,
+  "decode_tokens" : 200,
   "function_calls" : [
-    {
-      "arguments" : {
-        "location" : "Nairobi"
-      },
-      "name" : "get_weather"
-    }
+
   ],
-  "prefill_tokens" : 191,
-  "response" : "```json\n",
-  "time_to_first_token_ms" : 465.75,
-  "tokens_per_second" : 49.02,
-  "total_time_ms" : 1159.39,
-  "total_tokens" : 226
+  "prefill_tokens" : 201,
+  "response" : "Okay, let's see what needs to be done here. The user provided some tools but didn't specify which one to use yet. First, I need to check which functions are available.\n\nLooking at the tools listed: there's get_weather and get_population. The user hasn't given a location or a city yet, so maybe they need assistance with either of these functions first? But wait, the problem says when using a tool, respond with JSON in this format.\n\nWait, but how do I know which function is needed? Maybe they want both weather info and population data? Or perhaps only one is required based on their request?\n\nHmm... Since the user hasn't specified exactly what needs to be done right now (like asking for weather or population), maybe there's an assumption here. Let me think again. The initial message from the assistant was just \"When you need to call a tool...\" but then provided some examples of function calls.\n\nAh! Wait, looking at the example response given by",
+  "time_to_first_token_ms" : 557.65,
+  "tokens_per_second" : 46.82,
+  "total_time_ms" : 4807.95,
+  "total_tokens" : 401
 }
