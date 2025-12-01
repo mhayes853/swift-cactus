@@ -1,6 +1,7 @@
 // MARK: - CactusModelStore
 
-public protocol CactusModelStore {
+/// A protocol for accessing and managing `CactusLanguageModel` instances used by agents.
+public protocol CactusAgentModelStore {
   func withModelAccess<T>(
     slug: String,
     in directory: CactusModelsDirectory,

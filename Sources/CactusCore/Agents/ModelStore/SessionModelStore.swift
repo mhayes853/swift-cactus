@@ -1,5 +1,5 @@
-/// A ``CactusModelStore`` that manages models for a single ``CactusAgenticSession``.
-public final class SessionModelStore: CactusModelStore {
+/// A ``CactusAgentModelStore`` that manages models for a single ``CactusAgenticSession``.
+public final class SessionModelStore: CactusAgentModelStore {
   public init() {}
 
   public func withModelAccess<T>(
