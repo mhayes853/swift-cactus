@@ -2,10 +2,7 @@ import Observation
 
 // MARK: - CactusAgenticSession
 
-public final class CactusAgenticSession<
-  Input: CactusPromptRepresentable,
-  Output: ConvertibleFromCactusResponse
-> {
+public final class CactusAgenticSession {
   public var isResponding: Bool {
     false
   }
@@ -15,7 +12,6 @@ public final class CactusAgenticSession<
   }
 
   public init(
-    _ agent: sending some CactusAgent<Input, Output>,
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: () -> CactusPromptContent
   ) {
@@ -23,11 +19,24 @@ public final class CactusAgenticSession<
   }
 
   public init(
-    _ agent: sending some CactusAgent<Input, Output>,
     functions: [any CactusFunction] = [],
     transcript: CactusTranscript
   ) {
 
+  }
+
+  public func stream<Input: CactusPromptRepresentable, Output>(
+    for message: Input,
+    using agent: some CactusAgent<Input, Output>
+  ) -> CactusAgentStream<Output> {
+    CactusAgentStream()
+  }
+
+  public func respond<Input: CactusPromptRepresentable, Output>(
+    to message: Input,
+    using agent: some CactusAgent<Input, Output>
+  ) async throws -> Output {
+    try await self.stream(for: message, using: agent).collectResponse()
   }
 }
 
