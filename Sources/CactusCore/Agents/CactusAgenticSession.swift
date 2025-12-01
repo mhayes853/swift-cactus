@@ -25,14 +25,14 @@ public final class CactusAgenticSession {
 
   }
 
-  public func stream<Input: CactusPromptRepresentable, Output>(
+  public func stream<Input, Output>(
     for message: Input,
     using agent: some CactusAgent<Input, Output>
   ) -> CactusAgentStream<Output> {
     CactusAgentStream()
   }
 
-  public func respond<Input: CactusPromptRepresentable, Output>(
+  public func respond<Input, Output>(
     to message: Input,
     using agent: some CactusAgent<Input, Output>
   ) async throws -> Output {
