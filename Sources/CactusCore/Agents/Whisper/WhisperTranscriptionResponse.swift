@@ -1,6 +1,8 @@
 import Foundation
 
-public enum WhisperTranscriptionResponse: Hashable, Sendable, ConvertibleFromCactusResponse {
+public struct WhisperTranscriptionResponse: Hashable, Sendable, ConvertibleFromCactusResponse,
+  Identifiable
+{
   public struct Timestamp: Hashable, Sendable {
     public let seconds: TimeInterval
     public let transcript: String
@@ -11,10 +13,17 @@ public enum WhisperTranscriptionResponse: Hashable, Sendable, ConvertibleFromCac
     }
   }
 
-  case fullTranscript(String)
-  case timestamps([Timestamp])
+  public enum Content: Hashable, Sendable {
+    case fullTranscript(String)
+    case timestamps([Timestamp])
+  }
+
+  public let id: CactusGenerationID
+  public let content: Content
 
   public init(cactusResponse: CactusResponse) {
+    self.id = cactusResponse.id
+
     let fullTranscript = cactusResponse.content.replacingOccurrences(
       of: "<|startoftranscript|>",
       with: ""
@@ -22,9 +31,9 @@ public enum WhisperTranscriptionResponse: Hashable, Sendable, ConvertibleFromCac
     let matchGroups = responseRegex.matchGroups(from: fullTranscript)
 
     if matchGroups.isEmpty {
-      self = .fullTranscript(fullTranscript)
+      self.content = .fullTranscript(fullTranscript)
     } else {
-      self = .timestamps(
+      self.content = .timestamps(
         stride(from: 0, to: matchGroups.count, by: 2)
           .compactMap { i in
             guard let seconds = TimeInterval(matchGroups[i]) else { return nil }
@@ -33,6 +42,11 @@ public enum WhisperTranscriptionResponse: Hashable, Sendable, ConvertibleFromCac
           }
       )
     }
+  }
+
+  public init(id: CactusGenerationID, content: Content) {
+    self.id = id
+    self.content = content
   }
 }
 

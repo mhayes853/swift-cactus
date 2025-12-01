@@ -1,10 +1,12 @@
 public struct Qwen3Response<
   Base: ConvertibleFromCactusResponse
->: ConvertibleFromCactusResponse {
+>: ConvertibleFromCactusResponse, Identifiable {
+  public let id: CactusGenerationID
   public let thinkingContent: String?
   public let response: Base
 
   public init(cactusResponse: CactusResponse) throws(Base.ConversionFailure) {
+    self.id = cactusResponse.id
     let matches = thinkingContentRegex.matchGroups(from: cactusResponse.content)
     if matches.isEmpty {
       let thinkingPrefix = "<think>\n"
@@ -28,7 +30,8 @@ public struct Qwen3Response<
     }
   }
 
-  public init(thinkingContent: String? = nil, response: Base) {
+  public init(id: CactusGenerationID, thinkingContent: String? = nil, response: Base) {
+    self.id = id
     self.thinkingContent = thinkingContent
     self.response = response
   }

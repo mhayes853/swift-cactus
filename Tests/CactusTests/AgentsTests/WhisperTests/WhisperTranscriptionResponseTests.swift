@@ -9,7 +9,7 @@ struct `WhisperTranscriptionResponse tests` {
     let response = WhisperTranscriptionResponse(
       cactusResponse: CactusResponse(id: CactusGenerationID(), content: "")
     )
-    expectNoDifference(response, .fullTranscript(""))
+    expectNoDifference(response.content, .fullTranscript(""))
   }
 
   @Test
@@ -31,7 +31,7 @@ struct `WhisperTranscriptionResponse tests` {
       Even gods are merely beings restricted to the limited power determined by prophets. That \
       power, although great, is not unlimited. That voice, Albrecht! How dare you!
       """
-    expectNoDifference(response, .fullTranscript(transcript))
+    expectNoDifference(response.content, .fullTranscript(transcript))
   }
 
   @Test
@@ -50,7 +50,7 @@ struct `WhisperTranscriptionResponse tests` {
       )
     )
     expectNoDifference(
-      response,
+      response.content,
       .timestamps([
         WhisperTranscriptionResponse.Timestamp(
           seconds: 0,

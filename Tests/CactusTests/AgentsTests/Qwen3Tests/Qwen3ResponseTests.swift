@@ -6,31 +6,38 @@ import Testing
 struct `Qwen3Response tests` {
   @Test
   func `Loads Response From Plain String`() throws {
+    let id = CactusGenerationID()
     let response = Qwen3Response<String>(
-      cactusResponse: CactusResponse(id: CactusGenerationID(), content: "Hello world")
+      cactusResponse: CactusResponse(id: id, content: "Hello world")
     )
-    expectNoDifference(response, Qwen3Response(thinkingContent: nil, response: "Hello world"))
+    expectNoDifference(
+      response,
+      Qwen3Response(id: id, thinkingContent: nil, response: "Hello world")
+    )
   }
 
   @Test
   func `Loads Custom Response Type From Plain String`() throws {
+    let id = CactusGenerationID()
     let response = Qwen3Response<TestResponse>(
-      cactusResponse: CactusResponse(id: CactusGenerationID(), content: "blob")
+      cactusResponse: CactusResponse(id: id, content: "blob")
     )
     expectNoDifference(
       response,
-      Qwen3Response(thinkingContent: nil, response: TestResponse(text: "blob"))
+      Qwen3Response(id: id, thinkingContent: nil, response: TestResponse(text: "blob"))
     )
   }
 
   @Test
   func `Loads Custom Response Type From String With Thinking Content`() throws {
+    let id = CactusGenerationID()
     let response = Qwen3Response<TestResponse>(
-      cactusResponse: CactusResponse(id: CactusGenerationID(), content: sampleThinkingResponse)
+      cactusResponse: CactusResponse(id: id, content: sampleThinkingResponse)
     )
     expectNoDifference(
       response,
       Qwen3Response(
+        id: id,
         thinkingContent: """
           Okay, the user is asking about the meaning of life. First, I need to acknowledge that this \
           is a complex and philosophical question. As a philosopher, I should approach it with curiosity and openness.
@@ -60,15 +67,14 @@ struct `Qwen3Response tests` {
 
   @Test
   func `Loads Custom Response Type From String With Partial Thinking Content`() throws {
+    let id = CactusGenerationID()
     let response = Qwen3Response<TestResponse>(
-      cactusResponse: CactusResponse(
-        id: CactusGenerationID(),
-        content: samplePartialThinkingResponse
-      )
+      cactusResponse: CactusResponse(id: id, content: samplePartialThinkingResponse)
     )
     expectNoDifference(
       response,
       Qwen3Response(
+        id: id,
         thinkingContent:
           "Okay, the user is asking about the meaning of life. First, I need to acknowledge that this",
         response: TestResponse(
@@ -80,8 +86,9 @@ struct `Qwen3Response tests` {
 
   @Test
   func `Formats Prompt Content Without Thinking Content`() throws {
+    let id = CactusGenerationID()
     let response = Qwen3Response<String>(
-      cactusResponse: CactusResponse(id: CactusGenerationID(), content: "This is cool")
+      cactusResponse: CactusResponse(id: id, content: "This is cool")
     )
     let components = try response.promptContent.messageComponents()
     expectNoDifference(components.text, "This is cool")
@@ -90,8 +97,9 @@ struct `Qwen3Response tests` {
 
   @Test
   func `Formats Prompt Content With Thinking Content`() throws {
+    let id = CactusGenerationID()
     let response = Qwen3Response<String>(
-      cactusResponse: CactusResponse(id: CactusGenerationID(), content: sampleThinkingResponse)
+      cactusResponse: CactusResponse(id: id, content: sampleThinkingResponse)
     )
     let components = try response.promptContent.messageComponents()
     expectNoDifference(components.text, sampleThinkingResponse)
