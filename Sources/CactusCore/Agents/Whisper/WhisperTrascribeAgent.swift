@@ -16,7 +16,7 @@ public struct WhisperTranscribeAgent: CactusAgent {
   public func stream(
     isolation: isolated (any Actor)?,
     input: WhisperTranscribePrompt,
-    into continuation: CactusAgentStream<WhipserTranscriptionResponse>.Continuation
+    into continuation: CactusAgentStream<WhisperTranscriptionResponse>.Continuation
   ) async throws {
   }
 }
