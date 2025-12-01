@@ -5,7 +5,6 @@ public protocol CactusFunction<Input, Output> {
   var name: String { get }
   var description: String { get }
   var parametersSchema: JSONSchema { get }
-  var includesSchemaInSystemPrompt: Bool { get }
 
   func invoke(input: Input) async throws -> Output
 }
@@ -13,10 +12,6 @@ public protocol CactusFunction<Input, Output> {
 extension CactusFunction {
   public var name: String {
     typeName(Self.self)
-  }
-
-  public var includesSchemaInSystemPrompt: Bool {
-    false
   }
 }
 

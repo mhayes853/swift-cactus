@@ -360,11 +360,6 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
   }
 
   func testAudioTranscription() async throws {
-    struct Transcription: Codable {
-      let slug: String
-      let transcription: CactusLanguageModel.Transcription
-    }
-
     let url = try await CactusLanguageModel.testAudioModelURL(
       slug: CactusLanguageModel.testTranscribeSlug
     )
@@ -379,6 +374,31 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
         record: true
       )
     }
+  }
+
+  func testAudioTranscriptionWithTimestamps() async throws {
+    let url = try await CactusLanguageModel.testAudioModelURL(
+      slug: CactusLanguageModel.testTranscribeSlug
+    )
+    let model = try CactusLanguageModel(from: url)
+
+    let transcription = try model.transcribe(
+      audio: .testAudio,
+      prompt: "<|startoftranscript|><|en|><|transcribe|>"
+    )
+
+    withExpectedIssue {
+      assertSnapshot(
+        of: Transcription(slug: model.configuration.modelSlug, transcription: transcription),
+        as: .json,
+        record: true
+      )
+    }
+  }
+
+  private struct Transcription: Codable {
+    let slug: String
+    let transcription: CactusLanguageModel.Transcription
   }
 }
 
