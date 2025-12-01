@@ -10,7 +10,8 @@ public protocol CactusAgentModelStore {
 
 // MARK: - CactusModelStoreError
 
-public enum CactusModelStoreError: Error {
-  case modelDownloading(CactusLanguageModel.DownloadTask)
+public enum CactusAgentModelStoreError: Error {
+  case modelDownloading
+  case modelNotFound
   case failedToLoadModel(underlyingError: any Error)
 }
