@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - DirectoryModelRequest
+
 public struct DirectoryModelRequest: CactusAgentModelRequest {
   enum Slug: Hashable, Sendable {
     case audio(String)
@@ -51,10 +53,10 @@ public struct DirectoryModelRequest: CactusAgentModelRequest {
       case .text(let slug):
         _ = try self.directory.modelDownloadTask(for: slug, configuration: downloadConfiguration)
       }
-      throw CactusAgentModelStoreError.modelDownloading
+      throw DirectoryModelRequestError.modelDownloading
     } else {
       guard let model = try self.loadStoredModel() else {
-        throw CactusAgentModelStoreError.modelNotFound
+        throw DirectoryModelRequestError.modelNotFound
       }
       return model
     }
@@ -104,4 +106,11 @@ extension CactusAgentModelRequest where Self == DirectoryModelRequest {
       downloadConfiguration: downloadConfiguration
     )
   }
+}
+
+// MARK: - Error
+
+public enum DirectoryModelRequestError: Hashable, Error {
+  case modelDownloading
+  case modelNotFound
 }

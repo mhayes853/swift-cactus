@@ -7,10 +7,10 @@ struct `DirectoryModelRequest tests` {
   @Test
   func `Begins Downloading Model When Not Stored On Disk`() throws {
     let request: some CactusAgentModelRequest = .fromDirectory(slug: "blob", directory: .testModels)
-    let error = #expect(throws: CactusAgentModelStoreError.self) {
+    let error = #expect(throws: DirectoryModelRequestError.self) {
       try request.loadModel()
     }
-    expectNoDifference(error?.isDownloading, true)
+    expectNoDifference(error, .modelDownloading)
 
     try CactusModelsDirectory.testModels.modelDownloadTask(for: "blob").cancel()
   }
@@ -22,10 +22,10 @@ struct `DirectoryModelRequest tests` {
       directory: .testModels,
       downloadConfiguration: nil
     )
-    let error = #expect(throws: CactusAgentModelStoreError.self) {
+    let error = #expect(throws: DirectoryModelRequestError.self) {
       try request.loadModel()
     }
-    expectNoDifference(error?.isModelNotFound, true)
+    expectNoDifference(error, .modelNotFound)
   }
 
   @Test
@@ -45,27 +45,11 @@ struct `DirectoryModelRequest tests` {
     let downloadTask = try CactusModelsDirectory.testModels.modelDownloadTask(for: "blob")
 
     let request: some CactusAgentModelRequest = .fromDirectory(slug: "blob", directory: .testModels)
-    let error = #expect(throws: CactusAgentModelStoreError.self) {
+    let error = #expect(throws: DirectoryModelRequestError.self) {
       try request.loadModel()
     }
-    expectNoDifference(error?.isDownloading, true)
+    expectNoDifference(error, .modelDownloading)
 
     downloadTask.cancel()
-  }
-}
-
-extension CactusAgentModelStoreError {
-  var isDownloading: Bool {
-    switch self {
-    case .modelDownloading: true
-    default: false
-    }
-  }
-
-  var isModelNotFound: Bool {
-    switch self {
-    case .modelNotFound: true
-    default: false
-    }
   }
 }
