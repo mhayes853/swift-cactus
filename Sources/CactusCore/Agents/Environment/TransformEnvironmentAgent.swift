@@ -3,13 +3,14 @@ extension CactusAgent {
     _ path: WritableKeyPath<CactusEnvironmentValues, Value>,
     _ newValue: Value
   ) -> _TransformEnvironmentAgent<Self> {
-    self.transformEnvironment { $0[keyPath: path] = newValue }
+    self.transformEnvironment(path) { $0 = newValue }
   }
 
-  public func transformEnvironment(
-    _ transform: @escaping (inout CactusEnvironmentValues) -> Void
+  public func transformEnvironment<Value>(
+    _ path: WritableKeyPath<CactusEnvironmentValues, Value>,
+    _ transform: @escaping (inout Value) -> Void
   ) -> _TransformEnvironmentAgent<Self> {
-    _TransformEnvironmentAgent(base: self, transform: transform)
+    _TransformEnvironmentAgent(base: self) { transform(&$0[keyPath: path]) }
   }
 }
 
