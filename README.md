@@ -277,7 +277,7 @@ Alternatively, you could export a JNI function to set the `androidFilesDirectory
 ```swift
 // In JNI module MyAppSwift
 // 
-// See https://github.com/swiftlang/swift-android-examples/tree/main/hello-swift-java/hashing-app 
+// See https://github.com/swiftlang/swift-android-examples/tree/main/hello-swift-java
 // for more information on how to expose a Swift Package through JNI.
 import Cactus
 
