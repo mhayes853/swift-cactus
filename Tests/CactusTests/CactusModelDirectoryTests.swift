@@ -57,6 +57,30 @@
     }
 
     @Test
+    func `Creates Active Download Tasks`() async throws {
+      let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
+
+      expectNoDifference(directory.activeDownloadTasks.isEmpty, true)
+
+      let t1 = try directory.modelDownloadTask(
+        for: CactusLanguageModel.testModelSlug,
+        configuration: self.configuration
+      )
+      let t2 = try directory.modelDownloadTask(
+        for: CactusLanguageModel.testVLMSlug,
+        configuration: self.configuration
+      )
+      expectNoDifference(
+        directory.activeDownloadTasks[CactusLanguageModel.testModelSlug] === t1,
+        true
+      )
+      expectNoDifference(
+        directory.activeDownloadTasks[CactusLanguageModel.testVLMSlug] === t2,
+        true
+      )
+    }
+
+    @Test
     func `Uses New Download Task After Completion`() async throws {
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
 

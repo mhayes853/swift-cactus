@@ -21,15 +21,19 @@ import struct Foundation.URL
 /// // ...
 /// ```
 public final class CactusModelsDirectory: Sendable {
-  #if !os(Android)
-    /// A shared directory instance.
-    ///
-    /// This instance stores the models inside the application support directory.
-    public static let shared = CactusModelsDirectory(
-      baseURL: ._applicationSupportDirectory
-        .appendingPathComponent("cactus-models", isDirectory: true)
+  /// A shared directory instance.
+  ///
+  /// This instance stores the models inside the application support directory.
+  public static let shared = {
+    #if os(Android)
+      let baseDir = requireAndroidFilesDirectory()
+    #else
+      let baseDir = URL._applicationSupportDirectory
+    #endif
+    return CactusModelsDirectory(
+      baseURL: baseDir.appendingPathComponent("cactus-models", isDirectory: true)
     )
-  #endif
+  }()
 
   private struct State {
     var downloadTasks = [String: DownloadTaskEntry]()
@@ -302,6 +306,12 @@ extension CactusModelsDirectory {
       state.downloadTasks[slug] = DownloadTaskEntry(task: task, subscription: subscription)
       return task
     }
+  }
+
+  /// All active ``CactusLanguageModel/DownloadTask`` instances currently managed by this
+  /// directory.
+  public var activeDownloadTasks: [String: CactusLanguageModel.DownloadTask] {
+    self.state.withLock { state in state.downloadTasks.mapValues(\.task) }
   }
 }
 
