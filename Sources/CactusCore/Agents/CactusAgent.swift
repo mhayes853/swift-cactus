@@ -7,8 +7,7 @@ public protocol CactusAgent<Input, Output> {
   @CactusAgentBuilder<Input, Output>
   func body(input: Input) -> Body
 
-  func stream(
-    isolation: isolated (any Actor)?,
+  nonisolated(nonsending) func stream(
     input: Input,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws
@@ -30,16 +29,11 @@ extension CactusAgent where Body == Never {
 
 extension CactusAgent where Body: CactusAgent<Input, Output> {
   @inlinable
-  public func stream(
-    isolation: isolated (any Actor)? = nil,
+  public nonisolated(nonsending) func stream(
     input: Input,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws {
     try await self.body(input: input)
-      .stream(
-        isolation: isolation,
-        input: input,
-        into: continuation
-      )
+      .stream(input: input, into: continuation)
   }
 }
