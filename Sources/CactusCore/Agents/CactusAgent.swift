@@ -5,17 +5,17 @@ public protocol CactusAgent<Input, Output> {
   associatedtype Body
 
   @CactusAgentBuilder<Input, Output>
-  func body(input: Input) -> Body
+  func body(request: CactusAgentRequest<Input>) -> Body
 
   nonisolated(nonsending) func stream(
-    input: Input,
+    request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws
 }
 
 extension CactusAgent where Body == Never {
   @_transparent
-  public func body(input: Input) -> Never {
+  public func body(request: CactusAgentRequest<Input>) -> Never {
     fatalError(
       """
       '\(Self.self)' has no body. …
@@ -30,10 +30,10 @@ extension CactusAgent where Body == Never {
 extension CactusAgent where Body: CactusAgent<Input, Output> {
   @inlinable
   public nonisolated(nonsending) func stream(
-    input: Input,
+    request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws {
-    try await self.body(input: input)
-      .stream(input: input, into: continuation)
+    try await self.body(request: request)
+      .stream(request: request, into: continuation)
   }
 }
