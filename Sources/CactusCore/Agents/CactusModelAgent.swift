@@ -10,9 +10,8 @@ public struct CactusModelAgent<
   public init(_ request: any CactusAgentModelRequest) {
   }
 
-  public func stream(
-    isolation: isolated (any Actor)?,
-    input: Input,
+  public nonisolated(nonsending) func stream(
+    request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws {
   }

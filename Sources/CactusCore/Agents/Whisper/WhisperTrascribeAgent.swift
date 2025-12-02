@@ -7,9 +7,8 @@ public struct WhisperTranscribeAgent: CactusAgent {
   public init(_ request: any CactusAgentModelRequest) {
   }
 
-  public func stream(
-    isolation: isolated (any Actor)?,
-    input: WhisperTranscribePrompt,
+  public nonisolated(nonsending) func stream(
+    request: CactusAgentRequest<WhisperTranscribePrompt>,
     into continuation: CactusAgentStream<WhisperTranscriptionResponse>.Continuation
   ) async throws {
   }

@@ -1,31 +1,31 @@
 import Cactus
 import CustomDump
+import Foundation
 import Testing
 
 @Suite
 struct `DirectoryModelRequest tests` {
   @Test
-  func `Begins Downloading Model When Not Stored On Disk`() throws {
+  func `Begins Downloading Model When Not Stored On Disk`() async throws {
     let request: some CactusAgentModelRequest = .fromDirectory(slug: "blob", directory: .testModels)
-    let error = #expect(throws: CactusAgentModelStoreError.self) {
-      try request.loadModel()
+    let error = await #expect(throws: DirectoryModelRequestError.self) {
+      try await request.loadModel(in: CactusEnvironmentValues())
     }
-    expectNoDifference(error?.isDownloading, true)
+    expectNoDifference(error, .modelDownloading)
 
     try CactusModelsDirectory.testModels.modelDownloadTask(for: "blob").cancel()
   }
 
   @Test
-  func `Model Not Found When Is Not Persisted And No Download Configuration`() throws {
+  func `Model Not Found When Is Not Persisted And No Downloading Behavior`() async throws {
     let request: some CactusAgentModelRequest = .fromDirectory(
       slug: "blob",
       directory: .testModels,
-      downloadConfiguration: nil
+      downloadBehavior: .noDownloading
     )
-    let error = #expect(throws: CactusAgentModelStoreError.self) {
-      try request.loadModel()
+    await #expect(throws: DirectoryModelRequestError.modelNotFound) {
+      try await request.loadModel(in: CactusEnvironmentValues())
     }
-    expectNoDifference(error?.isModelNotFound, true)
   }
 
   @Test
@@ -33,39 +33,35 @@ struct `DirectoryModelRequest tests` {
     _ = try await CactusLanguageModel.testModelURL()
     let request: some CactusAgentModelRequest = .fromDirectory(
       slug: CactusLanguageModel.testModelSlug,
-      directory: .testModels,
-      downloadConfiguration: nil
+      directory: .testModels
     )
-    let model = try request.loadModel()
+    let model = try await request.loadModel(in: CactusEnvironmentValues())
     expectNoDifference(model.configuration.modelSlug, CactusLanguageModel.testModelSlug)
   }
 
   @Test
-  func `Throws Model Downloading Error When Download Started Externally`() throws {
+  func `Throws Model Downloading Error When Download Started Externally`() async throws {
     let downloadTask = try CactusModelsDirectory.testModels.modelDownloadTask(for: "blob")
 
     let request: some CactusAgentModelRequest = .fromDirectory(slug: "blob", directory: .testModels)
-    let error = #expect(throws: CactusAgentModelStoreError.self) {
-      try request.loadModel()
+    await #expect(throws: DirectoryModelRequestError.modelDownloading) {
+      try await request.loadModel(in: CactusEnvironmentValues())
     }
-    expectNoDifference(error?.isDownloading, true)
 
     downloadTask.cancel()
   }
-}
 
-extension CactusAgentModelStoreError {
-  var isDownloading: Bool {
-    switch self {
-    case .modelDownloading: true
-    default: false
-    }
-  }
+  @Test
+  func `Waits For Model Download When Download Behavior Specifies Waiting`() async throws {
+    let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
+    let request: some CactusAgentModelRequest = .fromDirectory(
+      audioSlug: "whisper-tiny",
+      directory: directory,
+      downloadBehavior: .waitForDownload(.default)
+    )
+    let model = try await request.loadModel(in: CactusEnvironmentValues())
+    expectNoDifference(model.configuration.modelSlug, "whisper-tiny")
 
-  var isModelNotFound: Bool {
-    switch self {
-    case .modelNotFound: true
-    default: false
-    }
+    try FileManager.default.removeItem(at: directory.baseURL)
   }
 }

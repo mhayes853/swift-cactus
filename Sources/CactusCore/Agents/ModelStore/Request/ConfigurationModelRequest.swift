@@ -7,11 +7,13 @@ public struct ConfigurationModelRequest: CactusAgentModelRequest {
 
   let configuration: CactusLanguageModel.Configuration
 
-  public var id: ID {
+  public func id(in environment: CactusEnvironmentValues) -> ID {
     ID(configuration: self.configuration)
   }
 
-  public func loadModel() throws -> CactusLanguageModel {
+  public func loadModel(
+    in environment: CactusEnvironmentValues
+  ) throws -> sending CactusLanguageModel {
     try CactusLanguageModel(configuration: self.configuration)
   }
 }

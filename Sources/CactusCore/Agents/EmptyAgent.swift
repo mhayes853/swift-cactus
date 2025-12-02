@@ -7,9 +7,8 @@ public struct EmptyAgent<
 
   @inlinable
   @inline(__always)
-  public func stream(
-    isolation: isolated (any Actor)?,
-    input: Input,
+  public nonisolated(nonsending) func stream(
+    request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws {
   }

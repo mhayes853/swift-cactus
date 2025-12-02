@@ -1,6 +1,6 @@
 import Foundation
 
-// NB: Our usage of Regex doesn't have any non-Sendable transoformations, so @unchecked Sendable is safe.
+// NB: Our usage of Regex doesn't have any non-Sendable transformations, so @unchecked Sendable is safe.
 struct RegularExpression: @unchecked Sendable {
   private let inner: Any
 
