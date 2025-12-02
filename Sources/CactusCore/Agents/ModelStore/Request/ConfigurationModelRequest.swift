@@ -11,7 +11,7 @@ public struct ConfigurationModelRequest: CactusAgentModelRequest {
     ID(configuration: self.configuration)
   }
 
-  public func loadModel() throws -> CactusLanguageModel {
+  public func loadModel(in environment: CactusEnvironmentValues) throws -> CactusLanguageModel {
     try CactusLanguageModel(configuration: self.configuration)
   }
 }

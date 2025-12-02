@@ -4,6 +4,7 @@ public final class SessionModelStore: CactusAgentModelStore {
 
   public func withModelAccess<T>(
     for request: any CactusAgentModelRequest,
+    environment: CactusEnvironmentValues,
     perform operation: (CactusLanguageModel) throws -> T
   ) throws -> T {
     fatalError()

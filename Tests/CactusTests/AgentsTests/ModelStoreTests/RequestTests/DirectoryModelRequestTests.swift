@@ -8,7 +8,7 @@ struct `DirectoryModelRequest tests` {
   func `Begins Downloading Model When Not Stored On Disk`() throws {
     let request: some CactusAgentModelRequest = .fromDirectory(slug: "blob", directory: .testModels)
     let error = #expect(throws: DirectoryModelRequestError.self) {
-      try request.loadModel()
+      try request.loadModel(in: CactusEnvironmentValues())
     }
     expectNoDifference(error, .modelDownloading)
 
@@ -23,7 +23,7 @@ struct `DirectoryModelRequest tests` {
       downloadConfiguration: nil
     )
     let error = #expect(throws: DirectoryModelRequestError.self) {
-      try request.loadModel()
+      try request.loadModel(in: CactusEnvironmentValues())
     }
     expectNoDifference(error, .modelNotFound)
   }
@@ -36,7 +36,7 @@ struct `DirectoryModelRequest tests` {
       directory: .testModels,
       downloadConfiguration: nil
     )
-    let model = try request.loadModel()
+    let model = try request.loadModel(in: CactusEnvironmentValues())
     expectNoDifference(model.configuration.modelSlug, CactusLanguageModel.testModelSlug)
   }
 
@@ -46,7 +46,7 @@ struct `DirectoryModelRequest tests` {
 
     let request: some CactusAgentModelRequest = .fromDirectory(slug: "blob", directory: .testModels)
     let error = #expect(throws: DirectoryModelRequestError.self) {
-      try request.loadModel()
+      try request.loadModel(in: CactusEnvironmentValues())
     }
     expectNoDifference(error, .modelDownloading)
 

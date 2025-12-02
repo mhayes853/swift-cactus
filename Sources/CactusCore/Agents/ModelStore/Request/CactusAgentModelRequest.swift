@@ -1,3 +1,3 @@
 public protocol CactusAgentModelRequest: Identifiable {
-  func loadModel() throws -> CactusLanguageModel
+  func loadModel(in environment: CactusEnvironmentValues) throws -> CactusLanguageModel
 }

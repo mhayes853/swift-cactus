@@ -39,7 +39,7 @@ public struct DirectoryModelRequest: CactusAgentModelRequest {
     )
   }
 
-  public func loadModel() throws -> CactusLanguageModel {
+  public func loadModel(in environment: CactusEnvironmentValues) throws -> CactusLanguageModel {
     if let downloadConfiguration {
       if let model = try self.loadStoredModel() {
         return model
