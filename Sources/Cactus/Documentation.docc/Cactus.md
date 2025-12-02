@@ -248,6 +248,51 @@ struct MyApp: App {
 
 `CactusLanguageModel` will automatically record telemetry events for every model initialization, chat completion, and embeddings generation, but you can also send telemetry events manually using ``CactusTelemetry/send(_:logger:)``. You can view the telemetry data in the cactus dashboard.
 
+### Android Setup
+
+On Android certain APIs such as ``CactusModelsDirectory/shared`` require the use of the files directory. When your application launches on Android, make sure to set the `androidFilesDirectory` global variable to the path of the files directory.
+
+```swift
+import Cactus
+import Android
+import AndroidNativeAppGlue
+
+@_silgen_name("android_main")
+public func android_main(_ app: UnsafeMutablePointer<android_app>) {
+  Cactus.androidFilesDirectory = URL(
+    fileURLWithPath: app.pointee.activity.pointee.internalDataPath
+  )
+  
+  // ...
+}
+```
+
+Alternatively, you could export a JNI function to set the `androidFilesDirectory` global variable, and call that function from kotlin.
+
+```swift
+// In JNI module MyAppSwift
+// 
+// See https://github.com/swiftlang/swift-android-examples/tree/main/hello-swift-java/hashing-app 
+// for more information on how to expose a Swift Package through JNI.
+import Cactus
+
+public func setAndroidFilesDirectory(_ path: String) {
+  Cactus.androidFilesDirectory = URL(fileURLWithPath: path)
+}
+```
+```kotlin
+// In Android App
+import com.example.myapp.MyAppSwift
+
+class MainActivity : ComponentActivity() {
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    MyAppSwift.setAndroidFilesDirectory(applicationContext.filesDir.absolutePath)
+    // ...
+  }
+}
+```
+
 ## Topics
 
 ### Model Downloading and Storage
