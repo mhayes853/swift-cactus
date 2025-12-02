@@ -20,54 +20,73 @@ public struct DirectoryModelRequest: CactusAgentModelRequest {
     let directoryId: ObjectIdentifier
     let contextSize: Int
     let corpusDirectoryURL: URL?
-    let downloadConfiguration: URLSessionConfiguration?
   }
 
   let slug: Slug
-  let directory: CactusModelsDirectory
   let contextSize: Int
   let corpusDirectoryURL: URL?
-  let downloadConfiguration: URLSessionConfiguration?
+  let directory: CactusModelsDirectory?
+  let downloadBehavior: CactusAgentModelDownloadBehavior?
 
-  public var id: ID {
+  public func id(in environment: CactusEnvironmentValues) -> ID {
     ID(
       slug: self.slug,
-      directoryId: ObjectIdentifier(self.directory),
+      directoryId: ObjectIdentifier(self.directory ?? environment.modelsDirectory),
       contextSize: self.contextSize,
-      corpusDirectoryURL: self.corpusDirectoryURL,
-      downloadConfiguration: self.downloadConfiguration
+      corpusDirectoryURL: self.corpusDirectoryURL
     )
   }
 
-  public func loadModel(in environment: CactusEnvironmentValues) throws -> CactusLanguageModel {
-    if let downloadConfiguration {
-      if let model = try self.loadStoredModel() {
-        return model
-      }
+  public func loadModel(
+    in environment: CactusEnvironmentValues
+  ) async throws -> sending CactusLanguageModel {
+    if let model = try self.loadStoredModel(in: environment) {
+      return model
+    }
+    let directory = self.directory ?? environment.modelsDirectory
+    switch self.downloadBehavior ?? environment.modelDownloadBehavior {
+    case .noDownloading:
+      throw DirectoryModelRequestError.modelNotFound
+
+    case .beginDownload(let configuration):
       switch self.slug {
       case .audio(let slug):
-        _ = try self.directory.audioModelDownloadTask(
+        _ = try directory.audioModelDownloadTask(
           for: slug,
-          configuration: downloadConfiguration
+          configuration: configuration
         )
       case .text(let slug):
-        _ = try self.directory.modelDownloadTask(for: slug, configuration: downloadConfiguration)
+        _ = try directory.modelDownloadTask(for: slug, configuration: configuration)
       }
       throw DirectoryModelRequestError.modelDownloading
-    } else {
-      guard let model = try self.loadStoredModel() else {
-        throw DirectoryModelRequestError.modelNotFound
+
+    case .waitForDownload(let configuration):
+      switch self.slug {
+      case .audio(let slug):
+        let url = try await directory.audioModelURL(for: slug, configuration: configuration)
+        return try CactusLanguageModel(configuration: self.modelConfiguration(url: url))
+      case .text(let slug):
+        let url = try await directory.modelURL(for: slug, configuration: configuration)
+        return try CactusLanguageModel(configuration: self.modelConfiguration(url: url))
       }
-      return model
     }
   }
 
-  private func loadStoredModel() throws -> CactusLanguageModel? {
-    guard let url = self.directory.storedModelURL(for: self.slug.text) else {
+  private func loadStoredModel(
+    in environment: CactusEnvironmentValues
+  ) throws -> sending CactusLanguageModel? {
+    let directory = self.directory ?? environment.modelsDirectory
+    guard let url = directory.storedModelURL(for: self.slug.text) else {
       return nil
     }
     return try CactusLanguageModel(
-      from: url,
+      configuration: self.modelConfiguration(url: url)
+    )
+  }
+
+  private func modelConfiguration(url: URL) -> CactusLanguageModel.Configuration {
+    CactusLanguageModel.Configuration(
+      modelURL: url,
       contextSize: self.contextSize,
       modelSlug: self.slug.text,
       corpusDirectoryURL: self.corpusDirectoryURL
@@ -78,32 +97,32 @@ public struct DirectoryModelRequest: CactusAgentModelRequest {
 extension CactusAgentModelRequest where Self == DirectoryModelRequest {
   public static func fromDirectory(
     slug: String,
-    directory: CactusModelsDirectory,
     contextSize: Int = 2048,
     corpusDirectoryURL: URL? = nil,
-    downloadConfiguration: URLSessionConfiguration? = .default
+    directory: CactusModelsDirectory? = nil,
+    downloadBehavior: CactusAgentModelDownloadBehavior? = nil
   ) -> Self {
     DirectoryModelRequest(
       slug: .text(slug),
-      directory: directory,
       contextSize: contextSize,
       corpusDirectoryURL: corpusDirectoryURL,
-      downloadConfiguration: downloadConfiguration
+      directory: directory,
+      downloadBehavior: downloadBehavior
     )
   }
 
   public static func fromDirectory(
     audioSlug: String,
-    directory: CactusModelsDirectory,
     contextSize: Int = 2048,
-    downloadConfiguration: URLSessionConfiguration? = .default
+    directory: CactusModelsDirectory? = nil,
+    downloadBehavior: CactusAgentModelDownloadBehavior? = nil
   ) -> Self {
     DirectoryModelRequest(
       slug: .audio(audioSlug),
-      directory: directory,
       contextSize: contextSize,
       corpusDirectoryURL: nil,
-      downloadConfiguration: downloadConfiguration
+      directory: directory,
+      downloadBehavior: downloadBehavior
     )
   }
 }

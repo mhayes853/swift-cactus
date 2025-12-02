@@ -6,7 +6,7 @@ public protocol CactusAgentModelStore {
     for request: any CactusAgentModelRequest,
     environment: CactusEnvironmentValues,
     perform operation: (CactusLanguageModel) throws -> T
-  ) throws -> T
+  ) async throws -> T
 }
 
 // MARK: - Environment
