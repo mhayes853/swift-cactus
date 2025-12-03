@@ -12,8 +12,8 @@ public struct CactusStreamedToken: Hashable, Sendable {
 
 // MARK: - ConvertibleFromCactusTokenStream
 
-public protocol ConvertibleFromCactusTokenStream<Parser> {
-  associatedtype Parser: CactusTokenParser<Self>
+public protocol ConvertibleFromCactusTokenStream<TokenParser> {
+  associatedtype TokenParser: CactusTokenParser<Self>
 }
 
 // MARK: - CactusTokenParser
@@ -27,4 +27,22 @@ public protocol CactusTokenParser<Value> {
     from token: CactusStreamedToken,
     in environment: CactusEnvironmentValues
   ) throws -> Value
+}
+
+// MARK: - Basic Conformances
+
+extension String: ConvertibleFromCactusTokenStream {
+  public struct TokenParser: CactusTokenParser {
+    private var output = ""
+
+    public init() {}
+
+    public mutating func next(
+      from token: CactusStreamedToken,
+      in environment: CactusEnvironmentValues
+    ) throws -> String {
+      self.output += token.token
+      return self.output
+    }
+  }
 }
