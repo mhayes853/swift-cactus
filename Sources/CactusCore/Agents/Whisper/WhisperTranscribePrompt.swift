@@ -5,7 +5,7 @@ public struct WhisperTranscribePrompt: Hashable, Sendable, CactusPromptRepresent
   public let includeTimestamps: Bool
   public let audioURL: URL
 
-  public var promptContent: CactusPromptContent {
+  public func promptContent(in environment: CactusEnvironmentValues) -> CactusPromptContent {
     CactusPromptContent {
       GroupContent {
         "<|startoftranscript|>"

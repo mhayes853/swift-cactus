@@ -11,7 +11,7 @@ public struct WhisperLanguage: RawRepresentable, Hashable, Sendable, Codable {
 // MARK: - CactusPromptRepresentable Conformance
 
 extension WhisperLanguage: CactusPromptRepresentable {
-  public var promptContent: CactusPromptContent {
+  public func promptContent(in environment: CactusEnvironmentValues) -> CactusPromptContent {
     CactusPromptContent(text: "<|\(self.rawValue)|>")
   }
 }

@@ -46,14 +46,15 @@ public struct CactusPromptBuilder {
 public struct _JoinedContent: CactusPromptRepresentable {
   let contents: [any CactusPromptRepresentable]
 
-  public var promptContent: CactusPromptContent {
-    get throws {
-      var prompt = CactusPromptContent()
-      for content in self.contents {
-        prompt.join(with: try content.promptContent, separator: PromptSeparatorLocal.current)
-      }
-      return prompt
+  public func promptContent(in environment: CactusEnvironmentValues) throws -> CactusPromptContent {
+    var prompt = CactusPromptContent()
+    for content in self.contents {
+      prompt.join(
+        with: try content.promptContent(in: environment),
+        separator: environment.promptSeparator
+      )
     }
+    return prompt
   }
 }
 
@@ -62,7 +63,9 @@ public struct _OptionalContent<
 >: CactusPromptRepresentable {
   let content: Content?
 
-  public var promptContent: CactusPromptContent {
-    get throws { try self.content?.promptContent ?? CactusPromptContent() }
+  public func promptContent(
+    in environment: CactusEnvironmentValues
+  ) throws(Content.PromptContentFailure) -> CactusPromptContent {
+    try self.content?.promptContent(in: environment) ?? CactusPromptContent()
   }
 }

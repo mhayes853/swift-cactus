@@ -12,7 +12,7 @@ struct `WhisperTranscriptPrompt tests` {
       includeTimestamps: true,
       audioURL: .testAudio
     )
-    let components = try prompt.promptContent.messageComponents()
+    let components = try prompt.defaultMessageComponents()
     expectNoDifference(components.text, "<|startoftranscript|><|en|><|transcribe|>")
     expectNoDifference(components.images, [])
   }
@@ -24,7 +24,7 @@ struct `WhisperTranscriptPrompt tests` {
       includeTimestamps: false,
       audioURL: .testAudio
     )
-    let components = try prompt.promptContent.messageComponents()
+    let components = try prompt.defaultMessageComponents()
     expectNoDifference(components.text, "<|startoftranscript|><|fr|><|transcribe|><|notimestamps|>")
     expectNoDifference(components.images, [])
   }
