@@ -12,17 +12,24 @@ public struct _SeparatedContent<
   let content: Content
   let separator: String
 
-  public var promptContent: CactusPromptContent {
-    get throws {
-      try PromptSeparatorLocal.$current.withValue(self.separator) {
-        try self.content.promptContent
-      }
-    }
+  public func promptContent(
+    in environment: CactusEnvironmentValues
+  ) throws(Content.PromptContentFailure) -> CactusPromptContent {
+    var env = environment
+    env.promptSeparator = self.separator
+    return try self.content.promptContent(in: env)
   }
 }
 
-// MARK: - CactusPromptSeparatorLocal
+// MARK: - Environment
 
-enum PromptSeparatorLocal {
-  @TaskLocal static var current = "\n"
+extension CactusEnvironmentValues {
+  public var promptSeparator: String {
+    get { self[PromptSeparatorKey.self] }
+    set { self[PromptSeparatorKey.self] = newValue }
+  }
+
+  private enum PromptSeparatorKey: Key {
+    static let defaultValue = "\n"
+  }
 }

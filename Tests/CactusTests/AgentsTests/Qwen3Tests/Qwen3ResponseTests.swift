@@ -90,7 +90,7 @@ struct `Qwen3Response tests` {
     let response = Qwen3Response<String>(
       cactusResponse: CactusResponse(id: id, content: "This is cool")
     )
-    let components = try response.promptContent.messageComponents()
+    let components = try response.defaultMessageComponents()
     expectNoDifference(components.text, "This is cool")
     expectNoDifference(components.images, [])
   }
@@ -101,7 +101,7 @@ struct `Qwen3Response tests` {
     let response = Qwen3Response<String>(
       cactusResponse: CactusResponse(id: id, content: sampleThinkingResponse)
     )
-    let components = try response.promptContent.messageComponents()
+    let components = try response.defaultMessageComponents()
     expectNoDifference(components.text, sampleThinkingResponse)
     expectNoDifference(components.images, [])
   }

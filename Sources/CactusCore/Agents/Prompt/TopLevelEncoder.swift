@@ -1,7 +1,7 @@
 import Foundation
 
 #if SwiftCactusTOON
-  import TOONEncoder
+  import ToonFormat
 #endif
 
 // MARK: - TopLevelEncoder

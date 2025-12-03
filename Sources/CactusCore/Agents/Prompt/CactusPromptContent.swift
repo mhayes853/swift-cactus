@@ -55,7 +55,10 @@ extension CactusPromptContent {
     public private(set) var text = ""
     public private(set) var images = [URL]()
 
-    public init(content: CactusPromptContent) throws {
+    public init(
+      content: CactusPromptContent,
+      in environment: CactusEnvironmentValues
+    ) throws {
       var currentSeparator: String?
       for block in content.blocks {
         switch block {
@@ -67,7 +70,8 @@ extension CactusPromptContent {
         case .images(let urls):
           self.images.append(contentsOf: urls)
         case .representable(let representable):
-          let components = try representable.promptContent.messageComponents()
+          let components = try representable.promptContent(in: environment)
+            .messageComponents(in: environment)
           self.appendText(components.text, currentSeparator: &currentSeparator)
           self.images.append(contentsOf: components.images)
         }
@@ -83,7 +87,9 @@ extension CactusPromptContent {
     }
   }
 
-  public func messageComponents() throws -> MessageComponents {
-    try MessageComponents(content: self)
+  public func messageComponents(
+    in environment: CactusEnvironmentValues
+  ) throws -> MessageComponents {
+    try MessageComponents(content: self, in: environment)
   }
 }

@@ -9,11 +9,9 @@ public protocol ConvertibleToJSONValue: CactusPromptRepresentable {
 }
 
 extension ConvertibleToJSONValue {
-  public var promptContent: CactusPromptContent {
-    get throws {
-      let data = try PromptContentEncoder.current.encode(self.jsonValue)
-      return CactusPromptContent(text: String(decoding: data, as: UTF8.self))
-    }
+  public func promptContent(in environment: CactusEnvironmentValues) throws -> CactusPromptContent {
+    let data = try environment.promptContentEncoder.encode(self.jsonValue)
+    return CactusPromptContent(text: String(decoding: data, as: UTF8.self))
   }
 }
 

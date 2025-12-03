@@ -17,24 +17,34 @@ public struct _EncodedContent<
   let content: Content
   let encoder: @Sendable () -> Encoder
 
-  public var promptContent: CactusPromptContent {
-    get throws {
-      let encoder = self.encoder
-      return try PromptContentEncoder.$current.withValue(PromptContentEncoder(encoder())) {
-        try content.promptContent
-      }
-    }
+  public func promptContent(
+    in environment: CactusEnvironmentValues
+  ) throws(Content.PromptContentFailure) -> CactusPromptContent {
+    let encoder = self.encoder
+    var env = environment
+    env[CactusEnvironmentValues.PromptContentEncoderKey.self] = PromptContentEncoder(encoder())
+    return try self.content.promptContent(in: env)
   }
 }
 
 extension _EncodedContent: Sendable where Encoder: Sendable, Content: Sendable {}
 
-// MARK: - PromptContentEncoder
+// MARK: - Environment
 
-struct PromptContentEncoder: Sendable {
+extension CactusEnvironmentValues {
+  public var promptContentEncoder: any TopLevelEncoder<Data> {
+    self[PromptContentEncoderKey.self].encoder()
+  }
+
+  fileprivate enum PromptContentEncoderKey: Key {
+    static let defaultValue = PromptContentEncoder(JSONEncoder())
+  }
+}
+
+private struct PromptContentEncoder: Sendable {
   @TaskLocal static var current = Self(JSONEncoder())
 
-  private let encoder: @Sendable () -> sending any TopLevelEncoder<Data>
+  let encoder: @Sendable () -> sending any TopLevelEncoder<Data>
 
   init(_ encoder: @escaping @autoclosure @Sendable () -> sending any TopLevelEncoder<Data>) {
     self.encoder = encoder

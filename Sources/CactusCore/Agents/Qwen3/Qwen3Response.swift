@@ -46,18 +46,18 @@ extension Qwen3Response: Equatable where Base: Equatable {}
 extension Qwen3Response: Hashable where Base: Hashable {}
 
 extension Qwen3Response: CactusPromptRepresentable where Base: CactusPromptRepresentable {
-  public var promptContent: CactusPromptContent {
-    get throws(Base.PromptContentFailure) {
-      let baseContent = try self.response.promptContent
-      return CactusPromptContent {
-        GroupContent {
-          if let thinkingContent {
-            "<think>\n\(thinkingContent)\n</think>"
-          }
-          baseContent
+  public func promptContent(
+    in environment: CactusEnvironmentValues
+  ) throws(Base.PromptContentFailure) -> CactusPromptContent {
+    let baseContent = try self.response.promptContent(in: environment)
+    return CactusPromptContent {
+      GroupContent {
+        if let thinkingContent {
+          "<think>\n\(thinkingContent)\n</think>"
         }
-        .separated(by: "\n\n")
+        baseContent
       }
+      .separated(by: "\n\n")
     }
   }
 }

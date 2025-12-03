@@ -3,8 +3,10 @@ public struct GroupContent<
 >: CactusPromptRepresentable {
   private let content: Content
 
-  public var promptContent: CactusPromptContent {
-    get throws { try self.content.promptContent }
+  public func promptContent(
+    in environment: CactusEnvironmentValues
+  ) throws(Content.PromptContentFailure) -> CactusPromptContent {
+    try self.content.promptContent(in: environment)
   }
 
   public init(@CactusPromptBuilder builder: () -> Content) {

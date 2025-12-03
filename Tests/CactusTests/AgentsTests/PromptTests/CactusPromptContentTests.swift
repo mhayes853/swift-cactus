@@ -8,7 +8,7 @@ struct `CactusPromptContent tests` {
   @Test
   func `Message Components For Basic String`() throws {
     let content = CactusPromptContent(text: "Hello world!")
-    let components = try content.messageComponents()
+    let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "Hello world!")
     expectNoDifference(components.images, [])
   }
@@ -17,7 +17,7 @@ struct `CactusPromptContent tests` {
   func `Message Components For Basic Image`() throws {
     let imageURL = temporaryModelDirectory().appendingPathComponent("image.png")
     let content = CactusPromptContent(images: [imageURL])
-    let components = try content.messageComponents()
+    let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "")
     expectNoDifference(components.images, [imageURL])
   }
@@ -27,7 +27,7 @@ struct `CactusPromptContent tests` {
     let imageURL = temporaryModelDirectory().appendingPathComponent("image.png")
     let content1 = CactusPromptContent(images: [imageURL])
     let content2 = CactusPromptContent(text: "Hello world!")
-    let components = try content1.joined(with: content2).messageComponents()
+    let components = try content1.joined(with: content2).defaultMessageComponents()
     expectNoDifference(components.text, "Hello world!")
     expectNoDifference(components.images, [imageURL])
   }
@@ -36,7 +36,7 @@ struct `CactusPromptContent tests` {
   func `Join String Content With Custom Separator`() throws {
     let content1 = CactusPromptContent(text: "Hello")
     let content2 = CactusPromptContent(text: "world!")
-    let components = try content1.joined(with: content2, separator: " ").messageComponents()
+    let components = try content1.joined(with: content2, separator: " ").defaultMessageComponents()
     expectNoDifference(components.text, "Hello world!")
     expectNoDifference(components.images, [])
   }
@@ -48,7 +48,7 @@ struct `CactusPromptContent tests` {
     let content3 = CactusPromptContent(text: "this is cool")
     let components = try content1.joined(with: content2, separator: " ")
       .joined(with: content3, separator: ", ")
-      .messageComponents()
+      .defaultMessageComponents()
     expectNoDifference(components.text, "Hello world!, this is cool")
     expectNoDifference(components.images, [])
   }
@@ -63,7 +63,7 @@ struct `CactusPromptContent tests` {
       CactusPromptContent(images: [imageURL2])
       "This is cool"
     }
-    let components = try content.messageComponents()
+    let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "Hello world\nThis is cool")
     expectNoDifference(components.images, [imageURL, imageURL2])
   }
@@ -73,7 +73,7 @@ struct `CactusPromptContent tests` {
     struct Representable: CactusPromptRepresentable {
       let imageURL2 = temporaryModelDirectory().appendingPathComponent("image2.png")
 
-      var promptContent: CactusPromptContent {
+      func promptContent(in environment: CactusEnvironmentValues) -> CactusPromptContent {
         CactusPromptContent {
           "This is cool"
           CactusPromptContent(images: [self.imageURL2])
@@ -89,7 +89,7 @@ struct `CactusPromptContent tests` {
       representable
     }
 
-    let components = try content.messageComponents()
+    let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "Hello world\nThis is cool")
     expectNoDifference(components.images, [imageURL, representable.imageURL2])
   }
@@ -98,13 +98,13 @@ struct `CactusPromptContent tests` {
   func `Prompt Builder Throws Error When Representation Throws Error`() throws {
     struct SomeError: Error {}
     struct Representable: CactusPromptRepresentable {
-      var promptContent: CactusPromptContent {
-        get throws { throw SomeError() }
+      func promptContent(in environment: CactusEnvironmentValues) throws -> CactusPromptContent {
+        throw SomeError()
       }
     }
 
     let content = CactusPromptContent(Representable())
-    #expect(throws: SomeError.self) { try content.messageComponents() }
+    #expect(throws: SomeError.self) { try content.defaultMessageComponents() }
   }
 
   @Test
@@ -128,7 +128,7 @@ struct `CactusPromptContent tests` {
         .encoded(with: jsonEncoder)
     }
 
-    let components = try content.messageComponents()
+    let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "Hello blob!\n{\"a\":1,\"b\":\"hello\"}")
     expectNoDifference(components.images, [])
   }
@@ -151,7 +151,7 @@ struct `CactusPromptContent tests` {
       }
       .encoded(with: CustomEncoder())
     }
-    let components = try content.messageComponents()
+    let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "Hello blob!\nHello blob!")
     expectNoDifference(components.images, [])
   }
@@ -166,7 +166,7 @@ struct `CactusPromptContent tests` {
         values[1]
       }
     }
-    let components = try content.messageComponents()
+    let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, values[expected])
     expectNoDifference(components.images, [])
   }
@@ -179,7 +179,7 @@ struct `CactusPromptContent tests` {
       value
       value2
     }
-    let components = try content.messageComponents()
+    let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "hello")
     expectNoDifference(components.images, [])
   }
@@ -193,7 +193,7 @@ struct `CactusPromptContent tests` {
       }
       .separated(by: " ")
     }
-    let components = try content.messageComponents()
+    let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "Hello World")
     expectNoDifference(components.images, [])
   }

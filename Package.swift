@@ -31,7 +31,7 @@ let package = Package(
     .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.1.0"),
     .package(url: "https://github.com/swiftlang/swift-syntax", "601.0.0"..<"603.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.6.4"),
-    .package(url: "https://github.com/mattt/TOONEncoder", from: "0.1.1")
+    .package(url: "https://github.com/toon-format/toon-swift", branch: "main")
   ],
   targets: [
     .target(name: "Cactus", dependencies: ["CactusCore", "CactusMacros"]),
@@ -45,8 +45,8 @@ let package = Package(
         .product(name: "IssueReporting", package: "xctest-dynamic-overlay"),
         .product(name: "Crypto", package: "swift-crypto", condition: .when(platforms: [.android])),
         .product(
-          name: "TOONEncoder",
-          package: "TOONEncoder",
+          name: "ToonFormat",
+          package: "toon-swift",
           condition: .when(traits: ["SwiftCactusTOON"])
         )
       ],
