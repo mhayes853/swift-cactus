@@ -1,5 +1,5 @@
 {
-  "originHash" : "b6e8e99122b0c57918bf39a6e7ea15d536ee82415897e2bd3d2aea25712d7cd2",
+  "originHash" : "671620eb790ec8a46fedad994bb9619fe9fdbcbc27c08aab0024f59143627e30",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftwasm/JavaScriptKit",
       "state" : {
-        "revision" : "a069e3af73ab950220d054d2488120b8f54585cf",
-        "version" : "0.36.0"
+        "revision" : "4b327dc40d3931c2236ed43c6b47325c17c88afe",
+        "version" : "0.37.0"
       }
     },
     {
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-asn1.git",
       "state" : {
-        "revision" : "40d25bbb2fc5b557a9aa8512210bded327c0f60d",
-        "version" : "1.5.0"
+        "revision" : "810496cf121e525d660cd0ea89a758740476b85f",
+        "version" : "1.5.1"
       }
     },
     {
@@ -69,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-crypto",
       "state" : {
-        "revision" : "e8ed8867ec23bccf5f3bb9342148fa8deaff9b49",
-        "version" : "4.1.0"
+        "revision" : "6f70fa9eab24c1fd982af18c281c4525d05e3095",
+        "version" : "4.2.0"
       }
     },
     {
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-log",
       "state" : {
-        "revision" : "ce592ae52f982c847a4efc0dd881cc9eb32d29f2",
-        "version" : "1.6.4"
+        "revision" : "ca538143e2dc2b5996c34b9322a1ed9def1d7747",
+        "version" : "1.7.0"
       }
     },
     {
@@ -141,8 +141,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mhayes853/swift-operation",
       "state" : {
-        "revision" : "0daa03663cd390c7b455f52fb1e3c26b6c5ee8f7",
-        "version" : "0.3.1"
+        "revision" : "27da6c93688ccdb433b594659344c8204fbb5771",
+        "version" : "0.3.3"
       }
     },
     {
@@ -182,12 +182,12 @@
       }
     },
     {
-      "identity" : "toonencoder",
+      "identity" : "toon-swift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/mattt/TOONEncoder",
+      "location" : "https://github.com/toon-format/toon-swift",
       "state" : {
-        "revision" : "643f4f26483f0d16f54738a6faf3ee78b92c4366",
-        "version" : "0.1.1"
+        "branch" : "main",
+        "revision" : "a33d88dde32fef8e24024abc2442c72af66be448"
       }
     },
     {
