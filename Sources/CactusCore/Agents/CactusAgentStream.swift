@@ -1,6 +1,6 @@
 // MARK: - CactusAgentStream
 
-public struct CactusAgentStream<Output: ConvertibleFromCactusResponse> {
+public struct CactusAgentStream<Output: ConvertibleFromCactusResponse>: Sendable {
   public let continuation = Continuation()
 
   public init() {}
@@ -9,6 +9,16 @@ public struct CactusAgentStream<Output: ConvertibleFromCactusResponse> {
     fatalError()
   }
 
+  public func collectRawResponse() async throws -> CactusResponse {
+    fatalError()
+  }
+
+  public func stop() {}
+}
+
+// MARK: - OnResponseUpdate
+
+extension CactusAgentStream where Output.Partial: ConvertibleFromCactusTokenStream {
   public func onResponseUpdate(
     perform operation: (Result<Output.Partial, any Error>) -> Void
   ) -> CactusSubscription {
@@ -18,7 +28,7 @@ public struct CactusAgentStream<Output: ConvertibleFromCactusResponse> {
 
 // MARK: - AsyncSequence
 
-extension CactusAgentStream: AsyncSequence {
+extension CactusAgentStream: AsyncSequence where Output.Partial: ConvertibleFromCactusTokenStream {
   public struct AsyncIterator: AsyncIteratorProtocol {
     public mutating func next() async throws -> Output.Partial? {
       fatalError()
@@ -69,7 +79,7 @@ extension CactusAgentStream {
 // MARK: - Continuation
 
 extension CactusAgentStream {
-  public struct Continuation {
+  public struct Continuation: Sendable {
 
   }
 }
