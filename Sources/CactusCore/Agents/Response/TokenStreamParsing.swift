@@ -33,10 +33,14 @@ public protocol CactusTokenParser<Value> {
 
 extension String: ConvertibleFromCactusTokenStream {
   public struct TokenParser: CactusTokenParser {
-    private var output = ""
+    @usableFromInline
+    var output = ""
 
+    @inlinable
     public init() {}
 
+    @inlinable
+    @inline(__always)
     public mutating func next(
       from token: CactusStreamedToken,
       in environment: CactusEnvironmentValues

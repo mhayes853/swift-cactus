@@ -13,7 +13,7 @@ public struct CactusResponse: Hashable, Sendable, Identifiable {
 // MARK: - ConvertibleFromCactusResponse
 
 public protocol ConvertibleFromCactusResponse {
-  associatedtype Partial = Self
+  associatedtype Partial: ConvertibleFromCactusResponse = Self
   associatedtype ConversionFailure: Error
 
   init(cactusResponse: CactusResponse) throws(ConversionFailure)
