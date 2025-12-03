@@ -2,11 +2,11 @@
 
 public struct CactusStreamedToken: Hashable, Sendable {
   public let generationStreamId: CactusGenerationID
-  public let token: String
+  public let stringValue: String
 
-  public init(generationStreamId: CactusGenerationID, token: String) {
+  public init(generationStreamId: CactusGenerationID, stringValue: String) {
     self.generationStreamId = generationStreamId
-    self.token = token
+    self.stringValue = stringValue
   }
 }
 
@@ -45,7 +45,7 @@ extension String: ConvertibleFromCactusTokenStream {
       from token: CactusStreamedToken,
       in environment: CactusEnvironmentValues
     ) throws -> String {
-      self.output += token.token
+      self.output += token.stringValue
       return self.output
     }
   }
