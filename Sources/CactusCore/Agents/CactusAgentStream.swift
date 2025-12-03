@@ -9,18 +9,26 @@ public struct CactusAgentStream<Output: ConvertibleFromCactusResponse>: Sendable
     fatalError()
   }
 
-  public func onResponseUpdate(
-    perform operation: (Result<Output.Partial, any Error>) -> Void
-  ) -> CactusSubscription {
-    CactusSubscription {}
+  public func collectRawResponse() async throws -> CactusResponse {
+    fatalError()
   }
 
   public func stop() {}
 }
 
+// MARK: - OnResponseUpdate
+
+extension CactusAgentStream where Output.Partial: ConvertibleFromCactusTokenStream {
+  public func onResponseUpdate(
+    perform operation: (Result<Output.Partial, any Error>) -> Void
+  ) -> CactusSubscription {
+    CactusSubscription {}
+  }
+}
+
 // MARK: - AsyncSequence
 
-extension CactusAgentStream: AsyncSequence {
+extension CactusAgentStream: AsyncSequence where Output.Partial: ConvertibleFromCactusTokenStream {
   public struct AsyncIterator: AsyncIteratorProtocol {
     public mutating func next() async throws -> Output.Partial? {
       fatalError()
