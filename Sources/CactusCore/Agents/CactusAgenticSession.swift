@@ -38,7 +38,12 @@ public final class CactusAgenticSession {
     to message: Input,
     using agent: some CactusAgent<Input, Output>
   ) async throws -> Output {
-    try await self.stream(for: message, using: agent).collectResponse()
+    let stream = self.stream(for: message, using: agent)
+    return try await withTaskCancellationHandler {
+      try await stream.collectResponse()
+    } onCancel: {
+      stream.stop()
+    }
   }
 }
 

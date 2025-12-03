@@ -1,6 +1,6 @@
 // MARK: - CactusAgentStream
 
-public struct CactusAgentStream<Output: ConvertibleFromCactusResponse> {
+public struct CactusAgentStream<Output: ConvertibleFromCactusResponse>: Sendable {
   public let continuation = Continuation()
 
   public init() {}
@@ -14,6 +14,8 @@ public struct CactusAgentStream<Output: ConvertibleFromCactusResponse> {
   ) -> CactusSubscription {
     CactusSubscription {}
   }
+
+  public func stop() {}
 }
 
 // MARK: - AsyncSequence
@@ -69,7 +71,7 @@ extension CactusAgentStream {
 // MARK: - Continuation
 
 extension CactusAgentStream {
-  public struct Continuation {
+  public struct Continuation: Sendable {
 
   }
 }
