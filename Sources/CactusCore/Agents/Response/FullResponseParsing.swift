@@ -15,8 +15,16 @@ public struct CactusResponse: Hashable, Sendable, Identifiable {
 public protocol ConvertibleFromCactusResponse {
   associatedtype Partial: ConvertibleFromCactusResponse = Self
   associatedtype ConversionFailure: Error
+  associatedtype PartialConversionFailure: Error
 
   init(cactusResponse: CactusResponse) throws(ConversionFailure)
+  init(partial: Partial) throws(PartialConversionFailure)
+}
+
+extension ConvertibleFromCactusResponse where Partial == Self {
+  public init(partial: Partial) {
+    self = partial
+  }
 }
 
 // MARK: - Base Conformances
