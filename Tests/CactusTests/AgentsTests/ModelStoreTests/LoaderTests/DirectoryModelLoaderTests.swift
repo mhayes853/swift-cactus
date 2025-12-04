@@ -13,7 +13,9 @@ struct `DirectoryModelLoader tests` {
     }
     expectNoDifference(error, .modelDownloading)
 
-    try CactusModelsDirectory.testModels.modelDownloadTask(for: "blob").cancel()
+    let task = try CactusModelsDirectory.testModels.modelDownloadTask(for: "blob")
+    expectNoDifference(task.isPaused, false)
+    task.cancel()
   }
 
   @Test

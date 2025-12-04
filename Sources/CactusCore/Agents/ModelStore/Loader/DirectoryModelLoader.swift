@@ -33,15 +33,17 @@ public struct DirectoryModelLoader: CactusAgentModelLoader {
       throw DirectoryModelLoaderError.modelNotFound
 
     case .beginDownload(let configuration):
-      switch self.slug {
-      case .audio(let slug):
-        _ = try directory.audioModelDownloadTask(
-          for: slug,
-          configuration: configuration
-        )
-      case .text(let slug):
-        _ = try directory.modelDownloadTask(for: slug, configuration: configuration)
-      }
+      let task =
+        switch self.slug {
+        case .audio(let slug):
+          try directory.audioModelDownloadTask(
+            for: slug,
+            configuration: configuration
+          )
+        case .text(let slug):
+          try directory.modelDownloadTask(for: slug, configuration: configuration)
+        }
+      task.resume()
       throw DirectoryModelLoaderError.modelDownloading
 
     case .waitForDownload(let configuration):
