@@ -14,7 +14,8 @@ public struct CactusModelAgent<
   }
 
   public init(key: (any Hashable & Sendable)? = nil, url: URL, transcript: CactusTranscript) {
-    self.init(key: key, .fromModelURL(url), transcript: transcript)
+    let loader = ConfigurationModelLoader.fromModelURL(url)
+    self.init(key: key ?? ConfigurationKey(loader: loader), loader, transcript: transcript)
   }
 
   public init(
@@ -22,27 +23,29 @@ public struct CactusModelAgent<
     configuration: CactusLanguageModel.Configuration,
     transcript: CactusTranscript
   ) {
-    self.init(key: key, .fromConfiguration(configuration), transcript: transcript)
+    let loader = ConfigurationModelLoader.fromConfiguration(configuration)
+    self.init(key: key ?? ConfigurationKey(loader: loader), loader, transcript: transcript)
   }
 
   public init(
     key: (any Hashable & Sendable)? = nil,
-    modelSlug: String,
+    slug: String,
     contextSize: Int = 2048,
     corpusDirectoryURL: URL? = nil,
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil,
     transcript: CactusTranscript
   ) {
+    let loader = DirectoryModelLoader.fromDirectory(
+      slug: slug,
+      contextSize: contextSize,
+      corpusDirectoryURL: corpusDirectoryURL,
+      directory: directory,
+      downloadBehavior: downloadBehavior
+    )
     self.init(
-      key: key,
-      .fromDirectory(
-        slug: modelSlug,
-        contextSize: contextSize,
-        corpusDirectoryURL: corpusDirectoryURL,
-        directory: directory,
-        downloadBehavior: downloadBehavior
-      ),
+      key: key ?? DirectoryKey(loader: loader),
+      loader,
       transcript: transcript
     )
   }
@@ -67,7 +70,8 @@ public struct CactusModelAgent<
     url: URL,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
   ) {
-    self.init(key: key, .fromModelURL(url), systemPrompt: systemPrompt)
+    let loader = ConfigurationModelLoader.fromModelURL(url)
+    self.init(key: key ?? ConfigurationKey(loader: loader), loader, systemPrompt: systemPrompt)
   }
 
   public init(
@@ -75,12 +79,13 @@ public struct CactusModelAgent<
     configuration: CactusLanguageModel.Configuration,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
   ) {
-    self.init(key: key, .fromConfiguration(configuration), systemPrompt: systemPrompt)
+    let loader = ConfigurationModelLoader.fromConfiguration(configuration)
+    self.init(key: key ?? ConfigurationKey(loader: loader), loader, systemPrompt: systemPrompt)
   }
 
   public init(
     key: (any Hashable & Sendable)? = nil,
-    modelSlug: String,
+    slug: String,
     contextSize: Int = 2048,
     corpusDirectoryURL: URL? = nil,
     directory: CactusModelsDirectory? = nil,
@@ -90,7 +95,7 @@ public struct CactusModelAgent<
     self.init(
       key: key,
       .fromDirectory(
-        slug: modelSlug,
+        slug: slug,
         contextSize: contextSize,
         corpusDirectoryURL: corpusDirectoryURL,
         directory: directory,
@@ -164,7 +169,7 @@ extension CactusAgenticSession {
   }
 
   public convenience init(
-    modelSlug: String,
+    slug: String,
     contextSize: Int = 2048,
     corpusDirectoryURL: URL? = nil,
     directory: CactusModelsDirectory? = nil,
@@ -174,7 +179,7 @@ extension CactusAgenticSession {
     @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
   ) {
     self.init(
-      .fromDirectory(slug: modelSlug),
+      .fromDirectory(slug: slug),
       functions: functions,
       store: store,
       systemPrompt: systemPrompt
@@ -234,7 +239,7 @@ extension CactusAgenticSession {
   }
 
   public convenience init(
-    modelSlug: String,
+    slug: String,
     contextSize: Int = 2048,
     corpusDirectoryURL: URL? = nil,
     directory: CactusModelsDirectory? = nil,
@@ -244,7 +249,7 @@ extension CactusAgenticSession {
     transcript: CactusTranscript
   ) {
     self.init(
-      .fromDirectory(slug: modelSlug),
+      .fromDirectory(slug: slug),
       functions: functions,
       store: store,
       transcript: transcript

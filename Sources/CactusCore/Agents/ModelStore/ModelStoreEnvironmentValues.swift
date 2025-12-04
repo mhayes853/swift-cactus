@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - CactusAgentModelDownloadBehavior
 
-public enum CactusAgentModelDownloadBehavior: Sendable {
+public enum CactusAgentModelDownloadBehavior: Hashable, Sendable {
   case noDownloading
   case beginDownload(URLSessionConfiguration)
   case waitForDownload(URLSessionConfiguration)

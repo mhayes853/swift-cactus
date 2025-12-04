@@ -4,18 +4,20 @@ public struct WhisperTranscribeAgent: CactusAgent {
   private let access: AgentModelAccess
 
   public init(_ model: CactusLanguageModel) {
-    self.access = .direct(model)
+    self.init(access: .direct(model))
   }
 
   public init(key: (any Hashable & Sendable)? = nil, url: URL) {
-    self.init(key: key, .fromModelURL(url))
+    let loader = ConfigurationModelLoader.fromModelURL(url)
+    self.init(key: key ?? ConfigurationKey(loader: loader), loader)
   }
 
   public init(
     key: (any Hashable & Sendable)? = nil,
     configuration: CactusLanguageModel.Configuration
   ) {
-    self.init(key: key, .fromConfiguration(configuration))
+    let loader = ConfigurationModelLoader.fromConfiguration(configuration)
+    self.init(key: key ?? ConfigurationKey(loader: loader), loader)
   }
 
   public init(
@@ -25,19 +27,21 @@ public struct WhisperTranscribeAgent: CactusAgent {
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil
   ) {
-    self.init(
-      key: key,
-      .fromDirectory(
-        audioSlug: slug,
-        contextSize: contextSize,
-        directory: directory,
-        downloadBehavior: downloadBehavior
-      )
+    let loader = DirectoryModelLoader.fromDirectory(
+      audioSlug: slug,
+      contextSize: contextSize,
+      directory: directory,
+      downloadBehavior: downloadBehavior
     )
+    self.init(key: key ?? DirectoryKey(loader: loader), loader)
   }
 
-  public init(key: (any Hashable & Sendable)? = nil, _ loader: any CactusAgentModelLoader) {
-    self.access = .loaded(key: key, loader)
+  public init(key: (any Hashable & Sendable), _ loader: any CactusAgentModelLoader) {
+    self.init(access: .loaded(key: key, loader))
+  }
+
+  private init(access: AgentModelAccess) {
+    self.access = access
   }
 
   public nonisolated(nonsending) func stream(
