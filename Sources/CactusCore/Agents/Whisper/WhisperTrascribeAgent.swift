@@ -2,27 +2,31 @@ import Foundation
 
 public struct WhisperTranscribeAgent<Loader: CactusAgentModelLoader>: CactusAgent {
   private let loader: Loader
+  private let key: AnyHashable?
 
-  public init(_ model: CactusLanguageModel) where Loader == ConstantModelLoader {
-    self.init(.constant(model))
+  public init(key: AnyHashable? = nil, _ model: CactusLanguageModel)
+  where Loader == ConstantModelLoader {
+    self.init(key: key, .constant(model))
   }
 
-  public init(url: URL) where Loader == ConfigurationModelLoader {
-    self.init(.fromModelURL(url))
+  public init(key: AnyHashable? = nil, url: URL) where Loader == ConfigurationModelLoader {
+    self.init(key: key, .fromModelURL(url))
   }
 
-  public init(configuration: CactusLanguageModel.Configuration)
+  public init(key: AnyHashable? = nil, configuration: CactusLanguageModel.Configuration)
   where Loader == ConfigurationModelLoader {
-    self.init(.fromConfiguration(configuration))
+    self.init(key: key, .fromConfiguration(configuration))
   }
 
   public init(
+    key: AnyHashable? = nil,
     slug: String,
     contextSize: Int = 2048,
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil
   ) where Loader == DirectoryModelLoader {
     self.init(
+      key: key,
       .fromDirectory(
         audioSlug: slug,
         contextSize: contextSize,
@@ -32,7 +36,8 @@ public struct WhisperTranscribeAgent<Loader: CactusAgentModelLoader>: CactusAgen
     )
   }
 
-  public init(_ loader: Loader) {
+  public init(key: AnyHashable? = nil, _ loader: Loader) {
+    self.key = key
     self.loader = loader
   }
 
