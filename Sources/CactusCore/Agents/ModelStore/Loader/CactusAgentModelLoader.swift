@@ -1,5 +1,5 @@
 public protocol CactusAgentModelLoader {
-  func loadModel(
+  nonisolated(nonsending) func loadModel(
     in environment: CactusEnvironmentValues
   ) async throws -> CactusLanguageModel
 }

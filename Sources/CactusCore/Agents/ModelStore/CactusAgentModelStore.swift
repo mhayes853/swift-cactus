@@ -24,8 +24,8 @@ public protocol CactusAgentModelStore {
     request: sending CactusAgentModelRequest<some CactusAgentModelLoader>
   ) async throws
 
-  func withModelAccess<T>(
-    request: CactusAgentModelRequest<some CactusAgentModelLoader>,
+  nonisolated(nonsending) func withModelAccess<T>(
+    request: sending CactusAgentModelRequest<some CactusAgentModelLoader>,
     perform operation: (CactusLanguageModel) throws -> T
   ) async throws -> T
 }

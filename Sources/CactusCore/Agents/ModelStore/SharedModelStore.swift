@@ -11,7 +11,7 @@ public final class SharedModelStore: CactusAgentModelStore, Sendable {
   }
 
   public func withModelAccess<T>(
-    request: CactusAgentModelRequest<some CactusAgentModelLoader>,
+    request: sending CactusAgentModelRequest<some CactusAgentModelLoader>,
     perform operation: (CactusLanguageModel) throws -> T
   ) async throws -> T {
     fatalError()
