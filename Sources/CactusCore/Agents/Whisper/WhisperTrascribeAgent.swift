@@ -1,44 +1,47 @@
 import Foundation
 
-public struct WhisperTranscribeAgent<Loader: CactusAgentModelLoader>: CactusAgent {
-  private let loader: Loader
-  private let key: AnyHashable?
+public struct WhisperTranscribeAgent: CactusAgent {
+  private let access: AgentModelAccess
 
-  public init(key: AnyHashable? = nil, _ model: CactusLanguageModel)
-  where Loader == ConstantModelLoader {
-    self.init(key: key, .constant(model))
+  public init(_ model: CactusLanguageModel) {
+    self.init(access: .direct(model))
   }
 
-  public init(key: AnyHashable? = nil, url: URL) where Loader == ConfigurationModelLoader {
-    self.init(key: key, .fromModelURL(url))
+  public static func fromModelURL(key: (any Hashable & Sendable)? = nil, _ url: URL) -> Self {
+    let loader = ConfigurationModelLoader.fromModelURL(url)
+    return Self(key: key ?? ConfigurationKey(loader: loader), loader)
   }
 
-  public init(key: AnyHashable? = nil, configuration: CactusLanguageModel.Configuration)
-  where Loader == ConfigurationModelLoader {
-    self.init(key: key, .fromConfiguration(configuration))
+  public static func fromConfiguration(
+    key: (any Hashable & Sendable)? = nil,
+    _ configuration: CactusLanguageModel.Configuration
+  ) -> Self {
+    let loader = ConfigurationModelLoader.fromConfiguration(configuration)
+    return Self(key: key ?? ConfigurationKey(loader: loader), loader)
   }
 
-  public init(
-    key: AnyHashable? = nil,
+  public static func(
+    key: (any Hashable & Sendable)? = nil,
     slug: String,
     contextSize: Int = 2048,
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil
-  ) where Loader == DirectoryModelLoader {
-    self.init(
-      key: key,
-      .fromDirectory(
-        audioSlug: slug,
-        contextSize: contextSize,
-        directory: directory,
-        downloadBehavior: downloadBehavior
-      )
+  ) -> Self {
+    let loader = DirectoryModelLoader.fromDirectory(
+      audioSlug: slug,
+      contextSize: contextSize,
+      directory: directory,
+      downloadBehavior: downloadBehavior
     )
+    return Self(key: key ?? DirectoryKey(loader: loader), loader)
   }
 
-  public init(key: AnyHashable? = nil, _ loader: Loader) {
-    self.key = key
-    self.loader = loader
+  public init(key: (any Hashable & Sendable), _ loader: any CactusAgentModelLoader) {
+    self.init(access: .loaded(key: key, loader))
+  }
+
+  private init(access: AgentModelAccess) {
+    self.access = access
   }
 
   public nonisolated(nonsending) func stream(

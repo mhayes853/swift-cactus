@@ -8,12 +8,14 @@ struct `DirectoryModelLoader tests` {
   @Test
   func `Begins Downloading Model When Not Stored On Disk`() async throws {
     let request: some CactusAgentModelLoader = .fromDirectory(slug: "blob", directory: .testModels)
-    let error = await #expect(throws: DirectoryModelRequestError.self) {
+    let error = await #expect(throws: DirectoryModelLoaderError.self) {
       _ = try await request.loadModel(in: CactusEnvironmentValues())
     }
     expectNoDifference(error, .modelDownloading)
 
-    try CactusModelsDirectory.testModels.modelDownloadTask(for: "blob").cancel()
+    let task = try CactusModelsDirectory.testModels.modelDownloadTask(for: "blob")
+    expectNoDifference(task.isPaused, false)
+    task.cancel()
   }
 
   @Test
@@ -23,7 +25,7 @@ struct `DirectoryModelLoader tests` {
       directory: .testModels,
       downloadBehavior: .noDownloading
     )
-    await #expect(throws: DirectoryModelRequestError.modelNotFound) {
+    await #expect(throws: DirectoryModelLoaderError.modelNotFound) {
       _ = try await request.loadModel(in: CactusEnvironmentValues())
     }
   }
@@ -44,7 +46,7 @@ struct `DirectoryModelLoader tests` {
     let downloadTask = try CactusModelsDirectory.testModels.modelDownloadTask(for: "blob")
 
     let request: some CactusAgentModelLoader = .fromDirectory(slug: "blob", directory: .testModels)
-    await #expect(throws: DirectoryModelRequestError.modelDownloading) {
+    await #expect(throws: DirectoryModelLoaderError.modelDownloading) {
       _ = try await request.loadModel(in: CactusEnvironmentValues())
     }
 

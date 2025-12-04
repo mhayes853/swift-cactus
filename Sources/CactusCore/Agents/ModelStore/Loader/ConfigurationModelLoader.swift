@@ -5,7 +5,7 @@ public struct ConfigurationModelLoader: CactusAgentModelLoader {
 
   public func loadModel(
     in environment: CactusEnvironmentValues
-  ) throws -> CactusLanguageModel {
+  ) throws -> sending CactusLanguageModel {
     try CactusLanguageModel(configuration: self.configuration)
   }
 }
