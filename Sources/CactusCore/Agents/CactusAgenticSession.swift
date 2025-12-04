@@ -12,9 +12,7 @@ public final class CactusAgenticSession<
     false
   }
 
-  public func prewarmModel(
-    request: sending CactusAgentModelRequest<some CactusAgentModelLoader>
-  ) async throws {
+  public func prewarmModel(request: sending CactusAgentModelRequest) async throws {
     try await self.agentActor.prewarmModel(request: request)
   }
 
@@ -54,9 +52,7 @@ extension CactusAgenticSession {
       self.store = store
     }
 
-    func prewarmModel(
-      request: sending CactusAgentModelRequest<some CactusAgentModelLoader>
-    ) async throws {
+    func prewarmModel(request: sending CactusAgentModelRequest) async throws {
       try await self.store.prewarmModel(request: request)
     }
   }

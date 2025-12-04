@@ -7,21 +7,21 @@ public final class SharedModelStore: CactusAgentModelStore, Sendable {
   public init() {}
 
   public func prewarmModel(
-    request: sending CactusAgentModelRequest<some CactusAgentModelLoader & SendableMetatype>
+    request: sending CactusAgentModelRequest
   ) async throws {
     _ = try await self.modelCell(for: request)
   }
 
   public func withModelAccess<T>(
-    request: sending CactusAgentModelRequest<some CactusAgentModelLoader & SendableMetatype>,
+    request: sending CactusAgentModelRequest,
     perform operation: (CactusLanguageModel) throws -> sending T
   ) async throws -> sending T {
     let cell = try await self.modelCell(for: request)
     return try cell.model.withLock { try operation($0) }
   }
 
-  private nonisolated(nonsending) func modelCell(
-    for request: sending CactusAgentModelRequest<some CactusAgentModelLoader & SendableMetatype>
+  private func modelCell(
+    for request: sending CactusAgentModelRequest
   ) async throws -> ModelCell {
     let key = AnyHashableSendable(request.key)
     if let cell = self.state.withLock({ $0[key] }) {

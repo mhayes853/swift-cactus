@@ -1,13 +1,13 @@
 // MARK: - CactusAgentModelRequest
 
-public struct CactusAgentModelRequest<Loader: CactusAgentModelLoader> {
+public struct CactusAgentModelRequest {
   public let key: any Hashable & Sendable
-  public let loader: Loader
+  public let loader: any CactusAgentModelLoader
   public let environment: CactusEnvironmentValues
 
   public init(
     key: any Hashable & Sendable,
-    loader: Loader,
+    loader: any CactusAgentModelLoader,
     environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) {
     self.key = key
@@ -21,11 +21,11 @@ public struct CactusAgentModelRequest<Loader: CactusAgentModelLoader> {
 /// A protocol for accessing and managing `CactusLanguageModel` instances used by agents.
 public protocol CactusAgentModelStore {
   nonisolated(nonsending) func prewarmModel(
-    request: sending CactusAgentModelRequest<some CactusAgentModelLoader>
+    request: sending CactusAgentModelRequest
   ) async throws
 
   nonisolated(nonsending) func withModelAccess<T>(
-    request: sending CactusAgentModelRequest<some CactusAgentModelLoader>,
+    request: sending CactusAgentModelRequest,
     perform operation: (CactusLanguageModel) throws -> sending T
   ) async throws -> sending T
 }

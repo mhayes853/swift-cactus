@@ -4,40 +4,36 @@ import Foundation
 
 public struct CactusModelAgent<
   Input: CactusPromptRepresentable,
-  Output: ConvertibleFromCactusResponse,
-  Loader: CactusAgentModelLoader
+  Output: ConvertibleFromCactusResponse
 >: CactusAgent {
-  private let key: AnyHashable?
-  private let loader: Loader
+  private let access: AgentModelAccess
   private let transcript: CactusTranscript
 
-  public init(key: AnyHashable? = nil, _ model: CactusLanguageModel, transcript: CactusTranscript)
-  where Loader == NoModelLoader {
-    self.init(key: key, .noModel, transcript: transcript)
+  public init(_ model: CactusLanguageModel, transcript: CactusTranscript) {
+    self.init(access: .direct(model), transcript: transcript)
   }
 
-  public init(key: AnyHashable? = nil, url: URL, transcript: CactusTranscript)
-  where Loader == ConfigurationModelLoader {
+  public init(key: (any Hashable & Sendable)? = nil, url: URL, transcript: CactusTranscript) {
     self.init(key: key, .fromModelURL(url), transcript: transcript)
   }
 
   public init(
-    key: AnyHashable? = nil,
+    key: (any Hashable & Sendable)? = nil,
     configuration: CactusLanguageModel.Configuration,
     transcript: CactusTranscript
-  ) where Loader == ConfigurationModelLoader {
+  ) {
     self.init(key: key, .fromConfiguration(configuration), transcript: transcript)
   }
 
   public init(
-    key: AnyHashable? = nil,
+    key: (any Hashable & Sendable)? = nil,
     modelSlug: String,
     contextSize: Int = 2048,
     corpusDirectoryURL: URL? = nil,
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil,
     transcript: CactusTranscript
-  ) where Loader == DirectoryModelLoader {
+  ) {
     self.init(
       key: key,
       .fromDirectory(
@@ -51,45 +47,46 @@ public struct CactusModelAgent<
     )
   }
 
-  public init(key: AnyHashable? = nil, _ loader: Loader, transcript: CactusTranscript) {
-    self.key = key
-    self.loader = loader
-    self.transcript = transcript
+  public init(
+    key: (any Hashable & Sendable)? = nil,
+    _ loader: any CactusAgentModelLoader,
+    transcript: CactusTranscript
+  ) {
+    self.init(access: .loaded(key: key, loader), transcript: transcript)
   }
 
   public init(
-    key: AnyHashable? = nil,
     _ model: CactusLanguageModel,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
-  ) where Loader == NoModelLoader {
-    self.init(key: key, .noModel, systemPrompt: systemPrompt)
+  ) {
+    self.init(access: .direct(model), transcript: CactusTranscript())
   }
 
   public init(
-    key: AnyHashable? = nil,
+    key: (any Hashable & Sendable)? = nil,
     url: URL,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
-  ) where Loader == ConfigurationModelLoader {
+  ) {
     self.init(key: key, .fromModelURL(url), systemPrompt: systemPrompt)
   }
 
   public init(
-    key: AnyHashable? = nil,
+    key: (any Hashable & Sendable)? = nil,
     configuration: CactusLanguageModel.Configuration,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
-  ) where Loader == ConfigurationModelLoader {
+  ) {
     self.init(key: key, .fromConfiguration(configuration), systemPrompt: systemPrompt)
   }
 
   public init(
-    key: AnyHashable? = nil,
+    key: (any Hashable & Sendable)? = nil,
     modelSlug: String,
     contextSize: Int = 2048,
     corpusDirectoryURL: URL? = nil,
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
-  ) where Loader == DirectoryModelLoader {
+  ) {
     self.init(
       key: key,
       .fromDirectory(
@@ -104,11 +101,16 @@ public struct CactusModelAgent<
   }
 
   public init(
-    key: AnyHashable? = nil,
-    _ loader: Loader,
+    key: (any Hashable & Sendable)? = nil,
+    _ loader: any CactusAgentModelLoader,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
   ) {
     self.init(key: key, loader, transcript: CactusTranscript())
+  }
+
+  private init(access: AgentModelAccess, transcript: CactusTranscript) {
+    self.access = access
+    self.transcript = transcript
   }
 
   public nonisolated(nonsending) func stream(
@@ -128,10 +130,8 @@ extension CactusAgenticSession {
     @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
   ) {
     self.init(
-      .noModel,
-      functions: functions,
-      store: store,
-      systemPrompt: systemPrompt
+      CactusModelAgent(model, systemPrompt: systemPrompt).functions(functions),
+      store: NoopModelStore()
     )
   }
 
@@ -182,7 +182,7 @@ extension CactusAgenticSession {
   }
 
   public convenience init(
-    _ loader: sending some CactusAgentModelLoader,
+    _ loader: sending any CactusAgentModelLoader,
     functions: sending [any CactusFunction] = [],
     store: sending any CactusAgentModelStore = SessionModelStore(),
     @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
@@ -197,14 +197,11 @@ extension CactusAgenticSession {
   public convenience init(
     _ model: sending CactusLanguageModel,
     functions: sending [any CactusFunction] = [],
-    store: sending any CactusAgentModelStore = SessionModelStore(),
     transcript: CactusTranscript
   ) {
     self.init(
-      .noModel,
-      functions: functions,
-      store: store,
-      transcript: transcript
+      CactusModelAgent(model, transcript: transcript).functions(functions),
+      store: NoopModelStore()
     )
   }
 
@@ -255,7 +252,7 @@ extension CactusAgenticSession {
   }
 
   public convenience init(
-    _ loader: sending some CactusAgentModelLoader,
+    _ loader: sending any CactusAgentModelLoader,
     functions: sending [any CactusFunction] = [],
     store: sending any CactusAgentModelStore = SessionModelStore(),
     transcript: CactusTranscript
