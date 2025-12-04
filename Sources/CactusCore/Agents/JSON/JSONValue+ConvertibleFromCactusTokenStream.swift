@@ -1,7 +1,9 @@
 extension JSONValue: ConvertibleFromCactusTokenStream {
-  public struct TokenParser: CactusTokenParser {
-    public init() {}
+  public static func tokenParser(in environment: CactusEnvironmentValues) -> TokenParser {
+    TokenParser()
+  }
 
+  public struct TokenParser: CactusTokenParser {
     public mutating func next(
       from token: CactusStreamedToken,
       in environment: CactusEnvironmentValues

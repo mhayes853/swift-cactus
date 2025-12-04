@@ -1,10 +1,31 @@
+// MARK: - CactusAgentModelRequest
+
+public struct CactusAgentModelRequest<Loader: CactusAgentModelLoader> {
+  public let key: AnyHashable
+  public let loader: Loader
+  public let environment: CactusEnvironmentValues
+
+  public init(
+    key: AnyHashable,
+    loader: Loader,
+    environment: CactusEnvironmentValues = CactusEnvironmentValues()
+  ) {
+    self.key = key
+    self.loader = loader
+    self.environment = environment
+  }
+}
+
 // MARK: - CactusModelStore
 
 /// A protocol for accessing and managing `CactusLanguageModel` instances used by agents.
 public protocol CactusAgentModelStore {
+  nonisolated(nonsending) func prewarmModel(
+    request: sending CactusAgentModelRequest<some CactusAgentModelLoader>
+  ) async throws
+
   func withModelAccess<T>(
-    for request: any CactusAgentModelRequest,
-    environment: CactusEnvironmentValues,
+    request: CactusAgentModelRequest<some CactusAgentModelLoader>,
     perform operation: (CactusLanguageModel) throws -> T
   ) async throws -> T
 }

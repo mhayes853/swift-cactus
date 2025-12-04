@@ -4,12 +4,12 @@ import Foundation
 import Testing
 
 @Suite
-struct `DirectoryModelRequest tests` {
+struct `DirectoryModelLoader tests` {
   @Test
   func `Begins Downloading Model When Not Stored On Disk`() async throws {
-    let request: some CactusAgentModelRequest = .fromDirectory(slug: "blob", directory: .testModels)
+    let request: some CactusAgentModelLoader = .fromDirectory(slug: "blob", directory: .testModels)
     let error = await #expect(throws: DirectoryModelRequestError.self) {
-      try await request.loadModel(in: CactusEnvironmentValues())
+      _ = try await request.loadModel(in: CactusEnvironmentValues())
     }
     expectNoDifference(error, .modelDownloading)
 
@@ -18,20 +18,20 @@ struct `DirectoryModelRequest tests` {
 
   @Test
   func `Model Not Found When Is Not Persisted And No Downloading Behavior`() async throws {
-    let request: some CactusAgentModelRequest = .fromDirectory(
+    let request: some CactusAgentModelLoader = .fromDirectory(
       slug: "blob",
       directory: .testModels,
       downloadBehavior: .noDownloading
     )
     await #expect(throws: DirectoryModelRequestError.modelNotFound) {
-      try await request.loadModel(in: CactusEnvironmentValues())
+      _ = try await request.loadModel(in: CactusEnvironmentValues())
     }
   }
 
   @Test
   func `Loads Model When Found In Directory`() async throws {
     _ = try await CactusLanguageModel.testModelURL()
-    let request: some CactusAgentModelRequest = .fromDirectory(
+    let request: some CactusAgentModelLoader = .fromDirectory(
       slug: CactusLanguageModel.testModelSlug,
       directory: .testModels
     )
@@ -43,9 +43,9 @@ struct `DirectoryModelRequest tests` {
   func `Throws Model Downloading Error When Download Started Externally`() async throws {
     let downloadTask = try CactusModelsDirectory.testModels.modelDownloadTask(for: "blob")
 
-    let request: some CactusAgentModelRequest = .fromDirectory(slug: "blob", directory: .testModels)
+    let request: some CactusAgentModelLoader = .fromDirectory(slug: "blob", directory: .testModels)
     await #expect(throws: DirectoryModelRequestError.modelDownloading) {
-      try await request.loadModel(in: CactusEnvironmentValues())
+      _ = try await request.loadModel(in: CactusEnvironmentValues())
     }
 
     downloadTask.cancel()
@@ -54,7 +54,7 @@ struct `DirectoryModelRequest tests` {
   @Test
   func `Waits For Model Download When Download Behavior Specifies Waiting`() async throws {
     let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
-    let request: some CactusAgentModelRequest = .fromDirectory(
+    let request: some CactusAgentModelLoader = .fromDirectory(
       audioSlug: "whisper-tiny",
       directory: directory,
       downloadBehavior: .waitForDownload(.default)

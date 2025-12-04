@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - DirectoryModelRequest
 
-public struct DirectoryModelRequest: CactusAgentModelRequest {
+public struct DirectoryModelLoader: CactusAgentModelLoader {
   enum Slug: Hashable, Sendable {
     case audio(String)
     case text(String)
@@ -15,31 +15,15 @@ public struct DirectoryModelRequest: CactusAgentModelRequest {
     }
   }
 
-  public struct ID: Hashable, Sendable {
-    let slug: Slug
-    let directoryId: ObjectIdentifier
-    let contextSize: Int
-    let corpusDirectoryURL: URL?
-  }
-
   let slug: Slug
   let contextSize: Int
   let corpusDirectoryURL: URL?
   let directory: CactusModelsDirectory?
   let downloadBehavior: CactusAgentModelDownloadBehavior?
 
-  public func id(in environment: CactusEnvironmentValues) -> ID {
-    ID(
-      slug: self.slug,
-      directoryId: ObjectIdentifier(self.directory ?? environment.modelsDirectory),
-      contextSize: self.contextSize,
-      corpusDirectoryURL: self.corpusDirectoryURL
-    )
-  }
-
   public func loadModel(
     in environment: CactusEnvironmentValues
-  ) async throws -> sending CactusLanguageModel {
+  ) async throws -> CactusLanguageModel {
     if let model = try self.loadStoredModel(in: environment) {
       return model
     }
@@ -94,7 +78,7 @@ public struct DirectoryModelRequest: CactusAgentModelRequest {
   }
 }
 
-extension CactusAgentModelRequest where Self == DirectoryModelRequest {
+extension CactusAgentModelLoader where Self == DirectoryModelLoader {
   public static func fromDirectory(
     slug: String,
     contextSize: Int = 2048,
@@ -102,7 +86,7 @@ extension CactusAgentModelRequest where Self == DirectoryModelRequest {
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil
   ) -> Self {
-    DirectoryModelRequest(
+    DirectoryModelLoader(
       slug: .text(slug),
       contextSize: contextSize,
       corpusDirectoryURL: corpusDirectoryURL,
@@ -117,7 +101,7 @@ extension CactusAgentModelRequest where Self == DirectoryModelRequest {
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil
   ) -> Self {
-    DirectoryModelRequest(
+    DirectoryModelLoader(
       slug: .audio(audioSlug),
       contextSize: contextSize,
       corpusDirectoryURL: nil,

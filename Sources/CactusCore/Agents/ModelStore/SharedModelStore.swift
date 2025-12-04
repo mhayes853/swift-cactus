@@ -4,11 +4,16 @@ public final class SharedModelStore: CactusAgentModelStore, Sendable {
 
   public init() {}
 
+  public func prewarmModel(
+    request: sending CactusAgentModelRequest<some CactusAgentModelLoader>
+  ) async throws {
+
+  }
+
   public func withModelAccess<T>(
-    for request: any CactusAgentModelRequest,
-    environment: CactusEnvironmentValues,
+    request: CactusAgentModelRequest<some CactusAgentModelLoader>,
     perform operation: (CactusLanguageModel) throws -> T
-  ) throws -> T {
+  ) async throws -> T {
     fatalError()
   }
 }
