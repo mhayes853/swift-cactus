@@ -22,6 +22,8 @@ public struct _TransformEnvironmentAgent<Base: CactusAgent>: CactusAgent {
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Base.Output>.Continuation
   ) async throws {
+    var request = request
+    transform(&request.environment)
     try await self.base.stream(request: request, into: continuation)
   }
 }

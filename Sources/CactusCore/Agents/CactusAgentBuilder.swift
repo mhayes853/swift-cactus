@@ -11,20 +11,20 @@ public enum CactusAgentBuilder<
 
   public static func buildEither<AL: CactusAgent<Input, Output>, AR: CactusAgent<Input, Output>>(
     first component: AL
-  ) -> _ConditionalAgent<AL, AR> {
+  ) -> _EitherAgent<AL, AR> {
     .left(component)
   }
 
   public static func buildEither<AL: CactusAgent<Input, Output>, AR: CactusAgent<Input, Output>>(
     seconds component: AR
-  ) -> _ConditionalAgent<AL, AR> {
+  ) -> _EitherAgent<AL, AR> {
     .right(component)
   }
 }
 
 // MARK: - Helpers
 
-public enum _ConditionalAgent<Left: CactusAgent, Right: CactusAgent>: CactusAgent
+public enum _EitherAgent<Left: CactusAgent, Right: CactusAgent>: CactusAgent
 where Left.Input == Right.Input, Left.Output == Right.Output {
   case left(Left)
   case right(Right)
