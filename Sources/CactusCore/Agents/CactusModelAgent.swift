@@ -1,41 +1,260 @@
 import Foundation
 
+// MARK: - CactusModelAgent
+
 public struct CactusModelAgent<
   Input: CactusPromptRepresentable,
-  Output: ConvertibleFromCactusResponse
+  Output: ConvertibleFromCactusResponse,
+  Loader: CactusAgentModelLoader
 >: CactusAgent {
-  public init(_ model: CactusLanguageModel, transcript: CactusTranscript) {
+  private let loader: Loader
+  private let transcript: CactusTranscript
+
+  public init(_ model: CactusLanguageModel, transcript: CactusTranscript)
+  where Loader == ConstantModelLoader {
+    self.init(.constant(model), transcript: transcript)
   }
 
-  public init(modelSlug: String, transcript: CactusTranscript) {
-    self.init(.fromDirectory(slug: modelSlug), transcript: transcript)
+  public init(url: URL, transcript: CactusTranscript)
+  where Loader == ConfigurationModelLoader {
+    self.init(.fromModelURL(url), transcript: transcript)
   }
 
-  public init(_ request: any CactusAgentModelRequest, transcript: CactusTranscript) {
+  public init(configuration: CactusLanguageModel.Configuration, transcript: CactusTranscript)
+  where Loader == ConfigurationModelLoader {
+    self.init(.fromConfiguration(configuration), transcript: transcript)
+  }
+
+  public init(
+    modelSlug: String,
+    contextSize: Int = 2048,
+    corpusDirectoryURL: URL? = nil,
+    directory: CactusModelsDirectory? = nil,
+    downloadBehavior: CactusAgentModelDownloadBehavior? = nil,
+    transcript: CactusTranscript
+  )
+  where Loader == DirectoryModelLoader {
+    self.init(
+      .fromDirectory(
+        slug: modelSlug,
+        contextSize: contextSize,
+        corpusDirectoryURL: corpusDirectoryURL,
+        directory: directory,
+        downloadBehavior: downloadBehavior
+      ),
+      transcript: transcript
+    )
+  }
+
+  public init(_ loader: Loader, transcript: CactusTranscript) {
+    self.loader = loader
+    self.transcript = transcript
   }
 
   public init(
     _ model: CactusLanguageModel,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
-  ) {
+  ) where Loader == ConstantModelLoader {
+    self.init(.constant(model), systemPrompt: systemPrompt)
+  }
+
+  public init(
+    url: URL,
+    @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
+  )
+  where Loader == ConfigurationModelLoader {
+    self.init(.fromModelURL(url), systemPrompt: systemPrompt)
+  }
+
+  public init(
+    configuration: CactusLanguageModel.Configuration,
+    @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
+  )
+  where Loader == ConfigurationModelLoader {
+    self.init(.fromConfiguration(configuration), systemPrompt: systemPrompt)
   }
 
   public init(
     modelSlug: String,
+    contextSize: Int = 2048,
+    corpusDirectoryURL: URL? = nil,
+    directory: CactusModelsDirectory? = nil,
+    downloadBehavior: CactusAgentModelDownloadBehavior? = nil,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
-  ) {
-    self.init(.fromDirectory(slug: modelSlug), systemPrompt: systemPrompt)
+  ) where Loader == DirectoryModelLoader {
+    self.init(
+      .fromDirectory(
+        slug: modelSlug,
+        contextSize: contextSize,
+        corpusDirectoryURL: corpusDirectoryURL,
+        directory: directory,
+        downloadBehavior: downloadBehavior
+      ),
+      systemPrompt: systemPrompt
+    )
   }
 
   public init(
-    _ request: any CactusAgentModelRequest,
+    _ loader: Loader,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
   ) {
+    self.init(loader, transcript: CactusTranscript())
   }
 
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws {
+  }
+}
+
+// MARK: - Session Convenience Inits
+
+extension CactusAgenticSession {
+  public convenience init(
+    _ model: sending CactusLanguageModel,
+    functions: sending [any CactusFunction] = [],
+    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
+  ) {
+    self.init(
+      .constant(model),
+      functions: functions,
+      modelStore: modelStore,
+      systemPrompt: systemPrompt
+    )
+  }
+
+  public convenience init(
+    from url: URL,
+    functions: sending [any CactusFunction] = [],
+    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
+  ) {
+    self.init(
+      .fromModelURL(url),
+      functions: functions,
+      modelStore: modelStore,
+      systemPrompt: systemPrompt
+    )
+  }
+
+  public convenience init(
+    configuration: CactusLanguageModel.Configuration,
+    functions: sending [any CactusFunction] = [],
+    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
+  ) {
+    self.init(
+      .fromConfiguration(configuration),
+      functions: functions,
+      modelStore: modelStore,
+      systemPrompt: systemPrompt
+    )
+  }
+
+  public convenience init(
+    modelSlug: String,
+    contextSize: Int = 2048,
+    corpusDirectoryURL: URL? = nil,
+    directory: CactusModelsDirectory? = nil,
+    downloadBehavior: CactusAgentModelDownloadBehavior? = nil,
+    functions: sending [any CactusFunction] = [],
+    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
+  ) {
+    self.init(
+      .fromDirectory(slug: modelSlug),
+      functions: functions,
+      modelStore: modelStore,
+      systemPrompt: systemPrompt
+    )
+  }
+
+  public convenience init(
+    _ loader: sending some CactusAgentModelLoader,
+    functions: sending [any CactusFunction] = [],
+    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
+  ) {
+    self.init(
+      CactusModelAgent(loader, systemPrompt: systemPrompt)
+        .functions(functions)
+        .modelStore(modelStore)
+    )
+  }
+
+  public convenience init(
+    _ model: sending CactusLanguageModel,
+    functions: sending [any CactusFunction] = [],
+    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    transcript: CactusTranscript
+  ) {
+    self.init(
+      .constant(model),
+      functions: functions,
+      modelStore: modelStore,
+      transcript: transcript
+    )
+  }
+
+  public convenience init(
+    from url: URL,
+    functions: sending [any CactusFunction] = [],
+    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    transcript: CactusTranscript
+  ) {
+    self.init(
+      .fromModelURL(url),
+      functions: functions,
+      modelStore: modelStore,
+      transcript: transcript
+    )
+  }
+
+  public convenience init(
+    configuration: CactusLanguageModel.Configuration,
+    functions: sending [any CactusFunction] = [],
+    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    transcript: CactusTranscript
+  ) {
+    self.init(
+      .fromConfiguration(configuration),
+      functions: functions,
+      modelStore: modelStore,
+      transcript: transcript
+    )
+  }
+
+  public convenience init(
+    modelSlug: String,
+    contextSize: Int = 2048,
+    corpusDirectoryURL: URL? = nil,
+    directory: CactusModelsDirectory? = nil,
+    downloadBehavior: CactusAgentModelDownloadBehavior? = nil,
+    functions: sending [any CactusFunction] = [],
+    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    transcript: CactusTranscript
+  ) {
+    self.init(
+      .fromDirectory(slug: modelSlug),
+      functions: functions,
+      modelStore: modelStore,
+      transcript: transcript
+    )
+  }
+
+  public convenience init(
+    _ loader: sending some CactusAgentModelLoader,
+    functions: sending [any CactusFunction] = [],
+    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    transcript: CactusTranscript
+  ) {
+    self.init(
+      CactusModelAgent(loader, transcript: transcript)
+        .transcript(transcript)
+        .functions(functions)
+        .modelStore(modelStore)
+    )
   }
 }
