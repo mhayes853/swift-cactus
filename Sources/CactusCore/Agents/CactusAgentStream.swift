@@ -80,6 +80,5 @@ extension CactusAgentStream {
 
 extension CactusAgentStream {
   public struct Continuation: Sendable {
-
   }
 }
