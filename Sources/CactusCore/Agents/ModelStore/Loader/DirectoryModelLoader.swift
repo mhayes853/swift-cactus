@@ -23,14 +23,14 @@ public struct DirectoryModelLoader: CactusAgentModelLoader {
 
   public func loadModel(
     in environment: CactusEnvironmentValues
-  ) async throws -> CactusLanguageModel {
+  ) async throws -> sending CactusLanguageModel {
     if let model = try self.loadStoredModel(in: environment) {
       return model
     }
     let directory = self.directory ?? environment.modelsDirectory
     switch self.downloadBehavior ?? environment.modelDownloadBehavior {
     case .noDownloading:
-      throw DirectoryModelRequestError.modelNotFound
+      throw DirectoryModelLoaderError.modelNotFound
 
     case .beginDownload(let configuration):
       switch self.slug {
@@ -42,7 +42,7 @@ public struct DirectoryModelLoader: CactusAgentModelLoader {
       case .text(let slug):
         _ = try directory.modelDownloadTask(for: slug, configuration: configuration)
       }
-      throw DirectoryModelRequestError.modelDownloading
+      throw DirectoryModelLoaderError.modelDownloading
 
     case .waitForDownload(let configuration):
       switch self.slug {
@@ -113,7 +113,7 @@ extension CactusAgentModelLoader where Self == DirectoryModelLoader {
 
 // MARK: - Error
 
-public enum DirectoryModelRequestError: Hashable, Error {
+public enum DirectoryModelLoaderError: Hashable, Error {
   case modelDownloading
   case modelNotFound
 }

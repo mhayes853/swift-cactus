@@ -12,8 +12,8 @@ public struct CactusModelAgent<
   private let transcript: CactusTranscript
 
   public init(key: AnyHashable? = nil, _ model: CactusLanguageModel, transcript: CactusTranscript)
-  where Loader == ConstantModelLoader {
-    self.init(key: key, .constant(model), transcript: transcript)
+  where Loader == NoModelLoader {
+    self.init(key: key, .noModel, transcript: transcript)
   }
 
   public init(key: AnyHashable? = nil, url: URL, transcript: CactusTranscript)
@@ -25,8 +25,7 @@ public struct CactusModelAgent<
     key: AnyHashable? = nil,
     configuration: CactusLanguageModel.Configuration,
     transcript: CactusTranscript
-  )
-  where Loader == ConfigurationModelLoader {
+  ) where Loader == ConfigurationModelLoader {
     self.init(key: key, .fromConfiguration(configuration), transcript: transcript)
   }
 
@@ -38,8 +37,7 @@ public struct CactusModelAgent<
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil,
     transcript: CactusTranscript
-  )
-  where Loader == DirectoryModelLoader {
+  ) where Loader == DirectoryModelLoader {
     self.init(
       key: key,
       .fromDirectory(
@@ -63,16 +61,15 @@ public struct CactusModelAgent<
     key: AnyHashable? = nil,
     _ model: CactusLanguageModel,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
-  ) where Loader == ConstantModelLoader {
-    self.init(key: key, .constant(model), systemPrompt: systemPrompt)
+  ) where Loader == NoModelLoader {
+    self.init(key: key, .noModel, systemPrompt: systemPrompt)
   }
 
   public init(
     key: AnyHashable? = nil,
     url: URL,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
-  )
-  where Loader == ConfigurationModelLoader {
+  ) where Loader == ConfigurationModelLoader {
     self.init(key: key, .fromModelURL(url), systemPrompt: systemPrompt)
   }
 
@@ -80,8 +77,7 @@ public struct CactusModelAgent<
     key: AnyHashable? = nil,
     configuration: CactusLanguageModel.Configuration,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
-  )
-  where Loader == ConfigurationModelLoader {
+  ) where Loader == ConfigurationModelLoader {
     self.init(key: key, .fromConfiguration(configuration), systemPrompt: systemPrompt)
   }
 
@@ -132,7 +128,7 @@ extension CactusAgenticSession {
     @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
   ) {
     self.init(
-      .constant(model),
+      .noModel,
       functions: functions,
       store: store,
       systemPrompt: systemPrompt
@@ -205,7 +201,7 @@ extension CactusAgenticSession {
     transcript: CactusTranscript
   ) {
     self.init(
-      .constant(model),
+      .noModel,
       functions: functions,
       store: store,
       transcript: transcript

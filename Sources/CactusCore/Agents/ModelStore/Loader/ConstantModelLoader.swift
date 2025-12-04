@@ -1,15 +1,20 @@
-public struct ConstantModelLoader: CactusAgentModelLoader {
-  let model: CactusLanguageModel
-
-  public func loadModel(
+public struct NoModelLoader: CactusAgentModelLoader {
+  @inlinable
+  public nonisolated(nonsending) func loadModel(
     in environment: CactusEnvironmentValues
-  ) async throws -> CactusLanguageModel {
-    self.model
+  ) async throws -> sending CactusLanguageModel {
+    throw NoModel()
+  }
+
+  @usableFromInline
+  struct NoModel: Error {
+    @usableFromInline
+    init() {}
   }
 }
 
-extension CactusAgentModelLoader where Self == ConstantModelLoader {
-  public static func constant(_ model: CactusLanguageModel) -> Self {
-    ConstantModelLoader(model: model)
+extension CactusAgentModelLoader where Self == NoModelLoader {
+  public static var noModel: Self {
+    NoModelLoader()
   }
 }

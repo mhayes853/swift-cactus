@@ -5,8 +5,8 @@ public struct WhisperTranscribeAgent<Loader: CactusAgentModelLoader>: CactusAgen
   private let key: AnyHashable?
 
   public init(key: AnyHashable? = nil, _ model: CactusLanguageModel)
-  where Loader == ConstantModelLoader {
-    self.init(key: key, .constant(model))
+  where Loader == NoModelLoader {
+    self.init(key: key, .noModel)
   }
 
   public init(key: AnyHashable? = nil, url: URL) where Loader == ConfigurationModelLoader {

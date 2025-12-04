@@ -12,8 +12,8 @@ public final class SessionModelStore: CactusAgentModelStore {
 
   public func withModelAccess<T>(
     request: sending CactusAgentModelRequest<some CactusAgentModelLoader>,
-    perform operation: (CactusLanguageModel) throws -> T
-  ) async throws -> T {
+    perform operation: (CactusLanguageModel) throws -> sending T
+  ) async throws -> sending T {
     let model = try await self.model(for: request)
     return try operation(model)
   }
@@ -21,11 +21,11 @@ public final class SessionModelStore: CactusAgentModelStore {
   private nonisolated(nonsending) func model(
     for request: sending CactusAgentModelRequest<some CactusAgentModelLoader>
   ) async throws -> CactusLanguageModel {
-    if let model = self.models[request.key] {
+    if let model = self.models[AnyHashable(request.key)] {
       return model
     }
     let model = try await request.loader.loadModel(in: request.environment)
-    self.models[request.key] = model
+    self.models[AnyHashable(request.key)] = model
     return model
   }
 }

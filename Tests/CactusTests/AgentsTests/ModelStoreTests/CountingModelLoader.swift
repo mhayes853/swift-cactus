@@ -9,7 +9,9 @@ final class CountingModelLoader: CactusAgentModelLoader, Sendable {
     self.url = url
   }
 
-  func loadModel(in environment: CactusEnvironmentValues) async throws -> CactusLanguageModel {
+  func loadModel(
+    in environment: CactusEnvironmentValues
+  ) async throws -> sending CactusLanguageModel {
     self.count.withLock { $0 += 1 }
     return try CactusLanguageModel(from: self.url)
   }

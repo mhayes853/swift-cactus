@@ -1,12 +1,12 @@
 // MARK: - CactusAgentModelRequest
 
 public struct CactusAgentModelRequest<Loader: CactusAgentModelLoader> {
-  public let key: AnyHashable
+  public let key: any Hashable & Sendable
   public let loader: Loader
   public let environment: CactusEnvironmentValues
 
   public init(
-    key: AnyHashable,
+    key: any Hashable & Sendable,
     loader: Loader,
     environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) {
@@ -26,8 +26,8 @@ public protocol CactusAgentModelStore {
 
   nonisolated(nonsending) func withModelAccess<T>(
     request: sending CactusAgentModelRequest<some CactusAgentModelLoader>,
-    perform operation: (CactusLanguageModel) throws -> T
-  ) async throws -> T
+    perform operation: (CactusLanguageModel) throws -> sending T
+  ) async throws -> sending T
 }
 
 // MARK: - Environment
