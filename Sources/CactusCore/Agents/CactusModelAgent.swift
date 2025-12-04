@@ -114,13 +114,13 @@ extension CactusAgenticSession {
   public convenience init(
     _ model: sending CactusLanguageModel,
     functions: sending [any CactusFunction] = [],
-    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    store: sending any CactusAgentModelStore = SessionModelStore(),
     @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
   ) {
     self.init(
       .constant(model),
       functions: functions,
-      modelStore: modelStore,
+      store: store,
       systemPrompt: systemPrompt
     )
   }
@@ -128,13 +128,13 @@ extension CactusAgenticSession {
   public convenience init(
     from url: URL,
     functions: sending [any CactusFunction] = [],
-    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    store: sending any CactusAgentModelStore = SessionModelStore(),
     @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
   ) {
     self.init(
       .fromModelURL(url),
       functions: functions,
-      modelStore: modelStore,
+      store: store,
       systemPrompt: systemPrompt
     )
   }
@@ -142,13 +142,13 @@ extension CactusAgenticSession {
   public convenience init(
     configuration: CactusLanguageModel.Configuration,
     functions: sending [any CactusFunction] = [],
-    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    store: sending any CactusAgentModelStore = SessionModelStore(),
     @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
   ) {
     self.init(
       .fromConfiguration(configuration),
       functions: functions,
-      modelStore: modelStore,
+      store: store,
       systemPrompt: systemPrompt
     )
   }
@@ -160,13 +160,13 @@ extension CactusAgenticSession {
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil,
     functions: sending [any CactusFunction] = [],
-    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    store: sending any CactusAgentModelStore = SessionModelStore(),
     @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
   ) {
     self.init(
       .fromDirectory(slug: modelSlug),
       functions: functions,
-      modelStore: modelStore,
+      store: store,
       systemPrompt: systemPrompt
     )
   }
@@ -174,26 +174,26 @@ extension CactusAgenticSession {
   public convenience init(
     _ loader: sending some CactusAgentModelLoader,
     functions: sending [any CactusFunction] = [],
-    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    store: sending any CactusAgentModelStore = SessionModelStore(),
     @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
   ) {
     self.init(
       CactusModelAgent(loader, systemPrompt: systemPrompt)
-        .functions(functions)
-        .modelStore(modelStore)
+        .functions(functions),
+      store: store
     )
   }
 
   public convenience init(
     _ model: sending CactusLanguageModel,
     functions: sending [any CactusFunction] = [],
-    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    store: sending any CactusAgentModelStore = SessionModelStore(),
     transcript: CactusTranscript
   ) {
     self.init(
       .constant(model),
       functions: functions,
-      modelStore: modelStore,
+      store: store,
       transcript: transcript
     )
   }
@@ -201,13 +201,13 @@ extension CactusAgenticSession {
   public convenience init(
     from url: URL,
     functions: sending [any CactusFunction] = [],
-    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    store: sending any CactusAgentModelStore = SessionModelStore(),
     transcript: CactusTranscript
   ) {
     self.init(
       .fromModelURL(url),
       functions: functions,
-      modelStore: modelStore,
+      store: store,
       transcript: transcript
     )
   }
@@ -215,13 +215,13 @@ extension CactusAgenticSession {
   public convenience init(
     configuration: CactusLanguageModel.Configuration,
     functions: sending [any CactusFunction] = [],
-    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    store: sending any CactusAgentModelStore = SessionModelStore(),
     transcript: CactusTranscript
   ) {
     self.init(
       .fromConfiguration(configuration),
       functions: functions,
-      modelStore: modelStore,
+      store: store,
       transcript: transcript
     )
   }
@@ -233,13 +233,13 @@ extension CactusAgenticSession {
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil,
     functions: sending [any CactusFunction] = [],
-    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    store: sending any CactusAgentModelStore = SessionModelStore(),
     transcript: CactusTranscript
   ) {
     self.init(
       .fromDirectory(slug: modelSlug),
       functions: functions,
-      modelStore: modelStore,
+      store: store,
       transcript: transcript
     )
   }
@@ -247,14 +247,14 @@ extension CactusAgenticSession {
   public convenience init(
     _ loader: sending some CactusAgentModelLoader,
     functions: sending [any CactusFunction] = [],
-    modelStore: sending any CactusAgentModelStore = SessionModelStore(),
+    store: sending any CactusAgentModelStore = SessionModelStore(),
     transcript: CactusTranscript
   ) {
     self.init(
       CactusModelAgent(loader, transcript: transcript)
         .transcript(transcript)
-        .functions(functions)
-        .modelStore(modelStore)
+        .functions(functions),
+      store: store
     )
   }
 }

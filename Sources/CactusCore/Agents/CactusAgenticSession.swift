@@ -12,8 +12,17 @@ public final class CactusAgenticSession<
     false
   }
 
-  public init(_ agent: sending some CactusAgent<Input, Output>) {
-    self.agentActor = AgentActor(agent)
+  public func prewarmModel(
+    request: sending CactusAgentModelRequest<some CactusAgentModelLoader>
+  ) async throws {
+    try await self.agentActor.prewarmModel(request: request)
+  }
+
+  public init(
+    _ agent: sending some CactusAgent<Input, Output>,
+    store: sending some CactusAgentModelStore = SessionModelStore()
+  ) {
+    self.agentActor = AgentActor(agent, store: store)
   }
 
   public func stream(for message: Input) -> CactusAgentStream<Output> {
@@ -35,9 +44,20 @@ public final class CactusAgenticSession<
 extension CactusAgenticSession {
   private final actor AgentActor {
     private let agent: any CactusAgent<Input, Output>
+    private let store: any CactusAgentModelStore
 
-    init(_ agent: sending some CactusAgent<Input, Output>) {
+    init(
+      _ agent: sending some CactusAgent<Input, Output>,
+      store: sending some CactusAgentModelStore
+    ) {
       self.agent = agent
+      self.store = store
+    }
+
+    func prewarmModel(
+      request: sending CactusAgentModelRequest<some CactusAgentModelLoader>
+    ) async throws {
+      try await self.store.prewarmModel(request: request)
     }
   }
 }

@@ -20,10 +20,12 @@ public struct CactusAgentModelRequest<Loader: CactusAgentModelLoader> {
 
 /// A protocol for accessing and managing `CactusLanguageModel` instances used by agents.
 public protocol CactusAgentModelStore {
-  func prewarmModel<Loader>(request: CactusAgentModelRequest<Loader>) async throws
+  nonisolated(nonsending) func prewarmModel(
+    request: sending CactusAgentModelRequest<some CactusAgentModelLoader>
+  ) async throws
 
-  func withModelAccess<T, Loader>(
-    request: CactusAgentModelRequest<Loader>,
+  func withModelAccess<T>(
+    request: CactusAgentModelRequest<some CactusAgentModelLoader>,
     perform operation: (CactusLanguageModel) throws -> T
   ) async throws -> T
 }
