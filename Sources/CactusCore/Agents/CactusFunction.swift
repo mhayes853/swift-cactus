@@ -8,7 +8,7 @@ public protocol CactusFunction<Input, Output> {
   var description: String { get }
   var parametersSchema: JSONSchema { get }
 
-  func invoke(input: Input) async throws -> Output
+  func invoke(input: Input, in environment: CactusEnvironmentValues) async throws -> Output
 }
 
 extension CactusFunction {
