@@ -7,33 +7,33 @@ public struct WhisperTranscribeAgent: CactusAgent {
     self.init(access: .direct(model))
   }
 
-  public init(key: (any Hashable & Sendable)? = nil, url: URL) {
+  public static func fromModelURL(key: (any Hashable & Sendable)? = nil, _ url: URL) -> Self {
     let loader = ConfigurationModelLoader.fromModelURL(url)
-    self.init(key: key ?? ConfigurationKey(loader: loader), loader)
+    return Self(key: key ?? ConfigurationKey(loader: loader), loader)
   }
 
-  public init(
+  public static func fromConfiguration(
     key: (any Hashable & Sendable)? = nil,
-    configuration: CactusLanguageModel.Configuration
-  ) {
+    _ configuration: CactusLanguageModel.Configuration
+  ) -> Self {
     let loader = ConfigurationModelLoader.fromConfiguration(configuration)
-    self.init(key: key ?? ConfigurationKey(loader: loader), loader)
+    return Self(key: key ?? ConfigurationKey(loader: loader), loader)
   }
 
-  public init(
+  public static func(
     key: (any Hashable & Sendable)? = nil,
     slug: String,
     contextSize: Int = 2048,
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil
-  ) {
+  ) -> Self {
     let loader = DirectoryModelLoader.fromDirectory(
       audioSlug: slug,
       contextSize: contextSize,
       directory: directory,
       downloadBehavior: downloadBehavior
     )
-    self.init(key: key ?? DirectoryKey(loader: loader), loader)
+    return Self(key: key ?? DirectoryKey(loader: loader), loader)
   }
 
   public init(key: (any Hashable & Sendable), _ loader: any CactusAgentModelLoader) {

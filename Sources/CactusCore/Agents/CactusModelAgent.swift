@@ -13,21 +13,25 @@ public struct CactusModelAgent<
     self.init(access: .direct(model), transcript: transcript)
   }
 
-  public init(key: (any Hashable & Sendable)? = nil, url: URL, transcript: CactusTranscript) {
-    let loader = ConfigurationModelLoader.fromModelURL(url)
-    self.init(key: key ?? ConfigurationKey(loader: loader), loader, transcript: transcript)
-  }
-
-  public init(
+  public static func fromModelURL(
     key: (any Hashable & Sendable)? = nil,
-    configuration: CactusLanguageModel.Configuration,
+    _ url: URL,
     transcript: CactusTranscript
-  ) {
-    let loader = ConfigurationModelLoader.fromConfiguration(configuration)
-    self.init(key: key ?? ConfigurationKey(loader: loader), loader, transcript: transcript)
+  ) -> Self {
+    let loader = ConfigurationModelLoader.fromModelURL(url)
+    return Self(key: key ?? ConfigurationKey(loader: loader), loader, transcript: transcript)
   }
 
-  public init(
+  public static func fromConfiguration(
+    key: (any Hashable & Sendable)? = nil,
+    _ configuration: CactusLanguageModel.Configuration,
+    transcript: CactusTranscript
+  ) -> Self {
+    let loader = ConfigurationModelLoader.fromConfiguration(configuration)
+    return Self(key: key ?? ConfigurationKey(loader: loader), loader, transcript: transcript)
+  }
+
+  public static func fromDirectory(
     key: (any Hashable & Sendable)? = nil,
     slug: String,
     contextSize: Int = 2048,
@@ -35,7 +39,7 @@ public struct CactusModelAgent<
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil,
     transcript: CactusTranscript
-  ) {
+  ) -> Self {
     let loader = DirectoryModelLoader.fromDirectory(
       slug: slug,
       contextSize: contextSize,
@@ -43,7 +47,7 @@ public struct CactusModelAgent<
       directory: directory,
       downloadBehavior: downloadBehavior
     )
-    self.init(
+    return Self(
       key: key ?? DirectoryKey(loader: loader),
       loader,
       transcript: transcript
@@ -65,25 +69,25 @@ public struct CactusModelAgent<
     self.init(access: .direct(model), transcript: CactusTranscript())
   }
 
-  public init(
+  public static func fromModelURL(
     key: (any Hashable & Sendable)? = nil,
-    url: URL,
+    _ url: URL,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
-  ) {
+  ) -> Self {
     let loader = ConfigurationModelLoader.fromModelURL(url)
-    self.init(key: key ?? ConfigurationKey(loader: loader), loader, systemPrompt: systemPrompt)
+    return Self(key: key ?? ConfigurationKey(loader: loader), loader, systemPrompt: systemPrompt)
   }
 
-  public init(
+  public static func fromConfiguration(
     key: (any Hashable & Sendable)? = nil,
-    configuration: CactusLanguageModel.Configuration,
+    _ configuration: CactusLanguageModel.Configuration,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
-  ) {
+  ) -> Self {
     let loader = ConfigurationModelLoader.fromConfiguration(configuration)
-    self.init(key: key ?? ConfigurationKey(loader: loader), loader, systemPrompt: systemPrompt)
+    return Self(key: key ?? ConfigurationKey(loader: loader), loader, systemPrompt: systemPrompt)
   }
 
-  public init(
+  public static func fromDirectory(
     key: (any Hashable & Sendable)? = nil,
     slug: String,
     contextSize: Int = 2048,
@@ -91,16 +95,17 @@ public struct CactusModelAgent<
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
-  ) {
-    self.init(
-      key: key,
-      .fromDirectory(
-        slug: slug,
-        contextSize: contextSize,
-        corpusDirectoryURL: corpusDirectoryURL,
-        directory: directory,
-        downloadBehavior: downloadBehavior
-      ),
+  ) -> Self {
+    let loader = DirectoryModelLoader.fromDirectory(
+      slug: slug,
+      contextSize: contextSize,
+      corpusDirectoryURL: corpusDirectoryURL,
+      directory: directory,
+      downloadBehavior: downloadBehavior
+    )
+    return Self(
+      key: key ?? DirectoryKey(loader: loader),
+      loader,
       systemPrompt: systemPrompt
     )
   }
