@@ -4,7 +4,7 @@ import Foundation
 
 extension CactusPromptRepresentable {
   public func encoded<Encoder: SendableMetatype>(
-    with encoder: @escaping @autoclosure @Sendable () -> Encoder
+    with encoder: Encoder
   ) -> _EncodedContent<Self, Encoder> {
     _EncodedContent(content: self, encoder: encoder)
   }
@@ -15,42 +15,32 @@ public struct _EncodedContent<
   Encoder: TopLevelEncoder<Data> & SendableMetatype
 >: CactusPromptRepresentable {
   let content: Content
-  let encoder: @Sendable () -> Encoder
+  let encoder: Encoder
 
   public func promptContent(
     in environment: CactusEnvironmentValues
   ) throws(Content.PromptContentFailure) -> CactusPromptContent {
-    let encoder = self.encoder
-    var env = environment
-    env[CactusEnvironmentValues.PromptContentEncoderKey.self] = PromptContentEncoder(encoder())
-    return try self.content.promptContent(in: env)
+    var environment = environment
+    environment.promptContentEncoder = self.encoder
+    return try self.content.promptContent(in: environment)
   }
 }
-
-extension _EncodedContent: Sendable where Encoder: Sendable, Content: Sendable {}
 
 // MARK: - Environment
 
 extension CactusEnvironmentValues {
   public var promptContentEncoder: any TopLevelEncoder<Data> {
-    self[PromptContentEncoderKey.self].encoder()
+    get { self[PromptContentEncoderKey.self].encoder }
+    set { self[PromptContentEncoderKey.self] = PromptContentEncoder(encoder: newValue) }
   }
 
-  fileprivate enum PromptContentEncoderKey: Key {
-    static let defaultValue = PromptContentEncoder(JSONEncoder())
+  private enum PromptContentEncoderKey: Key {
+    static var defaultValue: PromptContentEncoder {
+      PromptContentEncoder(encoder: JSONEncoder())
+    }
   }
 }
 
-private struct PromptContentEncoder: Sendable {
-  @TaskLocal static var current = Self(JSONEncoder())
-
-  let encoder: @Sendable () -> sending any TopLevelEncoder<Data>
-
-  init(_ encoder: @escaping @autoclosure @Sendable () -> sending any TopLevelEncoder<Data>) {
-    self.encoder = encoder
-  }
-
-  func encode(_ value: JSONValue) throws -> Data {
-    try self.encoder().encode(value)
-  }
+private struct PromptContentEncoder {
+  let encoder: any TopLevelEncoder<Data>
 }

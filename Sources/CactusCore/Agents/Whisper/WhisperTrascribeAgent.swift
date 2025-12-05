@@ -20,7 +20,7 @@ public struct WhisperTranscribeAgent: CactusAgent {
     return Self(key: key ?? ConfigurationKey(loader: loader), loader)
   }
 
-  public static func(
+  public static func fromDirectory(
     key: (any Hashable & Sendable)? = nil,
     slug: String,
     contextSize: Int = 2048,
