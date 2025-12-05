@@ -132,7 +132,7 @@ public struct CactusModelAgent<
 
 // MARK: - Session Convenience Inits
 
-extension CactusAgenticSession {
+extension CactusAgenticSession where Input: CactusPromptRepresentable {
   public convenience init(
     _ model: sending CactusLanguageModel,
     functions: sending [any CactusFunction] = [],
