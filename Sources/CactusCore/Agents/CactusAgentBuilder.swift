@@ -9,6 +9,14 @@ public enum CactusAgentBuilder<
     EmptyAgent()
   }
 
+  public static func buildBlock<A: CactusAgent<Input, Output>>(_ component: A) -> A {
+    component
+  }
+
+  public static func buildExpression<A: CactusAgent<Input, Output>>(_ expression: A) -> A {
+    expression
+  }
+
   public static func buildEither<AL: CactusAgent<Input, Output>, AR: CactusAgent<Input, Output>>(
     first component: AL
   ) -> _EitherAgent<AL, AR> {
