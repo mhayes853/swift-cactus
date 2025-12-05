@@ -17,6 +17,13 @@ public enum CactusAgentBuilder<
     expression
   }
 
+  @_disfavoredOverload
+  public static func buildExpression(
+    _ expression: any CactusAgent<Input, Output>
+  ) -> AnyAgent<Input, Output> {
+    AnyAgent(expression)
+  }
+
   public static func buildLimitedAvailability(
     _ component: some CactusAgent<Input, Output>
   ) -> AnyAgent<Input, Output> {
@@ -33,6 +40,10 @@ public enum CactusAgentBuilder<
     seconds component: AR
   ) -> _EitherAgent<AL, AR> {
     .right(component)
+  }
+
+  public static func buildFinalResult<A: CactusAgent<Input, Output>>(_ component: A) -> A {
+    component
   }
 }
 
