@@ -12,10 +12,7 @@ extension CactusAgent {
   }
 }
 
-public struct _TransformInputAgent<
-  Base: CactusAgent,
-  Input: CactusPromptRepresentable
->: CactusAgent {
+public struct _TransformInputAgent<Base: CactusAgent, Input>: CactusAgent {
   let base: Base
   let transform: (Input) throws -> Base.Input
 
