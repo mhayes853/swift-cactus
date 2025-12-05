@@ -50,12 +50,14 @@ extension CactusAgentStream: AsyncSequence where Output.Partial: ConvertibleFrom
 extension CactusAgentStream {
   public struct Tokens: AsyncSequence {
     public struct AsyncIterator: AsyncIteratorProtocol {
-      public func next() async throws -> String? {
-        ""
+      public func next() async throws -> CactusStreamedToken? {
+        nil
       }
 
       @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-      public func next(isolation actor: isolated (any Actor)?) async throws -> String? {
+      public func next(
+        isolation actor: isolated (any Actor)?
+      ) async throws -> CactusStreamedToken? {
         nil
       }
     }
@@ -70,7 +72,7 @@ extension CactusAgentStream {
   }
 
   public func onToken(
-    perform operation: (Result<String, any Error>) -> Void
+    perform operation: (Result<CactusStreamedToken, any Error>) -> Void
   ) -> CactusSubscription {
     CactusSubscription {}
   }
