@@ -1,7 +1,4 @@
-public struct AnyAgent<
-  Input: CactusPromptRepresentable,
-  Output: ConvertibleFromCactusResponse
->: CactusAgent {
+public struct AnyAgent<Input, Output: ConvertibleFromCactusResponse>: CactusAgent {
   private let base: any CactusAgent<Input, Output>
 
   public init(_ base: any CactusAgent<Input, Output>) {

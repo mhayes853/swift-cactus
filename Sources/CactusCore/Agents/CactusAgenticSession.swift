@@ -2,10 +2,7 @@ import Observation
 
 // MARK: - CactusAgenticSession
 
-public final class CactusAgenticSession<
-  Input: CactusPromptRepresentable,
-  Output: ConvertibleFromCactusResponse
->: Sendable {
+public final class CactusAgenticSession<Input, Output: ConvertibleFromCactusResponse>: Sendable {
   private let agentActor: AgentActor
 
   public var isResponding: Bool {

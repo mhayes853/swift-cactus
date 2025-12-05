@@ -1,10 +1,7 @@
 // MARK: - CactusAgentBuilder
 
 @resultBuilder
-public enum CactusAgentBuilder<
-  Input: CactusPromptRepresentable,
-  Output: ConvertibleFromCactusResponse
-> {
+public enum CactusAgentBuilder<Input, Output: ConvertibleFromCactusResponse> {
   public static func buildBlock() -> EmptyAgent<Input, Output> {
     EmptyAgent()
   }
@@ -15,6 +12,13 @@ public enum CactusAgentBuilder<
 
   public static func buildExpression<A: CactusAgent<Input, Output>>(_ expression: A) -> A {
     expression
+  }
+
+  @_disfavoredOverload
+  public static func buildExpression(
+    _ expression: any CactusAgent<Input, Output>
+  ) -> AnyAgent<Input, Output> {
+    AnyAgent(expression)
   }
 
   public static func buildLimitedAvailability(
@@ -33,6 +37,10 @@ public enum CactusAgentBuilder<
     seconds component: AR
   ) -> _EitherAgent<AL, AR> {
     .right(component)
+  }
+
+  public static func buildFinalResult<A: CactusAgent<Input, Output>>(_ component: A) -> A {
+    component
   }
 }
 

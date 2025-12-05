@@ -1,7 +1,4 @@
-public struct EmptyAgent<
-  Input: CactusPromptRepresentable,
-  Output: ConvertibleFromCactusResponse
->: CactusAgent {
+public struct EmptyAgent<Input, Output: ConvertibleFromCactusResponse>: CactusAgent {
   @inlinable
   public init() {}
 

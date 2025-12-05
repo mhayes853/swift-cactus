@@ -1,4 +1,4 @@
-public struct CactusAgentRequest<Input: CactusPromptRepresentable> {
+public struct CactusAgentRequest<Input> {
   public var input: Input
   public var environment: CactusEnvironmentValues
 

@@ -1,5 +1,5 @@
 public protocol CactusAgent<Input, Output> {
-  associatedtype Input: CactusPromptRepresentable
+  associatedtype Input
   associatedtype Output: ConvertibleFromCactusResponse
 
   associatedtype Body
