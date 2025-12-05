@@ -17,6 +17,12 @@ public enum CactusAgentBuilder<
     expression
   }
 
+  public static func buildLimitedAvailability(
+    _ component: some CactusAgent<Input, Output>
+  ) -> AnyAgent<Input, Output> {
+    AnyAgent(component)
+  }
+
   public static func buildEither<AL: CactusAgent<Input, Output>, AR: CactusAgent<Input, Output>>(
     first component: AL
   ) -> _EitherAgent<AL, AR> {
