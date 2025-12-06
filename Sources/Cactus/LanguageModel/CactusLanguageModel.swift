@@ -53,7 +53,9 @@ public final class CactusLanguageModel {
   public let configurationFile: ConfigurationFile
 
   /// The underlying model pointer.
-  public let model: UnsafeMutableRawPointer
+  public let model: cactus_model_t
+
+  private let isModelPointerManaged: Bool
 
   /// Loads a model from the specified `URL`.
   ///
@@ -94,6 +96,7 @@ public final class CactusLanguageModel {
         contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
       )
       self.configurationFile = configFile
+      self.isModelPointerManaged = true
       CactusTelemetry.send(CactusTelemetry.LanguageModelInitEvent(configuration: configuration))
     } catch let error as ModelCreationError {
       CactusTelemetry.send(
@@ -107,7 +110,34 @@ public final class CactusLanguageModel {
     }
   }
 
-  deinit { cactus_destroy(self.model) }
+  /// Creates a language model from the specified model pointer and configuration.
+  ///
+  /// The configuration must accurately represent the underlying properties of the model pointer.
+  ///
+  /// - Parameters:
+  ///   - model: The model pointer.
+  ///   - configuration: A ``Configuration`` that must accurately represent the model.
+  ///   - isModelPointerManaged: Whether or not the model pointer is destroyed when the language
+  ///     model is deinitialized.
+  public init(
+    model: cactus_model_t,
+    configuration: Configuration,
+    isModelPointerManaged: Bool = false
+  ) throws {
+    self.configuration = configuration
+    self.configurationFile = try ConfigurationFile(
+      contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
+    )
+    self.model = model
+    self.isModelPointerManaged = isModelPointerManaged
+    CactusTelemetry.send(CactusTelemetry.LanguageModelInitEvent(configuration: configuration))
+  }
+
+  deinit {
+    if self.isModelPointerManaged {
+      cactus_destroy(self.model)
+    }
+  }
 }
 
 // MARK: - Configuration

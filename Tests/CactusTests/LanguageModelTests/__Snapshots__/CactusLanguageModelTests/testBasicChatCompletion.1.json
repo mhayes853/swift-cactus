@@ -1,16 +1,16 @@
 [
   {
     "completion" : {
-      "decode_tokens" : 43,
+      "decode_tokens" : 200,
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 9,
-      "response" : "That's correct! What would you like to discuss or explore next? Are you interested in a specific topic, perhaps technology, literature, history, or something else? Let me know how I can assist you.<|im_end|>",
-      "time_to_first_token_ms" : 40.03,
-      "tokens_per_second" : 113.34,
-      "total_time_ms" : 410.59,
-      "total_tokens" : 52
+      "prefill_tokens" : 35,
+      "response" : "The meaning of life is a profound and often elusive question that has puzzled philosophers, theologians, and scientists for centuries. It's a question that varies widely from person to person, shaped by cultural background, personal beliefs, and individual experiences. Some common interpretations include:\n\n1. **Existentialism** – This philosophical approach suggests that life has no inherent meaning; it must be created through our choices and actions.\n2. **Sacredness of Life** – Many believe in living with purpose or finding spiritual significance in the journey itself rather than specific outcomes.\n3. **Pursuit of Happiness (Eudaimonia)** – In this view, the ultimate goal is to live a fulfilling life based on virtue and self-awareness.\n4. **Social Responsibility** - Some argue that we have a moral obligation to contribute positively to society, fostering community well-being and collective happiness.\n5. **Scientific Perspective** - From an empirical standpoint, understanding human",
+      "time_to_first_token_ms" : 454.98,
+      "tokens_per_second" : 117.12,
+      "total_time_ms" : 2154.15,
+      "total_tokens" : 235
     },
     "slug" : "lfm2-350m"
   },
@@ -20,42 +20,42 @@
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 13,
-      "response" : "<think>\nOkay, the user wants to know how to make a coffee cup. Let me start by breaking down what they need. First, they probably need a basic set of materials: cups and maybe some utensils like chopsticks or spoons.\n\nI should mention different types of cups since there are many styles out there. Maybe suggest something everyday like a ceramic mug or an aluminum one for durability and heat resistance. Also, considering the user's preference for specific features—like color or size—should be mentioned as options.\n\nWait, but I should ask if they want it made from recycled materials first because that's part of sustainability in modern times. Then move on to the process step by step: choosing materials, preparing the cup (if needed), assembling it with tools and screws, testing its functionality before using.\n\nOh right! Including tips on how to test if it works well is important so they know before finalizing their project. Also, making sure to cover any potential issues like leaks or improper",
-      "time_to_first_token_ms" : 65.04,
-      "tokens_per_second" : 50.29,
-      "total_time_ms" : 4021.74,
-      "total_tokens" : 213
+      "prefill_tokens" : 34,
+      "response" : "<think>\nOkay, the user is asking about the meaning of life. I need to approach this carefully.\n\nFirst, I should acknowledge that \"meaning\" can be subjective and varies across individuals. Life isn't just a series of events; it's an experience with purpose. It's personal and philosophical, so maybe start by explaining that it depends on one's values and experiences.\n\nI should also consider different perspectives: existentialism might say life has no inherent meaning, while others might find purpose in relationships or achievements. It could help clarify these possibilities without assuming any particular viewpoint.\n\nI need to make sure my response is open-ended but invites reflection rather than giving direct answers. Emphasize the uniqueness of each person’s journey towards understanding life’s meaning.\n\nAlso, check if there are cultural or historical contexts where meanings differ, but since the user hasn't specified anything else I can include general information about this topic from a philosophical standpoint.\n<\/think>\n\nThe question of \"meaning\" of life is deeply personal and philosophical",
+      "time_to_first_token_ms" : 751.63,
+      "tokens_per_second" : 58.18,
+      "total_time_ms" : 4172.01,
+      "total_tokens" : 234
     },
     "slug" : "qwen3-0.6"
   },
   {
     "completion" : {
-      "decode_tokens" : 37,
+      "decode_tokens" : 200,
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 14,
-      "response" : "I'm an AI assistant specialized in providing assistance with programming tasks. I can help you write, review, and debug code across various programming languages. What's your question or issue?<|im_end|>",
-      "time_to_first_token_ms" : 58.29,
-      "tokens_per_second" : 66.35,
-      "total_time_ms" : 600.84,
-      "total_tokens" : 51
+      "prefill_tokens" : 35,
+      "response" : "To understand the meaning of life, we need to delve into various philosophical and spiritual perspectives. The meaning of life is often associated with questions about purpose, happiness, and fulfillment.\n\nPhilosophers have proposed different theories regarding the nature of existence:\n\n1. Eudaimonic approach: This perspective focuses on living a good life by pursuing personal growth and well-being through virtuous actions (eudaimonia). It emphasizes human flourishing in pursuit of happiness (eudaimonia) as a fundamental goal for individuals to strive for in their lives.\n\n2. Hedonistic approach: According to this view, pleasure is the primary source or measure for evaluating one's quality of life; it seeks to maximize overall pleasure while minimizing pain or suffering (hedonism).\n\n3. Virtue ethics approach: This perspective emphasizes character development and moral virtues such as kindness, honesty, fairness, and compassion as essential components of achieving fulfillment in life.\n\nOther theories include existentialism which focuses on individual",
+      "time_to_first_token_ms" : 463.02,
+      "tokens_per_second" : 78.19,
+      "total_time_ms" : 3008.07,
+      "total_tokens" : 235
     },
     "slug" : "smollm2-360m"
   },
   {
     "completion" : {
-      "decode_tokens" : 37,
+      "decode_tokens" : 200,
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 9,
-      "response" : "请根据您的具体需求，我可以为您提供更个性化的建议。您想让我帮您讨论什么呢？如果您想具体想我，请告诉我您想讨论什么。<end_of_turn>",
-      "time_to_first_token_ms" : 27.88,
-      "tokens_per_second" : 115.67,
-      "total_time_ms" : 339.1,
-      "total_tokens" : 46
+      "prefill_tokens" : 31,
+      "response" : "Ah, the profound and endlessly debated question of life. We grapple with it in moments of profound contemplation, moments that invite us to move beyond mere survival and seek meaning within a seemingly meaningless cosmos.\n\nPerhaps the very nature of existence is best understood through questions like:\n\n*   **What is there *not*?**\n*   **What are we ultimately destined for? To what end? What good do we do or strive for *beyond*. Does our efforts ultimately find value, or does they lead us down a darker path? A questioning mind seems uniquely suited to this thought experiment.**\n*   **How close are we to what'aligned with human nature – our desire for connection, belonging, purpose and flourishing (in some ways)? Is it easier in the present moment than in an eternity of endless speculation about ultimate meaning?\"**(This question touches upon subjective experience.)**(Can you help me through this?)!)***\n\nThe goal is not simply finding answers; rather it is seeking within",
+      "time_to_first_token_ms" : 315.54,
+      "tokens_per_second" : 109.9,
+      "total_time_ms" : 2126.32,
+      "total_tokens" : 231
     },
     "slug" : "gemma3-270m"
   }
