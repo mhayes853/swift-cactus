@@ -5,7 +5,7 @@
 #endif
 
 extension URL {
-  var nativePath: String {
+  package var nativePath: String {
     self.withUnsafeFileSystemRepresentation { String(cString: $0!) }
   }
 }
