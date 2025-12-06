@@ -1,6 +1,5 @@
 #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
-  // NB: @_implementationOnly since docc doesn't like access level imports for binary targets apparently.
-  @_implementationOnly import cactus_util
+  private import cactus_util
   import Foundation
   import IssueReporting
 

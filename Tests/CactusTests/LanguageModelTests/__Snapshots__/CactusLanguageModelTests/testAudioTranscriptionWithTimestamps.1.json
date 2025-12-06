@@ -4,9 +4,9 @@
     "decode_tokens" : 61,
     "prefill_tokens" : 3,
     "response" : "<|0.00|> How? The power of a god cannot be overcome. Zanzan, this is the providence of the world. Even gods are merely beings restricted to the limited power determined by prophets. That power, although great, is not unlimited. That voice, Albrecht, how dare you!<|startoftranscript|>",
-    "time_to_first_token_ms" : 4625.5,
-    "tokens_per_second" : 45.98,
-    "total_time_ms" : 5930.28,
+    "time_to_first_token_ms" : 4184.52,
+    "tokens_per_second" : 55.32,
+    "total_time_ms" : 5269.19,
     "total_tokens" : 64
   }
 }

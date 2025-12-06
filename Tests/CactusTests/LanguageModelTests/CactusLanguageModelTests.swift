@@ -1,3 +1,4 @@
+import CXXCactusShims
 import Cactus
 import CustomDump
 import Foundation
@@ -221,6 +222,36 @@ struct `CactusLanguageModel tests` {
       modelSlug: "custom-model"
     )
     expectNoDifference(configuration.modelSlug, "custom-model")
+  }
+
+  @Test
+  func `Does Not Deallocate Model Pointer When Passed Externally`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let baseModel = try CactusLanguageModel(from: modelURL)
+    do {
+      _ = try CactusLanguageModel(
+        model: baseModel.model,
+        configuration: CactusLanguageModel.Configuration(modelURL: modelURL)
+      )
+    }
+
+    #expect(throws: Never.self) {
+      try baseModel.embeddings(for: "Some Text")
+    }
+  }
+
+  @Test
+  func `Embeddings From Model With Raw Pointer`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelPtr = try #require(cactus_init(modelURL.nativePath, 2048, nil))
+
+    let model = try CactusLanguageModel(
+      model: modelPtr,
+      configuration: CactusLanguageModel.Configuration(modelURL: modelURL)
+    )
+
+    let embeddings = try model.embeddings(for: "Some Text")
+    expectNoDifference(embeddings.isEmpty, false)
   }
 }
 
