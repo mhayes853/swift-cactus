@@ -22,29 +22,5 @@
     "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/voice-models\/whisper-medium.zip",
     "size_mb" : 615,
     "slug" : "whisper-medium"
-  },
-  {
-    "created_at" : 785980907.946167,
-    "download_url" : "http:\/\/10.3.86.1:8080\/models\/whisper-tiny.zip",
-    "size_mb" : 30,
-    "slug" : "local-whisper-tiny"
-  },
-  {
-    "created_at" : 785980907.946167,
-    "download_url" : "http:\/\/10.3.86.1:8080\/models\/whisper-base.zip",
-    "size_mb" : 57,
-    "slug" : "local-whisper-base"
-  },
-  {
-    "created_at" : 785980907.946167,
-    "download_url" : "http:\/\/10.3.86.1:8080\/models\/whisper-small.zip",
-    "size_mb" : 192,
-    "slug" : "local-whisper-small"
-  },
-  {
-    "created_at" : 785980907.946167,
-    "download_url" : "http:\/\/10.3.86.1:8080\/models\/whisper-medium.zip",
-    "size_mb" : 615,
-    "slug" : "local-whisper-medium"
   }
 ]

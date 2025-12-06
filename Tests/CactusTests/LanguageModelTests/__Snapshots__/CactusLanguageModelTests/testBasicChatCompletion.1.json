@@ -1,16 +1,16 @@
 [
   {
     "completion" : {
-      "decode_tokens" : 43,
+      "decode_tokens" : 200,
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 9,
-      "response" : "That's correct! What would you like to discuss or explore next? Are you interested in a specific topic, perhaps technology, literature, history, or something else? Let me know how I can assist you.<|im_end|>",
-      "time_to_first_token_ms" : 40.03,
-      "tokens_per_second" : 113.34,
-      "total_time_ms" : 410.59,
-      "total_tokens" : 52
+      "prefill_tokens" : 35,
+      "response" : "The meaning of life is a profound and often elusive question that has puzzled philosophers, theologians, and individuals for centuries. It's a question that varies greatly from person to person, shaped by cultural background, personal beliefs, and individual experiences. Some common interpretations include:\n\n1. **Existentialism** – Emphasizes finding one's own purpose through choices and actions.\n2. **Religious Perspectives** – Often find meaning in faith or divine commandments.\n3. **Humanistic Approach** – Focuses on living a fulfilling life based on human values like love, compassion, and self-actualization.\n4. **Scientific Perspective** - Seeks to understand the nature of existence through science without necessarily assigning inherent meaning to it itself (though many scientists find this perspective enriching).\n\nUltimately, the meaning of life is a deeply personal quest that may not have an objective answer but can be explored through introspection, dialogue with others, and engagement with various",
+      "time_to_first_token_ms" : 71.84,
+      "tokens_per_second" : 116.21,
+      "total_time_ms" : 1784.2,
+      "total_tokens" : 235
     },
     "slug" : "lfm2-350m"
   },
@@ -20,42 +20,42 @@
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 13,
-      "response" : "<think>\nOkay, the user wants to know how to make a coffee cup. Let me start by breaking down what they need. First, they probably need a basic set of materials: cups and maybe some utensils like chopsticks or spoons.\n\nI should mention different types of cups since there are many styles out there. Maybe suggest something everyday like a ceramic mug or an aluminum one for durability and heat resistance. Also, considering the user's preference for specific features—like color or size—should be mentioned as options.\n\nWait, but I should ask if they want it made from recycled materials first because that's part of sustainability in modern times. Then move on to the process step by step: choosing materials, preparing the cup (if needed), assembling it with tools and screws, testing its functionality before using.\n\nOh right! Including tips on how to test if it works well is important so they know before finalizing their project. Also, making sure to cover any potential issues like leaks or improper",
-      "time_to_first_token_ms" : 65.04,
-      "tokens_per_second" : 50.29,
-      "total_time_ms" : 4021.74,
-      "total_tokens" : 213
+      "prefill_tokens" : 34,
+      "response" : "<think>\nOkay, the user is asking about the meaning of life. First, I need to address their question without making it too technical or philosophical. They might be looking for a personal answer or perhaps a broader perspective.\n\nI should acknowledge that life's meaning isn't something we can fully define because it varies from person to person. It's subjective and depends on individual values and experiences.\n\nNext, I can explore different viewpoints: existentialism (like Sartre) emphasizes self-determination and finding one's own path; religion might offer spiritual insights; philosophy like Epicurus focuses on pleasure and avoiding pain.\n\nIt would also be good to mention common themes such as purpose, happiness, love, family bonds, personal growth through challenges. Including examples from various disciplines shows the breadth of possibilities here.\n\nFinally, encourage them to reflect on their own experiences or consider exploring these ideas further if they have more questions.\n<\/think>\n\nThe meaning of life is a deeply personal question that varies significantly across individuals. It is not",
+      "time_to_first_token_ms" : 119.31,
+      "tokens_per_second" : 55.9,
+      "total_time_ms" : 3679.5,
+      "total_tokens" : 234
     },
     "slug" : "qwen3-0.6"
   },
   {
     "completion" : {
-      "decode_tokens" : 37,
+      "decode_tokens" : 158,
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 14,
-      "response" : "I'm an AI assistant specialized in providing assistance with programming tasks. I can help you write, review, and debug code across various programming languages. What's your question or issue?<|im_end|>",
-      "time_to_first_token_ms" : 58.29,
-      "tokens_per_second" : 66.35,
-      "total_time_ms" : 600.84,
-      "total_tokens" : 51
+      "prefill_tokens" : 35,
+      "response" : "To understand the meaning of life, we need to delve into various philosophical and spiritual perspectives. The meaning of life is often associated with questions about purpose, happiness, and fulfillment. Some key concepts include:\n\nPhilosophers like Immanuel Kant argue that the meaning of life is derived from reason alone - one's actions are guided by a sense of duty or moral obligation rather than personal desires or emotions. \nIn contrast, existentialists believe that individuals must create their own purpose through embracing freedom and taking responsibility for their choices in lightless circumstances (known as \"the search for authenticity\"). \nSome philosophers suggest that human existence has no inherent value but can be evaluated based on its contribution to the greater good - this perspective emphasizes the importance of collective well-being over individualistic goals.<|im_end|>",
+      "time_to_first_token_ms" : 89.12,
+      "tokens_per_second" : 81.66,
+      "total_time_ms" : 2011.7,
+      "total_tokens" : 193
     },
     "slug" : "smollm2-360m"
   },
   {
     "completion" : {
-      "decode_tokens" : 37,
+      "decode_tokens" : 95,
       "function_calls" : [
 
       ],
       "prefill_tokens" : 9,
-      "response" : "请根据您的具体需求，我可以为您提供更个性化的建议。您想让我帮您讨论什么呢？如果您想具体想我，请告诉我您想讨论什么。<end_of_turn>",
-      "time_to_first_token_ms" : 27.88,
-      "tokens_per_second" : 115.67,
-      "total_time_ms" : 339.1,
-      "total_tokens" : 46
+      "response" : "您好！您好！\n\n我理解您想分享一些关于“健康”方面的信息，但我目前，我主要专注于“工作”，因此我无法直接分享个人生活或特定健康问题。\n\n如果您有任何其他需要我学习或回答的问题，请隨時提出，我会尽力回答。\n\n如果您对“健康”方面有什么具体的问题，请随时提问，我会尽力回答。\n\n希望您以后有健康和积极的生活！<end_of_turn>",
+      "time_to_first_token_ms" : 31.96,
+      "tokens_per_second" : 125.48,
+      "total_time_ms" : 781.09,
+      "total_tokens" : 104
     },
     "slug" : "gemma3-270m"
   }

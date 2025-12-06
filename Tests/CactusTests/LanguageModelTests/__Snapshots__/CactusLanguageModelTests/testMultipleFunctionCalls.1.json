@@ -1,12 +1,12 @@
 {
-  "decode_tokens" : 200,
+  "decode_tokens" : 57,
   "function_calls" : [
 
   ],
-  "prefill_tokens" : 191,
-  "response" : "Okay, let's see. The user wants to get weather information and population data for a city. They mentioned using the provided tools.\n\nFirst, I need to check which functions are available. There's get_weather and get_population. For the weather function, it requires location in both Celsius or Fahrenheit format. The user hasn't specified a city yet; maybe they expect me to ask for that first? Wait, but the parameters for get_weather require 'location' as a string with min length 1.\n\nHmm, maybe I should prompt the user to provide their desired location first so I can use both functions properly once they're set up? But wait, looking at their previous message... Oh right! The assistant needs to respond with each function call in JSON format as per instructions.\n\nSo, if I'm supposed to call multiple functions by using separate function_call objects each time. But how do the parameters work here? For example, when calling get_weather again after getting population data?\n\nWait no—the tools",
-  "time_to_first_token_ms" : 477.87,
-  "tokens_per_second" : 43.61,
-  "total_time_ms" : 5040.75,
-  "total_tokens" : 391
+  "prefill_tokens" : 210,
+  "response" : "```json\n{\n  function_call: {\n    name: 'get_weather',\n    arguments: { \n      location: 'Berkeley'\n    }\n  },\n  function_call: {\n    name:'get_population',\n    arguments:{ location:\"Berkeley\" }\n}\n```\n```<|im_end|>",
+  "time_to_first_token_ms" : 1452.62,
+  "tokens_per_second" : 51.21,
+  "total_time_ms" : 2546.05,
+  "total_tokens" : 267
 }
