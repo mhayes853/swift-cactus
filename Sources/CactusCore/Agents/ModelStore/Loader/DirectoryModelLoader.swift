@@ -15,11 +15,31 @@ public struct DirectoryModelLoader: CactusAgentModelLoader {
     }
   }
 
+  let key: CactusAgentModelKey?
   let slug: Slug
   let contextSize: Int
   let corpusDirectoryURL: URL?
   let directory: CactusModelsDirectory?
   let downloadBehavior: CactusAgentModelDownloadBehavior?
+
+  public func key(in environment: CactusEnvironmentValues) -> CactusAgentModelKey {
+    self.key
+      ?? CactusAgentModelKey(
+        Key(
+          slug: self.slug,
+          contextSize: self.contextSize,
+          corpusDirectoryURL: self.corpusDirectoryURL,
+          directory: ObjectIdentifier(self.directory ?? environment.modelsDirectory)
+        )
+      )
+  }
+
+  private struct Key: Hashable {
+    let slug: Slug
+    let contextSize: Int
+    let corpusDirectoryURL: URL?
+    let directory: ObjectIdentifier
+  }
 
   public func loadModel(
     in environment: CactusEnvironmentValues
@@ -82,6 +102,7 @@ public struct DirectoryModelLoader: CactusAgentModelLoader {
 
 extension CactusAgentModelLoader where Self == DirectoryModelLoader {
   public static func fromDirectory(
+    key: CactusAgentModelKey? = nil,
     slug: String,
     contextSize: Int = 2048,
     corpusDirectoryURL: URL? = nil,
@@ -89,6 +110,7 @@ extension CactusAgentModelLoader where Self == DirectoryModelLoader {
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil
   ) -> Self {
     DirectoryModelLoader(
+      key: key,
       slug: .text(slug),
       contextSize: contextSize,
       corpusDirectoryURL: corpusDirectoryURL,
@@ -98,12 +120,14 @@ extension CactusAgentModelLoader where Self == DirectoryModelLoader {
   }
 
   public static func fromDirectory(
+    key: CactusAgentModelKey? = nil,
     audioSlug: String,
     contextSize: Int = 2048,
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil
   ) -> Self {
     DirectoryModelLoader(
+      key: key,
       slug: .audio(audioSlug),
       contextSize: contextSize,
       corpusDirectoryURL: nil,
