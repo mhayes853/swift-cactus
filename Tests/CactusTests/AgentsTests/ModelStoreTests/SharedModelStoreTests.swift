@@ -10,7 +10,7 @@ struct `SharedModelStore tests` {
     let store = SharedModelStore()
     await #expect(throws: Never.self) {
       try await store.withModelAccess(
-        request: CactusAgentModelRequest(key: "blob", loader: .fromModelURL(url))
+        request: CactusAgentModelRequest(loader: .fromModelURL(url))
       ) { _ in }
     }
   }
@@ -23,54 +23,44 @@ struct `SharedModelStore tests` {
     var id1: ObjectIdentifier?
     var id2: ObjectIdentifier?
 
-    try await store.withModelAccess(
-      request: CactusAgentModelRequest(key: "blob", loader: .fromModelURL(url))
-    ) { id1 = ObjectIdentifier($0) }
-    try await store.withModelAccess(
-      request: CactusAgentModelRequest(key: "blob", loader: .fromModelURL(url))
-    ) { id2 = ObjectIdentifier($0) }
+    try await store.withModelAccess(request: CactusAgentModelRequest(loader: .fromModelURL(url))) {
+      id1 = ObjectIdentifier($0)
+    }
+    try await store.withModelAccess(request: CactusAgentModelRequest(loader: .fromModelURL(url))) {
+      id2 = ObjectIdentifier($0)
+    }
     expectNoDifference(id1, id2)
   }
 
   @Test
   func `Only Loads Model Once For Same Key`() async throws {
     let url = try await CactusLanguageModel.testModelURL()
-    let loader = CountingModelLoader(url: url)
+    let loader = CountingModelLoader(key: "blob", url: url)
     let store = SharedModelStore()
-    try await store.prewarmModel(
-      request: CactusAgentModelRequest(key: "blob", loader: loader)
-    )
-    try await store.prewarmModel(
-      request: CactusAgentModelRequest(key: "blob", loader: loader)
-    )
+    try await store.prewarmModel(request: CactusAgentModelRequest(loader: loader))
+    try await store.prewarmModel(request: CactusAgentModelRequest(loader: loader))
     loader.count.withLock { expectNoDifference($0, 1) }
   }
 
   @Test
   func `Loads Model Twice For Different Keys`() async throws {
     let url = try await CactusLanguageModel.testModelURL()
-    let loader = CountingModelLoader(url: url)
+    let loader = CountingModelLoader(key: "blob", url: url)
     let store = SharedModelStore()
-    try await store.prewarmModel(
-      request: CactusAgentModelRequest(key: "blob", loader: loader)
-    )
-    try await store.prewarmModel(
-      request: CactusAgentModelRequest(key: "blob2", loader: loader)
-    )
+    try await store.prewarmModel(request: CactusAgentModelRequest(loader: loader))
+
+    loader.key.withLock { $0 = "blob2" }
+    try await store.prewarmModel(request: CactusAgentModelRequest(loader: loader))
     loader.count.withLock { expectNoDifference($0, 2) }
   }
 
   @Test
   func `Deduplicates Concurrent Request For The Same Model`() async throws {
     let url = try await CactusLanguageModel.testModelURL()
-    let loader = CountingModelLoader(url: url)
+    let loader = CountingModelLoader(key: "blob", url: url)
     let store = SharedModelStore()
-    async let r1: Void = store.prewarmModel(
-      request: CactusAgentModelRequest(key: "blob", loader: loader)
-    )
-    async let r2: Void = store.prewarmModel(
-      request: CactusAgentModelRequest(key: "blob", loader: loader)
-    )
+    async let r1: Void = store.prewarmModel(request: CactusAgentModelRequest(loader: loader))
+    async let r2: Void = store.prewarmModel(request: CactusAgentModelRequest(loader: loader))
     _ = try await (r1, r2)
     loader.count.withLock { expectNoDifference($0, 1) }
   }

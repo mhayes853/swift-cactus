@@ -1,12 +1,10 @@
 /// A ``CactusAgentModelStore`` that manages models for a single ``CactusAgenticSession``.
 public final class SessionModelStore: CactusAgentModelStore {
-  private var models = [AnyHashable: CactusLanguageModel]()
+  private var models = [CactusAgentModelKey: CactusLanguageModel]()
 
   public init() {}
 
-  public func prewarmModel(
-    request: sending CactusAgentModelRequest
-  ) async throws {
+  public func prewarmModel(request: sending CactusAgentModelRequest) async throws {
     _ = try await self.model(for: request)
   }
 
@@ -21,11 +19,12 @@ public final class SessionModelStore: CactusAgentModelStore {
   private nonisolated(nonsending) func model(
     for request: sending CactusAgentModelRequest
   ) async throws -> CactusLanguageModel {
-    if let model = self.models[AnyHashable(request.key)] {
+    let key = request.loader.key(in: request.environment)
+    if let model = self.models[key] {
       return model
     }
     let model = try await request.loader.loadModel(in: request.environment)
-    self.models[AnyHashable(request.key)] = model
+    self.models[key] = model
     return model
   }
 }

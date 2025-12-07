@@ -15,11 +15,31 @@ public struct DirectoryModelLoader: CactusAgentModelLoader {
     }
   }
 
+  let key: CactusAgentModelKey?
   let slug: Slug
   let contextSize: Int
   let corpusDirectoryURL: URL?
   let directory: CactusModelsDirectory?
   let downloadBehavior: CactusAgentModelDownloadBehavior?
+
+  public func key(in environment: CactusEnvironmentValues) -> CactusAgentModelKey {
+    self.key
+      ?? CactusAgentModelKey(
+        Key(
+          slug: self.slug,
+          contextSize: self.contextSize,
+          corpusDirectoryURL: self.corpusDirectoryURL,
+          directory: ObjectIdentifier(self.directory ?? environment.modelsDirectory)
+        )
+      )
+  }
+
+  private struct Key: Hashable {
+    let slug: Slug
+    let contextSize: Int
+    let corpusDirectoryURL: URL?
+    let directory: ObjectIdentifier
+  }
 
   public func loadModel(
     in environment: CactusEnvironmentValues
@@ -36,10 +56,7 @@ public struct DirectoryModelLoader: CactusAgentModelLoader {
       let task =
         switch self.slug {
         case .audio(let slug):
-          try directory.audioModelDownloadTask(
-            for: slug,
-            configuration: configuration
-          )
+          try directory.audioModelDownloadTask(for: slug, configuration: configuration)
         case .text(let slug):
           try directory.modelDownloadTask(for: slug, configuration: configuration)
         }
@@ -62,12 +79,8 @@ public struct DirectoryModelLoader: CactusAgentModelLoader {
     in environment: CactusEnvironmentValues
   ) throws -> sending CactusLanguageModel? {
     let directory = self.directory ?? environment.modelsDirectory
-    guard let url = directory.storedModelURL(for: self.slug.text) else {
-      return nil
-    }
-    return try CactusLanguageModel(
-      configuration: self.modelConfiguration(url: url)
-    )
+    guard let url = directory.storedModelURL(for: self.slug.text) else { return nil }
+    return try CactusLanguageModel(configuration: self.modelConfiguration(url: url))
   }
 
   private func modelConfiguration(url: URL) -> CactusLanguageModel.Configuration {
@@ -82,6 +95,7 @@ public struct DirectoryModelLoader: CactusAgentModelLoader {
 
 extension CactusAgentModelLoader where Self == DirectoryModelLoader {
   public static func fromDirectory(
+    key: CactusAgentModelKey? = nil,
     slug: String,
     contextSize: Int = 2048,
     corpusDirectoryURL: URL? = nil,
@@ -89,6 +103,7 @@ extension CactusAgentModelLoader where Self == DirectoryModelLoader {
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil
   ) -> Self {
     DirectoryModelLoader(
+      key: key,
       slug: .text(slug),
       contextSize: contextSize,
       corpusDirectoryURL: corpusDirectoryURL,
@@ -98,12 +113,14 @@ extension CactusAgentModelLoader where Self == DirectoryModelLoader {
   }
 
   public static func fromDirectory(
+    key: CactusAgentModelKey? = nil,
     audioSlug: String,
     contextSize: Int = 2048,
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil
   ) -> Self {
     DirectoryModelLoader(
+      key: key,
       slug: .audio(audioSlug),
       contextSize: contextSize,
       corpusDirectoryURL: nil,

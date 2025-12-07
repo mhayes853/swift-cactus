@@ -1,12 +1,12 @@
 /// A ``CactusAgentModelStore`` that can be shared across multiple ``CactusAgenticSession`` instances.
 public final class SharedModelStore: CactusAgentModelStore, Sendable {
-  private let state = Lock([AnyHashableSendable: Task<ModelCell, any Error>]())
+  public static let `default` = SharedModelStore()
+
+  private let state = Lock([CactusAgentModelKey: Task<ModelCell, any Error>]())
 
   public init() {}
 
-  public func prewarmModel(
-    request: sending CactusAgentModelRequest
-  ) async throws {
+  public func prewarmModel(request: sending CactusAgentModelRequest) async throws {
     _ = try await self.modelCell(for: request)
   }
 
@@ -21,7 +21,7 @@ public final class SharedModelStore: CactusAgentModelStore, Sendable {
   private func modelCell(
     for request: sending CactusAgentModelRequest
   ) async throws -> ModelCell {
-    let key = AnyHashableSendable(request.key)
+    let key = request.loader.key(in: request.environment)
     if let cell = self.state.withLock({ $0[key] }) {
       return try await cell.value
     }
