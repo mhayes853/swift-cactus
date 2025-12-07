@@ -1,12 +1,17 @@
 {
-  "decode_tokens" : 200,
-  "function_calls" : [
-
+  "decode_tokens": 64,
+  "function_calls": [
+    {
+      "arguments": {
+        "location": "Berkeley"
+      },
+      "name": "get_weather"
+    }
   ],
-  "prefill_tokens" : 195,
-  "response" : "Okay, let's see. The user wants to know the weather in a specific city and maybe the population of another city. I need to check which tools are available.\n\nFirst, there's a function called get_weather that requires the location parameter as a string. The parameters for this function include 'location' with min length 1 (so it must be a valid city name) and units like Celsius or Fahrenheit. Then there's another function get_population which takes 'location' as required but has min length 1 for the city name.\n\nThe user hasn't provided specific cities yet, so I can't call these functions without knowing where they are located. Wait, but maybe they expect me to prompt them for more details? Or perhaps they want me to assume default locations? Hmm, the problem is that without knowing which cities to fetch data from, I can't make any function calls.\n\nWait a second... The user might have mentioned two cities in their query already. But looking at the history of",
-  "time_to_first_token_ms" : 520.02,
-  "tokens_per_second" : 46.09,
-  "total_time_ms" : 4837.94,
-  "total_tokens" : 395
+  "prefill_tokens": 221,
+  "response": "```json\n",
+  "time_to_first_token_ms": 1531.33,
+  "tokens_per_second": 47.04,
+  "total_time_ms": 2870.57,
+  "total_tokens": 285
 }

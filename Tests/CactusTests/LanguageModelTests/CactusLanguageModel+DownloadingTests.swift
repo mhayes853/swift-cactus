@@ -17,13 +17,36 @@ struct `CactusLanguageModelDownloading tests` {
   @Test
   func `Download Model Successfully`() async throws {
     let progress = Lock([Result<CactusLanguageModel.DownloadProgress, any Error>]())
-    let url = try await CactusLanguageModel.downloadModel(
+    let observedProgress = Lock([CactusLanguageModel.DownloadProgress]())
+    let observedIsPaused = Lock([Bool]())
+
+    let task = CactusLanguageModel.downloadModelTask(
       slug: CactusLanguageModel.testModelSlug,
-      to: self.temporaryURL(),
-      onProgress: { result in
-        progress.withLock { $0.append(result) }
-      }
+      to: self.temporaryURL()
     )
+
+    var token: ObserveToken?
+    var token2: ObserveToken?
+    defer {
+      token?.cancel()
+      token2?.cancel()
+    }
+    if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
+      token = observe {
+        observedProgress.withLock { $0.append(task.currentProgress) }
+      }
+      token2 = observe {
+        observedIsPaused.withLock { $0.append(task.isPaused) }
+      }
+    }
+
+    let subscription = task.onProgress { result in
+      progress.withLock { $0.append(result) }
+    }
+    defer { subscription.cancel() }
+
+    task.resume()
+    let url = try await task.waitForCompletion()
 
     progress.withLock {
       let containsDownloading = $0.contains {
@@ -42,6 +65,29 @@ struct `CactusLanguageModelDownloading tests` {
       expectNoDifference(containsUnzipping, true)
       expectNoDifference(try? $0.last?.get(), .finished(url))
       expectNoDifference($0.contains { $0.isFailure }, false)
+    }
+
+    if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
+      observedProgress.withLock {
+        let containsDownloading = $0.contains {
+          switch $0 {
+          case .downloading: true
+          default: false
+          }
+        }
+        let containsUnzipping = $0.contains {
+          switch $0 {
+          case .unzipping: true
+          default: false
+          }
+        }
+        expectNoDifference(containsDownloading, true)
+        expectNoDifference(containsUnzipping, true)
+        expectNoDifference($0.last, .finished(url))
+      }
+      observedIsPaused.withLock {
+        expectNoDifference($0, [true, false])
+      }
     }
 
     try FileManager.default.removeItem(at: url)

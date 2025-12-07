@@ -1,12 +1,10 @@
 {
-  "decode_tokens" : 55,
-  "function_calls" : [
-
-  ],
-  "prefill_tokens" : 314,
-  "response" : "The guy in the first image is smiling and appears to be happy. He is holding a book and has a backpack on his shoulders, suggesting he might be preparing for school or an exam. The setting seems to be indoors, possibly at home or in a study area.<|im_end|>",
-  "time_to_first_token_ms" : 3255.93,
-  "tokens_per_second" : 98.75,
-  "total_time_ms" : 3802.75,
-  "total_tokens" : 369
+  "decode_tokens": 52,
+  "function_calls": [],
+  "prefill_tokens": 314,
+  "response": "The guy in the first image is smiling and appears to be happy. He is holding a notebook and a book, suggesting he might be preparing for or taking notes on an exam. His posture and expression indicate he is ready to engage with his study materials.<|im_end|>",
+  "time_to_first_token_ms": 3186.62,
+  "tokens_per_second": 97.21,
+  "total_time_ms": 3711.27,
+  "total_tokens": 366
 }

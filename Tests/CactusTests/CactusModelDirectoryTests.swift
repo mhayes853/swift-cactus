@@ -4,6 +4,10 @@
   import Foundation
   import Testing
 
+  #if canImport(Observation)
+    import Observation
+  #endif
+
   @Suite
   struct `CactusModelDirectory tests` {
     @Test
@@ -79,6 +83,35 @@
         true
       )
     }
+
+    #if canImport(Observation)
+      @Test
+      @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
+      func `Observes Newly Added Download Task`() async throws {
+        let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
+
+        let tasks = Lock([[String: CactusLanguageModel.DownloadTask]]())
+        let token = observe {
+          tasks.withLock { $0.append(directory.activeDownloadTasks) }
+        }
+
+        let t1 = try directory.modelDownloadTask(
+          for: CactusLanguageModel.testModelSlug,
+          configuration: self.configuration
+        )
+        t1.resume()
+        try await t1.waitForCompletion()
+
+        try await Task.sleep(for: .seconds(0.1))
+
+        tasks.withLock {
+          expectNoDifference($0[0].isEmpty, true)
+          expectNoDifference($0[1][CactusLanguageModel.testModelSlug] === t1, true)
+          expectNoDifference($0[2].isEmpty, true)
+        }
+        token.cancel()
+      }
+    #endif
 
     @Test
     func `Uses New Download Task After Completion`() async throws {
