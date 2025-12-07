@@ -9,15 +9,8 @@ public final class CactusAgenticSession<Input, Output: ConvertibleFromCactusResp
     false
   }
 
-  public func prewarmModel(request: sending CactusAgentModelRequest) async throws {
-    try await self.agentActor.prewarmModel(request: request)
-  }
-
-  public init(
-    _ agent: sending some CactusAgent<Input, Output>,
-    store: sending some CactusAgentModelStore = SessionModelStore()
-  ) {
-    self.agentActor = AgentActor(agent, store: store)
+  public init(_ agent: sending some CactusAgent<Input, Output>) {
+    self.agentActor = AgentActor(agent)
   }
 
   public func stream(for message: Input) -> CactusAgentStream<Output> {
@@ -39,18 +32,9 @@ public final class CactusAgenticSession<Input, Output: ConvertibleFromCactusResp
 extension CactusAgenticSession {
   private final actor AgentActor {
     private let agent: any CactusAgent<Input, Output>
-    private let store: any CactusAgentModelStore
 
-    init(
-      _ agent: sending some CactusAgent<Input, Output>,
-      store: sending some CactusAgentModelStore
-    ) {
+    init(_ agent: sending some CactusAgent<Input, Output>) {
       self.agent = agent
-      self.store = store
-    }
-
-    func prewarmModel(request: sending CactusAgentModelRequest) async throws {
-      try await self.store.prewarmModel(request: request)
     }
   }
 }

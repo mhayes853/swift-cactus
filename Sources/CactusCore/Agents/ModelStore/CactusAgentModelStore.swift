@@ -45,7 +45,7 @@ extension CactusEnvironmentValues {
 
   private enum ModelStoreKey: Key {
     static var defaultValue: any CactusAgentModelStore {
-      SessionModelStore()
+      SharedModelStore.default
     }
   }
 }
