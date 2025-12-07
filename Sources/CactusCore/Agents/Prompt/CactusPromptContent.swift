@@ -51,45 +51,37 @@ extension CactusPromptContent {
 // MARK: - MessageComponents
 
 extension CactusPromptContent {
-  public struct MessageComponents: Hashable, Sendable {
-    public private(set) var text = ""
-    public private(set) var images = [URL]()
-
-    public init(
-      content: CactusPromptContent,
-      in environment: CactusEnvironmentValues
-    ) throws {
-      var currentSeparator: String?
-      for block in content.blocks {
-        switch block {
-        case .text(let text):
-          self.appendText(text, currentSeparator: &currentSeparator)
-        case .separator(let separator):
-          guard !self.text.isEmpty else { continue }
-          currentSeparator = separator
-        case .images(let urls):
-          self.images.append(contentsOf: urls)
-        case .representable(let representable):
-          let components = try representable.promptContent(in: environment)
-            .messageComponents(in: environment)
-          self.appendText(components.text, currentSeparator: &currentSeparator)
-          self.images.append(contentsOf: components.images)
-        }
-      }
-    }
-
-    private mutating func appendText(_ text: String, currentSeparator: inout String?) {
-      if let separator = currentSeparator {
-        self.text += separator
-        currentSeparator = nil
-      }
-      self.text += text
-    }
-  }
-
   public func messageComponents(
     in environment: CactusEnvironmentValues
-  ) throws -> MessageComponents {
-    try MessageComponents(content: self, in: environment)
+  ) throws -> CactusMessageComponents {
+    var components = CactusMessageComponents(text: "")
+    var currentSeparator: String?
+    for block in self.blocks {
+      switch block {
+      case .text(let text):
+        components.appendText(text, currentSeparator: &currentSeparator)
+      case .separator(let separator):
+        guard !components.text.isEmpty else { continue }
+        currentSeparator = separator
+      case .images(let urls):
+        components.images.append(contentsOf: urls)
+      case .representable(let representable):
+        let subcomponents = try representable.promptContent(in: environment)
+          .messageComponents(in: environment)
+        components.appendText(subcomponents.text, currentSeparator: &currentSeparator)
+        components.images.append(contentsOf: subcomponents.images)
+      }
+    }
+    return components
+  }
+}
+
+extension CactusMessageComponents {
+  fileprivate mutating func appendText(_ text: String, currentSeparator: inout String?) {
+    if let separator = currentSeparator {
+      self.text += separator
+      currentSeparator = nil
+    }
+    self.text += text
   }
 }

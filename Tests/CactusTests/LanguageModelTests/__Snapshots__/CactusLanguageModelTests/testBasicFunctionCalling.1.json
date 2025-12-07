@@ -1,17 +1,17 @@
 {
-  "decode_tokens": 23,
-  "function_calls": [
+  "decode_tokens" : 23,
+  "function_calls" : [
     {
-      "arguments": {
-        "location": ""
+      "arguments" : {
+        "location" : "Los Angeles"
       },
-      "name": "get_weather"
+      "name" : "get_weather"
     }
   ],
-  "prefill_tokens": 148,
-  "response": "",
-  "time_to_first_token_ms": 556.79,
-  "tokens_per_second": 53.26,
-  "total_time_ms": 969.85,
-  "total_tokens": 171
+  "prefill_tokens" : 128,
+  "response" : "",
+  "time_to_first_token_ms" : 395.64,
+  "tokens_per_second" : 51.26,
+  "total_time_ms" : 824.86,
+  "total_tokens" : 151
 }

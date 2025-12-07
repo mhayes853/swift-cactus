@@ -1,7 +1,7 @@
 import Cactus
 
 extension CactusPromptRepresentable {
-  func defaultMessageComponents() throws -> CactusPromptContent.MessageComponents {
+  func defaultMessageComponents() throws -> CactusMessageComponents {
     try self.promptContent(in: CactusEnvironmentValues())
       .messageComponents(in: CactusEnvironmentValues())
   }
