@@ -56,10 +56,7 @@ public struct DirectoryModelLoader: CactusAgentModelLoader {
       let task =
         switch self.slug {
         case .audio(let slug):
-          try directory.audioModelDownloadTask(
-            for: slug,
-            configuration: configuration
-          )
+          try directory.audioModelDownloadTask(for: slug, configuration: configuration)
         case .text(let slug):
           try directory.modelDownloadTask(for: slug, configuration: configuration)
         }
@@ -82,12 +79,8 @@ public struct DirectoryModelLoader: CactusAgentModelLoader {
     in environment: CactusEnvironmentValues
   ) throws -> sending CactusLanguageModel? {
     let directory = self.directory ?? environment.modelsDirectory
-    guard let url = directory.storedModelURL(for: self.slug.text) else {
-      return nil
-    }
-    return try CactusLanguageModel(
-      configuration: self.modelConfiguration(url: url)
-    )
+    guard let url = directory.storedModelURL(for: self.slug.text) else { return nil }
+    return try CactusLanguageModel(configuration: self.modelConfiguration(url: url))
   }
 
   private func modelConfiguration(url: URL) -> CactusLanguageModel.Configuration {
