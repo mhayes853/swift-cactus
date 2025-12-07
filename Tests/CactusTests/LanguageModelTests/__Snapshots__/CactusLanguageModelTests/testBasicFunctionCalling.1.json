@@ -1,5 +1,5 @@
 {
-  "decode_tokens" : 106,
+  "decode_tokens" : 23,
   "function_calls" : [
     {
       "arguments" : {
@@ -8,10 +8,10 @@
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 153,
-  "response" : "Okay, the user is asking for the weather in Santa Cruz. I need to use the get_weather function here. The parameters require a location, which in this case is Santa Cruz. So I should call that function with \"location\": \"Santa Cruz\". Let me make sure there are no typos or issues with the JSON format. Once I send that, it should return the weather information as specified.\n<\/think>\n\n",
-  "time_to_first_token_ms" : 572.76,
-  "tokens_per_second" : 51.35,
-  "total_time_ms" : 2617.72,
-  "total_tokens" : 259
+  "prefill_tokens" : 148,
+  "response" : "",
+  "time_to_first_token_ms" : 556.79,
+  "tokens_per_second" : 53.26,
+  "total_time_ms" : 969.85,
+  "total_tokens" : 171
 }

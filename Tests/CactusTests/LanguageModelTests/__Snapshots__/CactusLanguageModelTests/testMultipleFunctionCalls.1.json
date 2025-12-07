@@ -1,12 +1,17 @@
 {
-  "decode_tokens" : 200,
+  "decode_tokens" : 64,
   "function_calls" : [
-
+    {
+      "arguments" : {
+        "location" : "Berkeley"
+      },
+      "name" : "get_weather"
+    }
   ],
-  "prefill_tokens" : 196,
-  "response" : "Okay, let's see what needs to be done here. The user provided some tools and asked for help. First, there are two functions available: one for getting weather information and another for calculating population in a city.\n\nThe task is to call these functions when needed. But wait, the original query doesn't mention any specific requirements or parameters that need being filled out from the tools' parameters. The function \"get_weather\" requires a location parameter as a string with at least 1 character length (like \"New York\"), but there's no indication of which city it should be retrieved from.\n\nThe other function \"get_population\" only takes a location parameter as an optional string with at least 1 character length. However, again, without specific information about which city to retrieve data from or what details are required by the user, I can't determine if we need to use either function.\n\nHmm... Since neither of these functions is called directly in the current query message, maybe there's no action needed",
-  "time_to_first_token_ms" : 429.16,
-  "tokens_per_second" : 49.74,
-  "total_time_ms" : 4429.57,
-  "total_tokens" : 396
+  "prefill_tokens" : 221,
+  "response" : "```json\n",
+  "time_to_first_token_ms" : 1531.33,
+  "tokens_per_second" : 47.04,
+  "total_time_ms" : 2870.57,
+  "total_tokens" : 285
 }
