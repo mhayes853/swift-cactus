@@ -184,7 +184,7 @@ extension CactusLanguageModel {
     /// Whether or not the download has been cancelled.
     public var isCancelled: Bool {
       self.delegate.state.withLock {
-        switch $0.finalResult {
+        switch $0.observable.finalResult {
         case .failure(let error): error is CancellationError
         default: false
         }
@@ -193,17 +193,27 @@ extension CactusLanguageModel {
 
     /// Whether or not the download is paused.
     public var isPaused: Bool {
-      self.delegate.state.withLock { $0.isPaused }
+      self.delegate.state.withLock { $0.observable.isPaused }
     }
 
     /// Whether or not the download has ended.
     public var isFinished: Bool {
-      self.delegate.state.withLock { $0.finalResult != nil }
+      self.delegate.state.withLock { $0.observable.finalResult != nil }
     }
 
     /// The current ``CactusLanguageModel/DownloadProgress``.
     public var currentProgress: DownloadProgress {
-      self.delegate.state.withLock { $0.progress }
+      self.delegate.state.withLock { $0.observable.progress }
+    }
+
+    /// The error of this task if the download failed.
+    public var error: (any Error)? {
+      self.delegate.state.withLock {
+        switch $0.observable.finalResult {
+        case .failure(let error): error
+        default: nil
+        }
+      }
     }
 
     init(
@@ -227,7 +237,7 @@ extension CactusLanguageModel {
       return try await withTaskCancellationHandler {
         try await withUnsafeThrowingContinuation { continuation in
           state.withLock { innerState in
-            if let finalResult = self.delegate.state.withLock(\.finalResult) {
+            if let finalResult = self.delegate.state.withLock(\.observable.finalResult) {
               continuation.resume(with: finalResult)
               return
             }
@@ -276,7 +286,7 @@ extension CactusLanguageModel {
 
     /// Resumes the download from a paused state.
     public func resume() {
-      self.delegate.state.withLock { $0.isPaused = false }
+      self.delegate.state.withLock { $0.observable.isPaused = false }
       self.task.resume()
     }
 
@@ -287,7 +297,7 @@ extension CactusLanguageModel {
 
     /// Pauses the download.
     public func pause() {
-      self.delegate.state.withLock { $0.isPaused = true }
+      self.delegate.state.withLock { $0.observable.isPaused = true }
       self.task.suspend()
     }
   }
@@ -296,9 +306,7 @@ extension CactusLanguageModel {
 extension CactusLanguageModel.DownloadTask {
   private final class Delegate: NSObject, URLSessionDownloadDelegate, Sendable {
     struct State {
-      var finalResult: Result<URL, any Error>?
-      var isPaused = true
-      var progress = CactusLanguageModel.DownloadProgress.downloading(0)
+      let observable = ObservableState()
       private(set) var callbacks = [
         Int: @Sendable (Result<CactusLanguageModel.DownloadProgress, any Error>) -> Void
       ]()
@@ -321,7 +329,7 @@ extension CactusLanguageModel.DownloadTask {
         _ progress: Result<CactusLanguageModel.DownloadProgress, any Error>
       ) {
         if case .success(let progress) = progress {
-          self.progress = progress
+          self.observable.progress = progress
         }
         self.callbacks.values.forEach { $0(progress) }
       }
@@ -358,12 +366,12 @@ extension CactusLanguageModel.DownloadTask {
           self.state.withLock { $0.sendProgress(.success(.unzipping(progress))) }
         }
         self.state.withLock {
-          $0.finalResult = .success(self.destination)
+          $0.observable.finalResult = .success(self.destination)
           $0.sendProgress(.success(.finished(self.destination)))
         }
       } catch {
         self.state.withLock {
-          $0.finalResult = .failure(error)
+          $0.observable.finalResult = .failure(error)
           $0.sendProgress(.failure(error))
         }
       }
@@ -377,15 +385,66 @@ extension CactusLanguageModel.DownloadTask {
       guard let error else { return }
       if (error as? URLError)?.code == .cancelled {
         self.state.withLock {
-          $0.finalResult = .failure(CancellationError())
+          $0.observable.finalResult = .failure(CancellationError())
           $0.sendProgress(.failure(CancellationError()))
         }
       } else {
         self.state.withLock {
-          $0.finalResult = .failure(error)
+          $0.observable.finalResult = .failure(error)
           $0.sendProgress(.failure(error))
         }
       }
     }
   }
 }
+
+extension CactusLanguageModel.DownloadTask {
+  fileprivate final class ObservableState {
+    private let observationRegistrar = _ObservationRegistrar()
+
+    private var _finalResult: Result<URL, any Error>?
+    var finalResult: Result<URL, any Error>? {
+      get {
+        self.observationRegistrar.access(self, keyPath: \.finalResult)
+        return self._finalResult
+      }
+      set {
+        self.observationRegistrar.withMutation(of: self, keyPath: \.finalResult) {
+          self._finalResult = newValue
+        }
+      }
+    }
+
+    private var _isPaused = true
+    var isPaused: Bool {
+      get {
+        self.observationRegistrar.access(self, keyPath: \.isPaused)
+        return self._isPaused
+      }
+      set {
+        self.observationRegistrar.withMutation(of: self, keyPath: \.isPaused) {
+          self._isPaused = newValue
+        }
+      }
+    }
+
+    private var _progress = CactusLanguageModel.DownloadProgress.downloading(0)
+    var progress: CactusLanguageModel.DownloadProgress {
+      get {
+        self.observationRegistrar.access(self, keyPath: \.progress)
+        return self._progress
+      }
+      set {
+        self.observationRegistrar.withMutation(of: self, keyPath: \.progress) {
+          self._progress = newValue
+        }
+      }
+    }
+  }
+}
+
+@available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
+extension CactusLanguageModel.DownloadTask.ObservableState: _Observable {}
+
+@available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
+extension CactusLanguageModel.DownloadTask: _Observable {}

@@ -1,12 +1,12 @@
 {
-  "decode_tokens" : 35,
+  "decode_tokens" : 52,
   "function_calls" : [
 
   ],
   "prefill_tokens" : 314,
-  "response" : "The guy in the first image is smiling and appears to be happy. He is holding a book and a backpack, suggesting he might be preparing for or returning from school.<|im_end|>",
-  "time_to_first_token_ms" : 3237.4,
-  "tokens_per_second" : 110.53,
-  "total_time_ms" : 3545.02,
-  "total_tokens" : 349
+  "response" : "The guy in the first image is smiling and appears to be happy. He is holding a notebook and a book, suggesting he might be preparing for or taking notes on an exam. His posture and expression indicate he is ready to engage with his study materials.<|im_end|>",
+  "time_to_first_token_ms" : 3186.62,
+  "tokens_per_second" : 97.21,
+  "total_time_ms" : 3711.27,
+  "total_tokens" : 366
 }
