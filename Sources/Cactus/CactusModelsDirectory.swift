@@ -303,11 +303,7 @@ extension CactusModelsDirectory {
           guard let self else { return }
           self.state
             .withLock { state in
-              if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
-                self.observationRegistrar.withMutation(of: self, keyPath: \.activeDownloadTasks) {
-                  _ = state.downloadTasks.removeValue(forKey: slug)
-                }
-              } else {
+              self.observationRegistrar.withMutation(of: self, keyPath: \.activeDownloadTasks) {
                 _ = state.downloadTasks.removeValue(forKey: slug)
               }
             }
@@ -315,11 +311,7 @@ extension CactusModelsDirectory {
           break
         }
       }
-      if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
-        self.observationRegistrar.withMutation(of: self, keyPath: \.activeDownloadTasks) {
-          state.downloadTasks[slug] = DownloadTaskEntry(task: task, subscription: subscription)
-        }
-      } else {
+      self.observationRegistrar.withMutation(of: self, keyPath: \.activeDownloadTasks) {
         state.downloadTasks[slug] = DownloadTaskEntry(task: task, subscription: subscription)
       }
       return task
@@ -329,9 +321,7 @@ extension CactusModelsDirectory {
   /// All active ``CactusLanguageModel/DownloadTask`` instances currently managed by this
   /// directory.
   public var activeDownloadTasks: [String: CactusLanguageModel.DownloadTask] {
-    if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
-      self.observationRegistrar.access(self, keyPath: \.activeDownloadTasks)
-    }
+    self.observationRegistrar.access(self, keyPath: \.activeDownloadTasks)
     return self.state.withLock { state in state.downloadTasks.mapValues(\.task) }
   }
 }
@@ -385,11 +375,9 @@ extension CactusModelsDirectory {
 
 // MARK: - Observable
 
-#if canImport(Observation)
-  @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
-  extension CactusModelsDirectory: _Observable {
-  }
-#endif
+@available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
+extension CactusModelsDirectory: _Observable {
+}
 
 // MARK: - Helpers
 

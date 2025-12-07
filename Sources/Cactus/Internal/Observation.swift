@@ -29,25 +29,40 @@ struct _ObservationRegistrar: Sendable {
     #endif
   }
 
-  @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
-  func access<Subject: _Observable, Member>(
+  func access<Subject, Member>(
     _ subject: Subject,
     keyPath: KeyPath<Subject, Member>
   ) {
     #if canImport(Observation)
-      (self.registrar as! ObservationRegistrar).access(subject, keyPath: keyPath)
+      guard #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) else { return }
+      func open<S: _Observable>(_ s: S) {
+        (self.registrar as! ObservationRegistrar)
+          .access(s, keyPath: unsafeDowncast(keyPath, to: KeyPath<S, Member>.self))
+      }
+      guard let subject = subject as? any _Observable else { return }
+      open(subject)
     #endif
   }
 
-  @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
-  func withMutation<Subject: _Observable, Member, T>(
+  func withMutation<Subject, Member, T>(
     of subject: Subject,
     keyPath: KeyPath<Subject, Member>,
     _ mutation: () throws -> T
   ) rethrows -> T {
     #if canImport(Observation)
-      return try (self.registrar as! ObservationRegistrar)
-        .withMutation(of: subject, keyPath: keyPath, mutation)
+      guard #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) else {
+        return try mutation()
+      }
+      func open<S: _Observable>(_ s: S, _ mutation: () throws -> T) rethrows -> T {
+        try (self.registrar as! ObservationRegistrar)
+          .withMutation(
+            of: s,
+            keyPath: unsafeDowncast(keyPath, to: KeyPath<S, Member>.self),
+            mutation
+          )
+      }
+      guard let subject = subject as? any _Observable else { return try mutation() }
+      return try open(subject, mutation)
     #else
       return try mutation()
     #endif
