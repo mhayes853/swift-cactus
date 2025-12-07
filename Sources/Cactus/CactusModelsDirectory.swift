@@ -50,6 +50,8 @@ public final class CactusModelsDirectory: Sendable {
 
   private let state: Lock<State>
 
+  private let observationRegistrar = _ObservationRegistrar()
+
   /// Creates a model directory.
   ///
   /// - Parameter baseURL: The `URL` of the directory.
@@ -298,12 +300,28 @@ extension CactusModelsDirectory {
       let subscription = task.onProgress { [weak self] progress in
         switch progress {
         case .failure, .success(.finished):
-          self?.state.withLock { _ = $0.downloadTasks.removeValue(forKey: slug) }
+          guard let self else { return }
+          self.state
+            .withLock { state in
+              if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
+                self.observationRegistrar.withMutation(of: self, keyPath: \.activeDownloadTasks) {
+                  _ = state.downloadTasks.removeValue(forKey: slug)
+                }
+              } else {
+                _ = state.downloadTasks.removeValue(forKey: slug)
+              }
+            }
         default:
           break
         }
       }
-      state.downloadTasks[slug] = DownloadTaskEntry(task: task, subscription: subscription)
+      if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
+        self.observationRegistrar.withMutation(of: self, keyPath: \.activeDownloadTasks) {
+          state.downloadTasks[slug] = DownloadTaskEntry(task: task, subscription: subscription)
+        }
+      } else {
+        state.downloadTasks[slug] = DownloadTaskEntry(task: task, subscription: subscription)
+      }
       return task
     }
   }
@@ -311,7 +329,10 @@ extension CactusModelsDirectory {
   /// All active ``CactusLanguageModel/DownloadTask`` instances currently managed by this
   /// directory.
   public var activeDownloadTasks: [String: CactusLanguageModel.DownloadTask] {
-    self.state.withLock { state in state.downloadTasks.mapValues(\.task) }
+    if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
+      self.observationRegistrar.access(self, keyPath: \.activeDownloadTasks)
+    }
+    return self.state.withLock { state in state.downloadTasks.mapValues(\.task) }
   }
 }
 
@@ -361,6 +382,14 @@ extension CactusModelsDirectory {
     try FileManager.default.removeItem(at: self.destinationURL(for: slug))
   }
 }
+
+// MARK: - Observable
+
+#if canImport(Observation)
+  @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
+  extension CactusModelsDirectory: _Observable {
+  }
+#endif
 
 // MARK: - Helpers
 
