@@ -1,3 +1,17 @@
+// MARK: - CactusAgentRequest
+
+public struct CactusAgentRequest<Input> {
+  public var input: Input
+  public var environment: CactusEnvironmentValues
+
+  public init(input: Input, environment: CactusEnvironmentValues = CactusEnvironmentValues()) {
+    self.input = input
+    self.environment = environment
+  }
+}
+
+// MARK: - CactusAgent
+
 public protocol CactusAgent<Input, Output> {
   associatedtype Input
   associatedtype Output: ConvertibleFromCactusResponse
@@ -20,8 +34,8 @@ extension CactusAgent where Body == Never {
       """
       '\(Self.self)' has no body. …
 
-      Do not access an agent's 'body' property directly, as it may not exist. To run an agent, \
-      call 'CactusAgent.stream(isolation:input:into:)', instead.
+      Do not invoke an agent's 'body' method directly, as it may not exist. To run an agent, \
+      call 'CactusAgent.stream(request:into:)', instead.
       """
     )
   }
