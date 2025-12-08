@@ -9,14 +9,29 @@ public final class CactusAgenticSession<
 >: Sendable, Identifiable {
   private let agentActor: AgentActor
 
+  private let observationRegistrar = _ObservationRegistrar()
+
   public let id = UUID()
 
-  public var isResponding: Bool {
-    false
+  private let _isResponding = Lock(false)
+  public private(set) var isResponding: Bool {
+    get {
+      self.observationRegistrar.access(self, keyPath: \.isResponding)
+      return self._isResponding.withLock { $0 }
+    }
+    set {
+      self.observationRegistrar.withMutation(of: self, keyPath: \.isResponding) {
+        self._isResponding.withLock { $0 = newValue }
+      }
+    }
   }
 
   public init(_ agent: sending some CactusAgent<Input, Output>) {
     self.agentActor = AgentActor(agent)
+  }
+
+  public func graph(for message: Input) -> CactusAgentGraph {
+    CactusAgentGraph()
   }
 
   public func stream(for message: Input) -> CactusAgentStream<Output> {
@@ -48,6 +63,6 @@ extension CactusAgenticSession {
 // MARK: - Observable
 
 @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
-extension CactusAgenticSession: Observable {
+extension CactusAgenticSession: _Observable {
 
 }
