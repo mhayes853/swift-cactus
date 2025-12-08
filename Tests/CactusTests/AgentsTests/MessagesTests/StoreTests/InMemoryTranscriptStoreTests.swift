@@ -1,0 +1,65 @@
+import Cactus
+import CustomDump
+import Testing
+
+@Suite
+struct `InMemoryTranscriptStore tests` {
+  private let store = InMemoryTranscriptStore()
+
+  @Test
+  func `Nil Transcript When None For Key`() async throws {
+    let transcript = try await self.store.transcript(forKey: "blob")
+    let hasTranscript = try await self.store.hasTranscript(forKey: "blob")
+    expectNoDifference(transcript, nil)
+    expectNoDifference(hasTranscript, false)
+  }
+
+  @Test
+  func `Save and Retrieve Transcript`() async throws {
+    try await self.store.save(transcript: CactusTranscript(), forKey: "blob")
+
+    let transcript = try await self.store.transcript(forKey: "blob")
+    let hasTranscript = try await self.store.hasTranscript(forKey: "blob")
+    expectNoDifference(transcript, CactusTranscript())
+    expectNoDifference(hasTranscript, true)
+  }
+
+  @Test
+  func `Save and Remove Transcript`() async throws {
+    try await self.store.save(transcript: CactusTranscript(), forKey: "blob")
+    try await self.store.removeTranscript(forKey: "blob")
+
+    let transcript = try await self.store.transcript(forKey: "blob")
+    let hasTranscript = try await self.store.hasTranscript(forKey: "blob")
+    expectNoDifference(transcript, nil)
+    expectNoDifference(hasTranscript, false)
+  }
+
+  @Test
+  func `Isolates Transcripts For Separate Keys`() async throws {
+    try await self.store.save(transcript: CactusTranscript(), forKey: "blob")
+
+    var transcript = try await self.store.transcript(forKey: "blob2")
+    var hasTranscript = try await self.store.hasTranscript(forKey: "blob2")
+    expectNoDifference(transcript, nil)
+    expectNoDifference(hasTranscript, false)
+
+    let t2 = CactusTranscript(elements: [
+      CactusTranscript.Element(
+        id: CactusGenerationID(),
+        message: .system("You are an assistant...")
+      )
+    ])
+    try await self.store.save(transcript: t2, forKey: "blob2")
+
+    transcript = try await self.store.transcript(forKey: "blob2")
+    hasTranscript = try await self.store.hasTranscript(forKey: "blob2")
+    expectNoDifference(transcript, t2)
+    expectNoDifference(hasTranscript, true)
+
+    transcript = try await self.store.transcript(forKey: "blob")
+    hasTranscript = try await self.store.hasTranscript(forKey: "blob")
+    expectNoDifference(transcript, CactusTranscript())
+    expectNoDifference(hasTranscript, true)
+  }
+}

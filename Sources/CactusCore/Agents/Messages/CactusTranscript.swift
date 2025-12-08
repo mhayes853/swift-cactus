@@ -3,13 +3,17 @@ import OrderedCollections
 // MARK: - CactusTranscript
 
 public struct CactusTranscript: Hashable, Sendable, Codable {
-  private var entries = OrderedDictionary<CactusGenerationID, Element>()
+  private var elements = OrderedDictionary<CactusGenerationID, Element>()
 
-  public init() {}
+  public init(elements: some Sequence<Element> = []) {
+    for element in elements {
+      self.elements[element.id] = element
+    }
+  }
 
   public subscript(id id: CactusGenerationID) -> Element? {
-    _read { yield self.entries[id] }
-    _modify { yield &self.entries[id] }
+    _read { yield self.elements[id] }
+    _modify { yield &self.elements[id] }
   }
 }
 
@@ -37,15 +41,15 @@ extension CactusTranscript {
 
 extension CactusTranscript: MutableCollection {
   public subscript(position: Int) -> Element {
-    _read { yield self.entries.values[position] }
-    _modify { yield &self.entries.values[position] }
+    _read { yield self.elements.values[position] }
+    _modify { yield &self.elements.values[position] }
   }
 
-  public var startIndex: Int { self.entries.values.startIndex }
-  public var endIndex: Int { self.entries.values.endIndex }
+  public var startIndex: Int { self.elements.values.startIndex }
+  public var endIndex: Int { self.elements.values.endIndex }
 
   public func index(after i: Int) -> Int {
-    self.entries.values.index(after: i)
+    self.elements.values.index(after: i)
   }
 }
 

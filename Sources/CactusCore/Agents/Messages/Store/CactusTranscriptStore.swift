@@ -7,7 +7,7 @@ public protocol CactusTranscriptStore {
 
   func save(transcripts: [CactusTranscriptKey: CactusTranscript]) async throws
 
-  func removeTranscripts(forKey keys: CactusTranscriptKey) async throws
+  func removeTranscripts(forKey keys: Set<CactusTranscriptKey>) async throws
 }
 
 extension CactusTranscriptStore {
@@ -24,6 +24,6 @@ extension CactusTranscriptStore {
   }
 
   public func removeTranscript(forKey key: CactusTranscriptKey) async throws {
-    try await self.removeTranscripts(forKey: key)
+    try await self.removeTranscripts(forKey: [key])
   }
 }
