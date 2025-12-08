@@ -5,6 +5,10 @@ import OrderedCollections
 public struct CactusTranscript: Hashable, Sendable, Codable {
   private var elements = OrderedDictionary<CactusGenerationID, Element>()
 
+  private init(_elements: OrderedDictionary<CactusGenerationID, CactusTranscript.Element>) {
+    self.elements = _elements
+  }
+
   public init(elements: some Sequence<Element> = []) {
     for element in elements {
       self.elements[element.id] = element
@@ -54,3 +58,57 @@ extension CactusTranscript: MutableCollection {
 }
 
 extension CactusTranscript: RandomAccessCollection {}
+
+extension CactusTranscript {
+  @discardableResult
+  public mutating func removeElement(id: CactusGenerationID) -> Element? {
+    self.elements.removeValue(forKey: id)
+  }
+
+  @discardableResult
+  public mutating func removeElement(at index: Int) -> Element {
+    self.elements.remove(at: index).value
+  }
+
+  public mutating func removeAll(keepingCapacity: Bool = false) {
+    self.elements.removeAll(keepingCapacity: keepingCapacity)
+  }
+
+  public mutating func removeAll<E: Error>(where predicate: (Element) throws(E) -> Bool) throws(E) {
+    do {
+      try self.elements.removeAll { (_, value) in try predicate(value) }
+    } catch {
+      throw error as! E
+    }
+  }
+
+  @discardableResult
+  public mutating func removeFirst() -> Element {
+    self.elements.removeFirst().value
+  }
+
+  public mutating func removeFirst(_ n: Int) {
+    self.elements.removeFirst(n)
+  }
+
+  @discardableResult
+  public mutating func removeLast() -> Element {
+    self.elements.removeLast().value
+  }
+
+  public mutating func removeLast(_ n: Int) {
+    self.elements.removeLast(n)
+  }
+
+  public mutating func removeSubrange(_ range: some RangeExpression<Int>) {
+    self.elements.removeSubrange(range)
+  }
+
+  public func filter<E: Error>(_ isIncluded: (Element) throws(E) -> Bool) throws(E) -> Self {
+    do {
+      return try Self(_elements: self.elements.filter { (_, value) in try isIncluded(value) })
+    } catch {
+      throw error as! E
+    }
+  }
+}
