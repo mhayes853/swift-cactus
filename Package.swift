@@ -31,7 +31,8 @@ let package = Package(
     .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.1.0"),
     .package(url: "https://github.com/swiftlang/swift-syntax", "601.0.0"..<"603.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.6.4"),
-    .package(url: "https://github.com/toon-format/toon-swift", branch: "main")
+    .package(url: "https://github.com/toon-format/toon-swift", from: "0.3.0"),
+    .package(url: "https://github.com/apple/swift-collections", from: "1.3.0")
   ],
   targets: [
     .target(name: "Cactus", dependencies: ["CactusCore", "CactusMacros"]),
@@ -48,7 +49,8 @@ let package = Package(
           name: "ToonFormat",
           package: "toon-swift",
           condition: .when(traits: ["SwiftCactusTOON"])
-        )
+        ),
+        .product(name: "OrderedCollections", package: "swift-collections")
       ],
       swiftSettings: [supportsTelemetry]
     ),

@@ -1,9 +1,16 @@
+import OrderedCollections
+
 // MARK: - CactusTranscript
 
 public struct CactusTranscript: Hashable, Sendable, Codable {
-  private var entries = [Element]()
+  private var entries = OrderedDictionary<CactusGenerationID, Element>()
 
   public init() {}
+
+  public subscript(id id: CactusGenerationID) -> Element? {
+    _read { yield self.entries[id] }
+    _modify { yield &self.entries[id] }
+  }
 }
 
 // MARK: - Element
@@ -30,25 +37,16 @@ extension CactusTranscript {
 
 extension CactusTranscript: MutableCollection {
   public subscript(position: Int) -> Element {
-    _read { yield self.entries[position] }
-    _modify { yield &self.entries[position] }
+    _read { yield self.entries.values[position] }
+    _modify { yield &self.entries.values[position] }
   }
 
-  public var startIndex: Int { self.entries.startIndex }
-  public var endIndex: Int { self.entries.endIndex }
+  public var startIndex: Int { self.entries.values.startIndex }
+  public var endIndex: Int { self.entries.values.endIndex }
 
   public func index(after i: Int) -> Int {
-    self.entries.index(after: i)
+    self.entries.values.index(after: i)
   }
 }
 
 extension CactusTranscript: RandomAccessCollection {}
-
-extension CactusTranscript: RangeReplaceableCollection {
-  public mutating func replaceSubrange<C: Collection<Element>>(
-    _ subrange: Range<Int>,
-    with newElements: C
-  ) {
-    self.entries.replaceSubrange(subrange, with: newElements)
-  }
-}

@@ -1,5 +1,5 @@
 {
-  "originHash" : "671620eb790ec8a46fedad994bb9619fe9fdbcbc27c08aab0024f59143627e30",
+  "originHash" : "8db83a7e7c90bbc9f80892ce2e26f089d4640d981e0716d7ca30114a6b3094f3",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-log",
       "state" : {
-        "revision" : "ca538143e2dc2b5996c34b9322a1ed9def1d7747",
-        "version" : "1.7.0"
+        "revision" : "b1fa4ef41fe21b13120c034854042d12c43f66b2",
+        "version" : "1.7.1"
       }
     },
     {
@@ -182,21 +182,12 @@
       }
     },
     {
-      "identity" : "toon-swift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/toon-format/toon-swift",
-      "state" : {
-        "branch" : "main",
-        "revision" : "a33d88dde32fef8e24024abc2442c72af66be448"
-      }
-    },
-    {
       "identity" : "xctest-dynamic-overlay",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
       "state" : {
-        "revision" : "4c27acf5394b645b70d8ba19dc249c0472d5f618",
-        "version" : "1.7.0"
+        "revision" : "31073495cae9caf243c440eac94b3ab067e3d7bc",
+        "version" : "1.8.0"
       }
     },
     {
