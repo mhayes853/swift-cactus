@@ -5,11 +5,11 @@ public struct CactusAgentStream<Output: ConvertibleFromCactusResponse>: Sendable
 
   public init() {}
 
-  public func collectResponse() async throws -> Output {
+  public func collectFinalResponse() async throws -> Output {
     fatalError()
   }
 
-  public func collectRawResponse() async throws -> CactusResponse {
+  public func collectFinalRawResponse() async throws -> CactusResponse {
     fatalError()
   }
 

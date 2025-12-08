@@ -3,10 +3,13 @@ import Observation
 
 // MARK: - CactusAgenticSession
 
-public final class CactusAgenticSession<Input, Output: ConvertibleFromCactusResponse>: Sendable {
+public final class CactusAgenticSession<
+  Input,
+  Output: ConvertibleFromCactusResponse
+>: Sendable, Identifiable {
   private let agentActor: AgentActor
 
-  public let sessionId = UUID()
+  public let id = UUID()
 
   public var isResponding: Bool {
     false
@@ -23,7 +26,7 @@ public final class CactusAgenticSession<Input, Output: ConvertibleFromCactusResp
   public func respond(to message: Input) async throws -> Output {
     let stream = self.stream(for: message)
     return try await withTaskCancellationHandler {
-      try await stream.collectResponse()
+      try await stream.collectFinalResponse()
     } onCancel: {
       stream.stop()
     }
