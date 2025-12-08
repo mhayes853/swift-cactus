@@ -24,7 +24,7 @@ extension CactusTranscript {
     public init(
       id: CactusGenerationID,
       message: CactusLanguageModel.ChatMessage,
-      functionCalls: [CactusLanguageModel.FunctionCall]
+      functionCalls: [CactusLanguageModel.FunctionCall] = []
     ) {
       self.id = id
       self.message = message
