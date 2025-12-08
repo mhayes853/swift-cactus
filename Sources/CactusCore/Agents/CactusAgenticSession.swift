@@ -1,9 +1,12 @@
+import Foundation
 import Observation
 
 // MARK: - CactusAgenticSession
 
 public final class CactusAgenticSession<Input, Output: ConvertibleFromCactusResponse>: Sendable {
   private let agentActor: AgentActor
+
+  public let sessionId = UUID()
 
   public var isResponding: Bool {
     false
