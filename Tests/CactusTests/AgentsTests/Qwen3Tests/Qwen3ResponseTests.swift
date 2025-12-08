@@ -6,7 +6,7 @@ import Testing
 struct `Qwen3Response tests` {
   @Test
   func `Loads Response From Plain String`() throws {
-    let id = CactusGenerationID()
+    let id = CactusMessageID()
     let response = Qwen3Response<String>(
       cactusResponse: CactusResponse(id: id, content: "Hello world")
     )
@@ -18,7 +18,7 @@ struct `Qwen3Response tests` {
 
   @Test
   func `Loads Custom Response Type From Plain String`() throws {
-    let id = CactusGenerationID()
+    let id = CactusMessageID()
     let response = Qwen3Response<TestResponse>(
       cactusResponse: CactusResponse(id: id, content: "blob")
     )
@@ -30,7 +30,7 @@ struct `Qwen3Response tests` {
 
   @Test
   func `Loads Custom Response Type From String With Thinking Content`() throws {
-    let id = CactusGenerationID()
+    let id = CactusMessageID()
     let response = Qwen3Response<TestResponse>(
       cactusResponse: CactusResponse(id: id, content: sampleThinkingResponse)
     )
@@ -67,7 +67,7 @@ struct `Qwen3Response tests` {
 
   @Test
   func `Loads Custom Response Type From String With Partial Thinking Content`() throws {
-    let id = CactusGenerationID()
+    let id = CactusMessageID()
     let response = Qwen3Response<TestResponse>(
       cactusResponse: CactusResponse(id: id, content: samplePartialThinkingResponse)
     )
@@ -86,7 +86,7 @@ struct `Qwen3Response tests` {
 
   @Test
   func `Formats Prompt Content Without Thinking Content`() throws {
-    let id = CactusGenerationID()
+    let id = CactusMessageID()
     let response = Qwen3Response<String>(
       cactusResponse: CactusResponse(id: id, content: "This is cool")
     )
@@ -97,7 +97,7 @@ struct `Qwen3Response tests` {
 
   @Test
   func `Formats Prompt Content With Thinking Content`() throws {
-    let id = CactusGenerationID()
+    let id = CactusMessageID()
     let response = Qwen3Response<String>(
       cactusResponse: CactusResponse(id: id, content: sampleThinkingResponse)
     )

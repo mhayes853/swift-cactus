@@ -57,3 +57,11 @@ extension CactusEnvironmentValues {
     static let defaultValue: any CactusTranscriptStore & Sendable = InMemoryTranscriptStore.shared
   }
 }
+
+extension CactusAgent {
+  public func transcriptStore(
+    _ store: any CactusTranscriptStore & Sendable
+  ) -> _TransformEnvironmentAgent<Self> {
+    self.environment(\.transcriptStore, store)
+  }
+}

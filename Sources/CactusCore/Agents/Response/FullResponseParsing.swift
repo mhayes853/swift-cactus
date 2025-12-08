@@ -1,10 +1,10 @@
 // MARK: - CactusResponse
 
 public struct CactusResponse: Hashable, Sendable, Identifiable {
-  public var id: CactusGenerationID
+  public var id: CactusMessageID
   public var content: String
 
-  public init(id: CactusGenerationID, content: String) {
+  public init(id: CactusMessageID, content: String) {
     self.id = id
     self.content = content
   }

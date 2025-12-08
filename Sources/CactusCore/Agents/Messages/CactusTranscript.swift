@@ -3,9 +3,9 @@ import OrderedCollections
 // MARK: - CactusTranscript
 
 public struct CactusTranscript: Hashable, Sendable, Codable {
-  private var elements = OrderedDictionary<CactusGenerationID, Element>()
+  private var elements = OrderedDictionary<CactusMessageID, Element>()
 
-  private init(_elements: OrderedDictionary<CactusGenerationID, CactusTranscript.Element>) {
+  private init(_elements: OrderedDictionary<CactusMessageID, CactusTranscript.Element>) {
     self.elements = _elements
   }
 
@@ -15,7 +15,7 @@ public struct CactusTranscript: Hashable, Sendable, Codable {
     }
   }
 
-  public subscript(id id: CactusGenerationID) -> Element? {
+  public subscript(id id: CactusMessageID) -> Element? {
     _read { yield self.elements[id] }
     _modify { yield &self.elements[id] }
   }
@@ -25,12 +25,12 @@ public struct CactusTranscript: Hashable, Sendable, Codable {
 
 extension CactusTranscript {
   public struct Element: Hashable, Sendable, Codable, Identifiable {
-    public let id: CactusGenerationID
+    public let id: CactusMessageID
     public var message: CactusLanguageModel.ChatMessage
     public var functionCalls: [CactusLanguageModel.FunctionCall]
 
     public init(
-      id: CactusGenerationID,
+      id: CactusMessageID,
       message: CactusLanguageModel.ChatMessage,
       functionCalls: [CactusLanguageModel.FunctionCall] = []
     ) {
@@ -61,7 +61,7 @@ extension CactusTranscript: RandomAccessCollection {}
 
 extension CactusTranscript {
   @discardableResult
-  public mutating func removeElement(id: CactusGenerationID) -> Element? {
+  public mutating func removeElement(id: CactusMessageID) -> Element? {
     self.elements.removeValue(forKey: id)
   }
 

@@ -1,7 +1,7 @@
 public struct Qwen3Response<
   Base: ConvertibleFromCactusResponse
 >: ConvertibleFromCactusResponse, Identifiable {
-  public let id: CactusGenerationID
+  public let id: CactusMessageID
   public let thinkingContent: String?
   public let response: Base
 
@@ -30,7 +30,7 @@ public struct Qwen3Response<
     }
   }
 
-  public init(id: CactusGenerationID, thinkingContent: String? = nil, response: Base) {
+  public init(id: CactusMessageID, thinkingContent: String? = nil, response: Base) {
     self.id = id
     self.thinkingContent = thinkingContent
     self.response = response

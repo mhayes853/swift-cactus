@@ -46,7 +46,7 @@ struct `InMemoryTranscriptStore tests` {
 
     let t2 = CactusTranscript(elements: [
       CactusTranscript.Element(
-        id: CactusGenerationID(),
+        id: CactusMessageID(),
         message: .system("You are an assistant...")
       )
     ])

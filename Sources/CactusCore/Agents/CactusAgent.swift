@@ -1,10 +1,21 @@
+import Foundation
+
 // MARK: - CactusAgentRequest
 
 public struct CactusAgentRequest<Input> {
+  public let sessionId: UUID
+  public let messageId: CactusMessageID
   public var input: Input
   public var environment: CactusEnvironmentValues
 
-  public init(input: Input, environment: CactusEnvironmentValues = CactusEnvironmentValues()) {
+  public init(
+    sessionId: UUID,
+    messageId: CactusMessageID = CactusMessageID(),
+    input: Input,
+    environment: CactusEnvironmentValues = CactusEnvironmentValues()
+  ) {
+    self.sessionId = sessionId
+    self.messageId = messageId
     self.input = input
     self.environment = environment
   }
