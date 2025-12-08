@@ -18,7 +18,7 @@ public struct WhisperTranscriptionResponse: Hashable, Sendable, ConvertibleFromC
     case timestamps([Timestamp])
   }
 
-  public let id: CactusGenerationID
+  public let id: CactusMessageID
   public let content: Content
 
   public init(cactusResponse: CactusResponse) {
@@ -44,7 +44,7 @@ public struct WhisperTranscriptionResponse: Hashable, Sendable, ConvertibleFromC
     }
   }
 
-  public init(id: CactusGenerationID, content: Content) {
+  public init(id: CactusMessageID, content: Content) {
     self.id = id
     self.content = content
   }

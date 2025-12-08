@@ -7,7 +7,7 @@ struct `WhisperTranscriptionResponse tests` {
   @Test
   func `Empty String Response`() {
     let response = WhisperTranscriptionResponse(
-      cactusResponse: CactusResponse(id: CactusGenerationID(), content: "")
+      cactusResponse: CactusResponse(id: CactusMessageID(), content: "")
     )
     expectNoDifference(response.content, .fullTranscript(""))
   }
@@ -16,7 +16,7 @@ struct `WhisperTranscriptionResponse tests` {
   func `No Timestamps Response`() {
     let response = WhisperTranscriptionResponse(
       cactusResponse: CactusResponse(
-        id: CactusGenerationID(),
+        id: CactusMessageID(),
         content: """
            How? The power of a god cannot be overcome. Zanzan, this is the providence of the world. \
           Even gods are merely beings restricted to the limited power determined by prophets. That \
@@ -38,7 +38,7 @@ struct `WhisperTranscriptionResponse tests` {
   func `Timestamps Response`() {
     let response = WhisperTranscriptionResponse(
       cactusResponse: CactusResponse(
-        id: CactusGenerationID(),
+        id: CactusMessageID(),
         content: """
           <|0.00|> How? The power of a god cannot be overcome.\
           <|3.14|> Zanzan, this is the providence of the world. Even gods are merely beings \
