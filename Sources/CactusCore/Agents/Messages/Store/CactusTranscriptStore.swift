@@ -1,3 +1,5 @@
+// MARK: - CactusTranscriptStore
+
 public protocol CactusTranscriptStore {
   func hasTranscripts(
     forKeys keys: Set<CactusTranscriptKey>
@@ -40,5 +42,18 @@ extension CactusTranscriptStore {
   @discardableResult
   public func removeTranscript(forKey key: CactusTranscriptKey) async throws -> Bool {
     try await self.removeTranscripts(forKeys: [key])[key] == true
+  }
+}
+
+// MARK: - EnvironmentValue
+
+extension CactusEnvironmentValues {
+  public var transcriptStore: any CactusTranscriptStore & Sendable {
+    get { self[TranscriptStoreKey.self] }
+    set { self[TranscriptStoreKey.self] = newValue }
+  }
+
+  private enum TranscriptStoreKey: Key {
+    static let defaultValue: any CactusTranscriptStore & Sendable = InMemoryTranscriptStore.shared
   }
 }

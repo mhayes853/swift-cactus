@@ -1,4 +1,6 @@
 public final actor InMemoryTranscriptStore: CactusTranscriptStore {
+  public static let shared = InMemoryTranscriptStore()
+
   private var transcripts = [CactusTranscriptKey: CactusTranscript]()
 
   public init() {}
