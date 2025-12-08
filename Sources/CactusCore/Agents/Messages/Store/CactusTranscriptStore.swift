@@ -1,29 +1,44 @@
 public protocol CactusTranscriptStore {
-  func hasTranscript(forKey key: CactusTranscriptKey) async throws -> Bool
+  func hasTranscripts(
+    forKeys keys: Set<CactusTranscriptKey>
+  ) async throws -> [CactusTranscriptKey: Bool]
 
   func transcripts(
-    forKey keys: Set<CactusTranscriptKey>
+    forKeys keys: Set<CactusTranscriptKey>
   ) async throws -> [CactusTranscriptKey: CactusTranscript]
 
   func save(transcripts: [CactusTranscriptKey: CactusTranscript]) async throws
 
-  func removeTranscripts(forKey keys: Set<CactusTranscriptKey>) async throws
+  @discardableResult
+  func removeTranscripts(
+    forKeys keys: Set<CactusTranscriptKey>
+  ) async throws -> [CactusTranscriptKey: Bool]
 }
 
 extension CactusTranscriptStore {
   public func hasTranscript(forKey key: CactusTranscriptKey) async throws -> Bool {
-    try await self.transcript(forKey: key) != nil
+    try await self.hasTranscripts(forKeys: [key])[key] == true
+  }
+
+  public func hasTranscripts(
+    forKeys keys: Set<CactusTranscriptKey>
+  ) async throws -> [CactusTranscriptKey: Bool] {
+    let transcripts = try await self.transcripts(forKeys: keys)
+    return [CactusTranscriptKey: Bool](
+      uniqueKeysWithValues: keys.map { ($0, transcripts[$0] != nil) }
+    )
   }
 
   public func transcript(forKey key: CactusTranscriptKey) async throws -> CactusTranscript? {
-    try await self.transcripts(forKey: [key])[key]
+    try await self.transcripts(forKeys: [key])[key]
   }
 
   public func save(transcript: CactusTranscript, forKey key: CactusTranscriptKey) async throws {
     try await self.save(transcripts: [key: transcript])
   }
 
-  public func removeTranscript(forKey key: CactusTranscriptKey) async throws {
-    try await self.removeTranscripts(forKey: [key])
+  @discardableResult
+  public func removeTranscript(forKey key: CactusTranscriptKey) async throws -> Bool {
+    try await self.removeTranscripts(forKeys: [key])[key] == true
   }
 }

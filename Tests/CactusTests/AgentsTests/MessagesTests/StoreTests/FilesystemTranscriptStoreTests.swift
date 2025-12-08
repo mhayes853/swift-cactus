@@ -1,10 +1,15 @@
 import Cactus
 import CustomDump
+import Foundation
 import Testing
 
 @Suite
-struct `InMemoryTranscriptStore tests` {
-  private let store = InMemoryTranscriptStore()
+final class `FilesystemTranscriptStore tests` {
+  private let store = FilesystemTranscriptStore(directoryBaseURL: temporaryModelDirectory())
+
+  deinit {
+    try? FileManager.default.removeItem(at: self.store.directoryBaseURL)
+  }
 
   @Test
   func `Nil Transcript When None For Key`() async throws {
@@ -64,6 +69,19 @@ struct `InMemoryTranscriptStore tests` {
   }
 
   @Test
+  func `Does Not Throw When Removing Non-Existent Transcript`() async throws {
+    await #expect(throws: Never.self) {
+      try await self.store.removeTranscript(forKey: "blob2")
+    }
+
+    try await self.store.save(transcript: CactusTranscript(), forKey: "blob")
+
+    await #expect(throws: Never.self) {
+      try await self.store.removeTranscript(forKey: "blob2")
+    }
+  }
+
+  @Test
   func `Returns False When Removing Non-Existent Transcript`() async throws {
     let didRemove = try await self.store.removeTranscript(forKey: "blob2")
     expectNoDifference(didRemove, false)
@@ -74,5 +92,20 @@ struct `InMemoryTranscriptStore tests` {
     try await self.store.save(transcript: CactusTranscript(), forKey: "blob")
     let didRemove = try await self.store.removeTranscript(forKey: "blob")
     expectNoDifference(didRemove, true)
+  }
+
+  @Test
+  func `Lazily Creates Directory`() async throws {
+    expectNoDifference(
+      FileManager.default.fileExists(atPath: self.store.directoryBaseURL.relativePath),
+      false
+    )
+
+    try await self.store.save(transcript: CactusTranscript(), forKey: "blob")
+
+    expectNoDifference(
+      FileManager.default.fileExists(atPath: self.store.directoryBaseURL.relativePath),
+      true
+    )
   }
 }
