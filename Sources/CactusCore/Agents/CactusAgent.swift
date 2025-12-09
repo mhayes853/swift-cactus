@@ -3,19 +3,13 @@ import Foundation
 // MARK: - CactusAgentRequest
 
 public struct CactusAgentRequest<Input> {
-  public let sessionId: UUID
-  public let messageId: CactusMessageID
   public var input: Input
   public var environment: CactusEnvironmentValues
 
   public init(
-    sessionId: UUID,
-    messageId: CactusMessageID = CactusMessageID(),
     input: Input,
     environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) {
-    self.sessionId = sessionId
-    self.messageId = messageId
     self.input = input
     self.environment = environment
   }
@@ -30,7 +24,7 @@ public protocol CactusAgent<Input, Output> {
   associatedtype Body
 
   @CactusAgentBuilder<Input, Output>
-  func body(request: CactusAgentRequest<Input>) -> Body
+  func body(environment: CactusEnvironmentValues) -> Body
 
   nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
@@ -40,7 +34,7 @@ public protocol CactusAgent<Input, Output> {
 
 extension CactusAgent where Body == Never {
   @_transparent
-  public func body(request: CactusAgentRequest<Input>) -> Never {
+  public func body(environment: CactusEnvironmentValues) -> Never {
     fatalError(
       """
       '\(Self.self)' has no body. …
@@ -58,7 +52,7 @@ extension CactusAgent where Body: CactusAgent<Input, Output> {
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws {
-    try await self.body(request: request)
+    try await self.body(environment: request.environment)
       .stream(request: request, into: continuation)
   }
 }

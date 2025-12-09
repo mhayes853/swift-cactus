@@ -29,3 +29,16 @@ extension CactusMessageID: Decodable {
     self.init(rawValue: try container.decode(UUID.self))
   }
 }
+
+// MARK: - Environment
+
+extension CactusEnvironmentValues {
+  public var currentMessageId: CactusMessageID? {
+    get { self[CurrentMessageIDKey.self] }
+    set { self[CurrentMessageIDKey.self] = newValue }
+  }
+
+  private enum CurrentMessageIDKey: Key {
+    static let defaultValue: CactusMessageID? = nil
+  }
+}

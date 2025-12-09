@@ -30,12 +30,12 @@ public final class CactusAgenticSession<
     self.agentActor = AgentActor(agent)
   }
 
-  public func graph(for message: Input) -> CactusAgentGraph {
+  public func graph(for environment: CactusEnvironmentValues) -> CactusAgentGraph {
     fatalError()
   }
 
   public func stream(for message: Input) -> CactusAgentStream<Output> {
-    CactusAgentStream(graph: self.graph(for: message))
+    CactusAgentStream(graph: self.graph(for: CactusEnvironmentValues()))
   }
 
   public func respond(to message: Input) async throws -> Output {
@@ -65,4 +65,17 @@ extension CactusAgenticSession {
 @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
 extension CactusAgenticSession: _Observable {
 
+}
+
+// MARK: - Environment
+
+extension CactusEnvironmentValues {
+  public var sessionId: UUID? {
+    get { self[SessionIdKey.self] }
+    set { self[SessionIdKey.self] = newValue }
+  }
+
+  private enum SessionIdKey: Key {
+    static let defaultValue: UUID? = nil
+  }
 }
