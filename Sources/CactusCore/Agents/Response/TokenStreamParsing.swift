@@ -12,15 +12,15 @@ public struct CactusStreamedToken: Hashable, Sendable {
 
 // MARK: - ConvertibleFromCactusTokenStream
 
-public protocol ConvertibleFromCactusTokenStream<TokenParser> {
-  associatedtype TokenParser: CactusTokenParser<Self>
+public protocol ConvertibleFromCactusTokenStream<TokenStreamParser> {
+  associatedtype TokenStreamParser: CactusTokenStreamParser<Self>
 
-  static func tokenParser(in environment: CactusEnvironmentValues) -> TokenParser
+  static func tokenParser(in environment: CactusEnvironmentValues) -> TokenStreamParser
 }
 
 // MARK: - CactusTokenParser
 
-public protocol CactusTokenParser<Value> {
+public protocol CactusTokenStreamParser<Value> {
   associatedtype Value
 
   mutating func next(
@@ -34,11 +34,11 @@ public protocol CactusTokenParser<Value> {
 extension String: ConvertibleFromCactusTokenStream {
   @inlinable
   @inline(__always)
-  public static func tokenParser(in environment: CactusEnvironmentValues) -> TokenParser {
-    TokenParser()
+  public static func tokenParser(in environment: CactusEnvironmentValues) -> TokenStreamParser {
+    TokenStreamParser()
   }
 
-  public struct TokenParser: CactusTokenParser {
+  public struct TokenStreamParser: CactusTokenStreamParser {
     @usableFromInline
     var output = ""
 
