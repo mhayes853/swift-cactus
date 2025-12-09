@@ -1,5 +1,5 @@
 /// A ``CactusAgentModelStore`` that can be shared across multiple ``CactusAgenticSession`` instances.
-public final class SharedModelStore: CactusAgentModelStore, Sendable {
+public final class SharedModelStore: CactusAgentModelStore {
   public static let `default` = SharedModelStore()
 
   private let state = Lock([CactusAgentModelKey: Task<ModelCell, any Error>]())

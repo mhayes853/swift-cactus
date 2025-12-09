@@ -28,18 +28,22 @@ public final class CactusAgenticSession<Input, Output>: Sendable, Identifiable {
   }
 
   public func graph(
-    for environment: sending CactusEnvironmentValues = CactusEnvironmentValues()
+    for environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) async -> CactusAgentGraph {
-    var environment = environment
-    environment.sessionId = self.id
-    return await self.agentActor.graph(for: environment)
+    await self.agentActor.graph(for: environment, sessionId: self.id)
   }
 
   public func stream(
     for message: Input,
-    environment: sending CactusEnvironmentValues = CactusEnvironmentValues()
+    in environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) async -> CactusAgentStream<Output> {
-    CactusAgentStream(graph: await self.graph(for: environment))
+    fatalError()
+    // await isolate(self.agentActor) { actor in
+    //   let graph = actor.graph(for: environment, sessionId: self.id)
+    //   self.isResponding = true
+    //   let stream = CactusAgentStream<Output>(graph: graph)
+    //   return stream
+    // }
   }
 
   public func respond(to message: Input) async throws -> Output {
@@ -56,13 +60,15 @@ public final class CactusAgenticSession<Input, Output>: Sendable, Identifiable {
 
 extension CactusAgenticSession {
   private final actor AgentActor {
-    private let agent: any CactusAgent<Input, Output>
+    let agent: any CactusAgent<Input, Output>
 
     init(_ agent: sending some CactusAgent<Input, Output>) {
       self.agent = agent
     }
 
-    func graph(for environment: sending CactusEnvironmentValues) -> sending CactusAgentGraph {
+    func graph(for environment: CactusEnvironmentValues, sessionId: UUID) -> CactusAgentGraph {
+      var environment = environment
+      environment.sessionId = sessionId
       var graph = CactusAgentGraph(
         root: CactusAgentGraph.Node.Fields(label: "CactusAgenticSessionGraphRoot")
       )

@@ -18,12 +18,10 @@ public struct CactusAgentModelRequest {
 // MARK: - CactusModelStore
 
 /// A protocol for accessing and managing `CactusLanguageModel` instances used by agents.
-public protocol CactusAgentModelStore {
-  nonisolated(nonsending) func prewarmModel(
-    request: sending CactusAgentModelRequest
-  ) async throws
+public protocol CactusAgentModelStore: Sendable {
+  func prewarmModel(request: sending CactusAgentModelRequest) async throws
 
-  nonisolated(nonsending) func withModelAccess<T>(
+  func withModelAccess<T>(
     request: sending CactusAgentModelRequest,
     perform operation: (CactusLanguageModel) throws -> sending T
   ) async throws -> sending T

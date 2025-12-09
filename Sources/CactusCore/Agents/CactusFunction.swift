@@ -1,6 +1,6 @@
 // MARK: - CactusFunction
 
-public protocol CactusFunction<Input, Output> {
+public protocol CactusFunction<Input, Output>: Sendable {
   associatedtype Input: ConvertibleFromJSONValue
   associatedtype Output: CactusPromptRepresentable
 

@@ -1,6 +1,6 @@
 // MARK: - CactusTranscriptStore
 
-public protocol CactusTranscriptStore {
+public protocol CactusTranscriptStore: Sendable {
   func hasTranscripts(
     forKeys keys: Set<CactusTranscriptKey>
   ) async throws -> [CactusTranscriptKey: Bool]
@@ -48,19 +48,19 @@ extension CactusTranscriptStore {
 // MARK: - EnvironmentValue
 
 extension CactusEnvironmentValues {
-  public var transcriptStore: any CactusTranscriptStore & Sendable {
+  public var transcriptStore: any CactusTranscriptStore {
     get { self[TranscriptStoreKey.self] }
     set { self[TranscriptStoreKey.self] = newValue }
   }
 
   private enum TranscriptStoreKey: Key {
-    static let defaultValue: any CactusTranscriptStore & Sendable = InMemoryTranscriptStore.shared
+    static let defaultValue: any CactusTranscriptStore = InMemoryTranscriptStore.shared
   }
 }
 
 extension CactusAgent {
   public func transcriptStore(
-    _ store: any CactusTranscriptStore & Sendable
+    _ store: any CactusTranscriptStore
   ) -> _TransformEnvironmentAgent<Self> {
     self.environment(\.transcriptStore, store)
   }
