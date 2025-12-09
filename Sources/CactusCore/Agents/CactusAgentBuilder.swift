@@ -51,6 +51,24 @@ where Left.Input == Right.Input, Left.Output == Right.Output {
   case left(Left)
   case right(Right)
 
+  public func build(
+    graph: inout CactusAgentGraph,
+    at nodeId: CactusAgentGraph.Node.ID,
+    in environment: CactusEnvironmentValues
+  ) {
+    let node = graph.appendChild(
+      to: nodeId,
+      fields: CactusAgentGraph.Node.Fields(label: "_EitherAgent")
+    )
+    guard let node else { return unableToAddGraphNode() }
+    switch self {
+    case .left(let left):
+      left.build(graph: &graph, at: node.id, in: environment)
+    case .right(let right):
+      right.build(graph: &graph, at: node.id, in: environment)
+    }
+  }
+
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Left.Input>,
     into continuation: CactusAgentStream<Left.Output>.Continuation

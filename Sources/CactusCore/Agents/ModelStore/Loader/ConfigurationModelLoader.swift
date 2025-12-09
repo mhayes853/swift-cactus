@@ -8,6 +8,10 @@ public struct ConfigurationModelLoader: CactusAgentModelLoader {
     self.key ?? CactusAgentModelKey(Key(configuration: self.configuration))
   }
 
+  public func slug(in environment: CactusEnvironmentValues) -> String {
+    self.configuration.modelSlug
+  }
+
   public func loadModel(
     in environment: CactusEnvironmentValues
   ) throws -> sending CactusLanguageModel {

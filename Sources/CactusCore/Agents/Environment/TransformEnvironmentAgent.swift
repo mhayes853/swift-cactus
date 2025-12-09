@@ -18,6 +18,21 @@ public struct _TransformEnvironmentAgent<Base: CactusAgent>: CactusAgent {
   let base: Base
   let transform: (inout CactusEnvironmentValues) -> Void
 
+  public func build(
+    graph: inout CactusAgentGraph,
+    at nodeId: CactusAgentGraph.Node.ID,
+    in environment: CactusEnvironmentValues
+  ) {
+    var environment = environment
+    transform(&environment)
+    let node = graph.appendChild(
+      to: nodeId,
+      fields: CactusAgentGraph.Node.Fields(label: "_TransformEnvironmentAgent")
+    )
+    guard let node = node else { return unableToAddGraphNode() }
+    self.base.build(graph: &graph, at: node.id, in: environment)
+  }
+
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Base.Output>.Continuation

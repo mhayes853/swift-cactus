@@ -15,6 +15,19 @@ public struct WhisperTranscribeAgent: CactusAgent {
     self.access = access
   }
 
+  public func build(
+    graph: inout CactusAgentGraph,
+    at nodeId: CactusAgentGraph.Node.ID,
+    in environment: CactusEnvironmentValues
+  ) {
+    graph.appendChild(
+      to: nodeId,
+      fields: CactusAgentGraph.Node.Fields(
+        label: "WhisperTranscribeAgent (\(self.access.slug(in: environment)))"
+      )
+    )
+  }
+
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<WhisperTranscribePrompt>,
     into continuation: CactusAgentStream<WhisperTranscriptionResponse>.Continuation

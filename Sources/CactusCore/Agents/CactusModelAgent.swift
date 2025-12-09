@@ -36,6 +36,19 @@ public struct CactusModelAgent<
     self.transcript = transcript
   }
 
+  public func build(
+    graph: inout CactusAgentGraph,
+    at nodeId: CactusAgentGraph.Node.ID,
+    in environment: CactusEnvironmentValues
+  ) {
+    graph.appendChild(
+      to: nodeId,
+      fields: CactusAgentGraph.Node.Fields(
+        label: "CactusModelAgent (\(self.access.slug(in: environment)))"
+      )
+    )
+  }
+
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation

@@ -6,6 +6,14 @@ import Foundation
   import CryptoKit
 #endif
 
+// MARK: - Constants
+
+extension UUID {
+  static let `nil` = UUID(uuid: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+}
+
+// MARK: - V5
+
 extension UUID {
   static let urlNamespace = UUID(uuidString: "6ba7b811-9dad-11d1-80b4-00c04fd430c8")!
 

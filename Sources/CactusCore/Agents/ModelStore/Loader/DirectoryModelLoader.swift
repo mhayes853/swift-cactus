@@ -41,6 +41,10 @@ public struct DirectoryModelLoader: CactusAgentModelLoader {
     let directory: ObjectIdentifier
   }
 
+  public func slug(in environment: CactusEnvironmentValues) -> String {
+    self.slug.text
+  }
+
   public func loadModel(
     in environment: CactusEnvironmentValues
   ) async throws -> sending CactusLanguageModel {

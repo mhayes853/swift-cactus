@@ -15,6 +15,10 @@ final class CountingModelLoader: CactusAgentModelLoader, Sendable {
     self.key.withLock { $0 }
   }
 
+  func slug(in environment: CactusEnvironmentValues) -> String {
+    "counting"
+  }
+
   func loadModel(
     in environment: CactusEnvironmentValues
   ) async throws -> sending CactusLanguageModel {
