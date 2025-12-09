@@ -33,7 +33,9 @@ public final class CactusAgenticSession<
   public func graph(
     for environment: sending CactusEnvironmentValues = CactusEnvironmentValues()
   ) async -> CactusAgentGraph {
-    await self.agentActor.graph(for: environment)
+    var environment = environment
+    environment.sessionId = self.id
+    return await self.agentActor.graph(for: environment)
   }
 
   public func stream(
@@ -64,7 +66,11 @@ extension CactusAgenticSession {
     }
 
     func graph(for environment: sending CactusEnvironmentValues) -> sending CactusAgentGraph {
-      fatalError()
+      nonisolated(unsafe) var graph = CactusAgentGraph(
+        root: CactusAgentGraph.Node.Fields(label: "CactusAgenticSessionGraphRoot")
+      )
+      self.agent.build(graph: &graph, at: graph.root.id, in: environment)
+      return graph
     }
   }
 }

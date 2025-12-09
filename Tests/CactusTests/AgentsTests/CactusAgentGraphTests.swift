@@ -7,7 +7,7 @@ struct `CactusAgentGraph tests` {
   @Test
   func `Can Find Root Node By Tag`() throws {
     let graph = CactusAgentGraph(
-      root: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName, tag: "blob")
+      root: CactusAgentGraph.Node.Fields(label: testAgentLabel, tag: "blob")
     )
     expectNoDifference(graph[tag: "blob"]?.id, graph.root.id)
   }
@@ -15,7 +15,7 @@ struct `CactusAgentGraph tests` {
   @Test
   func `Can Find Root Node By Id`() throws {
     let graph = CactusAgentGraph(
-      root: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName)
+      root: CactusAgentGraph.Node.Fields(label: testAgentLabel)
     )
     expectNoDifference(graph[id: graph.root.id]?.id, graph.root.id)
   }
@@ -23,7 +23,7 @@ struct `CactusAgentGraph tests` {
   @Test
   func `Root Node Children Is Empty When No Children Present`() throws {
     let graph = CactusAgentGraph(
-      root: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName)
+      root: CactusAgentGraph.Node.Fields(label: testAgentLabel)
     )
     expectNoDifference(graph.children(for: graph.root.id)?.isEmpty, true)
   }
@@ -31,11 +31,11 @@ struct `CactusAgentGraph tests` {
   @Test
   func `Append Child`() throws {
     var graph = CactusAgentGraph(
-      root: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName)
+      root: CactusAgentGraph.Node.Fields(label: testAgentLabel)
     )
     let _node = graph.appendChild(
       to: graph.root.id,
-      fields: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName)
+      fields: CactusAgentGraph.Node.Fields(label: testAgentLabel)
     )
     let node = try #require(_node)
 
@@ -47,14 +47,14 @@ struct `CactusAgentGraph tests` {
   @Test
   func `Append Child With Tag`() throws {
     var graph = CactusAgentGraph(
-      root: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName)
+      root: CactusAgentGraph.Node.Fields(label: testAgentLabel)
     )
     expectNoDifference(graph[tag: "blob"]?.id, nil)
     expectNoDifference(graph.children(for: graph.root.id)?[tag: "blob"]?.id, nil)
 
     let _node = graph.appendChild(
       to: graph.root.id,
-      fields: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName, tag: "blob")
+      fields: CactusAgentGraph.Node.Fields(label: testAgentLabel, tag: "blob")
     )
     let node = try #require(_node)
 
@@ -113,7 +113,7 @@ struct `CactusAgentGraph tests` {
   @Test
   func `Node Not Found In Its Children`() throws {
     let graph = CactusAgentGraph(
-      root: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName)
+      root: CactusAgentGraph.Node.Fields(label: testAgentLabel)
     )
 
     expectNoDifference(graph.children(for: graph.root.id)?[id: graph.root.id]?.id, nil)
@@ -124,13 +124,13 @@ struct `CactusAgentGraph tests` {
     @Test
     func `Reports Issue When Node With Duplicate Tag Added`() throws {
       var graph = CactusAgentGraph(
-        root: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName, tag: "blob")
+        root: CactusAgentGraph.Node.Fields(label: testAgentLabel, tag: "blob")
       )
 
       withKnownIssue {
         _ = graph.appendChild(
           to: graph.root.id,
-          fields: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName, tag: "blob")
+          fields: CactusAgentGraph.Node.Fields(label: testAgentLabel, tag: "blob")
         )
       } matching: { issue in
         issue.comments.contains(Comment(rawValue: _agentGraphDuplicateTag("blob")))
@@ -165,22 +165,22 @@ struct `CactusAgentGraph tests` {
   @Test
   func `Graph Iterates Depth-First Through Flat Nodes`() throws {
     var graph = CactusAgentGraph(
-      root: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName)
+      root: CactusAgentGraph.Node.Fields(label: testAgentLabel)
     )
 
     let _node1 = graph.appendChild(
       to: graph.root.id,
-      fields: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName, tag: "blob")
+      fields: CactusAgentGraph.Node.Fields(label: testAgentLabel, tag: "blob")
     )
     let node1 = try #require(_node1)
     let _node2 = graph.appendChild(
       to: graph.root.id,
-      fields: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName, tag: "blob2")
+      fields: CactusAgentGraph.Node.Fields(label: testAgentLabel, tag: "blob2")
     )
     let node2 = try #require(_node2)
     let _node3 = graph.appendChild(
       to: graph.root.id,
-      fields: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName, tag: "blob3")
+      fields: CactusAgentGraph.Node.Fields(label: testAgentLabel, tag: "blob3")
     )
     let node3 = try #require(_node3)
 
@@ -193,24 +193,24 @@ struct `CactusAgentGraph tests` {
   @Test
   func `Fails To Append Node For Non-Existent Node ID`() throws {
     var graph = CactusAgentGraph(
-      root: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName)
+      root: CactusAgentGraph.Node.Fields(label: testAgentLabel)
     )
     let _child = graph.appendChild(
       to: graph.root.id,
-      fields: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName)
+      fields: CactusAgentGraph.Node.Fields(label: testAgentLabel)
     )
     let child = try #require(_child)
 
     var graph2 = CactusAgentGraph(
-      root: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName)
+      root: CactusAgentGraph.Node.Fields(label: testAgentLabel)
     )
     let child2 = graph2.appendChild(
       to: graph.root.id,
-      fields: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName)
+      fields: CactusAgentGraph.Node.Fields(label: testAgentLabel)
     )
     let child3 = graph2.appendChild(
       to: child.id,
-      fields: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName)
+      fields: CactusAgentGraph.Node.Fields(label: testAgentLabel)
     )
     expectNoDifference(child2?.id, nil)
     expectNoDifference(child3?.id, nil)
@@ -238,11 +238,11 @@ struct `CactusAgentGraph tests` {
   @Test
   func `No Children For Non-Existent Node`() throws {
     let graph = CactusAgentGraph(
-      root: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName)
+      root: CactusAgentGraph.Node.Fields(label: testAgentLabel)
     )
 
     let graph2 = CactusAgentGraph(
-      root: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName)
+      root: CactusAgentGraph.Node.Fields(label: testAgentLabel)
     )
     expectNoDifference(graph2.children(for: graph.root.id) == nil, true)
   }
@@ -256,23 +256,23 @@ struct `CactusAgentGraph tests` {
 
     init() throws {
       var graph = CactusAgentGraph(
-        root: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName)
+        root: CactusAgentGraph.Node.Fields(label: testAgentLabel)
       )
       self.root = graph.root
 
       let node1 = graph.appendChild(
         to: self.root.id,
-        fields: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName, tag: "blob")
+        fields: CactusAgentGraph.Node.Fields(label: testAgentLabel, tag: "blob")
       )
       self.node1 = try #require(node1)
       let node2 = graph.appendChild(
         to: self.root.id,
-        fields: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName, tag: "blob2")
+        fields: CactusAgentGraph.Node.Fields(label: testAgentLabel, tag: "blob2")
       )
       self.node2 = try #require(node2)
       let node3 = graph.appendChild(
         to: self.node2.id,
-        fields: CactusAgentGraph.Node.Fields(typeName: testAgentTypeName, tag: "blob3")
+        fields: CactusAgentGraph.Node.Fields(label: testAgentLabel, tag: "blob3")
       )
       self.node3 = try #require(node3)
       self.agentGraph = graph
@@ -280,4 +280,4 @@ struct `CactusAgentGraph tests` {
   }
 }
 
-private let testAgentTypeName = "TestAgent"
+private let testAgentLabel = "TestAgent"

@@ -62,11 +62,11 @@ extension CactusAgentGraph {
 
 extension CactusAgentGraph.Node {
   public struct Fields {
-    public var typeName: String
+    public var label: String
     public var tag: AnyHashable?
 
-    public init(typeName: String, tag: AnyHashable? = nil) {
-      self.typeName = typeName
+    public init(label: String, tag: AnyHashable? = nil) {
+      self.label = label
       self.tag = tag
     }
   }

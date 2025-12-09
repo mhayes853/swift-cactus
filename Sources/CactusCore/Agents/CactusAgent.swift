@@ -1,4 +1,5 @@
 import Foundation
+import IssueReporting
 
 // MARK: - CactusAgentRequest
 
@@ -22,6 +23,12 @@ public protocol CactusAgent<Input, Output> {
   associatedtype Output: ConvertibleFromCactusResponse
 
   associatedtype Body
+
+  func build(
+    graph: inout CactusAgentGraph,
+    at nodeId: CactusAgentGraph.Node.ID,
+    in environment: CactusEnvironmentValues
+  )
 
   @CactusAgentBuilder<Input, Output>
   func body(environment: CactusEnvironmentValues) -> Body
@@ -47,6 +54,19 @@ extension CactusAgent where Body == Never {
 }
 
 extension CactusAgent where Body: CactusAgent<Input, Output> {
+  public func build(
+    graph: inout CactusAgentGraph,
+    at nodeId: CactusAgentGraph.Node.ID,
+    in environment: CactusEnvironmentValues
+  ) {
+    let node = graph.appendChild(
+      to: nodeId,
+      fields: CactusAgentGraph.Node.Fields(label: typeName(Self.self))
+    )
+    guard let node else { return unableToAddGraphNode() }
+    self.body(environment: environment).build(graph: &graph, at: node.id, in: environment)
+  }
+
   @inlinable
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,

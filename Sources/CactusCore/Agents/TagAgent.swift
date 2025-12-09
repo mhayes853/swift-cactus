@@ -1,13 +1,36 @@
 extension CactusAgent {
-  public func tag<Tag>(_ tag: Tag, includeOptional: Bool = false) -> _TagAgent<Self, Tag> {
-    _TagAgent(base: self, tag: tag, shouldIncludeOptional: includeOptional)
+  public func tag<Tag>(_ tag: Tag) -> _TagAgent<Self, Tag> {
+    _TagAgent(base: self, tag: tag)
   }
 }
 
 public struct _TagAgent<Base: CactusAgent, Tag: Hashable>: CactusAgent {
   let base: Base
   let tag: Tag
-  let shouldIncludeOptional: Bool
+
+  private var tagDescription: String {
+    if self.tag is String {
+      "\"\(self.tag)\""
+    } else {
+      "\(self.tag)"
+    }
+  }
+
+  public func build(
+    graph: inout CactusAgentGraph,
+    at nodeId: CactusAgentGraph.Node.ID,
+    in environment: CactusEnvironmentValues
+  ) {
+    let node = graph.appendChild(
+      to: nodeId,
+      fields: CactusAgentGraph.Node.Fields(
+        label: "_TagAgent (\(self.tagDescription))",
+        tag: self.tag
+      )
+    )
+    guard let node else { return unableToAddGraphNode() }
+    self.base.build(graph: &graph, at: node.id, in: environment)
+  }
 
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Base.Input>,
