@@ -22,7 +22,9 @@ public struct WhisperTranscribeAgent: CactusAgent {
   ) {
     graph.appendChild(
       to: nodeId,
-      fields: CactusAgentGraph.Node.Fields(label: "WhisperTranscribeAgent")
+      fields: CactusAgentGraph.Node.Fields(
+        label: "WhisperTranscribeAgent (\(self.access.slug(in: environment)))"
+      )
     )
   }
 

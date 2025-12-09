@@ -30,7 +30,7 @@ struct `CactusAgenticSession Graph tests` {
     expectNoDifference(graph.count, 3)
     expectNoDifference(
       graph.map(\.label),
-      ["CactusAgenticSessionGraphRoot", someAgent, "CactusModelAgent"]
+      ["CactusAgenticSessionGraphRoot", someAgent, "CactusModelAgent (qwen3-0.6)"]
     )
   }
 
@@ -139,7 +139,7 @@ struct `CactusAgenticSession Graph tests` {
         "_TransformOutputAgent (String -> String)",
         "_PipeOutputAgent (String)",
         "_TagAgent (\"blob\")",
-        "CactusModelAgent",
+        "CactusModelAgent (qwen3-0.6)",
         "EmptyAgent"
       ]
     )

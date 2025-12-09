@@ -41,7 +41,12 @@ public struct CactusModelAgent<
     at nodeId: CactusAgentGraph.Node.ID,
     in environment: CactusEnvironmentValues
   ) {
-    graph.appendChild(to: nodeId, fields: CactusAgentGraph.Node.Fields(label: "CactusModelAgent"))
+    graph.appendChild(
+      to: nodeId,
+      fields: CactusAgentGraph.Node.Fields(
+        label: "CactusModelAgent (\(self.access.slug(in: environment)))"
+      )
+    )
   }
 
   public nonisolated(nonsending) func stream(
