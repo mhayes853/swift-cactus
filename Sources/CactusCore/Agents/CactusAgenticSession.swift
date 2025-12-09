@@ -78,9 +78,7 @@ extension CactusAgenticSession {
 // MARK: - Observable
 
 @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
-extension CactusAgenticSession: _Observable {
-
-}
+extension CactusAgenticSession: _Observable {}
 
 // MARK: - Environment
 

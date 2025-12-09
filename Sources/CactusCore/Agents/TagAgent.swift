@@ -9,7 +9,7 @@ public struct _TagAgent<Base: CactusAgent, Tag: Hashable & Sendable>: CactusAgen
   let tag: Tag
 
   private var tagDescription: String {
-    if self.tag is String {
+    if self.tag is any StringProtocol {
       "\"\(self.tag)\""
     } else {
       "\(self.tag)"
