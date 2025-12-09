@@ -62,11 +62,11 @@ extension CactusAgentGraph {
 
 extension CactusAgentGraph.Node {
   public struct Fields {
-    public var agent: any CactusAgent
+    public var typeName: String
     public var tag: AnyHashable?
 
-    public init(agent: any CactusAgent, tag: AnyHashable? = nil) {
-      self.agent = agent
+    public init(typeName: String, tag: AnyHashable? = nil) {
+      self.typeName = typeName
       self.tag = tag
     }
   }
@@ -115,6 +115,10 @@ extension CactusAgentGraph.Node.Children: Sequence {
     public mutating func next() -> CactusAgentGraph.Node? {
       self.base.next()?.value
     }
+  }
+
+  public var underestimatedCount: Int {
+    self.count
   }
 
   public func makeIterator() -> Iterator {

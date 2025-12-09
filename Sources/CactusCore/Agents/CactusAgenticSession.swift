@@ -30,16 +30,21 @@ public final class CactusAgenticSession<
     self.agentActor = AgentActor(agent)
   }
 
-  public func graph(for environment: CactusEnvironmentValues) -> CactusAgentGraph {
-    fatalError()
+  public func graph(
+    for environment: sending CactusEnvironmentValues = CactusEnvironmentValues()
+  ) async -> CactusAgentGraph {
+    await self.agentActor.graph(for: environment)
   }
 
-  public func stream(for message: Input) -> CactusAgentStream<Output> {
-    CactusAgentStream(graph: self.graph(for: CactusEnvironmentValues()))
+  public func stream(
+    for message: Input,
+    environment: sending CactusEnvironmentValues = CactusEnvironmentValues()
+  ) async -> CactusAgentStream<Output> {
+    CactusAgentStream(graph: await self.graph(for: environment))
   }
 
   public func respond(to message: Input) async throws -> Output {
-    let stream = self.stream(for: message)
+    let stream = await self.stream(for: message)
     return try await withTaskCancellationHandler {
       try await stream.collectFinalResponse()
     } onCancel: {
@@ -56,6 +61,10 @@ extension CactusAgenticSession {
 
     init(_ agent: sending some CactusAgent<Input, Output>) {
       self.agent = agent
+    }
+
+    func graph(for environment: sending CactusEnvironmentValues) -> sending CactusAgentGraph {
+      fatalError()
     }
   }
 }
