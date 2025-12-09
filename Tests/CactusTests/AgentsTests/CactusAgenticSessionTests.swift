@@ -2,6 +2,15 @@ import Cactus
 import CustomDump
 import Testing
 
+// MARK: - Session Tests
+
+@Suite
+struct `CactusAgentSession tests` {
+
+}
+
+// MARK: - Graph Tests
+
 @Suite
 struct `CactusAgenticSession Graph tests` {
   @Test

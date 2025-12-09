@@ -19,7 +19,7 @@ public struct CactusAgentRequest<Input> {
 
 public protocol CactusAgent<Input, Output> {
   associatedtype Input
-  associatedtype Output: ConvertibleFromCactusResponse
+  associatedtype Output
 
   associatedtype Body
 

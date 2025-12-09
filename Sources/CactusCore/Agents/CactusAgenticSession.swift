@@ -3,10 +3,7 @@ import Observation
 
 // MARK: - CactusAgenticSession
 
-public final class CactusAgenticSession<
-  Input,
-  Output: ConvertibleFromCactusResponse
->: Sendable, Identifiable {
+public final class CactusAgenticSession<Input, Output>: Sendable, Identifiable {
   private let agentActor: AgentActor
 
   private let observationRegistrar = _ObservationRegistrar()

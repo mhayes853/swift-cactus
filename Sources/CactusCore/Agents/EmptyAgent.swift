@@ -1,4 +1,4 @@
-public struct EmptyAgent<Input, Output: ConvertibleFromCactusResponse>: CactusAgent {
+public struct EmptyAgent<Input, Output>: CactusAgent {
   @inlinable
   public init() {}
 

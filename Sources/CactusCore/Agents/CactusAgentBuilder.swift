@@ -1,7 +1,7 @@
 // MARK: - CactusAgentBuilder
 
 @resultBuilder
-public enum CactusAgentBuilder<Input, Output: ConvertibleFromCactusResponse> {
+public enum CactusAgentBuilder<Input, Output> {
   public static func buildBlock() -> EmptyAgent<Input, Output> {
     EmptyAgent()
   }

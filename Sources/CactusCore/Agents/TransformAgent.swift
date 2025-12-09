@@ -48,10 +48,7 @@ extension CactusAgent {
   }
 }
 
-public struct _TransformOutputAgent<
-  Base: CactusAgent,
-  Output: ConvertibleFromCactusResponse
->: CactusAgent {
+public struct _TransformOutputAgent<Base: CactusAgent, Output>: CactusAgent {
   let base: Base
   let transform: (Base.Output) throws -> Output
 
