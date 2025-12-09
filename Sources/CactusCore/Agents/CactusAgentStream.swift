@@ -3,7 +3,7 @@
 public struct CactusAgentStream<Output: ConvertibleFromCactusResponse>: Sendable {
   public let continuation = Continuation()
 
-  public init() {}
+  public init(graph: CactusAgentGraph) {}
 
   public func collectFinalResponse() async throws -> Output {
     fatalError()

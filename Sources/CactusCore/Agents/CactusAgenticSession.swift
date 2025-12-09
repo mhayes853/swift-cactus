@@ -31,11 +31,11 @@ public final class CactusAgenticSession<
   }
 
   public func graph(for message: Input) -> CactusAgentGraph {
-    CactusAgentGraph()
+    fatalError()
   }
 
   public func stream(for message: Input) -> CactusAgentStream<Output> {
-    CactusAgentStream()
+    CactusAgentStream(graph: self.graph(for: message))
   }
 
   public func respond(to message: Input) async throws -> Output {
