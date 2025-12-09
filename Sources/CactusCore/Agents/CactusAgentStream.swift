@@ -1,10 +1,12 @@
 // MARK: - CactusAgentStream
 
 public struct CactusAgentStream<Output: Sendable>: Sendable {
-  public let continuation = Continuation()
+  public let continuation: Continuation
   private let storage = Storage()
 
-  public init(graph: CactusAgentGraph) {}
+  public init(graph: CactusAgentGraph) {
+    self.continuation = Continuation(storage: storage)
+  }
 
   public func collectFinalResponse() async throws -> Output {
     if let response = storage.finalResponse {
@@ -134,16 +136,23 @@ public struct CactusAgentStreamTokens: AsyncSequence {
 
 extension CactusAgentStream {
   public struct Continuation: Sendable {
+    fileprivate let storage: Storage
+
+    public func yield(token: CactusStreamedToken) {
+      self.storage.accumulate(token: token)
+    }
   }
 }
 
 // MARK: - Storage
 
 extension CactusAgentStream {
-  private final class Storage: Sendable {
+  fileprivate final class Storage: Sendable {
     private struct State {
       var finalResponseContinuations = [UnsafeContinuation<Output, any Error>]()
       var finalResponse: Output?
+      var messageId = CactusMessageID()
+      var finalResponseTokens = ""
     }
 
     private let state = Lock(State())
@@ -162,6 +171,13 @@ extension CactusAgentStream {
       }
     }
 
+    func accumulate(token: CactusStreamedToken) {
+      self.state.withLock {
+        $0.finalResponseTokens += token.stringValue
+        $0.messageId = token.messageStreamId
+      }
+    }
+
     func accept(finalResponse: CactusAgentResponse<Output>) {
       self.state.withLock { state in
         switch finalResponse.action {
@@ -170,7 +186,21 @@ extension CactusAgentStream {
           state.finalResponseContinuations.forEach { $0.resume(returning: value) }
           state.finalResponseContinuations.removeAll()
         case .collectTokensIntoOutput:
-          break
+          func open<O: ConvertibleFromCactusResponse>(
+            _ output: O.Type,
+            response: CactusResponse
+          ) throws -> O {
+            try output.init(cactusResponse: response)
+          }
+
+          guard let output = Output.self as? any ConvertibleFromCactusResponse.Type else {
+            fatalError()
+          }
+
+          let response = CactusResponse(id: state.messageId, content: state.finalResponseTokens)
+          let result = Result { try open(output, response: response) as! Output }
+          state.finalResponseContinuations.forEach { $0.resume(with: result) }
+          state.finalResponseContinuations.removeAll()
         }
       }
     }

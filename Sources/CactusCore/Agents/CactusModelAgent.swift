@@ -7,33 +7,44 @@ public struct CactusModelAgent<
   Output: ConvertibleFromCactusResponse & Sendable
 >: CactusAgent {
   private let access: AgentModelAccess
-  private let transcript: CactusTranscript
+  private let initialContent: InitialContent
+
+  private enum InitialContent {
+    case systemPrompt(CactusPromptContent)
+    case transcript(CactusTranscript)
+  }
 
   public init(_ model: CactusLanguageModel, transcript: CactusTranscript) {
-    self.init(access: .direct(model), transcript: transcript)
+    self.init(access: .direct(model), initialContent: .transcript(transcript))
   }
 
   public init(_ loader: any CactusAgentModelLoader, transcript: CactusTranscript) {
-    self.init(access: .loaded(loader), transcript: transcript)
+    self.init(access: .loaded(loader), initialContent: .transcript(transcript))
   }
 
   public init(
     _ model: CactusLanguageModel,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
   ) {
-    self.init(access: .direct(model), transcript: CactusTranscript())
+    self.init(
+      access: .direct(model),
+      initialContent: .systemPrompt(CactusPromptContent(systemPrompt()))
+    )
   }
 
   public init(
     _ loader: any CactusAgentModelLoader,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
   ) {
-    self.init(loader, transcript: CactusTranscript())
+    self.init(
+      access: .loaded(loader),
+      initialContent: .systemPrompt(CactusPromptContent(systemPrompt()))
+    )
   }
 
-  private init(access: AgentModelAccess, transcript: CactusTranscript) {
+  private init(access: AgentModelAccess, initialContent: InitialContent) {
     self.access = access
-    self.transcript = transcript
+    self.initialContent = initialContent
   }
 
   public func build(
@@ -53,6 +64,32 @@ public struct CactusModelAgent<
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws -> CactusAgentResponse<Output> {
-    .collectTokensIntoOutput
+    let messages = try self.initialMessages(in: request.environment)
+    let messageId = request.environment.currentMessageId ?? CactusMessageID()
+
+    try await self.access.withModelAccess(in: request.environment) { model in
+      _ = try model.chatCompletion(messages: messages) { token in
+        continuation.yield(
+          token: CactusStreamedToken(messageStreamId: messageId, stringValue: token)
+        )
+      }
+    }
+    return .collectTokensIntoOutput
+  }
+
+  private func initialMessages(
+    in environment: CactusEnvironmentValues
+  ) throws -> [CactusLanguageModel.ChatMessage] {
+    switch self.initialContent {
+    case .systemPrompt(let prompt):
+      [
+        CactusLanguageModel.ChatMessage(
+          role: .system,
+          components: try prompt.messageComponents(in: environment)
+        )
+      ]
+    case .transcript(let transcript):
+      transcript.map(\.message)
+    }
   }
 }
