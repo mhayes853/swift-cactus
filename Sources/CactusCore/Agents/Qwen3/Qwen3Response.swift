@@ -44,6 +44,8 @@ private let thinkingContentRegex = try! RegularExpression(
 extension Qwen3Response: Sendable where Base: Sendable {}
 extension Qwen3Response: Equatable where Base: Equatable {}
 extension Qwen3Response: Hashable where Base: Hashable {}
+extension Qwen3Response: Encodable where Base: Encodable {}
+extension Qwen3Response: Decodable where Base: Decodable {}
 
 extension Qwen3Response: CactusPromptRepresentable where Base: CactusPromptRepresentable {
   public func promptContent(

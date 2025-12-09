@@ -31,6 +31,7 @@ public struct WhisperTranscribeAgent: CactusAgent {
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<WhisperTranscribePrompt>,
     into continuation: CactusAgentStream<WhisperTranscriptionResponse>.Continuation
-  ) async throws {
+  ) async throws -> CactusAgentResponse<WhisperTranscriptionResponse> {
+    .collectTokensIntoOutput
   }
 }

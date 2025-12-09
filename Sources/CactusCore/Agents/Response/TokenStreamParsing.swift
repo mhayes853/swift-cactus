@@ -1,11 +1,11 @@
 // MARK: - CactusStreamedToken
 
 public struct CactusStreamedToken: Hashable, Sendable {
-  public let generationStreamId: CactusMessageID
+  public let messageStreamId: CactusMessageID
   public let stringValue: String
 
-  public init(generationStreamId: CactusMessageID, stringValue: String) {
-    self.generationStreamId = generationStreamId
+  public init(messageStreamId: CactusMessageID, stringValue: String) {
+    self.messageStreamId = messageStreamId
     self.stringValue = stringValue
   }
 }

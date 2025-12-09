@@ -1,7 +1,7 @@
 // MARK: - CactusEnvironment
 
-public struct CactusEnvironmentValues {
-  private var storage = [StorageKey: Any]()
+public struct CactusEnvironmentValues: Sendable {
+  private var storage = [StorageKey: any Sendable]()
 
   public init() {}
 }
@@ -30,7 +30,7 @@ extension CactusEnvironmentValues {
 
 extension CactusEnvironmentValues {
   public protocol Key<Value> {
-    associatedtype Value
+    associatedtype Value: Sendable
     static var defaultValue: Value { get }
   }
 }

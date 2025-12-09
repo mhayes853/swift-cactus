@@ -1,11 +1,7 @@
 // MARK: - CactusAgentBuilder
 
 @resultBuilder
-public enum CactusAgentBuilder<Input, Output: ConvertibleFromCactusResponse> {
-  public static func buildBlock() -> EmptyAgent<Input, Output> {
-    EmptyAgent()
-  }
-
+public enum CactusAgentBuilder<Input, Output: Sendable> {
   public static func buildBlock<A: CactusAgent<Input, Output>>(_ component: A) -> A {
     component
   }
@@ -34,7 +30,7 @@ public enum CactusAgentBuilder<Input, Output: ConvertibleFromCactusResponse> {
   }
 
   public static func buildEither<AL: CactusAgent<Input, Output>, AR: CactusAgent<Input, Output>>(
-    seconds component: AR
+    second component: AR
   ) -> _EitherAgent<AL, AR> {
     .right(component)
   }
@@ -72,7 +68,7 @@ where Left.Input == Right.Input, Left.Output == Right.Output {
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Left.Input>,
     into continuation: CactusAgentStream<Left.Output>.Continuation
-  ) async throws {
+  ) async throws -> CactusAgentResponse<Left.Output> {
     switch self {
     case .left(let left):
       try await left.stream(request: request, into: continuation)

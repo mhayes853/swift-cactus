@@ -4,12 +4,12 @@ extension CactusAgent {
   }
 }
 
-public struct _TagAgent<Base: CactusAgent, Tag: Hashable>: CactusAgent {
+public struct _TagAgent<Base: CactusAgent, Tag: Hashable & Sendable>: CactusAgent {
   let base: Base
   let tag: Tag
 
   private var tagDescription: String {
-    if self.tag is String {
+    if self.tag is any StringProtocol {
       "\"\(self.tag)\""
     } else {
       "\(self.tag)"
@@ -35,7 +35,7 @@ public struct _TagAgent<Base: CactusAgent, Tag: Hashable>: CactusAgent {
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Base.Output>.Continuation
-  ) async throws {
+  ) async throws -> CactusAgentResponse<Base.Output> {
     try await self.base.stream(request: request, into: continuation)
   }
 }

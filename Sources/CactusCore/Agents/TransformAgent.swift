@@ -34,7 +34,8 @@ public struct _TransformInputAgent<Base: CactusAgent, Input>: CactusAgent {
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Base.Output>.Continuation
-  ) async throws {
+  ) async throws -> CactusAgentResponse<Base.Output> {
+    fatalError()
   }
 }
 
@@ -48,10 +49,7 @@ extension CactusAgent {
   }
 }
 
-public struct _TransformOutputAgent<
-  Base: CactusAgent,
-  Output: ConvertibleFromCactusResponse
->: CactusAgent {
+public struct _TransformOutputAgent<Base: CactusAgent, Output: Sendable>: CactusAgent {
   let base: Base
   let transform: (Base.Output) throws -> Output
 
@@ -73,6 +71,7 @@ public struct _TransformOutputAgent<
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Output>.Continuation
-  ) async throws {
+  ) async throws -> CactusAgentResponse<Output> {
+    fatalError()
   }
 }

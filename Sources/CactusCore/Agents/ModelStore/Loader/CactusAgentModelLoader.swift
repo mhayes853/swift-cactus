@@ -1,9 +1,9 @@
-public protocol CactusAgentModelLoader {
+public protocol CactusAgentModelLoader: Sendable {
   func key(in environment: CactusEnvironmentValues) -> CactusAgentModelKey
 
   func slug(in environment: CactusEnvironmentValues) -> String
 
-  nonisolated(nonsending) func loadModel(
+  func loadModel(
     in environment: CactusEnvironmentValues
   ) async throws -> sending CactusLanguageModel
 }
