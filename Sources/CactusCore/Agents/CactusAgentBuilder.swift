@@ -34,7 +34,7 @@ public enum CactusAgentBuilder<Input, Output> {
   }
 
   public static func buildEither<AL: CactusAgent<Input, Output>, AR: CactusAgent<Input, Output>>(
-    seconds component: AR
+    second component: AR
   ) -> _EitherAgent<AL, AR> {
     .right(component)
   }

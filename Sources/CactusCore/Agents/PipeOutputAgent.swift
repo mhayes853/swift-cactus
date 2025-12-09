@@ -1,13 +1,13 @@
 extension CactusAgent {
-  public func pipeOutput<Piped: CactusAgent>(
+  public func pipeOutput<PipedOutput, Piped: CactusAgent<Output, PipedOutput>>(
     to agent: Piped
-  ) -> _PipeOutputAgent<Self, Piped> where Piped.Input == Output {
+  ) -> _PipeOutputAgent<Self, Piped> {
     _PipeOutputAgent(base: self, piped: agent)
   }
 
-  public func pipeOutput<Piped: CactusAgent>(
-    @CactusAgentBuilder<Piped.Input, Piped.Output> to agent: () -> Piped
-  ) -> _PipeOutputAgent<Self, Piped> where Piped.Input == Output {
+  public func pipeOutput<PipedOutput, Piped: CactusAgent<Output, PipedOutput>>(
+    @CactusAgentBuilder<Output, PipedOutput> to agent: () -> Piped
+  ) -> _PipeOutputAgent<Self, Piped> {
     _PipeOutputAgent(base: self, piped: agent())
   }
 }
@@ -35,7 +35,7 @@ where Base.Output == Piped.Input {
 
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Base.Input>,
-    into continuation: CactusAgentStream<Piped.Output>.Continuation
+    into continuation: CactusAgentStream<Base.Output>.Continuation
   ) async throws {
   }
 }
