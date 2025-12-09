@@ -4,7 +4,7 @@ extension CactusAgent {
   }
 }
 
-public struct _TagAgent<Base: CactusAgent, Tag: Hashable>: CactusAgent {
+public struct _TagAgent<Base: CactusAgent, Tag: Hashable & Sendable>: CactusAgent {
   let base: Base
   let tag: Tag
 

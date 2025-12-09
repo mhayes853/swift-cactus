@@ -4,8 +4,8 @@ import OrderedCollections
 
 // MARK: - CactusAgentGraph
 
-public struct CactusAgentGraph {
-  fileprivate struct Entry {
+public struct CactusAgentGraph: Sendable {
+  fileprivate struct Entry: Sendable {
     var node: Node
     var children: OrderedSet<Node.ID>
   }
@@ -33,7 +33,7 @@ public struct CactusAgentGraph {
   }
 
   public subscript(tag tag: AnyHashable) -> Node? {
-    self.matrix.first { $0.value.node.tag == tag }?.value.node
+    self.matrix.first { AnyHashable($0.value.node.tag) == tag }?.value.node
   }
 }
 
@@ -41,7 +41,7 @@ public struct CactusAgentGraph {
 
 extension CactusAgentGraph {
   @dynamicMemberLookup
-  public struct Node: Identifiable {
+  public struct Node: Identifiable, Sendable {
     public struct ID: Hashable, Sendable {
       private let inner = UUID()
     }
@@ -61,13 +61,13 @@ extension CactusAgentGraph {
 }
 
 extension CactusAgentGraph.Node {
-  public struct Fields {
-    public var label: String
-    public var tag: AnyHashable?
+  public struct Fields: Sendable {
+    public let label: String
+    public let tag: AnyHashableSendable?
 
-    public init(label: String, tag: AnyHashable? = nil) {
+    public init(label: String, tag: (any Hashable & Sendable)? = nil) {
       self.label = label
-      self.tag = tag
+      self.tag = tag.map { AnyHashableSendable($0) }
     }
   }
 }
@@ -87,7 +87,7 @@ extension CactusAgentGraph {
 }
 
 extension CactusAgentGraph.Node {
-  public struct Children {
+  public struct Children: Sendable {
     let nodes: OrderedDictionary<CactusAgentGraph.Node.ID, CactusAgentGraph.Node>
 
     public var isEmpty: Bool {
@@ -103,13 +103,13 @@ extension CactusAgentGraph.Node {
     }
 
     public subscript(tag tag: AnyHashable) -> CactusAgentGraph.Node? {
-      self.nodes.first { $0.value.tag == tag }?.value
+      self.nodes.first { AnyHashable($0.value.tag) == tag }?.value
     }
   }
 }
 
 extension CactusAgentGraph.Node.Children: Sequence {
-  public struct Iterator: IteratorProtocol {
+  public struct Iterator: IteratorProtocol, Sendable {
     var base: OrderedDictionary<CactusAgentGraph.Node.ID, CactusAgentGraph.Node>.Iterator
 
     public mutating func next() -> CactusAgentGraph.Node? {
@@ -145,7 +145,7 @@ extension CactusAgentGraph {
 // MARK: - Sequence
 
 extension CactusAgentGraph: Sequence {
-  public struct Iterator: IteratorProtocol {
+  public struct Iterator: IteratorProtocol, Sendable {
     private var nodeId: CactusAgentGraph.Node.ID?
     private let matrix: [CactusAgentGraph.Node.ID: Entry]
     private var positionStack = [(nodeId: CactusAgentGraph.Node.ID, childIndex: Int)]()

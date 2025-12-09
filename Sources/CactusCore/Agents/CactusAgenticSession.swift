@@ -66,7 +66,7 @@ extension CactusAgenticSession {
     }
 
     func graph(for environment: sending CactusEnvironmentValues) -> sending CactusAgentGraph {
-      nonisolated(unsafe) var graph = CactusAgentGraph(
+      var graph = CactusAgentGraph(
         root: CactusAgentGraph.Node.Fields(label: "CactusAgenticSessionGraphRoot")
       )
       self.agent.build(graph: &graph, at: graph.root.id, in: environment)
