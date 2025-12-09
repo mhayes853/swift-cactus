@@ -15,11 +15,32 @@ public struct CactusAgentRequest<Input> {
   }
 }
 
+// MARK: - CactusAgentResponse
+
+public struct CactusAgentResponse<Output: Sendable> {
+  public enum Action {
+    case returnOutputValue(Output)
+    case collectTokensIntoOutput
+  }
+
+  public let action: Action
+
+  public static func finalOutput(_ value: Output) -> Self {
+    Self(action: .returnOutputValue(value))
+  }
+}
+
+extension CactusAgentResponse where Output: ConvertibleFromCactusResponse {
+  public static var collectTokensIntoOutput: Self {
+    Self(action: .collectTokensIntoOutput)
+  }
+}
+
 // MARK: - CactusAgent
 
 public protocol CactusAgent<Input, Output> {
   associatedtype Input
-  associatedtype Output
+  associatedtype Output: Sendable
 
   associatedtype Body
 
@@ -35,7 +56,7 @@ public protocol CactusAgent<Input, Output> {
   nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
-  ) async throws
+  ) async throws -> CactusAgentResponse<Output>
 }
 
 extension CactusAgent where Body == Never {
@@ -70,7 +91,7 @@ extension CactusAgent where Body: CactusAgent<Input, Output> {
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
-  ) async throws {
+  ) async throws -> CactusAgentResponse<Output> {
     try await self.body(environment: request.environment)
       .stream(request: request, into: continuation)
   }

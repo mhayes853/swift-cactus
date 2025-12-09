@@ -22,6 +22,13 @@ struct `CactusAgentSession tests` {
     task.cancel()
   }
 
+  @Test
+  func `Is Not Responding After Finishing Response`() async throws {
+    let session = CactusAgenticSession(PassthroughAgent())
+    _ = try await session.respond(to: "Blob")
+    expectNoDifference(session.isResponding, false)
+  }
+
   #if canImport(Observation)
     @Test
     @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
@@ -34,6 +41,8 @@ struct `CactusAgentSession tests` {
       }
       _ = try await session.respond(to: "Message")
 
+      await Task.megaYield()
+
       isResponding.withLock { expectNoDifference($0, [false, true, false]) }
       token.cancel()
     }
@@ -43,12 +52,12 @@ struct `CactusAgentSession tests` {
   struct `Graph tests` {
     @Test
     func `Produces Single Node Graph For Empty Agent`() async {
-      let session = CactusAgenticSession(EmptyAgent<String, String>())
+      let session = CactusAgenticSession(PassthroughAgent())
       let graph = await session.graph()
 
       expectNoDifference(graph.count, 2)
       expectNoDifference(graph.root.label, "CactusAgenticSessionGraphRoot")
-      expectNoDifference(graph.map(\.label), ["CactusAgenticSessionGraphRoot", "EmptyAgent"])
+      expectNoDifference(graph.map(\.label), ["CactusAgenticSessionGraphRoot", "PassthroughAgent"])
     }
 
     @Test
@@ -99,7 +108,7 @@ struct `CactusAgentSession tests` {
             }
             .tag("blob")
             .pipeOutput {
-              EmptyAgent<String, String>().tag("blob")
+              PassthroughAgent().tag("blob")
             }
           }
         }
@@ -127,7 +136,7 @@ struct `CactusAgentSession tests` {
                 .transformEnvironment(\.self) { $0[MyKey.self] = true }
             )
           } else {
-            AnyAgent(EmptyAgent())
+            AnyAgent(PassthroughAgent())
           }
         }
       }
@@ -146,7 +155,7 @@ struct `CactusAgentSession tests` {
           someAgent,
           "_EitherAgent",
           "AnyAgent",
-          "EmptyAgent"
+          "PassthroughAgent"
         ]
       )
     }
@@ -159,7 +168,7 @@ struct `CactusAgentSession tests` {
             "You are an assistant..."
           }
           .tag("blob")
-          .pipeOutput(to: EmptyAgent<String, String>())
+          .pipeOutput(to: PassthroughAgent())
           .transformOutput { $0 + $0 }
           .transformInput { $0 + "blob" }
         }
@@ -177,7 +186,7 @@ struct `CactusAgentSession tests` {
           "_PipeOutputAgent (String)",
           "_TagAgent (\"blob\")",
           "CactusModelAgent (qwen3-0.6)",
-          "EmptyAgent"
+          "PassthroughAgent"
         ]
       )
     }

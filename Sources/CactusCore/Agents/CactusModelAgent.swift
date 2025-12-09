@@ -4,7 +4,7 @@ import Foundation
 
 public struct CactusModelAgent<
   Input: CactusPromptRepresentable,
-  Output: ConvertibleFromCactusResponse
+  Output: ConvertibleFromCactusResponse & Sendable
 >: CactusAgent {
   private let access: AgentModelAccess
   private let transcript: CactusTranscript
@@ -52,6 +52,7 @@ public struct CactusModelAgent<
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
-  ) async throws {
+  ) async throws -> CactusAgentResponse<Output> {
+    .collectTokensIntoOutput
   }
 }

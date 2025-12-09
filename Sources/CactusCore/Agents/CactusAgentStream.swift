@@ -1,16 +1,18 @@
 // MARK: - CactusAgentStream
 
-public struct CactusAgentStream<Output>: Sendable {
+public struct CactusAgentStream<Output: Sendable>: Sendable {
   public let continuation = Continuation()
+  private let storage = Storage()
 
   public init(graph: CactusAgentGraph) {}
 
   public func collectFinalResponse() async throws -> Output {
-    fatalError()
-  }
-
-  public func collectFinalRawResponse() async throws -> CactusResponse {
-    fatalError()
+    if let response = storage.finalResponse {
+      return response
+    }
+    return try await withUnsafeThrowingContinuation { continuation in
+      self.storage.addFinalResponseContinuation(continuation)
+    }
   }
 
   public func collectFinalResponse<Response>(
@@ -20,7 +22,17 @@ public struct CactusAgentStream<Output>: Sendable {
     nil
   }
 
+  public func accept(finalResponse: CactusAgentResponse<Output>) throws {
+    self.storage.accept(finalResponse: finalResponse)
+  }
+
   public func stop() {}
+}
+
+extension CactusAgentStream where Output: ConvertibleFromCactusResponse {
+  public func collectFinalRawResponse() async throws -> CactusResponse {
+    fatalError()
+  }
 }
 
 // MARK: - Partials
@@ -53,7 +65,6 @@ extension CactusAgentStream {
   ) -> CactusSubscription? {
     nil
   }
-
 }
 
 public struct CactusAgentStreamPartials<Partial: ConvertibleFromCactusTokenStream>: AsyncSequence {
@@ -76,16 +87,6 @@ public struct CactusAgentStreamPartials<Partial: ConvertibleFromCactusTokenStrea
 // MARK: - Tokens
 
 extension CactusAgentStream {
-  public var finalResponseTokens: CactusAgentStreamTokens {
-    CactusAgentStreamTokens()
-  }
-
-  public func onFinalResponseToken(
-    perform operation: (Result<CactusStreamedToken, any Error>) -> Void
-  ) -> CactusSubscription {
-    CactusSubscription {}
-  }
-
   public func tokens(tag: some Hashable) -> CactusAgentStreamTokens? {
     nil
   }
@@ -95,6 +96,18 @@ extension CactusAgentStream {
     perform operation: (Result<CactusStreamedToken, any Error>) -> Void
   ) -> CactusSubscription? {
     nil
+  }
+}
+
+extension CactusAgentStream where Output: ConvertibleFromCactusResponse {
+  public var finalResponseTokens: CactusAgentStreamTokens {
+    CactusAgentStreamTokens()
+  }
+
+  public func onFinalResponseToken(
+    perform operation: (Result<CactusStreamedToken, any Error>) -> Void
+  ) -> CactusSubscription {
+    CactusSubscription {}
   }
 }
 
@@ -121,5 +134,45 @@ public struct CactusAgentStreamTokens: AsyncSequence {
 
 extension CactusAgentStream {
   public struct Continuation: Sendable {
+  }
+}
+
+// MARK: - Storage
+
+extension CactusAgentStream {
+  private final class Storage: Sendable {
+    private struct State {
+      var finalResponseContinuations = [UnsafeContinuation<Output, any Error>]()
+      var finalResponse: Output?
+    }
+
+    private let state = Lock(State())
+
+    var finalResponse: Output? {
+      self.state.withLock { $0.finalResponse }
+    }
+
+    func addFinalResponseContinuation(_ continuation: UnsafeContinuation<Output, any Error>) {
+      self.state.withLock { state in
+        if let finalResponse = state.finalResponse {
+          continuation.resume(returning: finalResponse)
+        } else {
+          state.finalResponseContinuations.append(continuation)
+        }
+      }
+    }
+
+    func accept(finalResponse: CactusAgentResponse<Output>) {
+      self.state.withLock { state in
+        switch finalResponse.action {
+        case .returnOutputValue(let value):
+          state.finalResponse = value
+          state.finalResponseContinuations.forEach { $0.resume(returning: value) }
+          state.finalResponseContinuations.removeAll()
+        case .collectTokensIntoOutput:
+          break
+        }
+      }
+    }
   }
 }

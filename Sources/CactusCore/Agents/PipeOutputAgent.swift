@@ -35,7 +35,8 @@ where Base.Output == Piped.Input {
 
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Base.Input>,
-    into continuation: CactusAgentStream<Base.Output>.Continuation
-  ) async throws {
+    into continuation: CactusAgentStream<Piped.Output>.Continuation
+  ) async throws -> CactusAgentResponse<Piped.Output> {
+    fatalError()
   }
 }
