@@ -43,14 +43,15 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
       value: CactusAgentRequest(input: message, environment: environment)
     )
 
-    let stream = CactusAgentStream<Output>(graph: graph) { continuation in
-      let response = try await self.agentActor.stream(request: request.value, into: continuation)
-      self.withResponseTask { $0 = nil }
-      return response
+    return self.withResponseTask {
+      let stream = CactusAgentStream<Output>(graph: graph) { continuation in
+        let response = try await self.agentActor.stream(request: request.value, into: continuation)
+        self.withResponseTask { $0 = nil }
+        return response
+      }
+      $0 = stream
+      return stream
     }
-
-    self.withResponseTask { $0 = stream }
-    return stream
   }
 
   public func respond(to message: sending Input) async throws -> Response {
@@ -62,7 +63,7 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
     }
   }
 
-  private func withResponseTask(work: (inout CactusAgentStream<Output>?) -> Void) {
+  private func withResponseTask<T>(work: (inout CactusAgentStream<Output>?) -> T) -> T {
     self.observationRegistrar.withMutation(of: self, keyPath: \.isResponding) {
       self._responseStream.withLock { work(&$0) }
     }
