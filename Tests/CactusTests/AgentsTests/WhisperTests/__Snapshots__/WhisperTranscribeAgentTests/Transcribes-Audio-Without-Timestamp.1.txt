@@ -1,0 +1,5 @@
+▿ WhisperTranscriptionResponse
+  ▿ content: Content
+    - fullTranscript: " Τα πόλη της Θεός δεν μπορεί να ανοίξει."
+  ▿ id: CactusMessageID
+    - rawValue: B5B9975C-5964-44F3-9BDB-A2B36C90319F

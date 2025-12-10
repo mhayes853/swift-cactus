@@ -1,0 +1,8 @@
+▿ WhisperTranscriptionResponse
+  ▿ content: Content
+    ▿ timestamps: 1 element
+      ▿ Timestamp
+        - seconds: 0.0
+        - transcript: " How? The power of a god cannot be overcome. Zanzan, this is the providence of the world. Even gods are merely beings restricted to the limited power determined by prophets. That power, although great, is not unlimited. That voice, Albrecht, how dare you!"
+  ▿ id: CactusMessageID
+    - rawValue: AF01B363-C014-4C36-936D-0066DDC4F221
