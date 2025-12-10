@@ -1,4 +1,4 @@
-public struct Qwen3Response<
+public struct Qwen3Completion<
   Base: ConvertibleFromCactusResponse
 >: ConvertibleFromCactusResponse, Identifiable {
   public let id: CactusMessageID
@@ -41,13 +41,13 @@ private let thinkingContentRegex = try! RegularExpression(
   "<think>\n([\\s\\S]*?)\n<\\/think>\n\n([\\s\\S]*)"
 )
 
-extension Qwen3Response: Sendable where Base: Sendable {}
-extension Qwen3Response: Equatable where Base: Equatable {}
-extension Qwen3Response: Hashable where Base: Hashable {}
-extension Qwen3Response: Encodable where Base: Encodable {}
-extension Qwen3Response: Decodable where Base: Decodable {}
+extension Qwen3Completion: Sendable where Base: Sendable {}
+extension Qwen3Completion: Equatable where Base: Equatable {}
+extension Qwen3Completion: Hashable where Base: Hashable {}
+extension Qwen3Completion: Encodable where Base: Encodable {}
+extension Qwen3Completion: Decodable where Base: Decodable {}
 
-extension Qwen3Response: CactusPromptRepresentable where Base: CactusPromptRepresentable {
+extension Qwen3Completion: CactusPromptRepresentable where Base: CactusPromptRepresentable {
   public func promptContent(
     in environment: CactusEnvironmentValues
   ) throws(Base.PromptContentFailure) -> CactusPromptContent {

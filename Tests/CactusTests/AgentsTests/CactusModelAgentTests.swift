@@ -11,7 +11,7 @@ struct `CactusModelAgent tests` {
     let url = try await CactusLanguageModel.testModelURL(slug: "qwen3-0.6")
 
     let session = CactusAgenticSession(
-      CactusModelAgent<String, Qwen3Response<String>>(.fromModelURL(url)) {
+      CactusModelAgent<String, Qwen3Completion<String>>(.fromModelURL(url)) {
         "You are a philosopher who can philosophize about things."
       }
     )
@@ -27,7 +27,7 @@ struct `CactusModelAgent tests` {
     let url = try await CactusLanguageModel.testModelURL(slug: "qwen3-0.6")
 
     let session = CactusAgenticSession(
-      CactusModelAgent<CactusPromptContent, Qwen3Response<String>>(.fromModelURL(url)) {
+      CactusModelAgent<CactusPromptContent, Qwen3Completion<String>>(.fromModelURL(url)) {
         "You are a philosopher who can philosophize about things."
       }
     )
