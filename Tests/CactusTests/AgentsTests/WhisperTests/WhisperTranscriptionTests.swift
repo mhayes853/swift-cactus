@@ -3,10 +3,10 @@ import CustomDump
 import Testing
 
 @Suite
-struct `WhisperTranscriptionResponse tests` {
+struct `WhisperTranscription tests` {
   @Test
   func `Empty String Response`() {
-    let response = WhisperTranscriptionResponse(
+    let response = WhisperTranscription(
       cactusResponse: CactusResponse(id: CactusMessageID(), content: "")
     )
     expectNoDifference(response.content, .fullTranscript(""))
@@ -14,7 +14,7 @@ struct `WhisperTranscriptionResponse tests` {
 
   @Test
   func `No Timestamps Response`() {
-    let response = WhisperTranscriptionResponse(
+    let response = WhisperTranscription(
       cactusResponse: CactusResponse(
         id: CactusMessageID(),
         content: """
@@ -36,7 +36,7 @@ struct `WhisperTranscriptionResponse tests` {
 
   @Test
   func `Timestamps Response`() {
-    let response = WhisperTranscriptionResponse(
+    let response = WhisperTranscription(
       cactusResponse: CactusResponse(
         id: CactusMessageID(),
         content: """
@@ -52,22 +52,22 @@ struct `WhisperTranscriptionResponse tests` {
     expectNoDifference(
       response.content,
       .timestamps([
-        WhisperTranscriptionResponse.Timestamp(
+        WhisperTranscription.Timestamp(
           seconds: 0,
           transcript: " How? The power of a god cannot be overcome."
         ),
-        WhisperTranscriptionResponse.Timestamp(
+        WhisperTranscription.Timestamp(
           seconds: 3.14,
           transcript: """
              Zanzan, this is the providence of the world. Even gods are merely beings \
             restricted to the limited power determined by prophets.
             """
         ),
-        WhisperTranscriptionResponse.Timestamp(
+        WhisperTranscription.Timestamp(
           seconds: 6.56,
           transcript: " That power, although great, is not unlimited. "
         ),
-        WhisperTranscriptionResponse.Timestamp(
+        WhisperTranscription.Timestamp(
           seconds: 9.31,
           transcript: " That voice, Albrecht! How dare you!"
         )

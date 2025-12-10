@@ -30,8 +30,8 @@ public struct WhisperTranscribeAgent: CactusAgent {
 
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<WhisperTranscribePrompt>,
-    into continuation: CactusAgentStream<WhisperTranscriptionResponse>.Continuation
-  ) async throws -> CactusAgentStream<WhisperTranscriptionResponse>.Response {
+    into continuation: CactusAgentStream<WhisperTranscription>.Continuation
+  ) async throws -> CactusAgentStream<WhisperTranscription>.Response {
     let components = try request.input.promptContent(in: request.environment)
       .messageComponents(in: request.environment)
     let audioURL = request.input.audioURL
