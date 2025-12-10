@@ -19,9 +19,9 @@ public struct CactusAgentRequest<Input> {
 
 public struct CactusAgentResponse<Output: Sendable>: Sendable {
   public var output: Output
-  public var metrics: CactusAgentInferenceMetrics
+  public var metrics: CactusResponseMetrics
 
-  public init(output: Output, metrics: CactusAgentInferenceMetrics) {
+  public init(output: Output, metrics: CactusResponseMetrics) {
     self.output = output
     self.metrics = metrics
   }
