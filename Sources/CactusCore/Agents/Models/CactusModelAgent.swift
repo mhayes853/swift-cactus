@@ -91,10 +91,10 @@ public struct CactusModelAgent<
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws -> CactusAgentStream<Output>.Response {
     var transcript = try await self.transcript(in: request.environment)
-    let currentMessageId = request.environment.currentMessageId ?? CactusMessageID()
+    let userMessageId = CactusMessageID()
 
     let userMessage = try request.input.chatMessage(role: .user, in: request.environment)
-    transcript.append(CactusTranscript.Element(id: currentMessageId, message: userMessage))
+    transcript.append(CactusTranscript.Element(id: userMessageId, message: userMessage))
 
     let chatMessages = transcript.map(\.message)
     let baseInferenceOptions = request.environment.inferenceOptions
@@ -106,7 +106,7 @@ public struct CactusModelAgent<
           messages: chatMessages,
           options: inferenceOptions
         ) { token in
-          let token = CactusStreamedToken(messageStreamId: currentMessageId, stringValue: token)
+          let token = CactusStreamedToken(messageStreamId: userMessageId, stringValue: token)
           continuation.yield(token: token)
         }
         return (completion, inferenceOptions)
@@ -125,7 +125,7 @@ public struct CactusModelAgent<
     }
 
     return .collectTokensIntoOutput(
-      metrics: [currentMessageId: CactusMessageMetric(completion: completion)]
+      metrics: [userMessageId: CactusMessageMetric(completion: completion)]
     )
   }
 

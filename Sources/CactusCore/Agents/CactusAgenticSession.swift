@@ -37,8 +37,6 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
     environment.sessionId = self.id
 
     let graph = await self.agentActor.graph(for: environment)
-
-    environment.currentMessageId = CactusMessageID()
     let request = UnsafeTransfer(
       value: CactusAgentRequest(input: message, environment: environment)
     )
