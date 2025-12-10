@@ -28,17 +28,17 @@ extension CactusAgentStream {
     }
 
     public let action: Action
-    public let metrics: CactusResponseMetrics
+    public let metrics: CactusMessageMetrics
 
     public static func finalOutput(
       _ value: Output,
-      metrics: CactusResponseMetrics = CactusResponseMetrics()
+      metrics: CactusMessageMetrics = CactusMessageMetrics()
     ) -> Self {
       Self(action: .returnOutputValue(value), metrics: metrics)
     }
 
     public static func collectTokensIntoOutput(
-      metrics: CactusResponseMetrics = CactusResponseMetrics()
+      metrics: CactusMessageMetrics = CactusMessageMetrics()
     ) -> Self where Output: ConvertibleFromCactusResponse {
       Self(action: .collectTokensIntoOutput, metrics: metrics)
     }

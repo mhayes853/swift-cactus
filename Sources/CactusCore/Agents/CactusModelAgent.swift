@@ -75,7 +75,7 @@ public struct CactusModelAgent<
       }
     }
     return .collectTokensIntoOutput(
-      metrics: [messageId: CactusResponseMetric(completion: completion)]
+      metrics: [messageId: CactusMessageMetric(completion: completion)]
     )
   }
 

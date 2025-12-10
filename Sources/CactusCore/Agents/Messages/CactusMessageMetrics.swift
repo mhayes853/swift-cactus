@@ -2,11 +2,11 @@ import Foundation
 
 // MARK: - CactusResponseMetrics
 
-public typealias CactusResponseMetrics = [CactusMessageID: CactusResponseMetric]
+public typealias CactusMessageMetrics = [CactusMessageID: CactusMessageMetric]
 
 // MARK: - CactusResponseMetric
 
-public struct CactusResponseMetric: Hashable, Sendable, Codable {
+public struct CactusMessageMetric: Hashable, Sendable, Codable {
   /// The tokens per second rate.
   public var tokensPerSecond: Double
 
@@ -42,7 +42,7 @@ public struct CactusResponseMetric: Hashable, Sendable, Codable {
   }
 }
 
-extension CactusResponseMetric {
+extension CactusMessageMetric {
   public init(transcription: CactusLanguageModel.Transcription) {
     self.init(
       tokensPerSecond: transcription.tokensPerSecond,
@@ -55,7 +55,7 @@ extension CactusResponseMetric {
   }
 }
 
-extension CactusResponseMetric {
+extension CactusMessageMetric {
   public init(completion: CactusLanguageModel.ChatCompletion) {
     self.init(
       tokensPerSecond: completion.tokensPerSecond,

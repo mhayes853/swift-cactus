@@ -46,7 +46,7 @@ public struct WhisperTranscribeAgent: CactusAgent {
     }
 
     return .collectTokensIntoOutput(
-      metrics: [messageId: CactusResponseMetric(transcription: transcription)]
+      metrics: [messageId: CactusMessageMetric(transcription: transcription)]
     )
   }
 }
