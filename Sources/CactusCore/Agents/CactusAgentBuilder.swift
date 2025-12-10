@@ -68,7 +68,7 @@ where Left.Input == Right.Input, Left.Output == Right.Output {
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Left.Input>,
     into continuation: CactusAgentStream<Left.Output>.Continuation
-  ) async throws -> CactusAgentResponse<Left.Output> {
+  ) async throws -> CactusAgentStream<Left.Output>.Response {
     switch self {
     case .left(let left):
       try await left.stream(request: request, into: continuation)

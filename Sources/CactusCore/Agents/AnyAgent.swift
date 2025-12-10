@@ -21,7 +21,7 @@ public struct AnyAgent<Input, Output: Sendable>: CactusAgent {
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
-  ) async throws -> CactusAgentResponse<Output> {
+  ) async throws -> CactusAgentStream<Output>.Response {
     try await self.base.stream(request: request, into: continuation)
   }
 }

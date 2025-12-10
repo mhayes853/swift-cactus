@@ -6,7 +6,7 @@ public struct CactusAgentStream<Output: Sendable>: Sendable {
 
   public init(
     graph: CactusAgentGraph,
-    run: sending @escaping (Continuation) async throws -> CactusAgentResponse<Output>
+    run: sending @escaping (Continuation) async throws -> Response
   ) {
     let storage = Storage()
     let continuation = Continuation(storage: storage)
@@ -18,13 +18,35 @@ public struct CactusAgentStream<Output: Sendable>: Sendable {
   }
 }
 
+// MARK: - Response
+
 extension CactusAgentStream {
   public struct Response: Sendable {
-    public let value: Output
-    public let metrics: CactusAgentInferenceMetrics
-  }
+    public enum Action: Sendable {
+      case returnOutputValue(Output)
+      case collectTokensIntoOutput
+    }
 
-  public func collectFinalResponse() async throws -> Response {
+    public let action: Action
+    public let metrics: CactusAgentInferenceMetrics
+
+    public static func finalOutput(
+      _ value: Output,
+      metrics: CactusAgentInferenceMetrics = CactusAgentInferenceMetrics()
+    ) -> Self {
+      Self(action: .returnOutputValue(value), metrics: metrics)
+    }
+
+    public static func collectTokensIntoOutput(
+      metrics: CactusAgentInferenceMetrics = CactusAgentInferenceMetrics()
+    ) -> Self where Output: ConvertibleFromCactusResponse {
+      Self(action: .collectTokensIntoOutput, metrics: metrics)
+    }
+  }
+}
+
+extension CactusAgentStream {
+  public func collectFinalResponse() async throws -> CactusAgentResponse<Output> {
     if let response = storage.finalResponse {
       return response
     }
@@ -33,10 +55,10 @@ extension CactusAgentStream {
     }
   }
 
-  public func collectFinalResponse<Response>(
+  public func collectFinalResponse<Value>(
     tag: some Hashable,
-    as type: Response.Type
-  ) async throws -> Response? {
+    as type: Value.Type
+  ) async throws -> CactusAgentResponse<Value>? {
     nil
   }
 
@@ -152,7 +174,7 @@ extension CactusAgentStream {
   public struct Continuation: Sendable {
     fileprivate let storage: Storage
 
-    public func yield(token: CactusStreamedToken) {
+    public func yield(token: CactusStreamedToken) where Output: ConvertibleFromCactusResponse {
       self.storage.accumulate(token: token)
     }
   }
@@ -163,19 +185,23 @@ extension CactusAgentStream {
 extension CactusAgentStream {
   fileprivate final class Storage: Sendable {
     private struct State {
-      var finalResponseContinuations = [UnsafeContinuation<Response, any Error>]()
-      var finalResponse: Response?
+      var finalResponseContinuations = [
+        UnsafeContinuation<CactusAgentResponse<Output>, any Error>
+      ]()
+      var finalResponse: CactusAgentResponse<Output>?
       var messageId = CactusMessageID()
       var finalResponseTokens = ""
     }
 
     private let state = Lock(State())
 
-    var finalResponse: Response? {
+    var finalResponse: CactusAgentResponse<Output>? {
       self.state.withLock { $0.finalResponse }
     }
 
-    func addFinalResponseContinuation(_ continuation: UnsafeContinuation<Response, any Error>) {
+    func addFinalResponseContinuation(
+      _ continuation: UnsafeContinuation<CactusAgentResponse<Output>, any Error>
+    ) {
       self.state.withLock { state in
         if let finalResponse = state.finalResponse {
           continuation.resume(returning: finalResponse)
@@ -192,14 +218,13 @@ extension CactusAgentStream {
       }
     }
 
-    func accept(finalResponse: CactusAgentResponse<Output>) throws {
+    func accept(finalResponse: Response) throws {
       try self.state.withLock { state in
         switch finalResponse.action {
         case .returnOutputValue(let value):
-          state.finalResponse = Response(value: value, metrics: finalResponse.metrics)
-          state.finalResponseContinuations.forEach {
-            $0.resume(returning: Response(value: value, metrics: finalResponse.metrics))
-          }
+          let response = CactusAgentResponse(output: value, metrics: finalResponse.metrics)
+          state.finalResponse = response
+          state.finalResponseContinuations.forEach { $0.resume(returning: response) }
           state.finalResponseContinuations.removeAll()
         case .collectTokensIntoOutput:
           func open<O: ConvertibleFromCactusResponse>(
@@ -217,7 +242,7 @@ extension CactusAgentStream {
           let result = Result { try open(output, response: response) as! Output }
           state.finalResponseContinuations.forEach { continuation in
             continuation.resume(
-              with: result.map { Response(value: $0, metrics: finalResponse.metrics) }
+              with: result.map { CactusAgentResponse(output: $0, metrics: finalResponse.metrics) }
             )
           }
           state.finalResponseContinuations.removeAll()

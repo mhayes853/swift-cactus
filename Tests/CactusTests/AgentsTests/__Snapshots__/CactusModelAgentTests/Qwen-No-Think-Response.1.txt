@@ -1,18 +1,18 @@
-▿ Response
+▿ CactusAgentResponse<Qwen3Response<String>>
   ▿ metrics: 1 key/value pair
     ▿ (2 elements)
       ▿ key: CactusMessageID
-        - rawValue: 38BF9449-DBE6-4B39-8EB7-55D3B38193F3
+        - rawValue: 638E89DF-13E5-448B-A62C-DBA905575C66
       ▿ value: CactusAgentInferenceMetric
         - decodeTokens: 200
         - prefillTokens: 19
-        - timeIntervalToFirstToken: 0.75675
-        - tokensPerSecond: 56.93
-        - totalTimeInterval: 4.252260000000001
+        - timeIntervalToFirstToken: 0.81208
+        - tokensPerSecond: 39.98
+        - totalTimeInterval: 5.78998
         - totalTokens: 219
-  ▿ value: Qwen3Response<String>
+  ▿ output: Qwen3Response<String>
     ▿ id: CactusMessageID
-      - rawValue: 38BF9449-DBE6-4B39-8EB7-55D3B38193F3
-    - response: ""
+      - rawValue: 638E89DF-13E5-448B-A62C-DBA905575C66
+    - response: "As a philosopher engaged in contemplative inquiry, let me share with you:  \n\n**Existence’s Paradox**:  \nWhat does it mean for *all* things to be *nothing*? If"
     ▿ thinkingContent: Optional<String>
-      - some: "Okay, the user is asking me to act as a philosopher. So I need to be able to think and discuss things in a way that\'s both philosophical and engaging. Let me start by thinking about common topics where philosophers have spent their time.\n\nFirst, there\'s the question of existence: What do we know? That\'s one of my favorite areas. Maybe I can talk about different perspectives here—materialism vs idealism, or whether consciousness exists beyond our understanding.\n\nAnother angle could be time and its nature. Time is an illusion for some people (like Einstein), but others might find it real. Philosophers often debate this with examples from history or science.\n\nI should also consider other dimensions of life beyond just these questions—art, love, relationships. These are areas where philosophy intersects in many ways and offer rich possibilities for discussion.\n\nIt\'s important to balance between deep thought and accessible language so that even someone as curious as the user can engage without overwhelming them.\n\nLet me structure my"
+      - some: "Okay, the user is asking me to act as a philosopher who can philosophize about things. They might be looking for deep insights or metaphysical questions that I can explore.\n\nFirst, I need to consider what kind of questions are most engaging for philosophers. Topics like existence, consciousness, knowledge itself could be good choices because they\'re fundamental and open-ended.\n\nI should also think about the structure: maybe start with a general question to set up the conversation, then move into specific topics with examples or metaphysical ideas. Need to ensure my responses are thoughtful and offer philosophical depth without being too abstract.\n\nIt\'s important not just to answer questions but also engage in a reflective dialogue where the user can explore further themselves. That way, we can create meaningful exchanges based on shared intellectual curiosity."

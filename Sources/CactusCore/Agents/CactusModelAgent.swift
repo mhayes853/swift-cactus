@@ -63,7 +63,7 @@ public struct CactusModelAgent<
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
-  ) async throws -> CactusAgentResponse<Output> {
+  ) async throws -> CactusAgentStream<Output>.Response {
     let messages = try self.initialMessages(in: request.environment)
     let messageId = request.environment.currentMessageId ?? CactusMessageID()
 

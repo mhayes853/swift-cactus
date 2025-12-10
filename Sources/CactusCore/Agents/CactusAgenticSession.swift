@@ -4,6 +4,8 @@ import Observation
 // MARK: - CactusAgenticSession
 
 public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Identifiable {
+  public typealias Response = CactusAgentResponse<Output>
+
   private let agentActor: AgentActor
   private let observationRegistrar = _ObservationRegistrar()
   private let _responseStream = Lock<CactusAgentStream<Output>?>(nil)
@@ -51,9 +53,7 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
     return stream
   }
 
-  public func respond(
-    to message: sending Input
-  ) async throws -> CactusAgentStream<Output>.Response {
+  public func respond(to message: sending Input) async throws -> Response {
     let stream = await self.stream(for: message)
     return try await withTaskCancellationHandler {
       try await stream.collectFinalResponse()
@@ -82,7 +82,7 @@ extension CactusAgenticSession {
     func stream(
       request: CactusAgentRequest<Input>,
       into continuation: CactusAgentStream<Output>.Continuation
-    ) async throws -> CactusAgentResponse<Output> {
+    ) async throws -> CactusAgentStream<Output>.Response {
       try await self.agent.stream(request: request, into: continuation)
     }
 

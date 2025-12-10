@@ -14,7 +14,7 @@ struct NeverAgent: CactusAgent {
   nonisolated(nonsending) func stream(
     request: CactusAgentRequest<String>,
     into continuation: CactusAgentStream<String>.Continuation
-  ) async throws -> CactusAgentResponse<String> {
+  ) async throws -> CactusAgentStream<String>.Response {
     try await Task.never()
     return .finalOutput("")
   }
@@ -34,7 +34,7 @@ struct PassthroughAgent: CactusAgent {
   nonisolated(nonsending) func stream(
     request: CactusAgentRequest<String>,
     into continuation: CactusAgentStream<String>.Continuation
-  ) async throws -> CactusAgentResponse<String> {
+  ) async throws -> CactusAgentStream<String>.Response {
     .finalOutput(request.input)
   }
 }
