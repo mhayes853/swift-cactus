@@ -22,13 +22,13 @@ public struct CactusAgentStream<Output: Sendable>: Sendable {
 
 extension CactusAgentStream {
   public struct Response: Sendable {
-    public enum Action: Sendable {
+    enum Action: Sendable {
       case returnOutputValue(Output)
       case collectTokensIntoOutput
     }
 
-    public let action: Action
-    public let metrics: CactusMessageMetrics
+    let action: Action
+    let metrics: CactusMessageMetrics
 
     public static func finalOutput(
       _ value: Output,
