@@ -22,10 +22,10 @@ public final actor FilesystemTranscriptStore: CactusTranscriptStore {
   }
 
   public func transcripts(
-    forKeys keys: Set<CactusTranscriptKey>
-  ) async throws -> [CactusTranscriptKey: CactusTranscript] {
+    forKeys keys: Set<CactusTranscript.Key>
+  ) async throws -> [CactusTranscript.Key: CactusTranscript] {
     guard self.directoryExists else { return [:] }
-    var transcripts = [CactusTranscriptKey: CactusTranscript]()
+    var transcripts = [CactusTranscript.Key: CactusTranscript]()
     for key in keys {
       let url = self.directoryBaseURL.appendingPathComponent(key.description)
       guard self.manager.fileExists(atPath: url.relativePath) else { continue }
@@ -35,12 +35,12 @@ public final actor FilesystemTranscriptStore: CactusTranscriptStore {
   }
 
   public func hasTranscripts(
-    forKeys keys: Set<CactusTranscriptKey>
-  ) async throws -> [CactusTranscriptKey: Bool] {
+    forKeys keys: Set<CactusTranscript.Key>
+  ) async throws -> [CactusTranscript.Key: Bool] {
     guard self.directoryExists else {
-      return [CactusTranscriptKey: Bool](uniqueKeysWithValues: keys.map { ($0, false) })
+      return [CactusTranscript.Key: Bool](uniqueKeysWithValues: keys.map { ($0, false) })
     }
-    var results = [CactusTranscriptKey: Bool]()
+    var results = [CactusTranscript.Key: Bool]()
     for key in keys {
       let url = self.directoryBaseURL.appendingPathComponent(key.description)
       results[key] = self.manager.fileExists(atPath: url.relativePath)
@@ -48,7 +48,7 @@ public final actor FilesystemTranscriptStore: CactusTranscriptStore {
     return results
   }
 
-  public func save(transcripts: [CactusTranscriptKey: CactusTranscript]) async throws {
+  public func save(transcripts: [CactusTranscript.Key: CactusTranscript]) async throws {
     try self.ensureDirectory()
     for (key, transcript) in transcripts {
       let url = self.directoryBaseURL.appendingPathComponent(key.description)
@@ -57,12 +57,12 @@ public final actor FilesystemTranscriptStore: CactusTranscriptStore {
   }
 
   public func removeTranscripts(
-    forKeys keys: Set<CactusTranscriptKey>
-  ) async throws -> [CactusTranscriptKey: Bool] {
+    forKeys keys: Set<CactusTranscript.Key>
+  ) async throws -> [CactusTranscript.Key: Bool] {
     guard self.directoryExists else {
-      return [CactusTranscriptKey: Bool](uniqueKeysWithValues: keys.map { ($0, false) })
+      return [CactusTranscript.Key: Bool](uniqueKeysWithValues: keys.map { ($0, false) })
     }
-    var results = [CactusTranscriptKey: Bool]()
+    var results = [CactusTranscript.Key: Bool]()
     for key in keys {
       let url = self.directoryBaseURL.appendingPathComponent(key.description)
       let fileExists = self.manager.fileExists(atPath: url.relativePath)

@@ -42,4 +42,18 @@ struct `CactusModelAgent tests` {
       assertSnapshot(of: response, as: .dump, record: true)
     }
   }
+
+  @Test
+  func `Stores Transcript Between Responses`() async throws {
+    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+
+    let key: CactusTranscript.Key = "blob"
+
+    let session = CactusAgenticSession(
+      CactusModelAgent<CactusPromptContent, Qwen3Completion<String>>(.fromModelURL(url)) {
+        "You are a philosopher who can philosophize about things."
+      }
+    )
+
+  }
 }

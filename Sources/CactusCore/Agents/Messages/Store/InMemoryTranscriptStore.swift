@@ -1,14 +1,14 @@
 public final actor InMemoryTranscriptStore: CactusTranscriptStore {
   public static let shared = InMemoryTranscriptStore()
 
-  private var transcripts = [CactusTranscriptKey: CactusTranscript]()
+  private var transcripts = [CactusTranscript.Key: CactusTranscript]()
 
   public init() {}
 
   public func transcripts(
-    forKeys keys: Set<CactusTranscriptKey>
-  ) async throws -> [CactusTranscriptKey: CactusTranscript] {
-    var values = [CactusTranscriptKey: CactusTranscript]()
+    forKeys keys: Set<CactusTranscript.Key>
+  ) async throws -> [CactusTranscript.Key: CactusTranscript] {
+    var values = [CactusTranscript.Key: CactusTranscript]()
     for key in keys {
       guard let transcript = self.transcripts[key] else { continue }
       values[key] = transcript
@@ -16,14 +16,14 @@ public final actor InMemoryTranscriptStore: CactusTranscriptStore {
     return values
   }
 
-  public func save(transcripts: [CactusTranscriptKey: CactusTranscript]) async throws {
+  public func save(transcripts: [CactusTranscript.Key: CactusTranscript]) async throws {
     self.transcripts.merge(transcripts, uniquingKeysWith: { _, new in new })
   }
 
   public func removeTranscripts(
-    forKeys keys: Set<CactusTranscriptKey>
-  ) async throws -> [CactusTranscriptKey: Bool] {
-    var transcripts = [CactusTranscriptKey: Bool]()
+    forKeys keys: Set<CactusTranscript.Key>
+  ) async throws -> [CactusTranscript.Key: Bool] {
+    var transcripts = [CactusTranscript.Key: Bool]()
     for key in keys {
       transcripts[key] = self.transcripts.removeValue(forKey: key) != nil
     }
