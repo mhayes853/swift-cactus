@@ -17,7 +17,6 @@ public struct CactusTranscript: Hashable, Sendable, Codable {
 
   public subscript(id id: CactusMessageID) -> Element? {
     _read { yield self.elements[id] }
-    _modify { yield &self.elements[id] }
   }
 }
 
@@ -109,6 +108,18 @@ extension CactusTranscript {
       return try Self(_elements: self.elements.filter { (_, value) in try isIncluded(value) })
     } catch {
       throw error as! E
+    }
+  }
+}
+
+extension CactusTranscript {
+  public mutating func append(_ element: Element) {
+    self.elements[element.id] = element
+  }
+
+  public mutating func append(contentsOf elements: some Sequence<Element>) {
+    for element in elements {
+      self.append(element)
     }
   }
 }

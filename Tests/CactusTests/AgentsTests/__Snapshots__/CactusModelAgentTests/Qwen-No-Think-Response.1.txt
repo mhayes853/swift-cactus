@@ -1,18 +1,18 @@
-▿ CactusAgentResponse<Qwen3Response<String>>
+▿ CactusAgentResponse<Qwen3Completion<String>>
   ▿ metrics: 1 key/value pair
     ▿ (2 elements)
       ▿ key: CactusMessageID
-        - rawValue: 638E89DF-13E5-448B-A62C-DBA905575C66
-      ▿ value: CactusAgentInferenceMetric
+        - rawValue: 55BDEE05-DE02-4C08-BA26-F18BAD592438
+      ▿ value: CactusMessageMetric
         - decodeTokens: 200
-        - prefillTokens: 19
-        - timeIntervalToFirstToken: 0.81208
-        - tokensPerSecond: 39.98
-        - totalTimeInterval: 5.78998
-        - totalTokens: 219
-  ▿ output: Qwen3Response<String>
+        - prefillTokens: 13
+        - timeIntervalToFirstToken: 0.80065
+        - tokensPerSecond: 42.8
+        - totalTimeInterval: 5.45022
+        - totalTokens: 213
+  ▿ output: Qwen3Completion<String>
     ▿ id: CactusMessageID
-      - rawValue: 638E89DF-13E5-448B-A62C-DBA905575C66
-    - response: "As a philosopher engaged in contemplative inquiry, let me share with you:  \n\n**Existence’s Paradox**:  \nWhat does it mean for *all* things to be *nothing*? If"
+      - rawValue: 55BDEE05-DE02-4C08-BA26-F18BAD592438
+    - response: ""
     ▿ thinkingContent: Optional<String>
-      - some: "Okay, the user is asking me to act as a philosopher who can philosophize about things. They might be looking for deep insights or metaphysical questions that I can explore.\n\nFirst, I need to consider what kind of questions are most engaging for philosophers. Topics like existence, consciousness, knowledge itself could be good choices because they\'re fundamental and open-ended.\n\nI should also think about the structure: maybe start with a general question to set up the conversation, then move into specific topics with examples or metaphysical ideas. Need to ensure my responses are thoughtful and offer philosophical depth without being too abstract.\n\nIt\'s important not just to answer questions but also engage in a reflective dialogue where the user can explore further themselves. That way, we can create meaningful exchanges based on shared intellectual curiosity."
+      - some: "Okay, the user wants to know how to make a pizza crust from scratch. Let me start by recalling common methods for making a pizza crust at home.\n\nFirst, I should mention using flour and baking powder as basic ingredients since those are standard in most pizzas. Then perhaps suggest mixing them together with some water or oil if it\'s not already the case.\n\nNext, there are different types of crusts like plain (no cheese), cheese-based, mozzarella-based etc., so maybe list these options and explain how each works.\n\nAlso, considering common mistakes people make—like using too much flour instead of baking powder or not mixing properly—which points could help the user avoid those pitfalls.\n\nI should structure the answer clearly: start with ingredients needed for making a basic pizza crust (flour + baking powder), then instructions on mixing them together. Then offer different types of crusts as options. Finally end by encouraging them to try different variations based on their preferences.\n\nWait, but does \"baking"

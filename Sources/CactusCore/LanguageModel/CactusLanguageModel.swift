@@ -482,8 +482,7 @@ extension CactusLanguageModel {
   ) throws -> ChatCompletion {
     let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent
       .responseBufferTooSmall(name: "completion", configuration: self.configuration)
-    let options =
-      options ?? ChatCompletion.Options(modelType: self.configurationFile.modelType ?? .qwen)
+    let options = options ?? self.defaultChatCompletionOptions
     let maxBufferSize = maxBufferSize ?? self.bufferSize(for: options.maxTokens)
     guard maxBufferSize > 0 else {
       CactusTelemetry.send(bufferTooSmallEvent)
@@ -674,7 +673,7 @@ extension CactusLanguageModel {
 
     let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent
       .responseBufferTooSmall(name: "transcription", configuration: self.configuration)
-    let options = options ?? Transcription.Options(modelType: .whisper)
+    let options = options ?? self.defaultTranscriptionOptions
     let maxBufferSize = maxBufferSize ?? self.bufferSize(for: options.maxTokens)
     guard maxBufferSize > 0 else {
       CactusTelemetry.send(bufferTooSmallEvent)
