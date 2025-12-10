@@ -8,7 +8,7 @@ struct `CactusAgentSession tests` {
   func `Basic Response`() async throws {
     let session = CactusAgenticSession(PassthroughAgent())
     let response = try await session.respond(to: "blob")
-    expectNoDifference(response, "blob")
+    expectNoDifference(response.value, "blob")
   }
 
   @Test

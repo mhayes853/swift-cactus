@@ -18,7 +18,7 @@ struct `CactusModelAgent tests` {
 
     let response = try await session.respond(to: "What is the meaning of life?")
     withExpectedIssue {
-      assertSnapshot(of: response, as: .json, record: true)
+      assertSnapshot(of: response, as: .dump, record: true)
     }
   }
 
@@ -39,7 +39,7 @@ struct `CactusModelAgent tests` {
       }
     )
     withExpectedIssue {
-      assertSnapshot(of: response, as: .json, record: true)
+      assertSnapshot(of: response, as: .dump, record: true)
     }
   }
 }

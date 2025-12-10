@@ -17,22 +17,28 @@ public struct CactusAgentRequest<Input> {
 
 // MARK: - CactusAgentResponse
 
-public struct CactusAgentResponse<Output: Sendable> {
-  public enum Action {
+public struct CactusAgentResponse<Output: Sendable>: Sendable {
+  public enum Action: Sendable {
     case returnOutputValue(Output)
     case collectTokensIntoOutput
   }
 
   public let action: Action
+  public let metrics: CactusAgentInferenceMetrics
 
-  public static func finalOutput(_ value: Output) -> Self {
-    Self(action: .returnOutputValue(value))
+  public static func finalOutput(
+    _ value: Output,
+    metrics: CactusAgentInferenceMetrics = CactusAgentInferenceMetrics()
+  ) -> Self {
+    Self(action: .returnOutputValue(value), metrics: metrics)
   }
 }
 
 extension CactusAgentResponse where Output: ConvertibleFromCactusResponse {
-  public static var collectTokensIntoOutput: Self {
-    Self(action: .collectTokensIntoOutput)
+  public static func collectTokensIntoOutput(
+    metrics: CactusAgentInferenceMetrics = CactusAgentInferenceMetrics()
+  ) -> Self {
+    Self(action: .collectTokensIntoOutput, metrics: metrics)
   }
 }
 

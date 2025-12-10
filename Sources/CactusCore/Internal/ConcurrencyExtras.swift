@@ -75,3 +75,9 @@ package func isolate<T, E: Error, A: Actor>(
 ) async throws(E) -> sending T {
   try await fn(a)
 }
+
+// MARK: - UnsafeTransfer
+
+struct UnsafeTransfer<T>: @unchecked Sendable {
+  let value: T
+}

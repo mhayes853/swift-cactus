@@ -37,14 +37,16 @@ public struct WhisperTranscribeAgent: CactusAgent {
     let audioURL = request.input.audioURL
     let messageId = request.environment.currentMessageId ?? CactusMessageID()
 
-    try await self.access.withModelAccess(in: request.environment) { model in
-      _ = try model.transcribe(audio: audioURL, prompt: components.text) { token in
+    let transcription = try await self.access.withModelAccess(in: request.environment) { model in
+      try model.transcribe(audio: audioURL, prompt: components.text) { token in
         continuation.yield(
           token: CactusStreamedToken(messageStreamId: messageId, stringValue: token)
         )
       }
     }
 
-    return .collectTokensIntoOutput
+    return .collectTokensIntoOutput(
+      metrics: [messageId: CactusAgentInferenceMetric(transcription: transcription)]
+    )
   }
 }

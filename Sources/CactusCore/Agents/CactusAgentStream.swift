@@ -1,14 +1,30 @@
 // MARK: - CactusAgentStream
 
 public struct CactusAgentStream<Output: Sendable>: Sendable {
-  public let continuation: Continuation
-  private let storage = Storage()
+  private let storage: Storage
+  private let task: Task<Void, any Error>
 
-  public init(graph: CactusAgentGraph) {
-    self.continuation = Continuation(storage: storage)
+  public init(
+    graph: CactusAgentGraph,
+    run: sending @escaping (Continuation) async throws -> CactusAgentResponse<Output>
+  ) {
+    let storage = Storage()
+    let continuation = Continuation(storage: storage)
+    self.storage = storage
+    self.task = Task {
+      let response = try await run(continuation)
+      try storage.accept(finalResponse: response)
+    }
+  }
+}
+
+extension CactusAgentStream {
+  public struct Response: Sendable {
+    public let value: Output
+    public let metrics: CactusAgentInferenceMetrics
   }
 
-  public func collectFinalResponse() async throws -> Output {
+  public func collectFinalResponse() async throws -> Response {
     if let response = storage.finalResponse {
       return response
     }
@@ -24,11 +40,9 @@ public struct CactusAgentStream<Output: Sendable>: Sendable {
     nil
   }
 
-  public func accept(finalResponse: CactusAgentResponse<Output>) throws {
-    self.storage.accept(finalResponse: finalResponse)
+  public func stop() {
+    self.task.cancel()
   }
-
-  public func stop() {}
 }
 
 extension CactusAgentStream where Output: ConvertibleFromCactusResponse {
@@ -41,11 +55,11 @@ extension CactusAgentStream where Output: ConvertibleFromCactusResponse {
 
 extension CactusAgentStream
 where Output: ConvertibleFromCactusResponse, Output.Partial: ConvertibleFromCactusTokenStream {
-  public var finalResponsePartials: CactusAgentStreamPartials<Output.Partial> {
+  public var finalOutputPartials: CactusAgentStreamPartials<Output.Partial> {
     CactusAgentStreamPartials()
   }
 
-  public func onFinalResponsePartial(
+  public func onFinalOutputPartial(
     perform operation: (Result<Output.Partial, any Error>) -> Void
   ) -> CactusSubscription {
     CactusSubscription {}
@@ -149,19 +163,19 @@ extension CactusAgentStream {
 extension CactusAgentStream {
   fileprivate final class Storage: Sendable {
     private struct State {
-      var finalResponseContinuations = [UnsafeContinuation<Output, any Error>]()
-      var finalResponse: Output?
+      var finalResponseContinuations = [UnsafeContinuation<Response, any Error>]()
+      var finalResponse: Response?
       var messageId = CactusMessageID()
       var finalResponseTokens = ""
     }
 
     private let state = Lock(State())
 
-    var finalResponse: Output? {
+    var finalResponse: Response? {
       self.state.withLock { $0.finalResponse }
     }
 
-    func addFinalResponseContinuation(_ continuation: UnsafeContinuation<Output, any Error>) {
+    func addFinalResponseContinuation(_ continuation: UnsafeContinuation<Response, any Error>) {
       self.state.withLock { state in
         if let finalResponse = state.finalResponse {
           continuation.resume(returning: finalResponse)
@@ -178,12 +192,14 @@ extension CactusAgentStream {
       }
     }
 
-    func accept(finalResponse: CactusAgentResponse<Output>) {
-      self.state.withLock { state in
+    func accept(finalResponse: CactusAgentResponse<Output>) throws {
+      try self.state.withLock { state in
         switch finalResponse.action {
         case .returnOutputValue(let value):
-          state.finalResponse = value
-          state.finalResponseContinuations.forEach { $0.resume(returning: value) }
+          state.finalResponse = Response(value: value, metrics: finalResponse.metrics)
+          state.finalResponseContinuations.forEach {
+            $0.resume(returning: Response(value: value, metrics: finalResponse.metrics))
+          }
           state.finalResponseContinuations.removeAll()
         case .collectTokensIntoOutput:
           func open<O: ConvertibleFromCactusResponse>(
@@ -194,15 +210,21 @@ extension CactusAgentStream {
           }
 
           guard let output = Output.self as? any ConvertibleFromCactusResponse.Type else {
-            fatalError()
+            throw InvalidOutputTypeError()
           }
 
           let response = CactusResponse(id: state.messageId, content: state.finalResponseTokens)
           let result = Result { try open(output, response: response) as! Output }
-          state.finalResponseContinuations.forEach { $0.resume(with: result) }
+          state.finalResponseContinuations.forEach { continuation in
+            continuation.resume(
+              with: result.map { Response(value: $0, metrics: finalResponse.metrics) }
+            )
+          }
           state.finalResponseContinuations.removeAll()
         }
       }
     }
+
+    private struct InvalidOutputTypeError: Error {}
   }
 }

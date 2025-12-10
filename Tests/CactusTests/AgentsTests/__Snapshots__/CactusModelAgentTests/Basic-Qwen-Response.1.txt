@@ -1,0 +1,18 @@
+▿ Response
+  ▿ metrics: 1 key/value pair
+    ▿ (2 elements)
+      ▿ key: CactusMessageID
+        - rawValue: 13D0D2DF-E2E9-408D-843F-51A97A661712
+      ▿ value: CactusAgentInferenceMetric
+        - decodeTokens: 200
+        - prefillTokens: 8
+        - timeIntervalToFirstToken: 0.03577
+        - tokensPerSecond: 56.71
+        - totalTimeInterval: 3.54469
+        - totalTokens: 208
+  ▿ value: Qwen3Response<String>
+    ▿ id: CactusMessageID
+      - rawValue: 13D0D2DF-E2E9-408D-843F-51A97A661712
+    - response: ""
+    ▿ thinkingContent: Optional<String>
+      - some: "Okay, let\'s see... The user mentioned a problem related to the \"10-25\" rule in mathematics education. First, I need to recall what that rule is exactly. From what I remember, it refers to a method used by educators like those at the International Baccalaureate (IB) program or other educational systems for teaching fractions and decimals. The idea is that when students solve problems involving multiplication of two numbers with decimal points in their denominators (like 0.3 or 0.4), they should consider moving both decimal places one place forward from each number before multiplying them.\n\nWait, but why does this work? Let me think... If you have a fraction like 1/2 = 05/10 or something similar, then moving the decimal point one place left would result in multiplying by ten because you\'re shifting the position of the denominator\'s place value by ten times to make it a whole number, which allows multiplication without dealing"
