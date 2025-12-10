@@ -1,17 +1,17 @@
-▿ Response
+▿ CactusAgentResponse<WhisperTranscription>
   ▿ metrics: 1 key/value pair
     ▿ (2 elements)
       ▿ key: CactusMessageID
-        - rawValue: C56F3AED-BEBA-4B70-B6C9-789756A60949
-      ▿ value: CactusAgentInferenceMetric
+        - rawValue: E6458763-C6B2-4702-95C5-2478BF893BF2
+      ▿ value: CactusMessageMetric
         - decodeTokens: 20
         - prefillTokens: 4
-        - timeIntervalToFirstToken: 6.25449
-        - tokensPerSecond: 44.56
-        - totalTimeInterval: 6.68086
+        - timeIntervalToFirstToken: 6.93225
+        - tokensPerSecond: 46.09
+        - totalTimeInterval: 7.34448
         - totalTokens: 24
-  ▿ value: WhisperTranscriptionResponse
+  ▿ output: WhisperTranscription
     ▿ content: Content
       - fullTranscript: " Τα πόλη της Θεός δεν μπορεί να ανοίξει."
     ▿ id: CactusMessageID
-      - rawValue: C56F3AED-BEBA-4B70-B6C9-789756A60949
+      - rawValue: E6458763-C6B2-4702-95C5-2478BF893BF2
