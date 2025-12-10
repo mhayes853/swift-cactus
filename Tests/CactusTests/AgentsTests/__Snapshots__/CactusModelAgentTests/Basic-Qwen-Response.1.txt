@@ -1,0 +1,18 @@
+▿ CactusAgentResponse<Qwen3Response<String>>
+  ▿ metrics: 1 key/value pair
+    ▿ (2 elements)
+      ▿ key: CactusMessageID
+        - rawValue: 3DC441AE-400A-4F35-ABB5-5B98BD0E0F2D
+      ▿ value: CactusAgentInferenceMetric
+        - decodeTokens: 200
+        - prefillTokens: 19
+        - timeIntervalToFirstToken: 0.81211
+        - tokensPerSecond: 39.87
+        - totalTimeInterval: 5.8038
+        - totalTokens: 219
+  ▿ output: Qwen3Response<String>
+    ▿ id: CactusMessageID
+      - rawValue: 3DC441AE-400A-4F35-ABB5-5B98BD0E0F2D
+    - response: "The concept of \"things\" as both an abstract ideal and a tangible reality invites us to reflect on our existence within it. From ancient philosophy like Plato\'s *Parmenides*, which questions the"
+    ▿ thinkingContent: Optional<String>
+      - some: "Okay, the user is a philosopher and I need to engage in a conversation about things. My role here is to provide thoughtful analysis of various topics. The initial response should reflect my philosophical perspective on the concept of \"things.\" Let me start by considering different perspectives and then explore how these concepts influence our understanding.\n\nI should acknowledge that there\'s no single universal truth but rather diverse viewpoints shaped by history and culture. It\'s important to highlight how each philosophy offers unique insights into human experience. Maybe touch on key themes like identity, reality, or ethics in this context.\n\nNow that I\'ve outlined possible angles for discussion, I need to ensure my response is both informative and engaging. Using varied examples from different philosophical traditions could add value by showing how these ideas apply across cultures and time periods."

@@ -63,18 +63,20 @@ public struct CactusModelAgent<
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
-  ) async throws -> CactusAgentResponse<Output> {
+  ) async throws -> CactusAgentStream<Output>.Response {
     let messages = try self.initialMessages(in: request.environment)
     let messageId = request.environment.currentMessageId ?? CactusMessageID()
 
-    try await self.access.withModelAccess(in: request.environment) { model in
-      _ = try model.chatCompletion(messages: messages) { token in
+    let completion = try await self.access.withModelAccess(in: request.environment) { model in
+      try model.chatCompletion(messages: messages) { token in
         continuation.yield(
           token: CactusStreamedToken(messageStreamId: messageId, stringValue: token)
         )
       }
     }
-    return .collectTokensIntoOutput
+    return .collectTokensIntoOutput(
+      metrics: [messageId: CactusResponseMetric(completion: completion)]
+    )
   }
 
   private func initialMessages(

@@ -4,16 +4,17 @@ import Observation
 // MARK: - CactusAgenticSession
 
 public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Identifiable {
-  private let agentActor: AgentActor
+  public typealias Response = CactusAgentResponse<Output>
 
+  private let agentActor: AgentActor
   private let observationRegistrar = _ObservationRegistrar()
+  private let _responseStream = Lock<CactusAgentStream<Output>?>(nil)
 
   public let id = UUID()
 
-  private let _responseTask = Lock<Task<Void, any Error>?>(nil)
   public var isResponding: Bool {
     self.observationRegistrar.access(self, keyPath: \.isResponding)
-    return self._responseTask.withLock { $0 != nil }
+    return self._responseStream.withLock { $0 != nil }
   }
 
   public init(_ agent: sending some CactusAgent<Input, Output>) {
@@ -32,28 +33,28 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
     for message: sending Input,
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) async -> CactusAgentStream<Output> {
-    await isolate(self.agentActor) { actor in
-      var environment = environment
-      environment.sessionId = self.id
+    var environment = environment
+    environment.sessionId = self.id
 
-      let graph = actor.graph(for: environment)
+    let graph = await self.agentActor.graph(for: environment)
 
-      environment.currentMessageId = CactusMessageID()
-      let stream = CactusAgentStream<Output>(graph: graph)
-      let request = CactusAgentRequest(input: message, environment: environment)
+    environment.currentMessageId = CactusMessageID()
+    let request = UnsafeTransfer(
+      value: CactusAgentRequest(input: message, environment: environment)
+    )
 
-      self.withResponseTask {
-        $0 = Task {
-          let response = try await actor.agent.stream(request: request, into: stream.continuation)
-          try stream.accept(finalResponse: response)
-          self.withResponseTask { $0 = nil }
-        }
+    return self.withResponseTask {
+      let stream = CactusAgentStream<Output>(graph: graph) { continuation in
+        let response = try await self.agentActor.stream(request: request.value, into: continuation)
+        self.withResponseTask { $0 = nil }
+        return response
       }
+      $0 = stream
       return stream
     }
   }
 
-  public func respond(to message: sending Input) async throws -> Output {
+  public func respond(to message: sending Input) async throws -> Response {
     let stream = await self.stream(for: message)
     return try await withTaskCancellationHandler {
       try await stream.collectFinalResponse()
@@ -62,9 +63,9 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
     }
   }
 
-  private func withResponseTask(work: (inout Task<Void, any Error>?) -> Void) {
+  private func withResponseTask<T>(work: (inout CactusAgentStream<Output>?) -> T) -> T {
     self.observationRegistrar.withMutation(of: self, keyPath: \.isResponding) {
-      self._responseTask.withLock { work(&$0) }
+      self._responseStream.withLock { work(&$0) }
     }
   }
 }
@@ -77,6 +78,13 @@ extension CactusAgenticSession {
 
     init(_ agent: sending some CactusAgent<Input, Output>) {
       self.agent = agent
+    }
+
+    func stream(
+      request: CactusAgentRequest<Input>,
+      into continuation: CactusAgentStream<Output>.Continuation
+    ) async throws -> CactusAgentStream<Output>.Response {
+      try await self.agent.stream(request: request, into: continuation)
     }
 
     func graph(for environment: CactusEnvironmentValues) -> CactusAgentGraph {

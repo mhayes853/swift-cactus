@@ -1,5 +1,17 @@
-▿ WhisperTranscriptionResponse
-  ▿ content: Content
-    - fullTranscript: " Τα πόλη της Θεός δεν μπορεί να ανοίξει."
-  ▿ id: CactusMessageID
-    - rawValue: B5B9975C-5964-44F3-9BDB-A2B36C90319F
+▿ Response
+  ▿ metrics: 1 key/value pair
+    ▿ (2 elements)
+      ▿ key: CactusMessageID
+        - rawValue: C56F3AED-BEBA-4B70-B6C9-789756A60949
+      ▿ value: CactusAgentInferenceMetric
+        - decodeTokens: 20
+        - prefillTokens: 4
+        - timeIntervalToFirstToken: 6.25449
+        - tokensPerSecond: 44.56
+        - totalTimeInterval: 6.68086
+        - totalTokens: 24
+  ▿ value: WhisperTranscriptionResponse
+    ▿ content: Content
+      - fullTranscript: " Τα πόλη της Θεός δεν μπορεί να ανοίξει."
+    ▿ id: CactusMessageID
+      - rawValue: C56F3AED-BEBA-4B70-B6C9-789756A60949

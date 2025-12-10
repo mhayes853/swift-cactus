@@ -1,7 +1,6 @@
 import Foundation
 
-public struct WhisperTranscriptionResponse: Hashable, Sendable, ConvertibleFromCactusResponse,
-  Identifiable
+public struct WhisperTranscription: Hashable, Sendable, ConvertibleFromCactusResponse, Identifiable
 {
   public struct Timestamp: Hashable, Sendable {
     public let seconds: TimeInterval

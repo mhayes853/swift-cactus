@@ -3,40 +3,40 @@ import CustomDump
 import Testing
 
 @Suite
-struct `Qwen3Response tests` {
+struct `Qwen3Completion tests` {
   @Test
   func `Loads Response From Plain String`() throws {
     let id = CactusMessageID()
-    let response = Qwen3Response<String>(
+    let response = Qwen3Completion<String>(
       cactusResponse: CactusResponse(id: id, content: "Hello world")
     )
     expectNoDifference(
       response,
-      Qwen3Response(id: id, thinkingContent: nil, response: "Hello world")
+      Qwen3Completion(id: id, thinkingContent: nil, response: "Hello world")
     )
   }
 
   @Test
   func `Loads Custom Response Type From Plain String`() throws {
     let id = CactusMessageID()
-    let response = Qwen3Response<TestResponse>(
+    let response = Qwen3Completion<TestResponse>(
       cactusResponse: CactusResponse(id: id, content: "blob")
     )
     expectNoDifference(
       response,
-      Qwen3Response(id: id, thinkingContent: nil, response: TestResponse(text: "blob"))
+      Qwen3Completion(id: id, thinkingContent: nil, response: TestResponse(text: "blob"))
     )
   }
 
   @Test
   func `Loads Custom Response Type From String With Thinking Content`() throws {
     let id = CactusMessageID()
-    let response = Qwen3Response<TestResponse>(
+    let response = Qwen3Completion<TestResponse>(
       cactusResponse: CactusResponse(id: id, content: sampleThinkingResponse)
     )
     expectNoDifference(
       response,
-      Qwen3Response(
+      Qwen3Completion(
         id: id,
         thinkingContent: """
           Okay, the user is asking about the meaning of life. First, I need to acknowledge that this \
@@ -68,12 +68,12 @@ struct `Qwen3Response tests` {
   @Test
   func `Loads Custom Response Type From String With Partial Thinking Content`() throws {
     let id = CactusMessageID()
-    let response = Qwen3Response<TestResponse>(
+    let response = Qwen3Completion<TestResponse>(
       cactusResponse: CactusResponse(id: id, content: samplePartialThinkingResponse)
     )
     expectNoDifference(
       response,
-      Qwen3Response(
+      Qwen3Completion(
         id: id,
         thinkingContent:
           "Okay, the user is asking about the meaning of life. First, I need to acknowledge that this",
@@ -87,7 +87,7 @@ struct `Qwen3Response tests` {
   @Test
   func `Formats Prompt Content Without Thinking Content`() throws {
     let id = CactusMessageID()
-    let response = Qwen3Response<String>(
+    let response = Qwen3Completion<String>(
       cactusResponse: CactusResponse(id: id, content: "This is cool")
     )
     let components = try response.defaultMessageComponents()
@@ -98,7 +98,7 @@ struct `Qwen3Response tests` {
   @Test
   func `Formats Prompt Content With Thinking Content`() throws {
     let id = CactusMessageID()
-    let response = Qwen3Response<String>(
+    let response = Qwen3Completion<String>(
       cactusResponse: CactusResponse(id: id, content: sampleThinkingResponse)
     )
     let components = try response.defaultMessageComponents()

@@ -11,14 +11,14 @@ struct `CactusModelAgent tests` {
     let url = try await CactusLanguageModel.testModelURL(slug: "qwen3-0.6")
 
     let session = CactusAgenticSession(
-      CactusModelAgent<String, Qwen3Response<String>>(.fromModelURL(url)) {
+      CactusModelAgent<String, Qwen3Completion<String>>(.fromModelURL(url)) {
         "You are a philosopher who can philosophize about things."
       }
     )
 
     let response = try await session.respond(to: "What is the meaning of life?")
     withExpectedIssue {
-      assertSnapshot(of: response, as: .json, record: true)
+      assertSnapshot(of: response, as: .dump, record: true)
     }
   }
 
@@ -27,7 +27,7 @@ struct `CactusModelAgent tests` {
     let url = try await CactusLanguageModel.testModelURL(slug: "qwen3-0.6")
 
     let session = CactusAgenticSession(
-      CactusModelAgent<CactusPromptContent, Qwen3Response<String>>(.fromModelURL(url)) {
+      CactusModelAgent<CactusPromptContent, Qwen3Completion<String>>(.fromModelURL(url)) {
         "You are a philosopher who can philosophize about things."
       }
     )
@@ -39,7 +39,7 @@ struct `CactusModelAgent tests` {
       }
     )
     withExpectedIssue {
-      assertSnapshot(of: response, as: .json, record: true)
+      assertSnapshot(of: response, as: .dump, record: true)
     }
   }
 }
