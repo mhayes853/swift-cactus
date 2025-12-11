@@ -1,4 +1,4 @@
-public struct PassthroughAgent<Input: Sendable, Child: CactusAgent>: CactusAgent
+public struct Passthrough<Input: Sendable, Child: CactusAgent>: CactusAgent
 where Child.Input == Input {
   private let child: Child
 

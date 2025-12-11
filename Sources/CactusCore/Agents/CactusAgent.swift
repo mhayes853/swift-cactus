@@ -15,6 +15,8 @@ public struct CactusAgentRequest<Input> {
   }
 }
 
+extension CactusAgentRequest: Sendable where Input: Sendable {}
+
 // MARK: - CactusAgentResponse
 
 public struct CactusAgentResponse<Output: Sendable>: Sendable {
