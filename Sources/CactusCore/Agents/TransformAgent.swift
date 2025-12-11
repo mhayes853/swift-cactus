@@ -42,8 +42,18 @@ public struct _TransformInputAgent<Base: CactusAgent, Input>: CactusAgent {
 // MARK: - TransformOutput
 
 extension CactusAgent {
+  public func inputAsOutput() -> _TransformOutputAgent<Self, Input> where Input: Sendable {
+    self.transformOutput { $1 }
+  }
+
   public func transformOutput<Output>(
     _ transform: @escaping (Self.Output) throws -> Output
+  ) -> _TransformOutputAgent<Self, Output> {
+    self.transformOutput { output, _ in try transform(output) }
+  }
+
+  public func transformOutput<Output>(
+    _ transform: @escaping (Self.Output, Input) throws -> Output
   ) -> _TransformOutputAgent<Self, Output> {
     _TransformOutputAgent(base: self, transform: transform)
   }
@@ -51,7 +61,7 @@ extension CactusAgent {
 
 public struct _TransformOutputAgent<Base: CactusAgent, Output: Sendable>: CactusAgent {
   let base: Base
-  let transform: (Base.Output) throws -> Output
+  let transform: (Base.Output, Base.Input) throws -> Output
 
   public func _build(
     graph: inout CactusAgentGraph,
