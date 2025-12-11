@@ -15,7 +15,7 @@ public struct WhisperTranscribeAgent: CactusAgent {
     self.access = access
   }
 
-  public func build(
+  public func _build(
     graph: inout CactusAgentGraph,
     at nodeId: CactusAgentGraph.Node.ID,
     in environment: CactusEnvironmentValues
@@ -28,7 +28,7 @@ public struct WhisperTranscribeAgent: CactusAgent {
     )
   }
 
-  public nonisolated(nonsending) func stream(
+  public nonisolated(nonsending) func _stream(
     request: CactusAgentRequest<WhisperTranscribePrompt>,
     into continuation: CactusAgentStream<WhisperTranscription>.Continuation
   ) async throws -> CactusAgentStream<WhisperTranscription>.Response {

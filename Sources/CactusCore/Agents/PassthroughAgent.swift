@@ -6,7 +6,7 @@ where Child.Input == Input {
     self.child = child()
   }
 
-  public func build(
+  public func _build(
     graph: inout CactusAgentGraph,
     at nodeId: CactusAgentGraph.Node.ID,
     in environment: CactusEnvironmentValues
@@ -16,10 +16,10 @@ where Child.Input == Input {
       fields: CactusAgentGraph.Node.Fields(label: "PassthroughAgent")
     )
     guard let node else { return unableToAddGraphNode() }
-    self.child.build(graph: &graph, at: node.id, in: environment)
+    self.child._build(graph: &graph, at: node.id, in: environment)
   }
 
-  public nonisolated(nonsending) func stream(
+  public nonisolated(nonsending) func _stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Input>.Continuation
   ) async throws -> CactusAgentStream<Input>.Response {

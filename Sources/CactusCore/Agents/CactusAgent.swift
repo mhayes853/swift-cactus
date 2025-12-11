@@ -37,16 +37,16 @@ public protocol CactusAgent<Input, Output> {
 
   associatedtype Body
 
-  func build(
+  @CactusAgentBuilder<Input, Output>
+  func body(environment: CactusEnvironmentValues) -> Body
+
+  func _build(
     graph: inout CactusAgentGraph,
     at nodeId: CactusAgentGraph.Node.ID,
     in environment: CactusEnvironmentValues
   )
 
-  @CactusAgentBuilder<Input, Output>
-  func body(environment: CactusEnvironmentValues) -> Body
-
-  nonisolated(nonsending) func stream(
+  nonisolated(nonsending) func _stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws -> CactusAgentStream<Output>.Response
@@ -67,7 +67,7 @@ extension CactusAgent where Body == Never {
 }
 
 extension CactusAgent where Body: CactusAgent<Input, Output> {
-  public func build(
+  public func _build(
     graph: inout CactusAgentGraph,
     at nodeId: CactusAgentGraph.Node.ID,
     in environment: CactusEnvironmentValues
@@ -77,15 +77,15 @@ extension CactusAgent where Body: CactusAgent<Input, Output> {
       fields: CactusAgentGraph.Node.Fields(label: typeName(Self.self))
     )
     guard let node else { return unableToAddGraphNode() }
-    self.body(environment: environment).build(graph: &graph, at: node.id, in: environment)
+    self.body(environment: environment)._build(graph: &graph, at: node.id, in: environment)
   }
 
   @inlinable
-  public nonisolated(nonsending) func stream(
+  public nonisolated(nonsending) func _stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws -> CactusAgentStream<Output>.Response {
     try await self.body(environment: request.environment)
-      .stream(request: request, into: continuation)
+      ._stream(request: request, into: continuation)
   }
 }

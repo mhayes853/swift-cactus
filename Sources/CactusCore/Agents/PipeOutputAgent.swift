@@ -17,7 +17,7 @@ where Base.Output == Piped.Input {
   let base: Base
   let piped: Piped
 
-  public func build(
+  public func _build(
     graph: inout CactusAgentGraph,
     at nodeId: CactusAgentGraph.Node.ID,
     in environment: CactusEnvironmentValues
@@ -29,11 +29,11 @@ where Base.Output == Piped.Input {
       )
     )
     guard let node = nodeId else { return unableToAddGraphNode() }
-    self.base.build(graph: &graph, at: node.id, in: environment)
-    self.piped.build(graph: &graph, at: node.id, in: environment)
+    self.base._build(graph: &graph, at: node.id, in: environment)
+    self.piped._build(graph: &graph, at: node.id, in: environment)
   }
 
-  public nonisolated(nonsending) func stream(
+  public nonisolated(nonsending) func _stream(
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Piped.Output>.Continuation
   ) async throws -> CactusAgentStream<Piped.Output>.Response {

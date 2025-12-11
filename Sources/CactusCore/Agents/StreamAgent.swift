@@ -18,7 +18,7 @@ public struct Stream<Input: Sendable, Output: Sendable>: CactusAgent {
   }
 
   @inlinable
-  public func build(
+  public func _build(
     graph: inout CactusAgentGraph,
     at nodeId: CactusAgentGraph.Node.ID,
     in environment: CactusEnvironmentValues
@@ -27,7 +27,7 @@ public struct Stream<Input: Sendable, Output: Sendable>: CactusAgent {
   }
 
   @inlinable
-  public nonisolated(nonsending) func stream(
+  public nonisolated(nonsending) func _stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws -> CactusAgentStream<Output>.Response {

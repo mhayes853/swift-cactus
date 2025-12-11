@@ -47,7 +47,7 @@ where Left.Input == Right.Input, Left.Output == Right.Output {
   case left(Left)
   case right(Right)
 
-  public func build(
+  public func _build(
     graph: inout CactusAgentGraph,
     at nodeId: CactusAgentGraph.Node.ID,
     in environment: CactusEnvironmentValues
@@ -59,21 +59,21 @@ where Left.Input == Right.Input, Left.Output == Right.Output {
     guard let node else { return unableToAddGraphNode() }
     switch self {
     case .left(let left):
-      left.build(graph: &graph, at: node.id, in: environment)
+      left._build(graph: &graph, at: node.id, in: environment)
     case .right(let right):
-      right.build(graph: &graph, at: node.id, in: environment)
+      right._build(graph: &graph, at: node.id, in: environment)
     }
   }
 
-  public nonisolated(nonsending) func stream(
+  public nonisolated(nonsending) func _stream(
     request: CactusAgentRequest<Left.Input>,
     into continuation: CactusAgentStream<Left.Output>.Continuation
   ) async throws -> CactusAgentStream<Left.Output>.Response {
     switch self {
     case .left(let left):
-      try await left.stream(request: request, into: continuation)
+      try await left._stream(request: request, into: continuation)
     case .right(let right):
-      try await right.stream(request: request, into: continuation)
+      try await right._stream(request: request, into: continuation)
     }
   }
 }

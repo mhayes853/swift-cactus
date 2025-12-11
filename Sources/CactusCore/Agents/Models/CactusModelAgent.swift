@@ -73,7 +73,7 @@ public struct CactusModelAgent<
     self.transcriptKey = transcriptKey
   }
 
-  public func build(
+  public func _build(
     graph: inout CactusAgentGraph,
     at nodeId: CactusAgentGraph.Node.ID,
     in environment: CactusEnvironmentValues
@@ -86,7 +86,7 @@ public struct CactusModelAgent<
     )
   }
 
-  public nonisolated(nonsending) func stream(
+  public nonisolated(nonsending) func _stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws -> CactusAgentStream<Output>.Response {

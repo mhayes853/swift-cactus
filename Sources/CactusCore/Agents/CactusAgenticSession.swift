@@ -82,14 +82,14 @@ extension CactusAgenticSession {
       request: CactusAgentRequest<Input>,
       into continuation: CactusAgentStream<Output>.Continuation
     ) async throws -> CactusAgentStream<Output>.Response {
-      try await self.agent.stream(request: request, into: continuation)
+      try await self.agent._stream(request: request, into: continuation)
     }
 
     func graph(for environment: CactusEnvironmentValues) -> CactusAgentGraph {
       var graph = CactusAgentGraph(
         root: CactusAgentGraph.Node.Fields(label: "CactusAgenticSessionGraphRoot")
       )
-      self.agent.build(graph: &graph, at: graph.root.id, in: environment)
+      self.agent._build(graph: &graph, at: graph.root.id, in: environment)
       return graph
     }
   }

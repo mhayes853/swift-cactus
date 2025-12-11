@@ -16,7 +16,7 @@ public struct _TransformInputAgent<Base: CactusAgent, Input>: CactusAgent {
   let base: Base
   let transform: (Input) throws -> Base.Input
 
-  public func build(
+  public func _build(
     graph: inout CactusAgentGraph,
     at nodeId: CactusAgentGraph.Node.ID,
     in environment: CactusEnvironmentValues
@@ -28,10 +28,10 @@ public struct _TransformInputAgent<Base: CactusAgent, Input>: CactusAgent {
       )
     )
     guard let node else { return unableToAddGraphNode() }
-    self.base.build(graph: &graph, at: node.id, in: environment)
+    self.base._build(graph: &graph, at: node.id, in: environment)
   }
 
-  public nonisolated(nonsending) func stream(
+  public nonisolated(nonsending) func _stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Base.Output>.Continuation
   ) async throws -> CactusAgentStream<Base.Output>.Response {
@@ -53,7 +53,7 @@ public struct _TransformOutputAgent<Base: CactusAgent, Output: Sendable>: Cactus
   let base: Base
   let transform: (Base.Output) throws -> Output
 
-  public func build(
+  public func _build(
     graph: inout CactusAgentGraph,
     at nodeId: CactusAgentGraph.Node.ID,
     in environment: CactusEnvironmentValues
@@ -65,10 +65,10 @@ public struct _TransformOutputAgent<Base: CactusAgent, Output: Sendable>: Cactus
       )
     )
     guard let node else { return unableToAddGraphNode() }
-    self.base.build(graph: &graph, at: node.id, in: environment)
+    self.base._build(graph: &graph, at: node.id, in: environment)
   }
 
-  public nonisolated(nonsending) func stream(
+  public nonisolated(nonsending) func _stream(
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws -> CactusAgentStream<Output>.Response {

@@ -3,7 +3,7 @@ import Cactus
 // MARK: - NeverAgent
 
 struct NeverAgent: CactusAgent {
-  func build(
+  func _build(
     graph: inout CactusAgentGraph,
     at nodeId: CactusAgentGraph.Node.ID,
     in environment: CactusEnvironmentValues
@@ -11,7 +11,7 @@ struct NeverAgent: CactusAgent {
     graph.appendChild(to: nodeId, fields: CactusAgentGraph.Node.Fields(label: "NeverAgent"))
   }
 
-  nonisolated(nonsending) func stream(
+  nonisolated(nonsending) func _stream(
     request: CactusAgentRequest<String>,
     into continuation: CactusAgentStream<String>.Continuation
   ) async throws -> CactusAgentStream<String>.Response {
@@ -23,7 +23,7 @@ struct NeverAgent: CactusAgent {
 // MARK: - PassthroughAgent
 
 struct PassthroughAgent: CactusAgent {
-  func build(
+  func _build(
     graph: inout CactusAgentGraph,
     at nodeId: CactusAgentGraph.Node.ID,
     in environment: CactusEnvironmentValues
@@ -31,7 +31,7 @@ struct PassthroughAgent: CactusAgent {
     graph.appendChild(to: nodeId, fields: CactusAgentGraph.Node.Fields(label: "PassthroughAgent"))
   }
 
-  nonisolated(nonsending) func stream(
+  nonisolated(nonsending) func _stream(
     request: CactusAgentRequest<String>,
     into continuation: CactusAgentStream<String>.Continuation
   ) async throws -> CactusAgentStream<String>.Response {
