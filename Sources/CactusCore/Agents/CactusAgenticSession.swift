@@ -52,8 +52,11 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
     }
   }
 
-  public func respond(to message: sending Input) async throws -> Response {
-    let stream = await self.stream(for: message)
+  public func respond(
+    to message: sending Input,
+    in environment: CactusEnvironmentValues = CactusEnvironmentValues()
+  ) async throws -> Response {
+    let stream = await self.stream(for: message, in: environment)
     return try await withTaskCancellationHandler {
       try await stream.collectFinalResponse()
     } onCancel: {
