@@ -40,12 +40,6 @@ public protocol CactusAgent<Input, Output> {
   @CactusAgentBuilder<Input, Output>
   func body(environment: CactusEnvironmentValues) -> Body
 
-  func _build(
-    graph: inout CactusAgentGraph,
-    at nodeId: CactusAgentGraph.Node.ID,
-    in environment: CactusEnvironmentValues
-  )
-
   nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
@@ -67,19 +61,6 @@ extension CactusAgent where Body == Never {
 }
 
 extension CactusAgent where Body: CactusAgent<Input, Output> {
-  public func _build(
-    graph: inout CactusAgentGraph,
-    at nodeId: CactusAgentGraph.Node.ID,
-    in environment: CactusEnvironmentValues
-  ) {
-    let node = graph.appendChild(
-      to: nodeId,
-      fields: CactusAgentGraph.Node.Fields(label: typeName(Self.self))
-    )
-    guard let node else { return unableToAddGraphNode() }
-    self.body(environment: environment)._build(graph: &graph, at: node.id, in: environment)
-  }
-
   @inlinable
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,

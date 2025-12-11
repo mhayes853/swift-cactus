@@ -4,10 +4,7 @@ public struct CactusAgentStream<Output: Sendable>: Sendable {
   private let storage: Storage
   private let task: Task<Void, any Error>
 
-  public init(
-    graph: CactusAgentGraph,
-    run: sending @escaping (Continuation) async throws -> Response
-  ) {
+  public init(run: sending @escaping (Continuation) async throws -> Response) {
     let storage = Storage()
     let continuation = Continuation(storage: storage)
     self.storage = storage
@@ -58,8 +55,8 @@ extension CactusAgentStream {
   public func collectFinalResponse<Value>(
     tag: some Hashable,
     as type: Value.Type
-  ) async throws -> CactusAgentResponse<Value>? {
-    nil
+  ) async throws -> CactusAgentResponse<Value> {
+    fatalError()
   }
 
   public func stop() {
@@ -92,8 +89,8 @@ extension CactusAgentStream {
   public func responsePartials<Partial: ConvertibleFromCactusTokenStream>(
     tag: some Hashable,
     as type: Partial.Type
-  ) -> CactusAgentStreamPartials<Partial>? {
-    nil
+  ) -> CactusAgentStreamPartials<Partial> {
+    CactusAgentStreamPartials()
   }
 
   public func onResponsePartial<Partial: ConvertibleFromCactusTokenStream>(

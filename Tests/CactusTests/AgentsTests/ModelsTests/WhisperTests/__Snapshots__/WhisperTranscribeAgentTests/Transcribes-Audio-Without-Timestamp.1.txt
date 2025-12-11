@@ -2,16 +2,16 @@
   ▿ metrics: 1 key/value pair
     ▿ (2 elements)
       ▿ key: CactusMessageID
-        - rawValue: E6458763-C6B2-4702-95C5-2478BF893BF2
+        - rawValue: D51A5DDB-7D16-4427-ACFD-BE3B730CE32A
       ▿ value: CactusMessageMetric
-        - decodeTokens: 20
+        - decodeTokens: 1
         - prefillTokens: 4
-        - timeIntervalToFirstToken: 6.93225
-        - tokensPerSecond: 46.09
-        - totalTimeInterval: 7.34448
-        - totalTokens: 24
+        - timeIntervalToFirstToken: 0.9678
+        - tokensPerSecond: 0.0
+        - totalTimeInterval: 0.96781
+        - totalTokens: 5
   ▿ output: WhisperTranscription
     ▿ content: Content
-      - fullTranscript: " Τα πόλη της Θεός δεν μπορεί να ανοίξει."
+      - fullTranscript: ""
     ▿ id: CactusMessageID
-      - rawValue: E6458763-C6B2-4702-95C5-2478BF893BF2
+      - rawValue: D51A5DDB-7D16-4427-ACFD-BE3B730CE32A

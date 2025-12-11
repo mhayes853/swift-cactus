@@ -1,0 +1,18 @@
+▿ CactusAgentResponse<Qwen3Completion<String>>
+  ▿ metrics: 1 key/value pair
+    ▿ (2 elements)
+      ▿ key: CactusMessageID
+        - rawValue: 787B14B3-ED79-4A03-BCFC-767472E8C325
+      ▿ value: CactusMessageMetric
+        - decodeTokens: 64
+        - prefillTokens: 35
+        - timeIntervalToFirstToken: 0.61094
+        - tokensPerSecond: 10.69
+        - totalTimeInterval: 6.50185
+        - totalTokens: 99
+  ▿ output: Qwen3Completion<String>
+    ▿ id: CactusMessageID
+      - rawValue: 787B14B3-ED79-4A03-BCFC-767472E8C325
+    - response: "The meaning of life is an open question that has no definitive answer. It depends on individual values and beliefs. Some people may find meaning in personal goals or achievements, while others might seek spiritual fulfillment or connection with others. Ultimately, the pursuit of meaning is subjective and varies from person to person."
+    ▿ thinkingContent: Optional<String>
+      - some: ""

@@ -21,28 +21,17 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
     self.agentActor = AgentActor(agent)
   }
 
-  public func graph(
-    for environment: CactusEnvironmentValues = CactusEnvironmentValues()
-  ) async -> CactusAgentGraph {
-    var environment = environment
-    environment.sessionId = self.id
-    return await self.agentActor.graph(for: environment)
-  }
-
   public func stream(
     for message: sending Input,
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) async -> CactusAgentStream<Output> {
     var environment = environment
     environment.sessionId = self.id
-
-    let graph = await self.agentActor.graph(for: environment)
     let request = UnsafeTransfer(
       value: CactusAgentRequest(input: message, environment: environment)
     )
-
     return self.withResponseTask {
-      let stream = CactusAgentStream<Output>(graph: graph) { continuation in
+      let stream = CactusAgentStream<Output> { continuation in
         let response = try await self.agentActor.stream(request: request.value, into: continuation)
         self.withResponseTask { $0 = nil }
         return response
@@ -86,14 +75,6 @@ extension CactusAgenticSession {
       into continuation: CactusAgentStream<Output>.Continuation
     ) async throws -> CactusAgentStream<Output>.Response {
       try await self.agent.stream(request: request, into: continuation)
-    }
-
-    func graph(for environment: CactusEnvironmentValues) -> CactusAgentGraph {
-      var graph = CactusAgentGraph(
-        root: CactusAgentGraph.Node.Fields(label: "CactusAgenticSessionGraphRoot")
-      )
-      self.agent._build(graph: &graph, at: graph.root.id, in: environment)
-      return graph
     }
   }
 }
