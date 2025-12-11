@@ -18,15 +18,6 @@ public struct Stream<Input: Sendable, Output: Sendable>: CactusAgent {
   }
 
   @inlinable
-  public func _build(
-    graph: inout CactusAgentGraph,
-    at nodeId: CactusAgentGraph.Node.ID,
-    in environment: CactusEnvironmentValues
-  ) {
-    graph.appendChild(to: nodeId, fields: CactusAgentGraph.Node.Fields(label: "Stream"))
-  }
-
-  @inlinable
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation

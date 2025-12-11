@@ -8,30 +8,6 @@ public struct _TagAgent<Base: CactusAgent, Tag: Hashable & Sendable>: CactusAgen
   let base: Base
   let tag: Tag
 
-  private var tagDescription: String {
-    if self.tag is any StringProtocol {
-      "\"\(self.tag)\""
-    } else {
-      "\(self.tag)"
-    }
-  }
-
-  public func _build(
-    graph: inout CactusAgentGraph,
-    at nodeId: CactusAgentGraph.Node.ID,
-    in environment: CactusEnvironmentValues
-  ) {
-    let node = graph.appendChild(
-      to: nodeId,
-      fields: CactusAgentGraph.Node.Fields(
-        label: "_TagAgent (\(self.tagDescription))",
-        tag: self.tag
-      )
-    )
-    guard let node else { return unableToAddGraphNode() }
-    self.base._build(graph: &graph, at: node.id, in: environment)
-  }
-
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Base.Output>.Continuation

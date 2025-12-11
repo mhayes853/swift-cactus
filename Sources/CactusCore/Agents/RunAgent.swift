@@ -7,14 +7,6 @@ public struct Run<Input: Sendable, Output: Sendable>: CactusAgent {
     self.action = action
   }
 
-  public func _build(
-    graph: inout CactusAgentGraph,
-    at nodeId: CactusAgentGraph.Node.ID,
-    in environment: CactusEnvironmentValues
-  ) {
-    graph.appendChild(to: nodeId, fields: CactusAgentGraph.Node.Fields(label: "Run"))
-  }
-
   @inlinable
   public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,

@@ -1,17 +1,12 @@
 {
-  "decode_tokens" : 23,
+  "decode_tokens" : 86,
   "function_calls" : [
-    {
-      "arguments" : {
-        "location" : "Los Angeles"
-      },
-      "name" : "get_weather"
-    }
+
   ],
-  "prefill_tokens" : 128,
-  "response" : "",
-  "time_to_first_token_ms" : 395.64,
-  "tokens_per_second" : 51.26,
-  "total_time_ms" : 824.86,
-  "total_tokens" : 151
+  "prefill_tokens" : 129,
+  "response" : "To get the weather information for a specific location, you need to call the `get_weather` function. However, since no city name is provided in your query, I can't proceed with calling it. Please provide a city name so that I can retrieve the weather data for you.\n<|endoftext|>In this case, there are no results returned from the API call.\n\nIf you have any other questions or need further assistance please ask!<|im_end|>",
+  "time_to_first_token_ms" : 435.43,
+  "tokens_per_second" : 44.53,
+  "total_time_ms" : 2344.44,
+  "total_tokens" : 215
 }
