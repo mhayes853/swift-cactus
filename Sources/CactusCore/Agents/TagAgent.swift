@@ -32,10 +32,10 @@ public struct _TagAgent<Base: CactusAgent, Tag: Hashable & Sendable>: CactusAgen
     self.base._build(graph: &graph, at: node.id, in: environment)
   }
 
-  public nonisolated(nonsending) func _stream(
+  public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Base.Output>.Continuation
   ) async throws -> CactusAgentStream<Base.Output>.Response {
-    try await self.base._stream(request: request, into: continuation)
+    try await self.base.stream(request: request, into: continuation)
   }
 }

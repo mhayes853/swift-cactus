@@ -46,7 +46,7 @@ public protocol CactusAgent<Input, Output> {
     in environment: CactusEnvironmentValues
   )
 
-  nonisolated(nonsending) func _stream(
+  nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws -> CactusAgentStream<Output>.Response
@@ -81,11 +81,11 @@ extension CactusAgent where Body: CactusAgent<Input, Output> {
   }
 
   @inlinable
-  public nonisolated(nonsending) func _stream(
+  public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws -> CactusAgentStream<Output>.Response {
     try await self.body(environment: request.environment)
-      ._stream(request: request, into: continuation)
+      .stream(request: request, into: continuation)
   }
 }

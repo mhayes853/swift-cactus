@@ -33,7 +33,7 @@ where Base.Output == Piped.Input {
     self.piped._build(graph: &graph, at: node.id, in: environment)
   }
 
-  public nonisolated(nonsending) func _stream(
+  public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Piped.Output>.Continuation
   ) async throws -> CactusAgentStream<Piped.Output>.Response {

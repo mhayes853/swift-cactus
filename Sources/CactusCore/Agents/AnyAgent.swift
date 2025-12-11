@@ -18,10 +18,10 @@ public struct AnyAgent<Input, Output: Sendable>: CactusAgent {
     self.base._build(graph: &graph, at: node.id, in: environment)
   }
 
-  public nonisolated(nonsending) func _stream(
+  public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws -> CactusAgentStream<Output>.Response {
-    try await self.base._stream(request: request, into: continuation)
+    try await self.base.stream(request: request, into: continuation)
   }
 }

@@ -28,7 +28,7 @@ public struct WhisperTranscribeAgent: CactusAgent {
     )
   }
 
-  public nonisolated(nonsending) func _stream(
+  public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<WhisperTranscribePrompt>,
     into continuation: CactusAgentStream<WhisperTranscription>.Continuation
   ) async throws -> CactusAgentStream<WhisperTranscription>.Response {

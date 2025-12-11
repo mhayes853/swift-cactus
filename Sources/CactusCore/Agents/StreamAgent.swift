@@ -27,7 +27,7 @@ public struct Stream<Input: Sendable, Output: Sendable>: CactusAgent {
   }
 
   @inlinable
-  public nonisolated(nonsending) func _stream(
+  public nonisolated(nonsending) func stream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws -> CactusAgentStream<Output>.Response {
