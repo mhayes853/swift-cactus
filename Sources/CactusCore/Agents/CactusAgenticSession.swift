@@ -9,6 +9,7 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
   private let agentActor: AgentActor
   private let observationRegistrar = _ObservationRegistrar()
   private let _responseStream = Lock<CactusAgentStream<Output>?>(nil)
+  private let memoryStore = MemoryStore()
 
   public let id = UUID()
 
@@ -27,6 +28,8 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
   ) async -> CactusAgentStream<Output> {
     var environment = environment
     environment.sessionId = self.id
+    environment.memoryStore = self.memoryStore
+
     let request = UnsafeTransfer(
       value: CactusAgentRequest(input: message, environment: environment)
     )
