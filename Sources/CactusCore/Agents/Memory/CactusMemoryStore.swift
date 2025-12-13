@@ -7,7 +7,15 @@ public final class CactusMemoryStore: Sendable {
 
   public func value<Value>(
     at location: some CactusMemoryLocation<Value>,
-    in environment: CactusEnvironmentValues
+    in environment: CactusEnvironmentValues = CactusEnvironmentValues(),
+    as: Value.Type
+  ) -> Value? {
+    self.value(at: location, in: environment)
+  }
+
+  public func value<Value>(
+    at location: some CactusMemoryLocation<Value>,
+    in environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) -> Value? {
     self.values.withLock { $0[self.key(for: location, in: environment)] as? Value }
   }
@@ -15,7 +23,7 @@ public final class CactusMemoryStore: Sendable {
   public func store<Value>(
     value: Value,
     at location: some CactusMemoryLocation<Value>,
-    in environment: CactusEnvironmentValues
+    in environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) {
     self.values.withLock { $0[self.key(for: location, in: environment)] = value }
   }

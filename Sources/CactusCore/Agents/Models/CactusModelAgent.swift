@@ -73,7 +73,7 @@ public struct CactusModelAgent<
     self.transcriptKey = transcriptKey
   }
 
-  public nonisolated(nonsending) func stream(
+  public nonisolated(nonsending) func primitiveStream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws -> CactusAgentStream<Output>.Response {

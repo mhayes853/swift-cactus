@@ -47,7 +47,7 @@ where Left.Input == Right.Input, Left.Output == Right.Output {
   case left(Left)
   case right(Right)
 
-  public nonisolated(nonsending) func stream(
+  public nonisolated(nonsending) func primitiveStream(
     request: CactusAgentRequest<Left.Input>,
     into continuation: CactusAgentStream<Left.Output>.Continuation
   ) async throws -> CactusAgentStream<Left.Output>.Response {

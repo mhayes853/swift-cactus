@@ -18,12 +18,12 @@ public struct _TransformEnvironmentAgent<Base: CactusAgent>: CactusAgent {
   let base: Base
   let transform: (inout CactusEnvironmentValues) -> Void
 
-  public nonisolated(nonsending) func stream(
+  public nonisolated(nonsending) func primitiveStream(
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Base.Output>.Continuation
   ) async throws -> CactusAgentStream<Base.Output>.Response {
     var request = request
     transform(&request.environment)
-    return try await self.base.stream(request: request, into: continuation)
+    return try await self.base.primitiveStream(request: request, into: continuation)
   }
 }

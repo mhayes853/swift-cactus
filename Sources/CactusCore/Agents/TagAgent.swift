@@ -8,7 +8,7 @@ public struct _TagAgent<Base: CactusAgent, Tag: Hashable & Sendable>: CactusAgen
   let base: Base
   let tag: Tag
 
-  public nonisolated(nonsending) func stream(
+  public nonisolated(nonsending) func primitiveStream(
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Base.Output>.Continuation
   ) async throws -> CactusAgentStream<Base.Output>.Response {

@@ -272,6 +272,28 @@ struct `Memory tests` {
 
     expectNoDifference(resp.output, "blob")
   }
+
+  @Test
+  func `Memory Works For Primitive Agents`() async throws {
+    struct MyAgent: CactusAgent {
+      @Memory(.inMemory("primitiveCount").scopedToSession) var count = 0
+
+      nonisolated(nonsending) func primitiveStream(
+        request: CactusAgentRequest<String>,
+        into continuation: CactusAgentStream<Int>.Continuation
+      ) async throws -> CactusAgentStream<Int>.Response {
+        self.count += request.input.count
+        return .finalOutput(self.count)
+      }
+    }
+
+    let session = CactusAgenticSession(MyAgent())
+    let r1 = try await session.respond(to: "blob")
+    let r2 = try await session.respond(to: "throb")
+
+    expectNoDifference(r1.output, 4)
+    expectNoDifference(r2.output, 9)
+  }
 }
 
 private struct CounterAgent: CactusAgent {
