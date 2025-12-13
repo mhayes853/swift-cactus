@@ -294,6 +294,14 @@ struct `Memory tests` {
     expectNoDifference(r1.output, 4)
     expectNoDifference(r2.output, 9)
   }
+
+  @Test
+  func `Reports Issue When Accessing Memory Without Hydration`() {
+    @Memory("something") var count = 0
+
+    withExpectedIssue { _ = count }
+    withExpectedIssue { count = 10 }
+  }
 }
 
 private struct CounterAgent: CactusAgent {

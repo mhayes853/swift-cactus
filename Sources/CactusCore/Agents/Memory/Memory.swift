@@ -1,5 +1,7 @@
 import IssueReporting
 
+// MARK: - Memory
+
 @propertyWrapper
 public struct Memory<Value: Sendable>: Sendable {
   private struct State {
@@ -17,10 +19,18 @@ public struct Memory<Value: Sendable>: Sendable {
   private let _wrappedValue: @Sendable () -> Value
 
   public var wrappedValue: Value {
-    get { self.box.inner.withLock { $0.value(for: self.location) ?? self._wrappedValue() } }
+    get {
+      self.box.inner.withLock {
+        guard let value = $0.value(for: self.location) else {
+          unhydrated()
+          return self._wrappedValue()
+        }
+        return value
+      }
+    }
     nonmutating set {
       self.box.inner.withLock { state in
-        guard let env = state.environment else { return }
+        guard let env = state.environment else { return unhydrated() }
         env.memoryStore.store(value: newValue, at: self.location, in: env)
         self.flush(state: &state, in: env, shouldReportIssue: true)
       }
@@ -114,4 +124,18 @@ public struct Memory<Value: Sendable>: Sendable {
     state.flushTask = task
     return task
   }
+}
+
+// MARK: - Helpers
+
+private func unhydrated() {
+  reportIssue(
+    """
+    An unhydrated @Memory instance tried to access its value or modify its value.
+
+    This is generally considered an application logic error, and occurs when you either try to \
+    use the @Memory property wrapper outside an agent, or when you call 'primitiveStream' on an \
+    agent.
+    """
+  )
 }
