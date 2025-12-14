@@ -71,7 +71,7 @@ extension CactusAgenticSession where Input == Void {
   public func respond(
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) async throws -> Response {
-    try await self.respond(to: ())
+    try await self.respond(to: (), in: environment)
   }
 }
 
