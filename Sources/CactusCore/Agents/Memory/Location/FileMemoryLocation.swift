@@ -50,7 +50,10 @@ public final class FileMemoryLocation<Value: Codable & Sendable>: CactusMemoryLo
   public func save(value: Value, in environment: CactusEnvironmentValues) async throws {
     let throttler = await FileThrottlerPool.shared.throttler(for: self.url)
     let data = try self.encoder.withLock { try $0.encode(value) }
-    try await throttler.write(data: data)
+    let isThrottling = try await throttler.write(data: data)
+    if !isThrottling {
+      await FileThrottlerPool.shared.removeThrottler(for: self.url)
+    }
   }
 }
 
@@ -59,28 +62,19 @@ public final class FileMemoryLocation<Value: Codable & Sendable>: CactusMemoryLo
 private final actor FileThrottlerPool {
   static let shared = FileThrottlerPool()
 
-  private struct Entry {
-    var count: Int
-    let throttler: FileThrottler
-  }
-
-  private var throttlers = [URL: Entry]()
+  private var throttlers = [URL: FileThrottler]()
 
   func throttler(for url: URL) -> FileThrottler {
-    if self.throttlers[url] != nil {
-      self.throttlers[url]?.count += 1
-      return self.throttlers[url]!.throttler
+    if let throttler = self.throttlers[url] {
+      return throttler
     }
     let throttler = FileThrottler(url: url)
-    self.throttlers[url] = Entry(count: 1, throttler: throttler)
+    self.throttlers[url] = throttler
     return throttler
   }
 
-  func release(for url: URL) {
-    self.throttlers[url]?.count -= 1
-    if self.throttlers[url]?.count == 0 {
-      self.throttlers[url] = nil
-    }
+  func removeThrottler(for url: URL) {
+    self.throttlers[url] = nil
   }
 }
 
@@ -100,20 +94,18 @@ private final actor FileThrottler {
     self.url = url
   }
 
-  func write(data: Data) async throws {
+  func write(data: Data) async throws -> Bool {
     if self.task == nil {
       try self.ensureFileDirectory()
-      try data.write(to: self.url)
-      self.task = Task {
-        try await self.throttle()
-        self.task = nil
-      }
+      try data.write(to: self.url, options: .atomic)
+      self.task = Task { try await self.throttle() }
     } else {
       self.throttledData = (data, shouldCreate: !self.fileExists)
       self.waiter?.resume()
       self.waiter = nil
       try await withUnsafeThrowingContinuation { self.waiter = $0 }
     }
+    return self.task != nil
   }
 
   private func throttle() async throws {
@@ -123,12 +115,14 @@ private final actor FileThrottler {
       guard let (data, shouldCreate) = self.throttledData else { return }
       if shouldCreate {
         try self.ensureFileDirectory()
-        try data.write(to: self.url)
+        try data.write(to: self.url, options: .atomic)
       } else if self.fileExists {
-        try data.write(to: self.url)
+        try data.write(to: self.url, options: .atomic)
       }
+      self.task = nil
       self.waiter?.resume()
     } catch {
+      self.task = nil
       self.waiter?.resume(throwing: error)
     }
   }
