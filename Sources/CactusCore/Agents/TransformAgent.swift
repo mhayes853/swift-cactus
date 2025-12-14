@@ -16,7 +16,7 @@ public struct _TransformInputAgent<Base: CactusAgent, Input>: CactusAgent {
   let base: Base
   let transform: (Input) throws -> Base.Input
 
-  public nonisolated(nonsending) func stream(
+  public nonisolated(nonsending) func primitiveStream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Base.Output>.Continuation
   ) async throws -> CactusAgentStream<Base.Output>.Response {
@@ -48,7 +48,7 @@ public struct _TransformOutputAgent<Base: CactusAgent, Output: Sendable>: Cactus
   let base: Base
   let transform: (Base.Output, Base.Input) throws -> Output
 
-  public nonisolated(nonsending) func stream(
+  public nonisolated(nonsending) func primitiveStream(
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws -> CactusAgentStream<Output>.Response {

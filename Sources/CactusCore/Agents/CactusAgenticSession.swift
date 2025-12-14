@@ -24,9 +24,10 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
   public func stream(
     for message: sending Input,
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
-  ) async -> CactusAgentStream<Output> {
+  ) -> CactusAgentStream<Output> {
     var environment = environment
     environment.sessionId = self.id
+
     let request = UnsafeTransfer(
       value: CactusAgentRequest(input: message, environment: environment)
     )
@@ -45,7 +46,7 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
     to message: sending Input,
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) async throws -> Response {
-    let stream = await self.stream(for: message, in: environment)
+    let stream = self.stream(for: message, in: environment)
     return try await withTaskCancellationHandler {
       try await stream.collectFinalResponse()
     } onCancel: {
@@ -57,6 +58,20 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
     self.observationRegistrar.withMutation(of: self, keyPath: \.isResponding) {
       self._responseStream.withLock { work(&$0) }
     }
+  }
+}
+
+extension CactusAgenticSession where Input == Void {
+  public func stream(
+    in environment: CactusEnvironmentValues = CactusEnvironmentValues()
+  ) -> CactusAgentStream<Output> {
+    self.stream(for: (), in: environment)
+  }
+
+  public func respond(
+    in environment: CactusEnvironmentValues = CactusEnvironmentValues()
+  ) async throws -> Response {
+    try await self.respond(to: ())
   }
 }
 
