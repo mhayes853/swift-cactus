@@ -20,6 +20,20 @@ extension PropertyListEncoder: TopLevelEncoder {}
   extension TOONEncoder: TopLevelEncoder {}
 #endif
 
+// MARK: - AnyTopLevelEncoder
+
+public struct AnyTopLevelEncoder<Encoded>: TopLevelEncoder {
+  private let encoder: any TopLevelEncoder<Encoded>
+
+  public init(_ encoder: any TopLevelEncoder<Encoded>) {
+    self.encoder = encoder
+  }
+
+  public func encode<T: Encodable>(_ value: T) throws -> Encoded {
+    try self.encoder.encode(value)
+  }
+}
+
 // MARK: - SendableTopLevelJSONEncoder
 
 @available(macOS, deprecated: 13, message: "Use JSONEncoder directly instead")
