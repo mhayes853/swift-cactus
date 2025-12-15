@@ -2,13 +2,13 @@
   ▿ metrics: 1 key/value pair
     ▿ (2 elements)
       ▿ key: CactusMessageID
-        - rawValue: B402BD4C-C015-4536-B501-C476398080B8
+        - rawValue: 1C2AB92D-AAC8-4208-8F9D-6F0556FC6239
       ▿ value: CactusMessageMetric
         - decodeTokens: 61
         - prefillTokens: 3
-        - timeIntervalToFirstToken: 6.92674
-        - tokensPerSecond: 15.99
-        - totalTimeInterval: 10.679969999999999
+        - timeIntervalToFirstToken: 5.78092
+        - tokensPerSecond: 24.48
+        - totalTimeInterval: 8.23178
         - totalTokens: 64
   ▿ output: WhisperTranscription
     ▿ content: Content
@@ -17,4 +17,4 @@
           - seconds: 0.0
           - transcript: " How? The power of a god cannot be overcome. Zanzan, this is the providence of the world. Even gods are merely beings restricted to the limited power determined by prophets. That power, although great, is not unlimited. That voice, Albrecht, how dare you!"
     ▿ id: CactusMessageID
-      - rawValue: B402BD4C-C015-4536-B501-C476398080B8
+      - rawValue: 1C2AB92D-AAC8-4208-8F9D-6F0556FC6239

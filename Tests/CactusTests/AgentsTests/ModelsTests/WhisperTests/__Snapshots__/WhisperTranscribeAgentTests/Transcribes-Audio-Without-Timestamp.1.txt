@@ -2,16 +2,16 @@
   ▿ metrics: 1 key/value pair
     ▿ (2 elements)
       ▿ key: CactusMessageID
-        - rawValue: D51A5DDB-7D16-4427-ACFD-BE3B730CE32A
+        - rawValue: A66D211F-4995-4BA7-986C-08F054987F5A
       ▿ value: CactusMessageMetric
         - decodeTokens: 1
         - prefillTokens: 4
-        - timeIntervalToFirstToken: 0.9678
+        - timeIntervalToFirstToken: 1.01058
         - tokensPerSecond: 0.0
-        - totalTimeInterval: 0.96781
+        - totalTimeInterval: 1.0106
         - totalTokens: 5
   ▿ output: WhisperTranscription
     ▿ content: Content
       - fullTranscript: ""
     ▿ id: CactusMessageID
-      - rawValue: D51A5DDB-7D16-4427-ACFD-BE3B730CE32A
+      - rawValue: A66D211F-4995-4BA7-986C-08F054987F5A

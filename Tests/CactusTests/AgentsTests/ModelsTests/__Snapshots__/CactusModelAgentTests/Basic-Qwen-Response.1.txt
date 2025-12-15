@@ -2,17 +2,17 @@
   ▿ metrics: 1 key/value pair
     ▿ (2 elements)
       ▿ key: CactusMessageID
-        - rawValue: 82D68068-8655-4F06-B2AF-E0207AA223DB
+        - rawValue: DE2CC6E8-AA81-4751-9461-6AB50977D861
       ▿ value: CactusMessageMetric
         - decodeTokens: 200
         - prefillTokens: 13
-        - timeIntervalToFirstToken: 0.22401
-        - tokensPerSecond: 28.64
-        - totalTimeInterval: 7.17115
+        - timeIntervalToFirstToken: 0.8513
+        - tokensPerSecond: 14.49
+        - totalTimeInterval: 14.58549
         - totalTokens: 213
   ▿ output: Qwen3Completion<String>
     ▿ id: CactusMessageID
-      - rawValue: 82D68068-8655-4F06-B2AF-E0207AA223DB
+      - rawValue: DE2CC6E8-AA81-4751-9461-6AB50977D861
     - response: ""
     ▿ thinkingContent: Optional<String>
-      - some: "Okay, the user wants to know how to create a web application using Python and Flask. Let me break this down step by step.\n\nFirst, I need to recall the basic setup for a Flask app. Start with creating an empty directory structure: \'app\' and inside \'app\', create files like __init__.py, routes.py, models.py (if needed), templates/index.html.\n\nNext, install Flask by running pip install flask. Then, in the main file (probably app.py), import Flask and create an instance. Set up routes via route functions and use the @app.route decorator.\n\nWait, but maybe I should also mention installing dependencies like SQLite3 if they need database storage. But since the user didn\'t specify, perhaps start with Flask alone.\n\nThen, for templates, creating an index.html file in \'templates\' directory where users can see their application\'s features. Including some simple HTML elements and adding routes to handle different parts of the app.\n\nI should also cover how"
+      - some: "Okay, the user wants to know how to make a cake. Let me think about the steps involved. First, they probably need to get all the ingredients and measure them correctly. Then, maybe start mixing them together in an electric mixer or a bowl. Wait, but they might not have an electric mixer. So using a bowl is okay as long as they mix well with proper technique.\n\nNext, they need to set the temperature for baking. Maybe mention using a cake thermometer to check the right temperature before starting. Then, place the mixture into a oven and adjust the time based on how it looks. Oh wait! There\'s also the part about cooling after baking, right? So they should let it cool for a while before serving.\n\nWait, but sometimes people add things like butter or sugar during mixing. Should I include that? Maybe mention adding an electric mixer canister for extra ingredients if they have a canister with butter or sugar. Also, checking the temperature again after baking to"

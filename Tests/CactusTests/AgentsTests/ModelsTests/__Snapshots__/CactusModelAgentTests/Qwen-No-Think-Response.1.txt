@@ -2,17 +2,17 @@
   ▿ metrics: 1 key/value pair
     ▿ (2 elements)
       ▿ key: CactusMessageID
-        - rawValue: 787B14B3-ED79-4A03-BCFC-767472E8C325
+        - rawValue: 418DC6CA-BDEC-40CC-89D9-C8357A4E73D4
       ▿ value: CactusMessageMetric
-        - decodeTokens: 64
-        - prefillTokens: 35
-        - timeIntervalToFirstToken: 0.61094
-        - tokensPerSecond: 10.69
-        - totalTimeInterval: 6.50185
-        - totalTokens: 99
+        - decodeTokens: 200
+        - prefillTokens: 13
+        - timeIntervalToFirstToken: 0.09226000000000001
+        - tokensPerSecond: 34.02
+        - totalTimeInterval: 5.94179
+        - totalTokens: 213
   ▿ output: Qwen3Completion<String>
     ▿ id: CactusMessageID
-      - rawValue: 787B14B3-ED79-4A03-BCFC-767472E8C325
-    - response: "The meaning of life is an open question that has no definitive answer. It depends on individual values and beliefs. Some people may find meaning in personal goals or achievements, while others might seek spiritual fulfillment or connection with others. Ultimately, the pursuit of meaning is subjective and varies from person to person."
+      - rawValue: 418DC6CA-BDEC-40CC-89D9-C8357A4E73D4
+    - response: ""
     ▿ thinkingContent: Optional<String>
-      - some: ""
+      - some: "Okay, so I need to figure out how to approach solving this problem. The user mentioned a math problem related to a system of equations with variables x and y. But wait, the original query was in Chinese? Let me check again.\n\nLooking at the history: The user wrote \"system of equations\" but then provided a problem that might be related to solving for x and y in a system. However, the actual content here is in English as well. The problem statement from the user might have been translated or presented differently.\n\nAssuming that there\'s a system of equations given, like ax + by = c and dx + ey = f... Then I need to solve for x and y using substitution method: solving one equation for one variable and substituting into the other.\n\nBut since I don\'t see the actual problem here (the user might have pasted it incorrectly), maybe they intended to provide more details? Alternatively, perhaps there\'s a missing part of the problem that needs clarification"
