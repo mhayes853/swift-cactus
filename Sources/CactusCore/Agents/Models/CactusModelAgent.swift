@@ -6,78 +6,71 @@ public struct CactusModelAgent<
   Input: CactusPromptRepresentable,
   Output: ConvertibleFromCactusResponse & Sendable
 >: CactusAgent {
+  @MemoryBinding private var transcript: CactusTranscript
   private let access: AgentModelAccess
-  private let initialContent: InitialContent
-  private let transcriptKey: CactusTranscript.Key?
-
-  private enum InitialContent {
-    case systemPrompt(CactusPromptContent)
-    case transcript(CactusTranscript)
-  }
+  private let systemPrompt: CactusPromptContent?
 
   public init(
     _ model: CactusLanguageModel,
-    transcriptKey: CactusTranscript.Key? = nil,
-    initialTranscript: CactusTranscript
+    transcript: MemoryBinding<CactusTranscript>
   ) {
     self.init(
       access: .direct(model),
-      initialContent: .transcript(initialTranscript),
-      transcriptKey: transcriptKey
+      transcript: transcript,
+      systemPrompt: nil
     )
   }
 
   public init(
     _ loader: any CactusAgentModelLoader,
-    transcriptKey: CactusTranscript.Key? = nil,
-    initialTranscript: CactusTranscript,
+    transcript: MemoryBinding<CactusTranscript>
   ) {
     self.init(
       access: .loaded(loader),
-      initialContent: .transcript(initialTranscript),
-      transcriptKey: transcriptKey
+      transcript: transcript,
+      systemPrompt: nil
     )
   }
 
   public init(
     _ model: CactusLanguageModel,
-    transcriptKey: CactusTranscript.Key? = nil,
+    transcript: MemoryBinding<CactusTranscript>,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
   ) {
     self.init(
       access: .direct(model),
-      initialContent: .systemPrompt(CactusPromptContent(systemPrompt())),
-      transcriptKey: transcriptKey
+      transcript: transcript,
+      systemPrompt: CactusPromptContent(systemPrompt())
     )
   }
 
   public init(
     _ loader: any CactusAgentModelLoader,
-    transcriptKey: CactusTranscript.Key? = nil,
+    transcript: MemoryBinding<CactusTranscript>,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
   ) {
     self.init(
       access: .loaded(loader),
-      initialContent: .systemPrompt(CactusPromptContent(systemPrompt())),
-      transcriptKey: transcriptKey
+      transcript: transcript,
+      systemPrompt: CactusPromptContent(systemPrompt())
     )
   }
 
-  private init(
+  init(
     access: AgentModelAccess,
-    initialContent: InitialContent,
-    transcriptKey: CactusTranscript.Key?
+    transcript: MemoryBinding<CactusTranscript>,
+    systemPrompt: CactusPromptContent?
   ) {
+    self._transcript = transcript
     self.access = access
-    self.initialContent = initialContent
-    self.transcriptKey = transcriptKey
+    self.systemPrompt = systemPrompt
   }
 
   public nonisolated(nonsending) func primitiveStream(
     request: CactusAgentRequest<Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws -> CactusAgentStream<Output>.Response {
-    var transcript = try await self.transcript(in: request.environment)
+    var transcript = try self.transcript(in: request.environment)
     let userMessageId = CactusMessageID()
 
     let userMessage = try request.input.chatMessage(role: .user, in: request.environment)
@@ -104,39 +97,30 @@ public struct CactusModelAgent<
       CactusTranscript.Element(id: CactusMessageID(), message: .assistant(response))
     )
 
-    if let transcriptKey {
-      try await request.environment.transcriptStore.save(
-        transcript: transcript,
-        forKey: transcriptKey
-      )
-    }
+    self.transcript = transcript
 
     return .collectTokensIntoOutput(
       metrics: [userMessageId: CactusMessageMetric(completion: completion)]
     )
   }
 
-  private nonisolated(nonsending) func transcript(
+  private func transcript(
     in environment: CactusEnvironmentValues
-  ) async throws -> CactusTranscript {
-    if let transcriptKey,
-      let transcript = try await environment.transcriptStore.transcript(forKey: transcriptKey)
-    {
-      return transcript
+  ) throws -> CactusTranscript {
+    guard let systemPrompt else { return self.transcript }
+
+    var transcript = self.transcript
+    let systemMessage = try systemPrompt.chatMessage(role: .system, in: environment)
+
+    if let systemIndex = transcript.firstIndex(where: { $0.message.role == .system }) {
+      transcript[systemIndex].message = systemMessage
+    } else {
+      var elements = [CactusTranscript.Element(id: CactusMessageID(), message: systemMessage)]
+      elements.append(contentsOf: transcript)
+      transcript = CactusTranscript(elements: elements)
     }
-    switch self.initialContent {
-    case .systemPrompt(let prompt):
-      return CactusTranscript(
-        elements: CollectionOfOne(
-          CactusTranscript.Element(
-            id: CactusMessageID(),
-            message: try prompt.chatMessage(role: .system, in: environment)
-          )
-        )
-      )
-    case .transcript(let transcript):
-      return transcript
-    }
+    self.transcript = transcript
+    return transcript
   }
 }
 

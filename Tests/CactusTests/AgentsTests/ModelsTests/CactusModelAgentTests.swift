@@ -11,7 +11,10 @@ struct `CactusModelAgent tests` {
     let url = try await CactusLanguageModel.testModelURL(slug: "qwen3-0.6")
 
     let session = CactusAgenticSession(
-      CactusModelAgent<String, Qwen3Completion<String>>(.fromModelURL(url)) {
+      CactusModelAgent<String, Qwen3Completion<String>>(
+        .fromModelURL(url),
+        transcript: .constant(CactusTranscript())
+      ) {
         "You are a philosopher who can philosophize about things."
       }
     )
@@ -27,7 +30,10 @@ struct `CactusModelAgent tests` {
     let url = try await CactusLanguageModel.testModelURL(slug: "qwen3-0.6")
 
     let session = CactusAgenticSession(
-      CactusModelAgent<CactusPromptContent, Qwen3Completion<String>>(.fromModelURL(url)) {
+      CactusModelAgent<CactusPromptContent, Qwen3Completion<String>>(
+        .fromModelURL(url),
+        transcript: .constant(CactusTranscript())
+      ) {
         "You are a philosopher who can philosophize about things."
       }
     )
@@ -49,14 +55,16 @@ struct `CactusModelAgent tests` {
 
     let systemPrompt = "You are a philosopher who can philosophize about things."
 
-    let key: CactusTranscript.Key = "blob"
-    let store = InMemoryTranscriptStore()
+    let transcriptState = Lock(CactusTranscript())
+    let binding = MemoryBinding<CactusTranscript>(
+      get: { transcriptState.withLock { $0 } },
+      set: { newValue in transcriptState.withLock { $0 = newValue } }
+    )
 
     let session = CactusAgenticSession(
-      CactusModelAgent<String, String>(.fromModelURL(url), transcriptKey: key) {
+      CactusModelAgent<String, String>(.fromModelURL(url), transcript: binding) {
         systemPrompt
       }
-      .transcriptStore(store)
     )
 
     let user1 = "What is the meaning of the universe?"
@@ -65,7 +73,7 @@ struct `CactusModelAgent tests` {
     let user2 = "What are the pros and cons of abstraction?"
     let response2 = try await session.respond(to: user2)
 
-    let transcript = try #require(try await store.transcript(forKey: key))
+    let transcript = transcriptState.withLock { $0 }
 
     expectNoDifference(
       transcript.map(\.message),
@@ -77,5 +85,54 @@ struct `CactusModelAgent tests` {
         .assistant(response2.output)
       ]
     )
+  }
+
+  @Test
+  func `System Prompt Is Written To Transcript`() async throws {
+    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+    let transcriptState = Lock(
+      CactusTranscript(
+        elements: CollectionOfOne(
+          CactusTranscript.Element(id: CactusMessageID(), message: .system("Old prompt"))
+        )
+      )
+    )
+    let binding = MemoryBinding<CactusTranscript>(
+      get: { transcriptState.withLock { $0 } },
+      set: { newValue in transcriptState.withLock { $0 = newValue } }
+    )
+
+    let session = CactusAgenticSession(
+      CactusModelAgent<String, String>(.fromModelURL(url), transcript: binding) {
+        "New prompt"
+      }
+    )
+
+    _ = try await session.respond(to: "Hello")
+
+    let transcript = transcriptState.withLock { $0 }
+    expectNoDifference(transcript.first?.message, .system("New prompt"))
+  }
+
+  @Test
+  func `Constant Transcript Binding Does Not Persist`() async throws {
+    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+    let transcript = CactusTranscript(
+      elements: CollectionOfOne(
+        CactusTranscript.Element(id: CactusMessageID(), message: .system("Start"))
+      )
+    )
+    let binding = MemoryBinding<CactusTranscript>.constant(transcript)
+
+    let session = CactusAgenticSession(
+      CactusModelAgent<String, String>(.fromModelURL(url), transcript: binding) {
+        "Replacement prompt"
+      }
+    )
+
+    _ = try await session.respond(to: "Hello")
+    _ = try await session.respond(to: "What about now?")
+
+    expectNoDifference(binding.wrappedValue, transcript)
   }
 }
