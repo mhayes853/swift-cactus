@@ -41,6 +41,10 @@ public struct Memory<Value: Sendable>: Sendable {
     self
   }
 
+  public var binding: MemoryBinding<Value> {
+    MemoryBinding(self)
+  }
+
   public init(wrappedValue: @autoclosure @escaping @Sendable () -> Value, _ key: String) {
     self.init(wrappedValue: wrappedValue(), .inMemory(key))
   }
