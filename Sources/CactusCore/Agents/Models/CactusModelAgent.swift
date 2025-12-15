@@ -56,7 +56,7 @@ public struct CactusModelAgent<
     )
   }
 
-  private init(
+  init(
     access: AgentModelAccess,
     transcript: MemoryBinding<CactusTranscript>,
     systemPrompt: CactusPromptContent?
