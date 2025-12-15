@@ -1,12 +1,12 @@
 {
-  "decode_tokens" : 200,
+  "decode_tokens" : 53,
   "function_calls" : [
 
   ],
-  "prefill_tokens" : 272,
-  "response" : "The image depicts a young man with a friendly and approachable demeanor. He is smiling, which adds to the overall positive atmosphere of the photograph. The man is dressed in casual attire, wearing a light-colored button-up shirt with rolled-up sleeves and carrying a backpack on his shoulders. His hair appears neatly styled, and he has a pleasant expression on his face that suggests he is content or happy with what he sees in the picture.\n\nThe background of the image is plain white, which helps to focus attention solely on the subject without any distractions. This simplicity ensures that there are no additional elements competing for attention in this particular shot. The lighting seems even and well-distributed across his face and upper body, enhancing visibility while maintaining an air of warmth due to his smile.\n\nThere are no other objects or people visible in the image besides the young man himself and nothing else significant within this frame. The composition centers entirely on him, making it clear that he is the",
-  "time_to_first_token_ms" : 3283.93,
-  "tokens_per_second" : 95.55,
-  "total_time_ms" : 5366.63,
-  "total_tokens" : 472
+  "prefill_tokens" : 314,
+  "response" : "The guy in the first image is smiling and appears to be happy. He is holding a notebook and a book, suggesting he might be preparing for or has just finished studying. His posture and expression indicate he might be looking forward to his next assignment or exam.<|im_end|>",
+  "time_to_first_token_ms" : 3218.8,
+  "tokens_per_second" : 95.76,
+  "total_time_ms" : 3761.83,
+  "total_tokens" : 367
 }

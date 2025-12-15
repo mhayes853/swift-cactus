@@ -12,6 +12,8 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
 
   public let id = UUID()
 
+  public let scopedMemory = CactusMemoryStore()
+
   public var isResponding: Bool {
     self.observationRegistrar.access(self, keyPath: \.isResponding)
     return self._responseStream.withLock { $0 != nil }
@@ -27,6 +29,7 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
   ) -> CactusAgentStream<Output> {
     var environment = environment
     environment.sessionId = self.id
+    environment.sessionMemory = self.scopedMemory
 
     let request = UnsafeTransfer(
       value: CactusAgentRequest(input: message, environment: environment)
@@ -71,7 +74,7 @@ extension CactusAgenticSession where Input == Void {
   public func respond(
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) async throws -> Response {
-    try await self.respond(to: ())
+    try await self.respond(to: (), in: environment)
   }
 }
 
@@ -102,12 +105,25 @@ extension CactusAgenticSession: _Observable {}
 // MARK: - Environment
 
 extension CactusEnvironmentValues {
-  public var sessionId: UUID? {
+  public var sessionId: UUID {
     get { self[SessionIdKey.self] }
     set { self[SessionIdKey.self] = newValue }
   }
 
   private enum SessionIdKey: Key {
-    static let defaultValue: UUID? = nil
+    static var defaultValue: UUID {
+      UUID()
+    }
+  }
+
+  public var sessionMemory: CactusMemoryStore {
+    get { self[SessionMemoryStoreKey.self] }
+    set { self[SessionMemoryStoreKey.self] = newValue }
+  }
+
+  private enum SessionMemoryStoreKey: Key {
+    static var defaultValue: CactusMemoryStore {
+      CactusMemoryStore()
+    }
   }
 }
