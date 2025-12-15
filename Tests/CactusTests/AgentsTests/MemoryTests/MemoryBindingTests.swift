@@ -80,6 +80,36 @@ struct `MemoryBinding tests` {
     expectNoDifference(state.withLock { $0.value }, 2)
     expectNoDifference(state.withLock { $0.setValues }, [1, 2])
   }
+
+  @Test
+  func `Unwrap Fails When Binding Is Nil`() {
+    let unwrapped = MemoryBinding<Int>(MemoryBinding<Int?>.constant(nil))
+    expectNoDifference(unwrapped == nil, true)
+  }
+
+  @Test
+  func `Unwrap Succeeds When Binding Has Value`() {
+    let unwrapped = MemoryBinding<Int>(MemoryBinding<Int?>.constant(5))
+    expectNoDifference(unwrapped?.wrappedValue, 5)
+  }
+
+  @Test
+  func `Unwrapped Binding Keeps Value When Base Becomes Nil`() {
+    let baseState = Lock<Int?>(1)
+    let optionalBinding = MemoryBinding<Int?>(
+      get: { baseState.withLock { $0 } },
+      set: { newValue in baseState.withLock { $0 = newValue } }
+    )
+
+    let unwrapped = MemoryBinding<Int>(optionalBinding)
+    expectNoDifference(unwrapped?.wrappedValue, 1)
+
+    optionalBinding.wrappedValue = nil
+    unwrapped?.wrappedValue = 10
+
+    expectNoDifference(optionalBinding.wrappedValue, nil)
+    expectNoDifference(unwrapped?.wrappedValue, 10)
+  }
 }
 
 private struct IncrementAgent: CactusAgent {

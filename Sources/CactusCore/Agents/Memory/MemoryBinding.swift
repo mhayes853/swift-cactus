@@ -1,3 +1,5 @@
+// MARK: - MemoryBinding
+
 @dynamicMemberLookup
 @propertyWrapper
 public struct MemoryBinding<Value: Sendable>: Sendable {
@@ -21,30 +23,41 @@ public struct MemoryBinding<Value: Sendable>: Sendable {
   }
 
   public subscript<Subject>(
-    dynamicMember keyPath: WritableKeyPath<Value, Subject> & Sendable
+    dynamicMember keyPath: WritableKeyPath<Value, Subject>
   ) -> MemoryBinding<Subject> where Subject: Sendable {
     func open<L: MemoryBindingLocation<Value>>(
       _ location: L
     ) -> MemoryBinding<Subject> {
       MemoryBinding<Subject>(
-        location: AppendKeyPathBindingLocation(base: location, keyPath: keyPath)
+        location: AppendKeyPathBindingLocation(
+          base: location,
+          keyPath: UnsafeTransfer(value: keyPath)
+        )
       )
     }
     return open(self.location)
   }
-}
 
-extension MemoryBinding {
   public init(get: @escaping @Sendable () -> Value, set: @escaping @Sendable (Value) -> Void) {
     self.init(location: ClosureMemoryBindingLocation(get: get, set: set))
   }
-}
 
-extension MemoryBinding {
+  public init?(_ base: MemoryBinding<Value?>) {
+    guard let unwrapped = base.wrappedValue else { return nil }
+    func open<L: MemoryBindingLocation<Value?>>(_ location: L) -> MemoryBinding<Value> {
+      MemoryBinding<Value>(
+        location: OptionalUnwrappedMemoryBindingLocation(base: location, unwrapped: unwrapped)
+      )
+    }
+    self = open(base.location)
+  }
+
   public static func constant(_ value: Value) -> Self {
     Self(location: ConstantMemoryBindingLocation(value: value))
   }
 }
+
+// MARK: - Locations
 
 private protocol MemoryBindingLocation<Value>: Sendable {
   associatedtype Value: Sendable
@@ -65,13 +78,13 @@ private struct AppendKeyPathBindingLocation<
   Base: MemoryBindingLocation
 >: MemoryBindingLocation {
   let base: Base
-  let keyPath: WritableKeyPath<Base.Value, Value> & Sendable
+  let keyPath: UnsafeTransfer<WritableKeyPath<Base.Value, Value>>
 
   var wrappedValue: Value {
-    get { self.base.wrappedValue[keyPath: self.keyPath] }
+    get { self.base.wrappedValue[keyPath: self.keyPath.value] }
     nonmutating set {
       var root = self.base.wrappedValue
-      root[keyPath: self.keyPath] = newValue
+      root[keyPath: self.keyPath.value] = newValue
       self.base.wrappedValue = root
     }
   }
@@ -83,6 +96,38 @@ private struct ConstantMemoryBindingLocation<Value: Sendable>: MemoryBindingLoca
   var wrappedValue: Value {
     get { self.value }
     nonmutating set { _ = newValue }
+  }
+}
+
+private final class OptionalUnwrappedMemoryBindingLocation<
+  Base: MemoryBindingLocation<Value?>,
+  Value: Sendable
+>: MemoryBindingLocation {
+  let base: Base
+  private let value: Lock<Value>
+
+  init(base: Base, unwrapped: Value) {
+    self.base = base
+    self.value = Lock(unwrapped)
+  }
+
+  var wrappedValue: Value {
+    get {
+      self.value.withLock { value in
+        if let unwrapped = self.base.wrappedValue {
+          value = unwrapped
+        }
+        return value
+      }
+    }
+    set {
+      self.value.withLock { value in
+        if self.base.wrappedValue != nil {
+          self.base.wrappedValue = newValue
+        }
+        value = newValue
+      }
+    }
   }
 }
 
