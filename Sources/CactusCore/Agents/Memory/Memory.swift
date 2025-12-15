@@ -10,7 +10,7 @@ public struct Memory<Value: Sendable>: Sendable {
     var loadTask: Task<Value, any Error>?
 
     func value(for location: any CactusMemoryLocation<Value>) -> Value? {
-      self.environment.flatMap { $0.memoryStore.value(at: location, in: $0) }
+      self.environment.flatMap { location.memory(in: $0).value(at: location, in: $0) }
     }
   }
 
@@ -31,7 +31,7 @@ public struct Memory<Value: Sendable>: Sendable {
     nonmutating set {
       self.box.inner.withLock { state in
         guard let env = state.environment else { return unhydrated() }
-        env.memoryStore.store(value: newValue, at: self.location, in: env)
+        self.location.memory(in: env).store(value: newValue, at: self.location, in: env)
         self.flush(state: &state, in: env, shouldReportIssue: true)
       }
     }
@@ -84,7 +84,7 @@ public struct Memory<Value: Sendable>: Sendable {
     let task = Task {
       do {
         let value = try await self.location.value(in: env, currentValue: value)
-        environment.memoryStore.store(value: value, at: self.location, in: environment)
+        self.location.memory(in: env).store(value: value, at: self.location, in: environment)
         return value
       } catch {
         guard reason == .hydration && !(error is CancellationError) else { throw error }

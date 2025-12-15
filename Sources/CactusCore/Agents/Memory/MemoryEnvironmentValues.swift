@@ -1,7 +1,7 @@
 // MARK: - Memory Store
 
 extension CactusEnvironmentValues {
-  public var memoryStore: CactusMemoryStore {
+  public var sharedMemory: CactusMemoryStore {
     get { self[MemoryStoreKey.self] }
     set { self[MemoryStoreKey.self] = newValue }
   }
@@ -32,5 +32,33 @@ extension CactusEnvironmentValues {
     static var defaultValue: CactusMemoryLoadReason {
       .hydration
     }
+  }
+}
+
+// MARK: - CactusMemoryScope
+
+public struct CactusMemoryScope: Hashable, Sendable {
+  public static let shared = Self(keyPath: \.sharedMemory)
+  public static let session = Self(keyPath: \.sessionMemory)
+
+  private let keyPath: KeyPath<CactusEnvironmentValues, CactusMemoryStore> & Sendable
+
+  public init(keyPath: any KeyPath<CactusEnvironmentValues, CactusMemoryStore> & Sendable) {
+    self.keyPath = keyPath
+  }
+
+  public func memory(in environment: CactusEnvironmentValues) -> CactusMemoryStore {
+    environment[keyPath: self.keyPath]
+  }
+}
+
+extension CactusEnvironmentValues {
+  public var defaultMemoryScope: CactusMemoryScope {
+    get { self[MemoryScopeKey.self] }
+    set { self[MemoryScopeKey.self] = newValue }
+  }
+
+  private enum MemoryScopeKey: Key {
+    static let defaultValue = CactusMemoryScope.shared
   }
 }

@@ -127,7 +127,7 @@ struct `Memory tests` {
     }
 
     struct MyAgent: CactusAgent {
-      @Memory(FailToLoad().scopedToSession) var value = "blob"
+      @Memory(FailToLoad().scope(.session)) var value = "blob"
 
       func body(environment: CactusEnvironmentValues) -> some CactusAgent<Void, String> {
         Run { _ in self.value }
@@ -165,7 +165,7 @@ struct `Memory tests` {
     }
 
     struct MyAgent: CactusAgent {
-      @Memory(FailToSave().scopedToSession) var value = "blob"
+      @Memory(FailToSave().scope(.session)) var value = "blob"
 
       func body(environment: CactusEnvironmentValues) -> some CactusAgent<String, String> {
         Run { input in
@@ -209,7 +209,7 @@ struct `Memory tests` {
     }
 
     struct MyAgent: CactusAgent {
-      @Memory(TestLocation().scopedToSession) var value = ""
+      @Memory(TestLocation().scope(.session)) var value = ""
 
       func body(environment: CactusEnvironmentValues) -> some CactusAgent<Void, [String]> {
         Run { input in
@@ -253,7 +253,7 @@ struct `Memory tests` {
       private let location: TestLocation
 
       init(location: TestLocation) {
-        self._value = Memory(wrappedValue: "", location.scopedToSession)
+        self._value = Memory(wrappedValue: "", location.scope(.session))
         self.location = location
       }
 
@@ -276,7 +276,7 @@ struct `Memory tests` {
   @Test
   func `Memory Works For Primitive Agents`() async throws {
     struct MyAgent: CactusAgent {
-      @Memory(.inMemory("primitiveCount").scopedToSession) var count = 0
+      @Memory(.inMemory("primitiveCount").scope(.session)) var count = 0
 
       nonisolated(nonsending) func primitiveStream(
         request: CactusAgentRequest<String>,
@@ -305,7 +305,7 @@ struct `Memory tests` {
 }
 
 private struct CounterAgent: CactusAgent {
-  @Memory(.inMemory("count").scopedToSession) var count = 0
+  @Memory(.inMemory("count").scope(.session)) var count = 0
 
   func body(environment: CactusEnvironmentValues) -> some CactusAgent<String, Int> {
     Run { input in

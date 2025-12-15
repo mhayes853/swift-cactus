@@ -3,11 +3,11 @@ import CustomDump
 import Testing
 
 @Suite
-struct `SessionScopeMemoryLoader tests` {
+struct `ScopedMemoryLoader tests` {
   @Test
   func `Scopes Memory To Session Instance`() async throws {
     struct MyAgent: CactusAgent {
-      @Memory(.inMemory("count").scopedToSession) private var count = 0
+      @Memory(.inMemory("count").scope(.session)) private var count = 0
 
       func body(environment: CactusEnvironmentValues) -> some CactusAgent<String, Int> {
         Run { input in
