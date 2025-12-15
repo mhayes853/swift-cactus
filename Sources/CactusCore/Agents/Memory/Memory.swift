@@ -10,7 +10,9 @@ public struct Memory<Value: Sendable>: Sendable {
     var loadTask: Task<Value, any Error>?
 
     func value(for location: any CactusMemoryLocation<Value>) -> Value? {
-      self.environment.flatMap { location.memory(in: $0).value(at: location, in: $0) }
+      self.environment.flatMap {
+        location.memory(in: $0).value(at: location, in: $0, as: Value.self)
+      }
     }
   }
 
