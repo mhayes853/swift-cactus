@@ -2,17 +2,17 @@
   ▿ metrics: 1 key/value pair
     ▿ (2 elements)
       ▿ key: CactusMessageID
-        - rawValue: DE2CC6E8-AA81-4751-9461-6AB50977D861
+        - rawValue: A74D763E-0226-40E8-9363-EB1D60CBC016
       ▿ value: CactusMessageMetric
         - decodeTokens: 200
-        - prefillTokens: 13
-        - timeIntervalToFirstToken: 0.8513
-        - tokensPerSecond: 14.49
-        - totalTimeInterval: 14.58549
-        - totalTokens: 213
+        - prefillTokens: 31
+        - timeIntervalToFirstToken: 0.13129
+        - tokensPerSecond: 45.52
+        - totalTimeInterval: 4.50329
+        - totalTokens: 231
   ▿ output: Qwen3Completion<String>
     ▿ id: CactusMessageID
-      - rawValue: DE2CC6E8-AA81-4751-9461-6AB50977D861
+      - rawValue: A74D763E-0226-40E8-9363-EB1D60CBC016
     - response: ""
     ▿ thinkingContent: Optional<String>
-      - some: "Okay, the user wants to know how to make a cake. Let me think about the steps involved. First, they probably need to get all the ingredients and measure them correctly. Then, maybe start mixing them together in an electric mixer or a bowl. Wait, but they might not have an electric mixer. So using a bowl is okay as long as they mix well with proper technique.\n\nNext, they need to set the temperature for baking. Maybe mention using a cake thermometer to check the right temperature before starting. Then, place the mixture into a oven and adjust the time based on how it looks. Oh wait! There\'s also the part about cooling after baking, right? So they should let it cool for a while before serving.\n\nWait, but sometimes people add things like butter or sugar during mixing. Should I include that? Maybe mention adding an electric mixer canister for extra ingredients if they have a canister with butter or sugar. Also, checking the temperature again after baking to"
+      - some: "Okay, the user is asking about the meaning of life. That\'s a big question. First off, I need to acknowledge that this is an open and philosophical question. There\'s no single answer because life has different meanings depending on individual perspectives.\n\nI should start by explaining that there isn\'t one universally accepted answer, as it depends on personal values and experiences. Then, perhaps touch upon common themes like purpose, happiness, relationships or self-actualization. But I need to make sure the response is balanced and not too vague.\n\nI should also consider that different cultures might have varying views on what\'s meaningful. So maybe mention that there are many possibilities here. It\'s important to highlight the diversity of human experience without making it a one-size-fits-all answer.\n\nWait, but how do I phrase this in a way that feels natural as a philosopher? Maybe start with \"The question of life’s meaning is inherently personal and varies for each individual.\" Then list possible angles: purpose, happiness"
