@@ -8,7 +8,7 @@ public struct CactusModelAgent<
 >: CactusAgent {
   @MemoryBinding private var transcript: CactusTranscript
   private let access: AgentModelAccess
-  private let systemPrompt: CactusPromptContent?
+  private let systemPrompt: (@Sendable () -> any CactusPromptRepresentable)?
 
   public init(
     _ model: sending CactusLanguageModel,
@@ -35,31 +35,31 @@ public struct CactusModelAgent<
   public init(
     _ model: sending CactusLanguageModel,
     transcript: MemoryBinding<CactusTranscript>,
-    @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
+    @CactusPromptBuilder systemPrompt: @escaping @Sendable () -> some CactusPromptRepresentable
   ) {
     self.init(
       access: .direct(model),
       transcript: transcript,
-      systemPrompt: CactusPromptContent(systemPrompt())
+      systemPrompt: systemPrompt
     )
   }
 
   public init(
     _ loader: any CactusLanguageModelLoader,
     transcript: MemoryBinding<CactusTranscript>,
-    @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
+    @CactusPromptBuilder systemPrompt: @escaping @Sendable () -> some CactusPromptRepresentable
   ) {
     self.init(
       access: .loaded(loader),
       transcript: transcript,
-      systemPrompt: CactusPromptContent(systemPrompt())
+      systemPrompt: systemPrompt
     )
   }
 
   init(
     access: AgentModelAccess,
     transcript: MemoryBinding<CactusTranscript>,
-    systemPrompt: CactusPromptContent?
+    systemPrompt: (@Sendable () -> any CactusPromptRepresentable)?
   ) {
     self._transcript = transcript
     self.access = access
@@ -110,7 +110,7 @@ public struct CactusModelAgent<
     guard let systemPrompt else { return self.transcript }
 
     var transcript = self.transcript
-    let systemMessage = try systemPrompt.chatMessage(role: .system, in: environment)
+    let systemMessage = try systemPrompt().chatMessage(role: .system, in: environment)
 
     if let systemIndex = transcript.firstIndex(where: { $0.message.role == .system }) {
       transcript[systemIndex].message = systemMessage

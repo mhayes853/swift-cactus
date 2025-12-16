@@ -31,7 +31,7 @@ public struct CactusAgentResponse<Output: Sendable>: Sendable {
 
 // MARK: - CactusAgent
 
-public protocol CactusAgent<Input, Output> {
+public protocol CactusAgent<Input, Output>: Sendable {
   associatedtype Input
   associatedtype Output: Sendable
 

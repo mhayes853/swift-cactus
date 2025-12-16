@@ -19,13 +19,20 @@ public struct CactusAgentStream<Output: Sendable>: Sendable {
 
 extension CactusAgentStream {
   public struct Response: Sendable {
+    typealias _AnyTransform = @Sendable (Any) throws -> Any
+
     enum Action: Sendable {
       case returnOutputValue(Output)
-      case collectTokensIntoOutput
+      case collectTokensIntoOutput(Any.Type, transforms: [_AnyTransform])
     }
 
     let action: Action
     let metrics: CactusMessageMetrics
+
+    init(action: Action, metrics: CactusMessageMetrics) {
+      self.action = action
+      self.metrics = metrics
+    }
 
     public static func finalOutput(
       _ value: Output,
@@ -37,7 +44,30 @@ extension CactusAgentStream {
     public static func collectTokensIntoOutput(
       metrics: CactusMessageMetrics = CactusMessageMetrics()
     ) -> Self where Output: ConvertibleFromCactusResponse {
-      Self(action: .collectTokensIntoOutput, metrics: metrics)
+      Self(
+        action: .collectTokensIntoOutput(Output.self, transforms: []),
+        metrics: metrics
+      )
+    }
+
+    public func map<NewOutput: Sendable>(
+      _ transform: @escaping @Sendable (Output) throws -> NewOutput
+    ) throws -> CactusAgentStream<NewOutput>.Response {
+      switch self.action {
+      case .returnOutputValue(let value):
+        CactusAgentStream<NewOutput>
+          .Response(action: .returnOutputValue(try transform(value)), metrics: self.metrics)
+
+      case .collectTokensIntoOutput(let tokenOutputType, let transforms):
+        CactusAgentStream<NewOutput>
+          .Response(
+            action: .collectTokensIntoOutput(
+              tokenOutputType,
+              transforms: transforms + [{ any in try transform(any as! Output) }]
+            ),
+            metrics: self.metrics
+          )
+      }
     }
   }
 }
@@ -174,6 +204,12 @@ extension CactusAgentStream {
     public func yield(token: CactusStreamedToken) where Output: ConvertibleFromCactusResponse {
       self.storage.accumulate(token: token)
     }
+
+    // TODO: - Should the continuation be part of a typed stream?
+    @usableFromInline
+    func _unsafelyCastOutput<NewOutput>() -> CactusAgentStream<NewOutput>.Continuation {
+      unsafeBitCast(self, to: CactusAgentStream<NewOutput>.Continuation.self)
+    }
   }
 }
 
@@ -181,6 +217,8 @@ extension CactusAgentStream {
 
 extension CactusAgentStream {
   fileprivate final class Storage: Sendable {
+    struct InvalidOutputTypeError: Error {}
+
     private struct State {
       var finalResponseContinuations = [
         UnsafeContinuation<CactusAgentResponse<Output>, any Error>
@@ -223,20 +261,16 @@ extension CactusAgentStream {
           state.finalResponse = response
           state.finalResponseContinuations.forEach { $0.resume(returning: response) }
           state.finalResponseContinuations.removeAll()
-        case .collectTokensIntoOutput:
-          func open<O: ConvertibleFromCactusResponse>(
-            _ output: O.Type,
-            response: CactusResponse
-          ) throws -> O {
-            try output.init(cactusResponse: response)
-          }
-
-          guard let output = Output.self as? any ConvertibleFromCactusResponse.Type else {
+        case .collectTokensIntoOutput(let outputType, let transforms):
+          guard let convertibleType = outputType as? any ConvertibleFromCactusResponse.Type else {
             throw InvalidOutputTypeError()
           }
 
           let response = CactusResponse(id: state.messageId, content: state.finalResponseTokens)
-          let result = Result { try open(output, response: response) as! Output }
+          let converted = try convertibleType.init(cactusResponse: response)
+
+          let finalValue: Output = try self.apply(transforms: transforms, to: converted)
+          let result = Result { finalValue }
           state.finalResponseContinuations.forEach { continuation in
             continuation.resume(
               with: result.map { CactusAgentResponse(output: $0, metrics: finalResponse.metrics) }
@@ -247,6 +281,18 @@ extension CactusAgentStream {
       }
     }
 
-    private struct InvalidOutputTypeError: Error {}
+    private func apply<Target>(
+      transforms: [Response._AnyTransform],
+      to value: Any
+    ) throws -> Target {
+      var current = value
+      for transform in transforms {
+        current = try transform(current)
+      }
+      guard let typed = current as? Target else {
+        throw Storage.InvalidOutputTypeError()
+      }
+      return typed
+    }
   }
 }
