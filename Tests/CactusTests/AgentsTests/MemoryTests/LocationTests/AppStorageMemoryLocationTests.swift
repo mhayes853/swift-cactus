@@ -18,7 +18,7 @@ struct `AppStorageMemoryLocation tests` {
     }
 
     var environment = CactusEnvironmentValues()
-    environment.appStorage = self.store
+    environment.defaultAppStorage = self.store
 
     let session = CactusAgenticSession(MyAgent())
     let resp = try await session.respond(in: environment)
@@ -40,7 +40,7 @@ struct `AppStorageMemoryLocation tests` {
     }
 
     var environment = CactusEnvironmentValues()
-    environment.appStorage = self.store
+    environment.defaultAppStorage = self.store
 
     let session = CactusAgenticSession(MyAgent())
     let resp = try await session.respond(in: environment)
@@ -62,7 +62,7 @@ struct `AppStorageMemoryLocation tests` {
     }
 
     var environment = CactusEnvironmentValues()
-    environment.appStorage = self.store
+    environment.defaultAppStorage = self.store
 
     let session = CactusAgenticSession(MyAgent())
     let resp = try await session.respond(to: 99, in: environment)
@@ -90,7 +90,7 @@ struct `AppStorageMemoryLocation tests` {
     }
 
     var environment = CactusEnvironmentValues()
-    environment.appStorage = self.store
+    environment.defaultAppStorage = self.store
 
     let session = CactusAgenticSession(MyAgent())
     let resp = try await session.respond(in: environment)
@@ -115,7 +115,7 @@ struct `AppStorageMemoryLocation tests` {
     }
 
     var environment = CactusEnvironmentValues()
-    environment.appStorage = self.store
+    environment.defaultAppStorage = self.store
 
     let session = CactusAgenticSession(MyAgent())
     let resp = try await session.respond(in: environment)
@@ -136,7 +136,7 @@ struct `AppStorageMemoryLocation tests` {
     }
 
     var environment = CactusEnvironmentValues()
-    environment.appStorage = self.store
+    environment.defaultAppStorage = self.store
 
     let session = CactusAgenticSession(MyAgent())
     let resp = try await session.respond(in: environment)
@@ -166,7 +166,7 @@ struct `AppStorageMemoryLocation tests` {
     }
 
     var environment = CactusEnvironmentValues()
-    environment.appStorage = self.store
+    environment.defaultAppStorage = self.store
 
     let session = CactusAgenticSession(MyAgent())
     let resp = try await session.respond(to: 9, in: environment)
@@ -197,7 +197,7 @@ struct `AppStorageMemoryLocation tests` {
     }
 
     var environment = CactusEnvironmentValues()
-    environment.appStorage = self.store
+    environment.defaultAppStorage = self.store
 
     let session = CactusAgenticSession(MyAgent())
     let resp = try await session.respond(in: environment)

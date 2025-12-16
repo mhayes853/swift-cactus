@@ -266,7 +266,7 @@ public struct AppStorageMemoryLocation<Value: Sendable>: CactusMemoryLocation {
   }
 
   private func store(in environment: CactusEnvironmentValues) -> UserDefaults {
-    self.store?.value ?? environment.appStorage
+    self.store?.value ?? environment.defaultAppStorage
   }
 }
 
@@ -387,7 +387,7 @@ private struct OptionalLookup<Base: Lookup>: Lookup {
 // MARK: - Environment
 
 extension CactusEnvironmentValues {
-  public var appStorage: UserDefaults {
+  public var defaultAppStorage: UserDefaults {
     get { self[AppStorageKey.self].value }
     set { self[AppStorageKey.self] = UnsafeTransfer(value: newValue) }
   }
