@@ -1,14 +1,20 @@
 import Foundation
 
+// MARK: - CactusModelSession
+
+public typealias CactusModelSession<
+  Input: CactusPromptRepresentable,
+  Output: ConvertibleFromCactusResponse & Sendable
+> = CactusAgenticSession<SingleModelAgent<Input, Output>>
+
 // MARK: - Convenience Inits
 
-extension CactusAgenticSession
-where Input: CactusPromptRepresentable, Output: ConvertibleFromCactusResponse {
-  public convenience init(
+extension CactusModelSession {
+  public convenience init<Input, Output>(
     _ model: sending CactusLanguageModel,
     transcript: some CactusMemoryLocation<CactusTranscript>,
     functions: [any CactusFunction] = []
-  ) {
+  ) where Agent == SingleModelAgent<Input, Output> {
     self.init(
       SingleModelAgent(
         access: .direct(model),
@@ -19,11 +25,11 @@ where Input: CactusPromptRepresentable, Output: ConvertibleFromCactusResponse {
     )
   }
 
-  public convenience init(
+  public convenience init<Input, Output>(
     _ loader: any CactusLanguageModelLoader,
     transcript: some CactusMemoryLocation<CactusTranscript>,
     functions: [any CactusFunction] = []
-  ) {
+  ) where Agent == SingleModelAgent<Input, Output> {
     self.init(
       SingleModelAgent(
         access: .loaded(loader),
@@ -34,12 +40,12 @@ where Input: CactusPromptRepresentable, Output: ConvertibleFromCactusResponse {
     )
   }
 
-  public convenience init(
+  public convenience init<Input, Output>(
     _ model: sending CactusLanguageModel,
     transcript: some CactusMemoryLocation<CactusTranscript>,
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
-  ) {
+  ) where Agent == SingleModelAgent<Input, Output> {
     self.init(
       SingleModelAgent(
         access: .direct(model),
@@ -50,12 +56,12 @@ where Input: CactusPromptRepresentable, Output: ConvertibleFromCactusResponse {
     )
   }
 
-  public convenience init(
+  public convenience init<Input, Output>(
     _ loader: any CactusLanguageModelLoader,
     transcript: some CactusMemoryLocation<CactusTranscript>,
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
-  ) {
+  ) where Agent == SingleModelAgent<Input, Output> {
     self.init(
       SingleModelAgent(
         access: .loaded(loader),
@@ -66,11 +72,11 @@ where Input: CactusPromptRepresentable, Output: ConvertibleFromCactusResponse {
     )
   }
 
-  public convenience init(
+  public convenience init<Input, Output>(
     _ model: sending CactusLanguageModel,
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
-  ) {
+  ) where Agent == SingleModelAgent<Input, Output> {
     self.init(
       model,
       transcript: .inMemory(_defaultAgenticSessionTranscriptKey).scope(.session),
@@ -79,11 +85,11 @@ where Input: CactusPromptRepresentable, Output: ConvertibleFromCactusResponse {
     )
   }
 
-  public convenience init(
+  public convenience init<Input, Output>(
     _ loader: any CactusLanguageModelLoader,
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
-  ) {
+  ) where Agent == SingleModelAgent<Input, Output> {
     self.init(
       loader,
       transcript: .inMemory(_defaultAgenticSessionTranscriptKey).scope(.session),
@@ -95,7 +101,7 @@ where Input: CactusPromptRepresentable, Output: ConvertibleFromCactusResponse {
 
 // MARK: - Agent Wrapper
 
-private struct SingleModelAgent<
+public struct SingleModelAgent<
   Input: CactusPromptRepresentable,
   Output: ConvertibleFromCactusResponse & Sendable
 >: CactusAgent {
@@ -116,7 +122,7 @@ private struct SingleModelAgent<
     self.systemPrompt = systemPrompt().map { CactusPromptContent($0) }
   }
 
-  func body(environment: CactusEnvironmentValues) -> some CactusAgent<Input, Output> {
+  public func body(environment: CactusEnvironmentValues) -> some CactusAgent<Input, Output> {
     CactusModelAgent(
       access: self.access,
       transcript: self.$transcript.binding,

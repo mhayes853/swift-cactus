@@ -3,12 +3,14 @@ import Observation
 
 // MARK: - CactusAgenticSession
 
-public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Identifiable {
-  public typealias Response = CactusAgentResponse<Output>
+public final class CactusAgenticSession<
+  Agent: CactusAgent & SendableMetatype
+>: Sendable, Identifiable {
+  public typealias Response = CactusAgentResponse<Agent.Output>
 
   private let agentActor: AgentActor
   private let observationRegistrar = _ObservationRegistrar()
-  private let _responseStream = Lock<CactusAgentStream<Output>?>(nil)
+  private let _responseStream = Lock<CactusAgentStream<Agent.Output>?>(nil)
 
   public let id = UUID()
 
@@ -19,14 +21,14 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
     return self._responseStream.withLock { $0 != nil }
   }
 
-  public init(_ agent: sending some CactusAgent<Input, Output>) {
+  public init(_ agent: sending Agent) {
     self.agentActor = AgentActor(agent)
   }
 
   public func stream(
-    for message: sending Input,
+    for message: sending Agent.Input,
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
-  ) -> CactusAgentStream<Output> {
+  ) -> CactusAgentStream<Agent.Output> {
     var environment = environment
     environment.sessionId = self.id
     environment.sessionMemory = self.scopedMemory
@@ -35,7 +37,7 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
       value: CactusAgentRequest(input: message, environment: environment)
     )
     return self.withResponseTask {
-      let stream = CactusAgentStream<Output> { continuation in
+      let stream = CactusAgentStream<Agent.Output> { continuation in
         let response = try await self.agentActor.stream(request: request.value, into: continuation)
         self.withResponseTask { $0 = nil }
         return response
@@ -46,7 +48,7 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
   }
 
   public func respond(
-    to message: sending Input,
+    to message: sending Agent.Input,
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) async throws -> Response {
     let stream = self.stream(for: message, in: environment)
@@ -57,17 +59,17 @@ public final class CactusAgenticSession<Input, Output: Sendable>: Sendable, Iden
     }
   }
 
-  private func withResponseTask<T>(work: (inout CactusAgentStream<Output>?) -> T) -> T {
+  private func withResponseTask<T>(work: (inout CactusAgentStream<Agent.Output>?) -> T) -> T {
     self.observationRegistrar.withMutation(of: self, keyPath: \.isResponding) {
       self._responseStream.withLock { work(&$0) }
     }
   }
 }
 
-extension CactusAgenticSession where Input == Void {
+extension CactusAgenticSession where Agent.Input == Void {
   public func stream(
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
-  ) -> CactusAgentStream<Output> {
+  ) -> CactusAgentStream<Agent.Output> {
     self.stream(for: (), in: environment)
   }
 
@@ -82,16 +84,16 @@ extension CactusAgenticSession where Input == Void {
 
 extension CactusAgenticSession {
   private final actor AgentActor {
-    let agent: any CactusAgent<Input, Output>
+    let agent: Agent
 
-    init(_ agent: sending some CactusAgent<Input, Output>) {
+    init(_ agent: sending Agent) {
       self.agent = agent
     }
 
     func stream(
-      request: CactusAgentRequest<Input>,
-      into continuation: CactusAgentStream<Output>.Continuation
-    ) async throws -> CactusAgentStream<Output>.Response {
+      request: CactusAgentRequest<Agent.Input>,
+      into continuation: CactusAgentStream<Agent.Output>.Continuation
+    ) async throws -> CactusAgentStream<Agent.Output>.Response {
       try await self.agent.stream(request: request, into: continuation)
     }
   }

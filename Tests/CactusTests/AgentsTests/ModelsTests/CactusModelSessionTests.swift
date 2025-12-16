@@ -3,12 +3,12 @@ import CustomDump
 import Testing
 
 @Suite
-struct `CactusAgenticSessionSingleModel tests` {
+struct `CactusModelSession tests` {
   @Test
   func `Default Transcript Is Session Scoped`() async throws {
     let systemPrompt = "You are a helpful assistant."
     let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
-    let session = CactusAgenticSession<String, String>(.url(url)) {
+    let session = CactusModelSession<String, String>(.url(url)) {
       systemPrompt
     }
 
