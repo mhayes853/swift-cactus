@@ -1,26 +1,32 @@
 // MARK: - TransformInput
 
-extension CactusAgent {
-  public func input<Input>(_ input: Self.Input) -> _TransformInputAgent<Self, Input> {
-    self.transformInput { _ in input }
+public struct TransformInput<Input: Sendable, Child: CactusAgent>: CactusAgent {
+  @usableFromInline
+  let child: Child
+
+  @usableFromInline
+  let transform: (Input) async throws -> Child.Input
+
+  @inlinable
+  public init(
+    _ transform: @escaping (Input) async throws -> Child.Input,
+    @CactusAgentBuilder<Child.Input, Child.Output> agent: () -> Child
+  ) {
+    self.child = agent()
+    self.transform = transform
   }
 
-  public func transformInput<Input>(
-    _ transform: @escaping (Input) throws -> Self.Input
-  ) -> _TransformInputAgent<Self, Input> {
-    _TransformInputAgent(base: self, transform: transform)
-  }
-}
-
-public struct _TransformInputAgent<Base: CactusAgent, Input>: CactusAgent {
-  let base: Base
-  let transform: (Input) throws -> Base.Input
-
+  @inlinable
   public nonisolated(nonsending) func primitiveStream(
     request: CactusAgentRequest<Input>,
-    into continuation: CactusAgentStream<Base.Output>.Continuation
-  ) async throws -> CactusAgentStream<Base.Output>.Response {
-    fatalError()
+    into continuation: CactusAgentStream<Child.Output>.Continuation
+  ) async throws -> CactusAgentStream<Child.Output>.Response {
+    let transformedInput = try await self.transform(request.input)
+    let childRequest = CactusAgentRequest(
+      input: transformedInput,
+      environment: request.environment
+    )
+    return try await self.child.stream(request: childRequest, into: continuation)
   }
 }
 
