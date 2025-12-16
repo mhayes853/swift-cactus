@@ -29,6 +29,27 @@ struct `CactusAgentSession tests` {
     expectNoDifference(session.isResponding, false)
   }
 
+  @Test
+  func `Is Responding With Concurrent Streams`() async throws {
+    let gate = ResponseGate()
+    let session = CactusAgenticSession(BlockingAgent(gate: gate))
+
+    let firstStream = session.stream(for: "First")
+    let secondStream = session.stream(for: "Second")
+
+    expectNoDifference(session.isResponding, true)
+
+    await Task.megaYield()
+
+    firstStream.stop()
+    await Task.megaYield()
+    expectNoDifference(session.isResponding, true)
+
+    secondStream.stop()
+    await Task.megaYield()
+    expectNoDifference(session.isResponding, false)
+  }
+
   #if canImport(Observation)
     @Test
     @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)

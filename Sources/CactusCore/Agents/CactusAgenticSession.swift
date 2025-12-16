@@ -11,7 +11,7 @@ public final class CactusAgenticSession<
 
   private let _agent: @Sendable () -> Agent
   private let observationRegistrar = _ObservationRegistrar()
-  private let _responseStream = Lock<CactusAgentStream<Agent.Output>?>(nil)
+  private let _responseStreamIds = Lock<Set<UUID>>(Set())
 
   public let id = UUID()
 
@@ -23,7 +23,7 @@ public final class CactusAgenticSession<
 
   public var isResponding: Bool {
     self.observationRegistrar.access(self, keyPath: \.isResponding)
-    return self._responseStream.withLock { $0 != nil }
+    return self._responseStreamIds.withLock { !$0.isEmpty }
   }
 
   public init(_ agent: @autoclosure @escaping @Sendable () -> Agent) {
@@ -34,6 +34,8 @@ public final class CactusAgenticSession<
     for message: sending Agent.Input,
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) -> CactusAgentStream<Agent.Output> {
+    let streamId = UUID()
+
     var environment = environment
     environment.sessionId = self.id
     environment.sessionMemory = self.scopedMemory
@@ -41,14 +43,12 @@ public final class CactusAgenticSession<
     let request = UnsafeTransfer(
       value: CactusAgentRequest(input: message, environment: environment)
     )
-    return self.withResponseTask {
-      let stream = CactusAgentStream<Agent.Output> { continuation in
-        let response = try await self._agent().stream(request: request.value, into: continuation)
-        self.withResponseTask { $0 = nil }
-        return response
+    return self.withResponseStreams {
+      $0.insert(streamId)
+      return CactusAgentStream<Agent.Output> { continuation in
+        defer { _ = self.withResponseStreams { $0.remove(streamId) } }
+        return try await self._agent().stream(request: request.value, into: continuation)
       }
-      $0 = stream
-      return stream
     }
   }
 
@@ -64,9 +64,9 @@ public final class CactusAgenticSession<
     }
   }
 
-  private func withResponseTask<T>(work: (inout CactusAgentStream<Agent.Output>?) -> T) -> T {
+  private func withResponseStreams<T>(work: (inout Set<UUID>) -> T) -> T {
     self.observationRegistrar.withMutation(of: self, keyPath: \.isResponding) {
-      self._responseStream.withLock { work(&$0) }
+      self._responseStreamIds.withLock { work(&$0) }
     }
   }
 }
