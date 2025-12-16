@@ -7,7 +7,7 @@ public struct CactusAgentModelRequest {
   public let environment: CactusEnvironmentValues
 
   public init(
-    loader: any CactusAgentModelLoader,
+    _ loader: any CactusAgentModelLoader,
     environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) {
     self.loader = loader

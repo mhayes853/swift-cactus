@@ -10,7 +10,7 @@ struct `SharedModelStore tests` {
     let store = SharedModelStore()
     await #expect(throws: Never.self) {
       try await store.withModelAccess(
-        request: CactusAgentModelRequest(loader: .url(url))
+        request: CactusAgentModelRequest(.url(url))
       ) { _ in }
     }
   }
@@ -23,10 +23,10 @@ struct `SharedModelStore tests` {
     var id1: ObjectIdentifier?
     var id2: ObjectIdentifier?
 
-    try await store.withModelAccess(request: CactusAgentModelRequest(loader: .url(url))) {
+    try await store.withModelAccess(request: CactusAgentModelRequest(.url(url))) {
       id1 = ObjectIdentifier($0)
     }
-    try await store.withModelAccess(request: CactusAgentModelRequest(loader: .url(url))) {
+    try await store.withModelAccess(request: CactusAgentModelRequest(.url(url))) {
       id2 = ObjectIdentifier($0)
     }
     expectNoDifference(id1, id2)
@@ -37,8 +37,8 @@ struct `SharedModelStore tests` {
     let url = try await CactusLanguageModel.testModelURL()
     let loader = CountingModelLoader(key: "blob", url: url)
     let store = SharedModelStore()
-    try await store.prewarmModel(request: CactusAgentModelRequest(loader: loader))
-    try await store.prewarmModel(request: CactusAgentModelRequest(loader: loader))
+    try await store.prewarmModel(request: CactusAgentModelRequest(loader))
+    try await store.prewarmModel(request: CactusAgentModelRequest(loader))
     loader.count.withLock { expectNoDifference($0, 1) }
   }
 
@@ -47,10 +47,10 @@ struct `SharedModelStore tests` {
     let url = try await CactusLanguageModel.testModelURL()
     let loader = CountingModelLoader(key: "blob", url: url)
     let store = SharedModelStore()
-    try await store.prewarmModel(request: CactusAgentModelRequest(loader: loader))
+    try await store.prewarmModel(request: CactusAgentModelRequest(loader))
 
     loader.key.withLock { $0 = "blob2" }
-    try await store.prewarmModel(request: CactusAgentModelRequest(loader: loader))
+    try await store.prewarmModel(request: CactusAgentModelRequest(loader))
     loader.count.withLock { expectNoDifference($0, 2) }
   }
 
@@ -59,8 +59,8 @@ struct `SharedModelStore tests` {
     let url = try await CactusLanguageModel.testModelURL()
     let loader = CountingModelLoader(key: "blob", url: url)
     let store = SharedModelStore()
-    async let r1: Void = store.prewarmModel(request: CactusAgentModelRequest(loader: loader))
-    async let r2: Void = store.prewarmModel(request: CactusAgentModelRequest(loader: loader))
+    async let r1: Void = store.prewarmModel(request: CactusAgentModelRequest(loader))
+    async let r2: Void = store.prewarmModel(request: CactusAgentModelRequest(loader))
     _ = try await (r1, r2)
     loader.count.withLock { expectNoDifference($0, 1) }
   }
