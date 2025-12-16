@@ -20,7 +20,7 @@ where Input: CactusPromptRepresentable, Output: ConvertibleFromCactusResponse {
   }
 
   public convenience init(
-    _ loader: any CactusAgentModelLoader,
+    _ loader: any CactusLanguageModelLoader,
     transcript: some CactusMemoryLocation<CactusTranscript>,
     functions: [any CactusFunction] = []
   ) {
@@ -51,7 +51,7 @@ where Input: CactusPromptRepresentable, Output: ConvertibleFromCactusResponse {
   }
 
   public convenience init(
-    _ loader: any CactusAgentModelLoader,
+    _ loader: any CactusLanguageModelLoader,
     transcript: some CactusMemoryLocation<CactusTranscript>,
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
@@ -80,7 +80,7 @@ where Input: CactusPromptRepresentable, Output: ConvertibleFromCactusResponse {
   }
 
   public convenience init(
-    _ loader: any CactusAgentModelLoader,
+    _ loader: any CactusLanguageModelLoader,
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
   ) {

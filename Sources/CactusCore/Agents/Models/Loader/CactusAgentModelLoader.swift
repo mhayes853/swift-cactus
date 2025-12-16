@@ -7,3 +7,7 @@ public protocol CactusAgentModelLoader: Sendable {
     in environment: CactusEnvironmentValues
   ) async throws -> sending CactusLanguageModel
 }
+
+public protocol CactusLanguageModelLoader: CactusAgentModelLoader {}
+
+public protocol CactusAudioModelLoader: CactusAgentModelLoader {}

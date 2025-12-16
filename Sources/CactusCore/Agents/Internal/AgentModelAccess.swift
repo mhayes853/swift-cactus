@@ -18,7 +18,7 @@ enum AgentModelAccess {
       try operation(model)
     case .loaded(let loader):
       try await environment.modelStore.withModelAccess(
-        request: CactusAgentModelRequest(loader: loader, environment: environment),
+        request: CactusAgentModelRequest(loader, environment: environment),
         perform: operation
       )
     }

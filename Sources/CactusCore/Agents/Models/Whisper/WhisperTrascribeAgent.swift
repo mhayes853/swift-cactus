@@ -7,7 +7,7 @@ public struct WhisperTranscribeAgent: CactusAgent {
     self.init(access: .direct(model))
   }
 
-  public init(_ loader: any CactusAgentModelLoader) {
+  public init(_ loader: any CactusAudioModelLoader) {
     self.init(access: .loaded(loader))
   }
 

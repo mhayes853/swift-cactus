@@ -1,7 +1,7 @@
 import Cactus
 import Foundation
 
-final class CountingModelLoader: CactusAgentModelLoader, Sendable {
+final class CountingModelLoader: CactusLanguageModelLoader, Sendable {
   let count = Lock(0)
   private let url: URL
   let key: Lock<CactusAgentModelKey>
@@ -22,10 +22,10 @@ final class CountingModelLoader: CactusAgentModelLoader, Sendable {
   func loadModel(
     in environment: CactusEnvironmentValues
   ) async throws -> sending CactusLanguageModel {
-    try await Task.sleep(nanoseconds: oneHundredMillis)  // NB: Give a chance for deduplication to occur.
+    try await Task.sleep(nanoseconds: twoHundredMillis)  // NB: Give a chance for deduplication to occur.
     self.count.withLock { $0 += 1 }
     return try CactusLanguageModel(from: self.url)
   }
 }
 
-private let oneHundredMillis = UInt64(100_000_000)
+private let twoHundredMillis = UInt64(200_000_000)

@@ -22,7 +22,7 @@ public struct CactusModelAgent<
   }
 
   public init(
-    _ loader: any CactusAgentModelLoader,
+    _ loader: any CactusLanguageModelLoader,
     transcript: MemoryBinding<CactusTranscript>
   ) {
     self.init(
@@ -45,7 +45,7 @@ public struct CactusModelAgent<
   }
 
   public init(
-    _ loader: any CactusAgentModelLoader,
+    _ loader: any CactusLanguageModelLoader,
     transcript: MemoryBinding<CactusTranscript>,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
   ) {

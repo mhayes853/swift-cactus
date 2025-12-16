@@ -12,7 +12,7 @@ struct `CactusModelAgent tests` {
 
     let session = CactusAgenticSession(
       CactusModelAgent<String, Qwen3Completion<String>>(
-        .fromModelURL(url),
+        .url(url),
         transcript: .constant(CactusTranscript())
       ) {
         "You are a philosopher who can philosophize about things."
@@ -31,7 +31,7 @@ struct `CactusModelAgent tests` {
 
     let session = CactusAgenticSession(
       CactusModelAgent<CactusPromptContent, Qwen3Completion<String>>(
-        .fromModelURL(url),
+        .url(url),
         transcript: .constant(CactusTranscript())
       ) {
         "You are a philosopher who can philosophize about things."
@@ -62,7 +62,7 @@ struct `CactusModelAgent tests` {
     )
 
     let session = CactusAgenticSession(
-      CactusModelAgent<String, String>(.fromModelURL(url), transcript: binding) {
+      CactusModelAgent<String, String>(.url(url), transcript: binding) {
         systemPrompt
       }
     )
@@ -103,7 +103,7 @@ struct `CactusModelAgent tests` {
     )
 
     let session = CactusAgenticSession(
-      CactusModelAgent<String, String>(.fromModelURL(url), transcript: binding) {
+      CactusModelAgent<String, String>(.url(url), transcript: binding) {
         "New prompt"
       }
     )
@@ -125,7 +125,7 @@ struct `CactusModelAgent tests` {
     let binding = MemoryBinding<CactusTranscript>.constant(transcript)
 
     let session = CactusAgenticSession(
-      CactusModelAgent<String, String>(.fromModelURL(url), transcript: binding) {
+      CactusModelAgent<String, String>(.url(url), transcript: binding) {
         "Replacement prompt"
       }
     )
