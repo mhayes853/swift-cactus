@@ -19,6 +19,8 @@ public struct CactusAgentStream<Output: Sendable>: Sendable {
 
 extension CactusAgentStream {
   public struct Response: Sendable {
+    typealias _AnyTransform = @Sendable (Any) throws -> Any
+
     enum Action: Sendable {
       case returnOutputValue(Output)
       case collectTokensIntoOutput
@@ -26,6 +28,31 @@ extension CactusAgentStream {
 
     let action: Action
     let metrics: CactusMessageMetrics
+    let transforms: [_AnyTransform]
+    let tokenOutputType: (any ConvertibleFromCactusResponse.Type)?
+
+    init(
+      action: Action,
+      metrics: CactusMessageMetrics,
+      transforms: [_AnyTransform] = [],
+      tokenOutputType: (any ConvertibleFromCactusResponse.Type)? = nil
+    ) {
+      self.action = action
+      self.metrics = metrics
+      self.transforms = transforms
+      self.tokenOutputType = tokenOutputType
+    }
+
+    func applyTransforms<Target>(to value: Any) throws -> Target {
+      var current = value
+      for transform in transforms {
+        current = try transform(current)
+      }
+      guard let typed = current as? Target else {
+        throw Storage.InvalidOutputTypeError()
+      }
+      return typed
+    }
 
     public static func finalOutput(
       _ value: Output,
@@ -37,7 +64,33 @@ extension CactusAgentStream {
     public static func collectTokensIntoOutput(
       metrics: CactusMessageMetrics = CactusMessageMetrics()
     ) -> Self where Output: ConvertibleFromCactusResponse {
-      Self(action: .collectTokensIntoOutput, metrics: metrics)
+      Self(
+        action: .collectTokensIntoOutput,
+        metrics: metrics,
+        tokenOutputType: Output.self
+      )
+    }
+
+    public func map<NewOutput: Sendable>(
+      _ transform: @escaping @Sendable (Output) throws -> NewOutput
+    ) throws -> CactusAgentStream<NewOutput>.Response {
+      switch self.action {
+      case .returnOutputValue(let value):
+        let intermediate: Output = try self.applyTransforms(to: value)
+        let finalValue = try transform(intermediate)
+        return .init(action: .returnOutputValue(finalValue), metrics: self.metrics)
+
+      case .collectTokensIntoOutput:
+        return .init(
+          action: .collectTokensIntoOutput,
+          metrics: self.metrics,
+          transforms: self.transforms + [
+            { any in try transform(any as! Output) }
+          ],
+          tokenOutputType: self.tokenOutputType
+            ?? (Output.self as? any ConvertibleFromCactusResponse.Type)
+        )
+      }
     }
   }
 }
@@ -174,6 +227,12 @@ extension CactusAgentStream {
     public func yield(token: CactusStreamedToken) where Output: ConvertibleFromCactusResponse {
       self.storage.accumulate(token: token)
     }
+
+    // TODO: - Should the continuation be part of a typed stream?
+    @usableFromInline
+    func _unsafelyCastOutput<NewOutput>() -> CactusAgentStream<NewOutput>.Continuation {
+      unsafeBitCast(self, to: CactusAgentStream<NewOutput>.Continuation.self)
+    }
   }
 }
 
@@ -181,6 +240,8 @@ extension CactusAgentStream {
 
 extension CactusAgentStream {
   fileprivate final class Storage: Sendable {
+    struct InvalidOutputTypeError: Error {}
+
     private struct State {
       var finalResponseContinuations = [
         UnsafeContinuation<CactusAgentResponse<Output>, any Error>
@@ -219,24 +280,21 @@ extension CactusAgentStream {
       try self.state.withLock { state in
         switch finalResponse.action {
         case .returnOutputValue(let value):
-          let response = CactusAgentResponse(output: value, metrics: finalResponse.metrics)
+          let finalValue: Output = try finalResponse.applyTransforms(to: value)
+          let response = CactusAgentResponse(output: finalValue, metrics: finalResponse.metrics)
           state.finalResponse = response
           state.finalResponseContinuations.forEach { $0.resume(returning: response) }
           state.finalResponseContinuations.removeAll()
         case .collectTokensIntoOutput:
-          func open<O: ConvertibleFromCactusResponse>(
-            _ output: O.Type,
-            response: CactusResponse
-          ) throws -> O {
-            try output.init(cactusResponse: response)
-          }
-
-          guard let output = Output.self as? any ConvertibleFromCactusResponse.Type else {
+          guard let convertibleType = finalResponse.tokenOutputType else {
             throw InvalidOutputTypeError()
           }
 
           let response = CactusResponse(id: state.messageId, content: state.finalResponseTokens)
-          let result = Result { try open(output, response: response) as! Output }
+          let converted = try convertibleType.init(cactusResponse: response)
+
+          let finalValue: Output = try finalResponse.applyTransforms(to: converted)
+          let result = Result { finalValue }
           state.finalResponseContinuations.forEach { continuation in
             continuation.resume(
               with: result.map { CactusAgentResponse(output: $0, metrics: finalResponse.metrics) }
@@ -246,7 +304,5 @@ extension CactusAgentStream {
         }
       }
     }
-
-    private struct InvalidOutputTypeError: Error {}
   }
 }

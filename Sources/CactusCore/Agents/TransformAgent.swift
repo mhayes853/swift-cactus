@@ -32,32 +32,38 @@ public struct TransformInput<Input: Sendable, Child: CactusAgent>: CactusAgent {
 
 // MARK: - TransformOutput
 
-extension CactusAgent {
+extension CactusAgent where Input: Sendable {
   public func inputAsOutput() -> _TransformOutputAgent<Self, Input> where Input: Sendable {
     self.transformOutput { $1 }
   }
 
   public func transformOutput<Output>(
-    _ transform: @escaping (Self.Output) throws -> Output
+    _ transform: @escaping @Sendable (Self.Output) throws -> Output
   ) -> _TransformOutputAgent<Self, Output> {
     self.transformOutput { output, _ in try transform(output) }
   }
 
   public func transformOutput<Output>(
-    _ transform: @escaping (Self.Output, Input) throws -> Output
+    _ transform: @escaping @Sendable (Self.Output, Input) throws -> Output
   ) -> _TransformOutputAgent<Self, Output> {
     _TransformOutputAgent(base: self, transform: transform)
   }
 }
 
-public struct _TransformOutputAgent<Base: CactusAgent, Output: Sendable>: CactusAgent {
+public struct _TransformOutputAgent<Base: CactusAgent, Output: Sendable>: CactusAgent
+where Base.Input: Sendable {
   let base: Base
-  let transform: (Base.Output, Base.Input) throws -> Output
+  let transform: @Sendable (Base.Output, Base.Input) throws -> Output
 
   public nonisolated(nonsending) func primitiveStream(
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Output>.Continuation
   ) async throws -> CactusAgentStream<Output>.Response {
-    fatalError()
+    let baseResponse = try await self.base.stream(
+      request: request,
+      into: continuation._unsafelyCastOutput()
+    )
+    let transform = self.transform
+    return try baseResponse.map { try transform($0, request.input) }
   }
 }
