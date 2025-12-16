@@ -39,4 +39,23 @@ struct `TransformOutput tests` {
 
     expectNoDifference(response.output, "Payload-7")
   }
+
+  @Test
+  func `Transforms Model Output To Character Count`() async throws {
+    let url = try await CactusLanguageModel.testModelURL(slug: "qwen3-0.6")
+
+    let session = CactusAgenticSession(
+      CactusModelAgent<String, String>(
+        .url(url),
+        transcript: .constant(CactusTranscript())
+      ) {
+        "Respond concisely to the user."
+      }
+      .transformOutput { $0.count }
+    )
+
+    let response = try await session.respond(to: "How many characters will this response contain?")
+
+    expectNoDifference(response.output > 0, true)
+  }
 }
