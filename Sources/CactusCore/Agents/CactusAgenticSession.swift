@@ -3,12 +3,13 @@ import Observation
 
 // MARK: - CactusAgenticSession
 
+@dynamicMemberLookup
 public final class CactusAgenticSession<
   Agent: CactusAgent & SendableMetatype
 >: Sendable, Identifiable {
   public typealias Response = CactusAgentResponse<Agent.Output>
 
-  private let agentActor: AgentActor
+  private let _agent: @Sendable () -> Agent
   private let observationRegistrar = _ObservationRegistrar()
   private let _responseStream = Lock<CactusAgentStream<Agent.Output>?>(nil)
 
@@ -16,13 +17,17 @@ public final class CactusAgenticSession<
 
   public let scopedMemory = CactusMemoryStore()
 
+  public subscript<Value>(dynamicMember keyPath: KeyPath<Agent, Value>) -> Value {
+    self._agent()[keyPath: keyPath]
+  }
+
   public var isResponding: Bool {
     self.observationRegistrar.access(self, keyPath: \.isResponding)
     return self._responseStream.withLock { $0 != nil }
   }
 
-  public init(_ agent: sending Agent) {
-    self.agentActor = AgentActor(agent)
+  public init(_ agent: @autoclosure @escaping @Sendable () -> Agent) {
+    self._agent = agent
   }
 
   public func stream(
@@ -38,7 +43,7 @@ public final class CactusAgenticSession<
     )
     return self.withResponseTask {
       let stream = CactusAgentStream<Agent.Output> { continuation in
-        let response = try await self.agentActor.stream(request: request.value, into: continuation)
+        let response = try await self._agent().stream(request: request.value, into: continuation)
         self.withResponseTask { $0 = nil }
         return response
       }

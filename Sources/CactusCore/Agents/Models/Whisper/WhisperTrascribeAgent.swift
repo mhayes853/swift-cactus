@@ -3,7 +3,7 @@ import Foundation
 public struct WhisperTranscribeAgent: CactusAgent {
   private let access: AgentModelAccess
 
-  public init(_ model: CactusLanguageModel) {
+  public init(_ model: sending CactusLanguageModel) {
     self.init(access: .direct(model))
   }
 

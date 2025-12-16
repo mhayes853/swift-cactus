@@ -4,7 +4,7 @@ import Foundation
 import Testing
 
 @Suite
-final class `FileMemoryLocation tests` {
+final class `FileMemoryLocation tests`: Sendable {
   private let url = temporaryModelDirectory().appending(path: "\(UUID()).json")
 
   init() throws {

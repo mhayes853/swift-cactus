@@ -11,7 +11,7 @@ public struct CactusModelAgent<
   private let systemPrompt: CactusPromptContent?
 
   public init(
-    _ model: CactusLanguageModel,
+    _ model: sending CactusLanguageModel,
     transcript: MemoryBinding<CactusTranscript>
   ) {
     self.init(
@@ -33,7 +33,7 @@ public struct CactusModelAgent<
   }
 
   public init(
-    _ model: CactusLanguageModel,
+    _ model: sending CactusLanguageModel,
     transcript: MemoryBinding<CactusTranscript>,
     @CactusPromptBuilder systemPrompt: () -> some CactusPromptRepresentable
   ) {

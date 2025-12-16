@@ -10,14 +10,15 @@ public typealias CactusModelSession<
 // MARK: - Convenience Inits
 
 extension CactusModelSession {
-  public convenience init<Input, Output>(
+  public convenience init<Input: SendableMetatype, Output>(
     _ model: sending CactusLanguageModel,
     transcript: some CactusMemoryLocation<CactusTranscript>,
     functions: [any CactusFunction] = []
   ) where Agent == SingleModelAgent<Input, Output> {
+    let access = AgentModelAccess.direct(model)
     self.init(
       SingleModelAgent(
-        access: .direct(model),
+        access: access,
         transcript: transcript,
         functions: functions,
         systemPrompt: { nil }
@@ -25,7 +26,7 @@ extension CactusModelSession {
     )
   }
 
-  public convenience init<Input, Output>(
+  public convenience init<Input: SendableMetatype, Output>(
     _ loader: any CactusLanguageModelLoader,
     transcript: some CactusMemoryLocation<CactusTranscript>,
     functions: [any CactusFunction] = []
@@ -40,15 +41,16 @@ extension CactusModelSession {
     )
   }
 
-  public convenience init<Input, Output>(
+  public convenience init<Input: SendableMetatype, Output>(
     _ model: sending CactusLanguageModel,
     transcript: some CactusMemoryLocation<CactusTranscript>,
     functions: [any CactusFunction] = [],
-    @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
+    @CactusPromptBuilder systemPrompt: @escaping @Sendable () -> some CactusPromptRepresentable
   ) where Agent == SingleModelAgent<Input, Output> {
+    let access = AgentModelAccess.direct(model)
     self.init(
       SingleModelAgent(
-        access: .direct(model),
+        access: access,
         transcript: transcript,
         functions: functions,
         systemPrompt: { systemPrompt() }
@@ -56,11 +58,11 @@ extension CactusModelSession {
     )
   }
 
-  public convenience init<Input, Output>(
+  public convenience init<Input: SendableMetatype, Output>(
     _ loader: any CactusLanguageModelLoader,
     transcript: some CactusMemoryLocation<CactusTranscript>,
     functions: [any CactusFunction] = [],
-    @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
+    @CactusPromptBuilder systemPrompt: @escaping @Sendable () -> some CactusPromptRepresentable
   ) where Agent == SingleModelAgent<Input, Output> {
     self.init(
       SingleModelAgent(
@@ -72,10 +74,10 @@ extension CactusModelSession {
     )
   }
 
-  public convenience init<Input, Output>(
+  public convenience init<Input: SendableMetatype, Output>(
     _ model: sending CactusLanguageModel,
     functions: [any CactusFunction] = [],
-    @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
+    @CactusPromptBuilder systemPrompt: @escaping @Sendable () -> some CactusPromptRepresentable
   ) where Agent == SingleModelAgent<Input, Output> {
     self.init(
       model,
@@ -85,10 +87,10 @@ extension CactusModelSession {
     )
   }
 
-  public convenience init<Input, Output>(
+  public convenience init<Input: SendableMetatype, Output>(
     _ loader: any CactusLanguageModelLoader,
     functions: [any CactusFunction] = [],
-    @CactusPromptBuilder systemPrompt: sending () -> some CactusPromptRepresentable
+    @CactusPromptBuilder systemPrompt: @escaping @Sendable () -> some CactusPromptRepresentable
   ) where Agent == SingleModelAgent<Input, Output> {
     self.init(
       loader,
