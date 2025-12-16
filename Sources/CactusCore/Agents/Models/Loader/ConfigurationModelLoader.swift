@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ConfigurationModelLoader: CactusAgentModelLoader {
+public struct ConfigurationModelLoader: CactusLanguageModelLoader, CactusAudioModelLoader {
   let key: CactusAgentModelKey?
   let configuration: CactusLanguageModel.Configuration
 
@@ -24,14 +24,14 @@ public struct ConfigurationModelLoader: CactusAgentModelLoader {
 }
 
 extension CactusAgentModelLoader where Self == ConfigurationModelLoader {
-  public static func fromConfiguration(
+  public static func configuration(
     key: CactusAgentModelKey? = nil,
     _ configuration: CactusLanguageModel.Configuration
   ) -> Self {
     ConfigurationModelLoader(key: key, configuration: configuration)
   }
 
-  public static func fromModelURL(key: CactusAgentModelKey? = nil, _ url: URL) -> Self {
-    .fromConfiguration(CactusLanguageModel.Configuration(modelURL: url))
+  public static func url(key: CactusAgentModelKey? = nil, _ url: URL) -> Self {
+    .configuration(CactusLanguageModel.Configuration(modelURL: url))
   }
 }

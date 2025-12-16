@@ -10,7 +10,7 @@ struct `WhisperTranscribeAgent tests` {
   func `Transcribes Audio Without Timestamp`() async throws {
     let modelURL = try await CactusLanguageModel.testAudioModelURL(slug: "whisper-small")
 
-    let session = CactusAgenticSession(WhisperTranscribeAgent(.fromModelURL(modelURL)))
+    let session = CactusAgenticSession(WhisperTranscribeAgent(.url(modelURL)))
     let response = try await session.respond(
       to: WhisperTranscribePrompt(language: .greek, includeTimestamps: false, audioURL: .testAudio)
     )
@@ -24,7 +24,7 @@ struct `WhisperTranscribeAgent tests` {
   func `Transcribes Audio With Timestamp`() async throws {
     let modelURL = try await CactusLanguageModel.testAudioModelURL(slug: "whisper-small")
 
-    let session = CactusAgenticSession(WhisperTranscribeAgent(.fromModelURL(modelURL)))
+    let session = CactusAgenticSession(WhisperTranscribeAgent(.url(modelURL)))
     let response = try await session.respond(
       to: WhisperTranscribePrompt(
         language: .english,

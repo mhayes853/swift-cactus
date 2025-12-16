@@ -8,7 +8,7 @@ struct `CactusAgenticSessionSingleModel tests` {
   func `Default Transcript Is Session Scoped`() async throws {
     let systemPrompt = "You are a helpful assistant."
     let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
-    let session = CactusAgenticSession<String, String>(.fromModelURL(url)) {
+    let session = CactusAgenticSession<String, String>(.url(url)) {
       systemPrompt
     }
 

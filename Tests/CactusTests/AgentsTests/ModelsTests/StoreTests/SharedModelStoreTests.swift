@@ -10,7 +10,7 @@ struct `SharedModelStore tests` {
     let store = SharedModelStore()
     await #expect(throws: Never.self) {
       try await store.withModelAccess(
-        request: CactusAgentModelRequest(loader: .fromModelURL(url))
+        request: CactusAgentModelRequest(loader: .url(url))
       ) { _ in }
     }
   }
@@ -23,10 +23,10 @@ struct `SharedModelStore tests` {
     var id1: ObjectIdentifier?
     var id2: ObjectIdentifier?
 
-    try await store.withModelAccess(request: CactusAgentModelRequest(loader: .fromModelURL(url))) {
+    try await store.withModelAccess(request: CactusAgentModelRequest(loader: .url(url))) {
       id1 = ObjectIdentifier($0)
     }
-    try await store.withModelAccess(request: CactusAgentModelRequest(loader: .fromModelURL(url))) {
+    try await store.withModelAccess(request: CactusAgentModelRequest(loader: .url(url))) {
       id2 = ObjectIdentifier($0)
     }
     expectNoDifference(id1, id2)
