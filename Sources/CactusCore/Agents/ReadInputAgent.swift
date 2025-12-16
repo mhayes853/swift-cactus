@@ -1,11 +1,11 @@
 public struct ReadInput<Input, Output: Sendable, Child: CactusAgent>: CactusAgent
 where Child.Input == Input, Child.Output == Output {
   @usableFromInline
-  let child: (Input) -> Child
+  let child: @Sendable (Input) -> Child
 
   @inlinable
   public init(
-    @CactusAgentBuilder<Input, Output> child: @escaping (Input) -> Child
+    @CactusAgentBuilder<Input, Output> child: @escaping @Sendable (Input) -> Child
   ) {
     self.child = child
   }

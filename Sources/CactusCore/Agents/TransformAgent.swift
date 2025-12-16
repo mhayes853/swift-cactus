@@ -5,11 +5,11 @@ public struct TransformInput<Input: Sendable, Child: CactusAgent>: CactusAgent {
   let child: Child
 
   @usableFromInline
-  let transform: (Input) async throws -> Child.Input
+  let transform: @Sendable (Input) async throws -> Child.Input
 
   @inlinable
   public init(
-    _ transform: @escaping (Input) async throws -> Child.Input,
+    _ transform: @escaping @Sendable (Input) async throws -> Child.Input,
     @CactusAgentBuilder<Child.Input, Child.Output> agent: () -> Child
   ) {
     self.child = agent()

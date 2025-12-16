@@ -9,7 +9,7 @@ public final class CactusAgenticSession<
 >: Sendable, Identifiable {
   public typealias Response = CactusAgentResponse<Agent.Output>
 
-  private let _agent: @Sendable () -> Agent
+  private let agent: Agent
   private let observationRegistrar = _ObservationRegistrar()
   private let _responseStreamIds = Lock<Set<UUID>>(Set())
 
@@ -18,7 +18,7 @@ public final class CactusAgenticSession<
   public let scopedMemory = CactusMemoryStore()
 
   public subscript<Value>(dynamicMember keyPath: KeyPath<Agent, Value>) -> Value {
-    self._agent()[keyPath: keyPath]
+    self.agent[keyPath: keyPath]
   }
 
   public var isResponding: Bool {
@@ -26,8 +26,8 @@ public final class CactusAgenticSession<
     return self._responseStreamIds.withLock { !$0.isEmpty }
   }
 
-  public init(_ agent: @autoclosure @escaping @Sendable () -> Agent) {
-    self._agent = agent
+  public init(_ agent: Agent) {
+    self.agent = agent
   }
 
   public func stream(
@@ -47,7 +47,7 @@ public final class CactusAgenticSession<
       $0.insert(streamId)
       return CactusAgentStream<Agent.Output> { continuation in
         defer { _ = self.withResponseStreams { $0.remove(streamId) } }
-        return try await self._agent().stream(request: request.value, into: continuation)
+        return try await self.agent.stream(request: request.value, into: continuation)
       }
     }
   }

@@ -51,7 +51,7 @@ extension CactusAgent {
   }
 
   public func appendingFunctions(
-    _ functions: some Sequence<any CactusFunction>
+    _ functions: some Sequence<any CactusFunction> & Sendable
   ) -> _TransformEnvironmentAgent<Self> {
     self.transformEnvironment(\.functions) { $0.append(contentsOf: functions) }
   }

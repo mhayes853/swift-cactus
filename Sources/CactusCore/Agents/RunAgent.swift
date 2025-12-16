@@ -1,9 +1,9 @@
 public struct Run<Input: Sendable, Output: Sendable>: CactusAgent {
   @usableFromInline
-  let action: (Input) async throws -> Output
+  let action: @Sendable (Input) async throws -> Output
 
   @inlinable
-  public init(_ action: @escaping (Input) async throws -> Output) {
+  public init(_ action: @escaping @Sendable (Input) async throws -> Output) {
     self.action = action
   }
 

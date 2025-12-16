@@ -1,7 +1,7 @@
 public struct Stream<Input: Sendable, Output: Sendable>: CactusAgent {
   @usableFromInline
   let stream:
-    (
+    @Sendable (
       CactusAgentRequest<Input>,
       CactusAgentStream<Output>.Continuation
     ) async throws -> CactusAgentStream<Output>.Response
@@ -9,7 +9,7 @@ public struct Stream<Input: Sendable, Output: Sendable>: CactusAgent {
   @inlinable
   public init(
     _ stream:
-      @escaping (
+      @escaping @Sendable (
         CactusAgentRequest<Input>,
         CactusAgentStream<Output>.Continuation
       ) async throws -> CactusAgentStream<Output>.Response

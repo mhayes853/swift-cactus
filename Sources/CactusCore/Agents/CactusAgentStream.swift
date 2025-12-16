@@ -84,9 +84,7 @@ extension CactusAgentStream {
         return .init(
           action: .collectTokensIntoOutput,
           metrics: self.metrics,
-          transforms: self.transforms + [
-            { any in try transform(any as! Output) }
-          ],
+          transforms: self.transforms + [{ any in try transform(any as! Output) }],
           tokenOutputType: self.tokenOutputType
             ?? (Output.self as? any ConvertibleFromCactusResponse.Type)
         )

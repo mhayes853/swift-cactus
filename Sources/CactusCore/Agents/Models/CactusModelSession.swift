@@ -21,7 +21,7 @@ extension CactusModelSession {
         access: access,
         transcript: transcript,
         functions: functions,
-        systemPrompt: { nil }
+        systemPrompt: nil
       )
     )
   }
@@ -36,7 +36,7 @@ extension CactusModelSession {
         access: .loaded(loader),
         transcript: transcript,
         functions: functions,
-        systemPrompt: { nil }
+        systemPrompt: nil
       )
     )
   }
@@ -53,7 +53,7 @@ extension CactusModelSession {
         access: access,
         transcript: transcript,
         functions: functions,
-        systemPrompt: { systemPrompt() }
+        systemPrompt: systemPrompt
       )
     )
   }
@@ -69,7 +69,7 @@ extension CactusModelSession {
         access: .loaded(loader),
         transcript: transcript,
         functions: functions,
-        systemPrompt: { systemPrompt() }
+        systemPrompt: systemPrompt
       )
     )
   }
@@ -110,18 +110,18 @@ public struct SingleModelAgent<
   @Memory private var transcript: CactusTranscript
   private let access: AgentModelAccess
   private let functions: [any CactusFunction]
-  private let systemPrompt: CactusPromptContent?
+  private let systemPrompt: (@Sendable () -> (any CactusPromptRepresentable))?
 
   init(
     access: AgentModelAccess,
     transcript: some CactusMemoryLocation<CactusTranscript>,
     functions: [any CactusFunction],
-    systemPrompt: () -> (any CactusPromptRepresentable)?
+    systemPrompt: (@Sendable () -> (any CactusPromptRepresentable))?
   ) {
     self.access = access
     self._transcript = Memory(wrappedValue: CactusTranscript(), transcript)
     self.functions = functions
-    self.systemPrompt = systemPrompt().map { CactusPromptContent($0) }
+    self.systemPrompt = systemPrompt
   }
 
   public func body(environment: CactusEnvironmentValues) -> some CactusAgent<Input, Output> {
