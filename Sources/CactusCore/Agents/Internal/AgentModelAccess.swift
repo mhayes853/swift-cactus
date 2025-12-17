@@ -27,4 +27,13 @@ enum AgentModelAccess: Sendable {
       )
     }
   }
+
+  nonisolated(nonsending) func prewarm(
+    in environment: CactusEnvironmentValues
+  ) async throws {
+    guard case .loaded(let loader) = self else { return }
+    try await environment.modelStore.prewarmModel(
+      request: CactusAgentModelRequest(loader, environment: environment)
+    )
+  }
 }
