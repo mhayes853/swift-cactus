@@ -101,13 +101,27 @@ extension CactusModelSession {
   }
 }
 
+// MARK: - Properties
+
+extension CactusModelSession {
+  public func transcript<Input: SendableMetatype, Output>(
+    in environment: CactusEnvironmentValues = CactusEnvironmentValues()
+  ) async throws -> CactusTranscript where Agent == SingleModelAgent<Input, Output> {
+    let environment = self.configuredEnvironment(from: environment)
+    if self.$transcript.isHydrated {
+      return self.agent.transcript
+    }
+    return try await self.$transcript.hydrate(in: environment)
+  }
+}
+
 // MARK: - Agent Wrapper
 
 public struct SingleModelAgent<
   Input: CactusPromptRepresentable,
   Output: ConvertibleFromCactusResponse & Sendable
 >: CactusAgent {
-  @Memory private var transcript: CactusTranscript
+  @Memory var transcript: CactusTranscript
   private let access: AgentModelAccess
   private let functions: [any CactusFunction]
   private let systemPrompt: (@Sendable () -> (any CactusPromptRepresentable))?

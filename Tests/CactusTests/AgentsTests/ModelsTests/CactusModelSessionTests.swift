@@ -14,10 +14,60 @@ struct `CactusModelSession tests` {
 
     _ = try await session.respond(to: "Hello world")
 
-    let sessionTranscript = session.scopedMemory.value(
-      at: .inMemory(_defaultAgenticSessionTranscriptKey).scope(.session),
-      as: CactusTranscript.self
+    let transcript = try await session.transcript()
+    expectNoDifference(transcript.first?.message, .system(systemPrompt))
+  }
+
+  @Test
+  func `Transcript Loads With No Messages And Default Location`() async throws {
+    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+    let session = CactusModelSession<String, String>(.url(url)) {
+      "You are a helpful assistant."
+    }
+
+    let transcript = try await session.transcript()
+    expectNoDifference(transcript.isEmpty, true)
+  }
+
+  @Test
+  func `Loads Shared Scoped Transcript After Responding`() async throws {
+    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+
+    let systemPrompt = "You are a philosopher who can philosophize about things."
+    let userMessage = "What is the meaning of life?"
+
+    let session = CactusModelSession<String, String>(
+      .url(url),
+      transcript: .inMemory("shared-transcript").scope(.shared)
+    ) {
+      systemPrompt
+    }
+
+    let response = try await session.respond(to: userMessage)
+    let transcript = try await session.transcript()
+
+    expectNoDifference(
+      transcript.map(\.message),
+      [
+        .system(systemPrompt),
+        .user(userMessage),
+        .assistant(response.output)
+      ]
     )
-    expectNoDifference(sessionTranscript?.first?.message, .system(systemPrompt))
+  }
+
+  @Test
+  func `Loads Transcript From Explicit Location Without Messages`() async throws {
+    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+
+    let session = CactusModelSession<String, String>(
+      .url(url),
+      transcript: .inMemory("explicit-transcript").scope(.shared)
+    ) {
+      "You are a helpful assistant."
+    }
+
+    let transcript = try await session.transcript()
+    expectNoDifference(transcript.isEmpty, true)
   }
 }

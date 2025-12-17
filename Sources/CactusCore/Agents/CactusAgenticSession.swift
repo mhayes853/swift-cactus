@@ -36,9 +36,7 @@ public final class CactusAgenticSession<
   ) -> CactusAgentStream<Agent.Output> {
     let streamId = UUID()
 
-    var environment = environment
-    environment.sessionId = self.id
-    environment.sessionMemory = self.scopedMemory
+    let environment = self.configuredEnvironment(from: environment)
 
     let request = UnsafeTransfer(
       value: CactusAgentRequest(input: message, environment: environment)
@@ -68,6 +66,15 @@ public final class CactusAgenticSession<
     self.observationRegistrar.withMutation(of: self, keyPath: \.isResponding) {
       self._responseStreamIds.withLock { work(&$0) }
     }
+  }
+
+  public func configuredEnvironment(
+    from environment: CactusEnvironmentValues
+  ) -> CactusEnvironmentValues {
+    var environment = environment
+    environment.sessionId = self.id
+    environment.sessionMemory = self.scopedMemory
+    return environment
   }
 }
 
