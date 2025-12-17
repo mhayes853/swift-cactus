@@ -47,6 +47,10 @@ public struct Memory<Value: Sendable>: Sendable {
     MemoryBinding(self)
   }
 
+  public var isHydrated: Bool {
+    self.box.inner.withLock { $0.environment != nil }
+  }
+
   public init(wrappedValue: @autoclosure @escaping @Sendable () -> Value, _ key: String) {
     self.init(wrappedValue: wrappedValue(), .inMemory(key))
   }

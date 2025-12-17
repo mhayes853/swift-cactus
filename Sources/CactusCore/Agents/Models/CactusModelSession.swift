@@ -101,13 +101,30 @@ extension CactusModelSession {
   }
 }
 
+// MARK: - Properties
+
+extension CactusModelSession {
+  public func transcript<Input: SendableMetatype, Output>(
+    forceRefresh: Bool = false,
+    in environment: CactusEnvironmentValues = CactusEnvironmentValues()
+  ) async throws -> CactusTranscript where Agent == SingleModelAgent<Input, Output> {
+    let environment = self.configuredEnvironment(from: environment)
+    let transcriptMemory = self.$currentTranscript
+    if transcriptMemory.isHydrated {
+      guard forceRefresh else { return self.currentTranscript }
+      return try await transcriptMemory.refresh(in: environment)
+    }
+    return try await transcriptMemory.hydrate(in: environment)
+  }
+}
+
 // MARK: - Agent Wrapper
 
 public struct SingleModelAgent<
   Input: CactusPromptRepresentable,
   Output: ConvertibleFromCactusResponse & Sendable
 >: CactusAgent {
-  @Memory private var transcript: CactusTranscript
+  @Memory var currentTranscript: CactusTranscript
   private let access: AgentModelAccess
   private let functions: [any CactusFunction]
   private let systemPrompt: (@Sendable () -> (any CactusPromptRepresentable))?
@@ -119,7 +136,7 @@ public struct SingleModelAgent<
     systemPrompt: (@Sendable () -> (any CactusPromptRepresentable))?
   ) {
     self.access = access
-    self._transcript = Memory(wrappedValue: CactusTranscript(), transcript)
+    self._currentTranscript = Memory(wrappedValue: CactusTranscript(), transcript)
     self.functions = functions
     self.systemPrompt = systemPrompt
   }
@@ -127,7 +144,7 @@ public struct SingleModelAgent<
   public func body(environment: CactusEnvironmentValues) -> some CactusAgent<Input, Output> {
     CactusModelAgent(
       access: self.access,
-      transcript: self.$transcript.binding,
+      transcript: self.$currentTranscript.binding,
       systemPrompt: systemPrompt
     )
   }
