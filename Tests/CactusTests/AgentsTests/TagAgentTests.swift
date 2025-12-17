@@ -167,6 +167,46 @@ struct `TagAgent tests` {
   }
 
   @Test
+  func `Multiple Untagged Substreams Can Yield Tagged Agents`() async throws {
+    struct UntaggedStreamAgent: CactusAgent {
+      func body(environment: CactusEnvironmentValues) -> some CactusAgent<String, String> {
+        Stream { request, continuation in
+          let firstStream = continuation.openSubstream { subContinuation in
+            let runAgent = Run<String, String> { "First run: \($0)" }
+              .tag("first-run")
+            return try await runAgent.stream(request: request, into: subContinuation)
+          }
+
+          let secondStream = continuation.openSubstream { subContinuation in
+            let runAgent = Run<String, Int> { $0.count }
+              .tag("second-run")
+            return try await runAgent.stream(request: request, into: subContinuation)
+          }
+
+          _ = try await firstStream.streamResponse()
+          _ = try await secondStream.streamResponse()
+          return .finalOutput("Done")
+        }
+      }
+    }
+
+    let input = "Hello World"
+    let session = CactusAgenticSession(UntaggedStreamAgent())
+
+    let stream = session.stream(for: input)
+    let firstStream = try await stream.substream(as: String.self, for: "first-run")
+    let secondStream = try await stream.substream(as: Int.self, for: "second-run")
+
+    async let firstResponse = firstStream.collectResponse()
+    async let secondResponse = secondStream.collectResponse()
+
+    let (first, second) = try await (firstResponse, secondResponse)
+
+    expectNoDifference(first.output, "First run: \(input)")
+    expectNoDifference(second.output, input.count)
+  }
+
+  @Test
   func `Non Existent Doubly Nested Substream Throws`() async throws {
     let session = CactusAgenticSession(
       PassthroughAgent()

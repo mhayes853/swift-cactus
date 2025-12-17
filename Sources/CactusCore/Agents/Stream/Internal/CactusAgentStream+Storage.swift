@@ -96,6 +96,20 @@ extension CactusAgentStream {
       return CactusAgentSubstream(substream)
     }
 
+    func openSubstream<SubstreamOutput: Sendable>(
+      run:
+        @escaping @Sendable (
+          CactusAgentStream<SubstreamOutput>.Continuation
+        ) async throws -> CactusAgentStream<SubstreamOutput>.Response
+    ) -> CactusAgentSubstream<SubstreamOutput> {
+      let substream = CactusAgentStream<SubstreamOutput>(
+        pool: self.substreamPool,
+        isRootStream: false,
+        run: run
+      )
+      return CactusAgentSubstream(substream)
+    }
+
     func awaitSubstream(for tag: AnyHashableSendable) async throws -> any Sendable {
       try await self.substreamPool.awaitSubstream(for: tag)
     }

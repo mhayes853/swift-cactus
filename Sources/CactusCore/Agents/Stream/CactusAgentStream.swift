@@ -187,6 +187,15 @@ extension CactusAgentStream {
       self.storage.openSubstream(tag: AnyHashableSendable(tag), run: stream)
     }
 
+    public func openSubstream<SubstreamOutput: Sendable>(
+      _ stream:
+        @escaping @Sendable (
+          CactusAgentStream<SubstreamOutput>.Continuation
+        ) async throws -> CactusAgentStream<SubstreamOutput>.Response
+    ) -> CactusAgentSubstream<SubstreamOutput> {
+      self.storage.openSubstream(run: stream)
+    }
+
     // TODO: - Should the continuation be part of a typed stream?
     @usableFromInline
     func _unsafelyCastOutput<NewOutput>() -> CactusAgentStream<NewOutput>.Continuation {
