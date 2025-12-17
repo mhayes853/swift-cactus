@@ -25,13 +25,14 @@ public struct ConfigurationModelLoader: CactusLanguageModelLoader, CactusAudioMo
 
 extension CactusAgentModelLoader where Self == ConfigurationModelLoader {
   public static func configuration(
-    key: CactusAgentModelKey? = nil,
+    key: (any Hashable & Sendable)? = nil,
     _ configuration: CactusLanguageModel.Configuration
   ) -> Self {
-    ConfigurationModelLoader(key: key, configuration: configuration)
+    let modelKey = key.map { CactusAgentModelKey($0) }
+    return ConfigurationModelLoader(key: modelKey, configuration: configuration)
   }
 
-  public static func url(key: CactusAgentModelKey? = nil, _ url: URL) -> Self {
-    .configuration(CactusLanguageModel.Configuration(modelURL: url))
+  public static func url(key: (any Hashable & Sendable)? = nil, _ url: URL) -> Self {
+    .configuration(key: key, CactusLanguageModel.Configuration(modelURL: url))
   }
 }

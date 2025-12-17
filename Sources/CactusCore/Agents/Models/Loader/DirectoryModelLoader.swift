@@ -59,15 +59,16 @@ public struct DirectoryLanguageModelLoader: CactusLanguageModelLoader {
 
 extension CactusLanguageModelLoader where Self == DirectoryLanguageModelLoader {
   public static func slug(
-    key: CactusAgentModelKey? = nil,
+    key: (any Hashable & Sendable)? = nil,
     _ slug: String,
     contextSize: Int = 2048,
     corpusDirectoryURL: URL? = nil,
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil
   ) -> Self {
-    DirectoryLanguageModelLoader(
-      key: key,
+    let modelKey = key.map { CactusAgentModelKey($0) }
+    return DirectoryLanguageModelLoader(
+      key: modelKey,
       slug: slug,
       contextSize: contextSize,
       corpusDirectoryURL: corpusDirectoryURL,
@@ -133,14 +134,15 @@ public struct DirectoryAudioModelLoader: CactusAudioModelLoader {
 
 extension CactusAudioModelLoader where Self == DirectoryAudioModelLoader {
   public static func slug(
-    key: CactusAgentModelKey? = nil,
+    key: (any Hashable & Sendable)? = nil,
     _ slug: String,
     contextSize: Int = 2048,
     directory: CactusModelsDirectory? = nil,
     downloadBehavior: CactusAgentModelDownloadBehavior? = nil
   ) -> Self {
-    DirectoryAudioModelLoader(
-      key: key,
+    let modelKey = key.map { CactusAgentModelKey($0) }
+    return DirectoryAudioModelLoader(
+      key: modelKey,
       slug: slug,
       contextSize: contextSize,
       directory: directory,
