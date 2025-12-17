@@ -1,14 +1,10 @@
 // MARK: - CactusAgentSubstream
 
 public struct CactusAgentSubstream<Output: Sendable>: Sendable {
-  private let stream: Task<CactusAgentStream<Output>, any Error>
+  private let stream: CactusAgentStream<Output>
 
   public init(_ stream: CactusAgentStream<Output>) {
-    self.stream = Task { stream }
-  }
-
-  init(deferred stream: sending @escaping () async throws -> CactusAgentStream<Output>) {
-    self.stream = Task { try await stream() }
+    self.stream = stream
   }
 }
 
@@ -18,7 +14,7 @@ extension CactusAgentStream {
   public func substream<TaggedOutput>(
     as _: TaggedOutput.Type,
     for tag: some Hashable & Sendable
-  ) -> CactusAgentSubstream<TaggedOutput> {
+  ) async throws -> CactusAgentSubstream<TaggedOutput> {
     let anyTag = AnyHashableSendable(tag)
     if let substream = self.storage.findSubstream(for: anyTag) {
       guard let typed = substream as? CactusAgentStream<TaggedOutput> else {
@@ -27,13 +23,20 @@ extension CactusAgentStream {
       return CactusAgentSubstream(typed)
     }
 
-    return CactusAgentSubstream {
-      let substream = try await self.storage.awaitSubstream(for: anyTag)
-      guard let typed = substream as? CactusAgentStream<TaggedOutput> else {
-        fatalError("Substream found for tag '\(tag)' does not match requested output type.")
+    if let parentResult = self.storage.streamResponseResult {
+      switch parentResult {
+      case .success:
+        throw CactusAgentStreamError.missingSubstream(for: tag)
+      case .failure(let error):
+        throw error
       }
-      return typed
     }
+
+    let substream = try await self.storage.awaitSubstream(for: anyTag)
+    guard let typed = substream as? CactusAgentStream<TaggedOutput> else {
+      fatalError("Substream found for tag '\(tag)' does not match requested output type.")
+    }
+    return CactusAgentSubstream(typed)
   }
 }
 
@@ -41,13 +44,11 @@ extension CactusAgentStream {
 
 extension CactusAgentSubstream {
   public func collectResponse() async throws -> CactusAgentResponse<Output> {
-    let stream = try await self.stream.value
-    return try await stream.collectResponse()
+    try await self.stream.collectResponse()
   }
 
   public func streamResponse() async throws -> CactusAgentStream<Output>.Response {
-    let stream = try await self.stream.value
-    return try await stream.streamResponse()
+    try await self.stream.streamResponse()
   }
 }
 

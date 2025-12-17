@@ -13,7 +13,7 @@ struct `TagAgent tests` {
     )
 
     let stream = session.stream(for: "Hello")
-    let taggedStream = stream.substream(as: String.self, for: "tagged")
+    let taggedStream = try await stream.substream(as: String.self, for: "tagged")
 
     async let finalResponse = stream.collectResponse()
     async let taggedResponse = taggedStream.collectResponse()
@@ -28,10 +28,9 @@ struct `TagAgent tests` {
     let session = CactusAgenticSession(PassthroughAgent())
 
     let stream = session.stream(for: "Hello")
-    let missingStream = stream.substream(as: String.self, for: "missing")
 
     await #expect(throws: CactusAgentStreamError.missingSubstream(for: "missing")) {
-      _ = try await missingStream.collectResponse()
+      try await stream.substream(as: String.self, for: "missing")
     }
   }
 
@@ -40,7 +39,7 @@ struct `TagAgent tests` {
     let session = CactusAgenticSession(ParentPassthroughTaggedAgent().tag("parent"))
 
     let stream = session.stream(for: "Hello")
-    let childStream = stream.substream(as: String.self, for: "child")
+    let childStream = try await stream.substream(as: String.self, for: "child")
 
     async let finalResponse = stream.collectResponse()
     async let childResponse = childStream.collectResponse()
@@ -61,11 +60,23 @@ struct `TagAgent tests` {
     let stream = session.stream(for: "Hello")
     let parentResponse = try await stream.collectResponse()
 
-    let taggedStream = stream.substream(as: String.self, for: "tagged")
+    let taggedStream = try await stream.substream(as: String.self, for: "tagged")
     let taggedResponse = try await taggedStream.collectResponse()
 
     expectNoDifference(taggedResponse.output, "Tagged: Hello")
     expectNoDifference(parentResponse.output, "Piped: Tagged: Hello")
+  }
+
+  @Test
+  func `Missing Substream Requested After Parent Completes Throws`() async throws {
+    let session = CactusAgenticSession(PassthroughAgent())
+
+    let stream = session.stream(for: "Hello")
+    _ = try await stream.collectResponse()
+
+    await #expect(throws: CactusAgentStreamError.missingSubstream(for: "missing")) {
+      _ = try await stream.substream(as: String.self, for: "missing")
+    }
   }
 
   @Test
@@ -77,10 +88,9 @@ struct `TagAgent tests` {
     )
 
     let stream = session.stream(for: "Hello")
-    let missingStream = stream.substream(as: String.self, for: "grandchild")
 
     await #expect(throws: CactusAgentStreamError.missingSubstream(for: "grandchild")) {
-      try await missingStream.collectResponse()
+      try await stream.substream(as: String.self, for: "grandchild")
     }
   }
 }
