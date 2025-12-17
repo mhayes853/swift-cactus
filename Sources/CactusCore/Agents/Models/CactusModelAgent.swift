@@ -3,7 +3,7 @@ import Foundation
 // MARK: - CactusModelAgent
 
 public struct CactusModelAgent<
-  Input: CactusPromptRepresentable,
+  Input: CactusPromptRepresentable & Sendable,
   Output: ConvertibleFromCactusResponse & Sendable
 >: CactusAgent {
   @MemoryBinding private var transcript: CactusTranscript

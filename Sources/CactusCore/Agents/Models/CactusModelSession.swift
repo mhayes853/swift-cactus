@@ -128,7 +128,7 @@ extension CactusModelSession {
 // MARK: - Agent Wrapper
 
 public struct SingleModelAgent<
-  Input: CactusPromptRepresentable,
+  Input: CactusPromptRepresentable & Sendable,
   Output: ConvertibleFromCactusResponse & Sendable
 >: CactusAgent {
   @Memory var currentTranscript: CactusTranscript

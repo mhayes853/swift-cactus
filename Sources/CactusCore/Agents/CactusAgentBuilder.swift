@@ -1,7 +1,7 @@
 // MARK: - CactusAgentBuilder
 
 @resultBuilder
-public enum CactusAgentBuilder<Input, Output: Sendable> {
+public enum CactusAgentBuilder<Input: Sendable, Output: Sendable> {
   public static func buildBlock<A: CactusAgent<Input, Output>>(_ component: A) -> A {
     component
   }

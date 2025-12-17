@@ -23,9 +23,8 @@ where Base.Output == Piped.Input {
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Piped.Output>.Continuation
   ) async throws -> CactusAgentStream<Piped.Output>.Response {
-    let transfer = UnsafeTransfer(value: request)
     let baseStream = CactusAgentStream { baseContinuation in
-      try await self.base.stream(request: transfer.value, into: baseContinuation)
+      try await self.base.stream(request: request, into: baseContinuation)
     }
     continuation.append(substream: baseStream, tag: UUID())
     let baseResponse = try await baseStream.collectResponse()

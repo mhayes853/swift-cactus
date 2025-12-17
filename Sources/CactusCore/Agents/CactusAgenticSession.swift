@@ -38,14 +38,12 @@ public final class CactusAgenticSession<
 
     let environment = self.configuredEnvironment(from: environment)
 
-    let request = UnsafeTransfer(
-      value: CactusAgentRequest(input: message, environment: environment)
-    )
+    let request = CactusAgentRequest(input: message, environment: environment)
     return self.withResponseStreams {
       $0.insert(streamId)
       return CactusAgentStream<Agent.Output> { continuation in
         defer { _ = self.withResponseStreams { $0.remove(streamId) } }
-        return try await self.agent.stream(request: request.value, into: continuation)
+        return try await self.agent.stream(request: request, into: continuation)
       }
     }
   }
