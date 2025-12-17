@@ -1,12 +1,15 @@
 // MARK: - CactusAgentSubstream
 
 public struct CactusAgentSubstream<Output: Sendable>: Sendable {
-  enum State: Sendable {
-    case pending(Task<CactusAgentStream<Output>, any Error>)
-    case completed(CactusAgentStream<Output>)
+  private let stream: Task<CactusAgentStream<Output>, any Error>
+
+  public init(_ stream: CactusAgentStream<Output>) {
+    self.stream = Task { stream }
   }
 
-  let state: State
+  init(deferred stream: sending @escaping () async throws -> CactusAgentStream<Output>) {
+    self.stream = Task { try await stream() }
+  }
 }
 
 // MARK: - Substream
@@ -16,7 +19,21 @@ extension CactusAgentStream {
     as _: TaggedOutput.Type,
     for tag: some Hashable & Sendable
   ) -> CactusAgentSubstream<TaggedOutput> {
-    fatalError()
+    let anyTag = AnyHashableSendable(tag)
+    if let substream = self.storage.findSubstream(for: anyTag) {
+      guard let typed = substream as? CactusAgentStream<TaggedOutput> else {
+        fatalError("Substream found for tag '\(tag)' does not match requested output type.")
+      }
+      return CactusAgentSubstream(typed)
+    }
+
+    return CactusAgentSubstream {
+      let substream = try await self.storage.awaitSubstream(for: anyTag)
+      guard let typed = substream as? CactusAgentStream<TaggedOutput> else {
+        fatalError("Substream found for tag '\(tag)' does not match requested output type.")
+      }
+      return typed
+    }
   }
 }
 
@@ -24,14 +41,13 @@ extension CactusAgentStream {
 
 extension CactusAgentSubstream {
   public func collectResponse() async throws -> CactusAgentResponse<Output> {
-    fatalError()
-  }
-
-  public func stop() {
+    let stream = try await self.stream.value
+    return try await stream.collectResponse()
   }
 
   public func streamResponse() async throws -> CactusAgentStream<Output>.Response {
-    fatalError()
+    let stream = try await self.stream.value
+    return try await stream.streamResponse()
   }
 }
 
