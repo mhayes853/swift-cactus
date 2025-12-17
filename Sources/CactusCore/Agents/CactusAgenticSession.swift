@@ -56,7 +56,7 @@ public final class CactusAgenticSession<
   ) async throws -> Response {
     let stream = self.stream(for: message, in: environment)
     return try await withTaskCancellationHandler {
-      try await stream.collectFinalResponse()
+      try await stream.collectResponse()
     } onCancel: {
       stream.stop()
     }
