@@ -2,6 +2,9 @@ extension CactusAgentStream {
   final class Storage: Sendable {
     struct InvalidOutputTypeError: Error {}
 
+    private let isRootStream: Bool
+    private let substreamPool: CactusAgentSubstreamPool
+
     private struct State {
       var streamResponseContinuations = [
         UnsafeContinuation<Response, any Error>
@@ -9,10 +12,17 @@ extension CactusAgentStream {
       var streamResponseResult: Result<Response, any Error>?
       var messageId = CactusMessageID()
       var finalResponseTokens = ""
-      var substreamPool: CactusAgentSubstreamPool?
     }
 
     private let state = Lock(State())
+
+    init(
+      isRootStream: Bool = true,
+      substreamPool: CactusAgentSubstreamPool = CactusAgentSubstreamPool()
+    ) {
+      self.isRootStream = isRootStream
+      self.substreamPool = substreamPool
+    }
 
     var streamResponseResult: Result<Response, any Error>? {
       self.state.withLock { $0.streamResponseResult }
@@ -43,7 +53,9 @@ extension CactusAgentStream {
         state.streamResponseResult = result
         state.streamResponseContinuations.forEach { $0.resume(with: result) }
         state.streamResponseContinuations.removeAll()
-        self.failPendingSubstreamsIfNeeded(state: &state)
+        if self.isRootStream {
+          self.substreamPool.markWorkflowFinished()
+        }
       }
     }
 
@@ -65,20 +77,27 @@ extension CactusAgentStream {
       substream: CactusAgentStream<SubstreamOutput>,
       tag: AnyHashableSendable
     ) {
-      let pool = self.ensureSubstreamPool()
-      substream.storage.setSubstreamPool(pool)
-      let continuations = pool.append(substream: substream, tag: tag)
-      continuations.forEach { $0.resume(returning: substream) }
+      self.substreamPool.append(substream: substream, tag: tag)
     }
 
-    func findSubstream(for tag: AnyHashableSendable) -> (any Sendable)? {
-      guard let pool = self.state.withLock({ $0.substreamPool }) else { return nil }
-      return pool.findSubstream(for: tag)
+    func openSubstream<SubstreamOutput: Sendable>(
+      tag: AnyHashableSendable,
+      run:
+        @escaping @Sendable (
+          CactusAgentStream<SubstreamOutput>.Continuation
+        ) async throws -> CactusAgentStream<SubstreamOutput>.Response
+    ) -> CactusAgentSubstream<SubstreamOutput> {
+      let substream = CactusAgentStream<SubstreamOutput>(
+        pool: self.substreamPool,
+        isRootStream: false,
+        run: run
+      )
+      self.append(substream: substream, tag: tag)
+      return CactusAgentSubstream(substream)
     }
 
     func awaitSubstream(for tag: AnyHashableSendable) async throws -> any Sendable {
-      let pool = self.ensureSubstreamPool()
-      return try await pool.awaitSubstream(for: tag)
+      try await self.substreamPool.awaitSubstream(for: tag)
     }
 
     func agentResponse(from response: Response) throws -> CactusAgentResponse<Output> {
@@ -101,30 +120,6 @@ extension CactusAgentStream {
         let converted = try convertibleType.init(cactusResponse: cactusResponse)
         let finalValue: Output = try self.apply(transforms: transforms, to: converted)
         return CactusAgentResponse(output: finalValue, metrics: response.metrics)
-      }
-    }
-
-    private func failPendingSubstreamsIfNeeded(state: inout State) {
-      guard let pool = state.substreamPool else { return }
-      pool.failPendingSubstreams()
-    }
-
-    fileprivate func setSubstreamPool(_ pool: CactusAgentSubstreamPool) {
-      self.state.withLock { state in
-        if state.substreamPool == nil {
-          state.substreamPool = pool
-        }
-      }
-    }
-
-    private func ensureSubstreamPool() -> CactusAgentSubstreamPool {
-      self.state.withLock { state in
-        if let pool = state.substreamPool {
-          return pool
-        }
-        let pool = CactusAgentSubstreamPool()
-        state.substreamPool = pool
-        return pool
       }
     }
   }

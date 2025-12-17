@@ -111,6 +111,62 @@ struct `TagAgent tests` {
   }
 
   @Test
+  func `Tagged Substream Succeeds When Parent Fails`() async throws {
+    let session = CactusAgenticSession(
+      Run<String, String> { "Tagged: \($0)" }
+        .tag("tagged")
+        .pipeOutput(to: Run<String, String> { _ in throw TestError.baseFailure })
+    )
+
+    let stream = session.stream(for: "Hello")
+    let taggedStream = try await stream.substream(as: String.self, for: "tagged")
+
+    async let taggedResponse = taggedStream.collectResponse()
+    await #expect(throws: TestError.baseFailure) {
+      _ = try await stream.collectResponse()
+    }
+
+    let tagged = try await taggedResponse
+    expectNoDifference(tagged.output, "Tagged: Hello")
+  }
+
+  @Test
+  func `Substream From Manually Appended Stream Inside Stream Agent`() async throws {
+    struct MyAgent: CactusAgent {
+      func body(environment: CactusEnvironmentValues) -> some CactusAgent<String, String> {
+        Stream { request, continuation in
+          let innerStream = continuation.openSubstream(
+            tag: "inner-stream"
+          ) { innerContinuation -> CactusAgentStream<String>.Response in
+            let runAgent = Run<String, String> { "Manual run: \($0)" }
+            let runRequest = CactusAgentRequest(
+              input: request.input,
+              environment: request.environment
+            )
+            let runStream = innerContinuation.openSubstream(tag: "manual-run") { runContinuation in
+              try await runAgent.stream(request: runRequest, into: runContinuation)
+            }
+            return try await runStream.streamResponse()
+          }
+
+          return try await innerStream.streamResponse().map { "(Final) \($0)" }
+        }
+      }
+    }
+
+    let session = CactusAgenticSession(MyAgent())
+
+    let stream = session.stream(for: "Hello")
+    let runStream = try await stream.substream(as: String.self, for: "manual-run")
+
+    let parentResponse = try await stream.collectResponse()
+    let runResponse = try await runStream.collectResponse()
+
+    expectNoDifference(parentResponse.output, "(Final) Manual run: Hello")
+    expectNoDifference(runResponse.output, "Manual run: Hello")
+  }
+
+  @Test
   func `Non Existent Doubly Nested Substream Throws`() async throws {
     let session = CactusAgenticSession(
       PassthroughAgent()
@@ -130,4 +186,8 @@ private struct ParentPassthroughTaggedAgent: CactusAgent {
   func body(environment: CactusEnvironmentValues) -> some CactusAgent<String, String> {
     PassthroughAgent().tag("child")
   }
+}
+
+private enum TestError: Error {
+  case baseFailure
 }

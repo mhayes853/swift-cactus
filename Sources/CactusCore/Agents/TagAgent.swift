@@ -12,10 +12,9 @@ public struct _TagAgent<Base: CactusAgent, Tag: Hashable & Sendable>: CactusAgen
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Base.Output>.Continuation
   ) async throws -> CactusAgentStream<Base.Output>.Response {
-    let baseStream = CactusAgentStream { baseContinuation in
+    let baseStream = continuation.openSubstream(tag: self.tag) { baseContinuation in
       try await self.base.stream(request: request, into: baseContinuation)
     }
-    continuation.append(substream: baseStream, tag: self.tag)
     return try await baseStream.streamResponse()
   }
 }

@@ -15,24 +15,7 @@ extension CactusAgentStream {
     as _: TaggedOutput.Type,
     for tag: some Hashable & Sendable
   ) async throws -> CactusAgentSubstream<TaggedOutput> {
-    let anyTag = AnyHashableSendable(tag)
-    if let substream = self.storage.findSubstream(for: anyTag) {
-      guard let typed = substream as? CactusAgentStream<TaggedOutput> else {
-        throw CactusAgentStreamError.invalidSubstreamType(TaggedOutput.self)
-      }
-      return CactusAgentSubstream(typed)
-    }
-
-    if let parentResult = self.storage.streamResponseResult {
-      switch parentResult {
-      case .success:
-        throw CactusAgentStreamError.missingSubstream(for: tag)
-      case .failure(let error):
-        throw error
-      }
-    }
-
-    let substream = try await self.storage.awaitSubstream(for: anyTag)
+    let substream = try await self.storage.awaitSubstream(for: AnyHashableSendable(tag))
     guard let typed = substream as? CactusAgentStream<TaggedOutput> else {
       throw CactusAgentStreamError.invalidSubstreamType(TaggedOutput.self)
     }

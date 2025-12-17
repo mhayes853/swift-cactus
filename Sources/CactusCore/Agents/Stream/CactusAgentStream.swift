@@ -5,7 +5,15 @@ public struct CactusAgentStream<Output: Sendable>: Sendable {
   private let task: Task<Void, any Error>
 
   public init(run: sending @escaping (Continuation) async throws -> Response) {
-    let storage = Storage()
+    self.init(pool: CactusAgentSubstreamPool(), isRootStream: true, run: run)
+  }
+
+  init(
+    pool: CactusAgentSubstreamPool,
+    isRootStream: Bool = false,
+    run: sending @escaping (Continuation) async throws -> Response
+  ) {
+    let storage = Storage(isRootStream: isRootStream, substreamPool: pool)
     let continuation = Continuation(storage: storage)
     self.storage = storage
     self.task = Task {
@@ -169,11 +177,14 @@ extension CactusAgentStream {
       self.storage.accumulate(token: token)
     }
 
-    public func append<SubstreamOutput: Sendable>(
-      substream: CactusAgentStream<SubstreamOutput>,
-      tag: some Hashable & Sendable
-    ) {
-      self.storage.append(substream: substream, tag: AnyHashableSendable(tag))
+    public func openSubstream<SubstreamOutput: Sendable>(
+      tag: some Hashable & Sendable,
+      stream:
+        @escaping @Sendable (
+          CactusAgentStream<SubstreamOutput>.Continuation
+        ) async throws -> CactusAgentStream<SubstreamOutput>.Response
+    ) -> CactusAgentSubstream<SubstreamOutput> {
+      self.storage.openSubstream(tag: AnyHashableSendable(tag), run: stream)
     }
 
     // TODO: - Should the continuation be part of a typed stream?
