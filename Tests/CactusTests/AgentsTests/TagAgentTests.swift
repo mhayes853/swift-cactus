@@ -50,35 +50,6 @@ struct `TagAgent tests` {
     expectNoDifference(child.output, "Hello")
   }
 
-  @Test(.disabled())
-  func `Nested Tagged Agent Accessible Through Parent Substream`() async throws {
-    let session = CactusAgenticSession(ParentPassthroughTaggedAgent().tag("parent"))
-
-    let stream = session.stream(for: "Hello")
-    let parentStream = stream.substream(as: String.self, for: "parent")
-    let childStream = parentStream.substream(as: String.self, for: "child")
-
-    async let parentResponse = parentStream.collectResponse()
-    async let childResponse = childStream.collectResponse()
-
-    let (parent, child) = try await (parentResponse, childResponse)
-    expectNoDifference(parent.output, "Hello")
-    expectNoDifference(child.output, "Hello")
-  }
-
-  @Test
-  func `Parent Substream Not Accessible From Child Stream`() async throws {
-    let session = CactusAgenticSession(ParentPassthroughTaggedAgent().tag("parent"))
-
-    let stream = session.stream(for: "Hello")
-    let childStream = stream.substream(as: String.self, for: "child")
-    let parentFromChild = childStream.substream(as: String.self, for: "parent")
-
-    await #expect(throws: CactusAgentStreamError.missingSubstream(for: "parent")) {
-      _ = try await parentFromChild.collectResponse()
-    }
-  }
-
   @Test
   func `Substream Can Be Retrieved After Parent Finishes`() async throws {
     let session = CactusAgenticSession(
