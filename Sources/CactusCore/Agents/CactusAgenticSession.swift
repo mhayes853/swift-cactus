@@ -31,7 +31,7 @@ public final class CactusAgenticSession<
   }
 
   public func stream(
-    for message: sending Agent.Input,
+    for message: Agent.Input,
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) -> CactusAgentStream<Agent.Output> {
     let streamId = UUID()
@@ -49,7 +49,7 @@ public final class CactusAgenticSession<
   }
 
   public func respond(
-    to message: sending Agent.Input,
+    to message: Agent.Input,
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) async throws -> Response {
     let stream = self.stream(for: message, in: environment)
