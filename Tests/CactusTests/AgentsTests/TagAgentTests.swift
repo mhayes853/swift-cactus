@@ -80,6 +80,37 @@ struct `TagAgent tests` {
   }
 
   @Test
+  func `Incorrect Substream Type While Parent Running Throws`() async throws {
+    let session = CactusAgenticSession(
+      Run<String, String> { "Tagged: \($0)" }
+        .tag("tagged")
+        .pipeOutput(to: Run { "Piped: \($0)" })
+    )
+
+    let stream = session.stream(for: "Hello")
+
+    await #expect(throws: CactusAgentStreamError.invalidSubstreamType(Int.self)) {
+      _ = try await stream.substream(as: Int.self, for: "tagged")
+    }
+  }
+
+  @Test
+  func `Incorrect Substream Type After Parent Completes Throws`() async throws {
+    let session = CactusAgenticSession(
+      Run<String, String> { "Tagged: \($0)" }
+        .tag("tagged")
+        .pipeOutput(to: Run { "Piped: \($0)" })
+    )
+
+    let stream = session.stream(for: "Hello")
+    _ = try await stream.collectResponse()
+
+    await #expect(throws: CactusAgentStreamError.invalidSubstreamType(Int.self)) {
+      _ = try await stream.substream(as: Int.self, for: "tagged")
+    }
+  }
+
+  @Test
   func `Non Existent Doubly Nested Substream Throws`() async throws {
     let session = CactusAgenticSession(
       PassthroughAgent()

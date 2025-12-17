@@ -189,6 +189,7 @@ extension CactusAgentStream {
 public struct CactusAgentStreamError: Error, Hashable {
   private enum Reason: Hashable {
     case missingSubstream(tag: AnyHashableSendable)
+    case invalidSubstreamType(HashableType)
   }
 
   private let reason: Reason
@@ -199,5 +200,9 @@ public struct CactusAgentStreamError: Error, Hashable {
 
   public static func missingSubstream(for tag: some Hashable & Sendable) -> Self {
     Self(reason: .missingSubstream(tag: AnyHashableSendable(tag)))
+  }
+
+  public static func invalidSubstreamType(_ outputType: Any.Type) -> Self {
+    Self(reason: .invalidSubstreamType(HashableType(outputType)))
   }
 }
