@@ -121,7 +121,7 @@ extension CactusModelSession {
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) async throws where Agent == SingleModelAgent<Input, Output> {
     let environment = self.configuredEnvironment(from: environment)
-    try await self.modelAccess.prewarm(in: environment)
+    try await self.access.prewarm(in: environment)
   }
 }
 
@@ -132,13 +132,9 @@ public struct SingleModelAgent<
   Output: ConvertibleFromCactusResponse & Sendable
 >: CactusAgent {
   @Memory var currentTranscript: CactusTranscript
-  private let access: AgentModelAccess
+  let access: AgentModelAccess
   private let functions: [any CactusFunction]
   private let systemPrompt: (@Sendable () -> (any CactusPromptRepresentable))?
-
-  var modelAccess: AgentModelAccess {
-    self.access
-  }
 
   init(
     access: AgentModelAccess,
