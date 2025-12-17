@@ -70,4 +70,36 @@ struct `CactusModelSession tests` {
     let transcript = try await session.transcript()
     expectNoDifference(transcript.isEmpty, true)
   }
+
+  @Test
+  func `Force Refresh Reloads Shared Transcript`() async throws {
+    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+
+    let systemPrompt = "You are a helpful assistant."
+    let userMessage = "Hello world"
+
+    let session1 = CactusModelSession<String, String>(
+      .url(url),
+      transcript: .inMemory("shared-force-refresh").scope(.shared)
+    ) {
+      systemPrompt
+    }
+
+    _ = try await session1.respond(to: userMessage)
+
+    let session2 = CactusModelSession<String, String>(
+      .url(url),
+      transcript: .inMemory("shared-force-refresh").scope(.shared)
+    ) {
+      systemPrompt
+    }
+
+    let refreshedTranscript = try await session2.transcript(forceRefresh: true)
+    let originalTranscript = try await session1.transcript()
+
+    expectNoDifference(
+      originalTranscript.map(\.message),
+      refreshedTranscript.map(\.message)
+    )
+  }
 }
