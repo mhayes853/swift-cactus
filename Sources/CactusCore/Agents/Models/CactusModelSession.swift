@@ -101,7 +101,7 @@ extension CactusModelSession {
   }
 }
 
-// MARK: - Properties
+// MARK: - Helpers
 
 extension CactusModelSession {
   public func transcript<Input: SendableMetatype, Output>(
@@ -116,6 +116,13 @@ extension CactusModelSession {
     }
     return try await transcriptMemory.hydrate(in: environment)
   }
+
+  public func prewarm<Input: SendableMetatype, Output>(
+    in environment: CactusEnvironmentValues = CactusEnvironmentValues()
+  ) async throws where Agent == SingleModelAgent<Input, Output> {
+    let environment = self.configuredEnvironment(from: environment)
+    try await self.access.prewarm(in: environment)
+  }
 }
 
 // MARK: - Agent Wrapper
@@ -125,7 +132,7 @@ public struct SingleModelAgent<
   Output: ConvertibleFromCactusResponse & Sendable
 >: CactusAgent {
   @Memory var currentTranscript: CactusTranscript
-  private let access: AgentModelAccess
+  let access: AgentModelAccess
   private let functions: [any CactusFunction]
   private let systemPrompt: (@Sendable () -> (any CactusPromptRepresentable))?
 
@@ -152,4 +159,4 @@ public struct SingleModelAgent<
 
 // MARK: - Helpers
 
-package let _defaultAgenticSessionTranscriptKey = "__SWIFT_CACTUS_DEFAULT_AGENT_TRANSCRIPT__"
+private let _defaultAgenticSessionTranscriptKey = "__SWIFT_CACTUS_DEFAULT_AGENT_TRANSCRIPT__"

@@ -102,4 +102,24 @@ struct `CactusModelSession tests` {
       refreshedTranscript.map(\.message)
     )
   }
+
+  @Test
+  func `Prewarm Uses Provided ModelStore`() async throws {
+    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+    let loader = CountingModelLoader(key: "prewarm", url: url)
+    let session = CactusModelSession<String, String>(
+      loader,
+      transcript: .inMemory("prewarm-model-store").scope(.session)
+    )
+
+    let store = SharedModelStore()
+    var environment = CactusEnvironmentValues()
+    environment.modelStore = store
+
+    try await session.prewarm(in: environment)
+    loader.count.withLock { expectNoDifference($0, 1) }
+
+    _ = try await session.respond(to: "Hello world", in: environment)
+    loader.count.withLock { expectNoDifference($0, 1) }
+  }
 }
