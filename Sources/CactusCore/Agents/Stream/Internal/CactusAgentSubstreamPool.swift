@@ -63,7 +63,7 @@ private func duplicateTag(_ tag: AnyHashableSendable) {
     This is generally considered an application logic error, and you should make sure that all \
     tags appended to the `tag` agent modifier are globally unique.
 
-    If you want to scope an agents tags to a local namespace, you can use the `tagNamespace` agent \
+    If you want to scope an agents tags to a local namespace, you can use the `namespace` agent \
     modifier. In doing so, duplicate tags will only be compared against the local namespace.
     """
   )
