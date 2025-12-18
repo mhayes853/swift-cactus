@@ -1,3 +1,5 @@
+import Foundation
+
 extension CactusAgent {
   public func pipeOutput<PipedOutput, Piped: CactusAgent<Output, PipedOutput>>(
     to agent: Piped
@@ -21,11 +23,10 @@ where Base.Output == Piped.Input {
     request: CactusAgentRequest<Base.Input>,
     into continuation: CactusAgentStream<Piped.Output>.Continuation
   ) async throws -> CactusAgentStream<Piped.Output>.Response {
-    let transfer = UnsafeTransfer(value: request)
-    let baseStream = CactusAgentStream<Base.Output> { baseContinuation in
-      try await self.base.stream(request: transfer.value, into: baseContinuation)
+    let baseStream = continuation.openSubstream { baseContinuation in
+      try await self.base.stream(request: request, into: baseContinuation)
     }
-    let baseResponse = try await baseStream.collectFinalResponse()
+    let baseResponse = try await baseStream.collectResponse()
 
     let pipedRequest = CactusAgentRequest(
       input: baseResponse.output,

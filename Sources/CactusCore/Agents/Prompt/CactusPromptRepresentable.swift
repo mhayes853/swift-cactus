@@ -1,6 +1,6 @@
 // MARK: - CactusPromptRepresentable
 
-public protocol CactusPromptRepresentable {
+public protocol CactusPromptRepresentable: Sendable {
   associatedtype PromptContentFailure: Error
   func promptContent(
     in environment: CactusEnvironmentValues

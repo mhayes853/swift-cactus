@@ -2,17 +2,17 @@
   ▿ metrics: 1 key/value pair
     ▿ (2 elements)
       ▿ key: CactusMessageID
-        - rawValue: F15D6FD5-EC3F-4879-9045-41A1EE5F00ED
+        - rawValue: 461E5341-1DEA-4DF8-A8C6-7B2503713CAC
       ▿ value: CactusMessageMetric
         - decodeTokens: 200
         - prefillTokens: 31
-        - timeIntervalToFirstToken: 0.17768
-        - tokensPerSecond: 30.62
-        - totalTimeInterval: 6.677350000000001
+        - timeIntervalToFirstToken: 0.71202
+        - tokensPerSecond: 46.09
+        - totalTimeInterval: 5.02946
         - totalTokens: 231
   ▿ output: Qwen3Completion<String>
     ▿ id: CactusMessageID
-      - rawValue: F15D6FD5-EC3F-4879-9045-41A1EE5F00ED
-    - response: "The meaning of life is a deeply personal and subjective question. It transcends individual experiences and can be shaped by cultural values, philosophical traditions, spiritual beliefs, and personal aspirations. While there"
+      - rawValue: 461E5341-1DEA-4DF8-A8C6-7B2503713CAC
+    - response: "The question of \"What is"
     ▿ thinkingContent: Optional<String>
-      - some: "Okay, the user asked, \"What is the meaning of life?\" and I need to provide an answer. First, I should acknowledge that this question is deeply personal and might not have an easy answer.\n\nI should start by expressing my understanding of what life means to me as someone who values philosophy and contemplation over material success or happiness.\n\nIt\'s important to highlight that the meaning of life varies widely among individuals based on cultural, personal experiences, beliefs systems. Perhaps mention different perspectives from various philosophical traditions.\n\nI should also encourage the user to reflect on their own values and experiences as part of the answer, since personal meaning is key here.\n\nMake sure my tone is thoughtful and open-ended, allowing the user to explore further if they choose to. Avoid providing specific answers but offer a philosophical perspective."
+      - some: "Okay, the user is asking about the meaning of life. I need to address this in a way that\'s both philosophical and accessible. First, I should acknowledge that there isn\'t a singular answer, as it\'s subjective.\n\nI can start by emphasizing that different perspectives lead to diverse experiences. Maybe mention common themes like purpose or personal fulfillment. It\'s important to highlight how people have varying views depending on their beliefs and values.\n\nNext, perhaps touch on how individuality plays a role in finding meaning—each person has unique paths and contributions. Also, consider factors like what brings joy or happiness they find meaningful.\n\nI should also include some historical examples where individuals found their purpose through different means—artistic endeavors for example. But make sure not to take the user too seriously if they\'re asking about existential questions rather than specific answers.\n\nFinally, end with a general invitation for them to explore further if they want more information about different philosophies of life."

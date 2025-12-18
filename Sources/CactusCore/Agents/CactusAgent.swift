@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - CactusAgentRequest
 
-public struct CactusAgentRequest<Input> {
+public struct CactusAgentRequest<Input: Sendable>: Sendable {
   public var input: Input
   public var environment: CactusEnvironmentValues
 
@@ -14,8 +14,6 @@ public struct CactusAgentRequest<Input> {
     self.environment = environment
   }
 }
-
-extension CactusAgentRequest: Sendable where Input: Sendable {}
 
 // MARK: - CactusAgentResponse
 
@@ -32,7 +30,7 @@ public struct CactusAgentResponse<Output: Sendable>: Sendable {
 // MARK: - CactusAgent
 
 public protocol CactusAgent<Input, Output>: Sendable {
-  associatedtype Input
+  associatedtype Input: Sendable
   associatedtype Output: Sendable
 
   associatedtype Body

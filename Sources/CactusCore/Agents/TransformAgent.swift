@@ -63,7 +63,6 @@ where Base.Input: Sendable {
       request: request,
       into: continuation._unsafelyCastOutput()
     )
-    let transform = self.transform
-    return try baseResponse.map { try transform($0, request.input) }
+    return try baseResponse.map { try self.transform($0, request.input) }
   }
 }

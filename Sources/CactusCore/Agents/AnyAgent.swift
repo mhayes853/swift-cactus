@@ -1,4 +1,4 @@
-public struct AnyAgent<Input, Output: Sendable>: CactusAgent {
+public struct AnyAgent<Input: Sendable, Output: Sendable>: CactusAgent {
   private let base: any CactusAgent<Input, Output>
 
   public init(_ base: any CactusAgent<Input, Output>) {

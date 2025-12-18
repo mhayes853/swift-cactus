@@ -31,32 +31,30 @@ public final class CactusAgenticSession<
   }
 
   public func stream(
-    for message: sending Agent.Input,
+    for message: Agent.Input,
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) -> CactusAgentStream<Agent.Output> {
     let streamId = UUID()
 
     let environment = self.configuredEnvironment(from: environment)
 
-    let request = UnsafeTransfer(
-      value: CactusAgentRequest(input: message, environment: environment)
-    )
+    let request = CactusAgentRequest(input: message, environment: environment)
     return self.withResponseStreams {
       $0.insert(streamId)
       return CactusAgentStream<Agent.Output> { continuation in
         defer { _ = self.withResponseStreams { $0.remove(streamId) } }
-        return try await self.agent.stream(request: request.value, into: continuation)
+        return try await self.agent.stream(request: request, into: continuation)
       }
     }
   }
 
   public func respond(
-    to message: sending Agent.Input,
+    to message: Agent.Input,
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
   ) async throws -> Response {
     let stream = self.stream(for: message, in: environment)
     return try await withTaskCancellationHandler {
-      try await stream.collectFinalResponse()
+      try await stream.collectResponse()
     } onCancel: {
       stream.stop()
     }

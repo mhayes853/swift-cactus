@@ -2,8 +2,8 @@ import Foundation
 
 // MARK: - CactusPromptContent
 
-public struct CactusPromptContent {
-  private enum Block {
+public struct CactusPromptContent: Sendable {
+  private enum Block: Sendable {
     case text(String)
     case separator(String)
     case images([URL])
