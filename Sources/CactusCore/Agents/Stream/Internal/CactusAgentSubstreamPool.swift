@@ -1,3 +1,5 @@
+import IssueReporting
+
 final class CactusAgentSubstreamPool: Sendable {
   private struct State {
     var isWorkflowFinished = false
@@ -9,6 +11,9 @@ final class CactusAgentSubstreamPool: Sendable {
 
   func append(substream: any Sendable, tag: AnyHashableSendable) {
     self.state.withLock { state in
+      if state.substreams[tag] != nil {
+        duplicateTag(tag)
+      }
       state.substreams[tag] = substream
       let continuations = state.pending.removeValue(forKey: tag) ?? []
       continuations.forEach { $0.resume(returning: substream) }
@@ -42,4 +47,20 @@ final class CactusAgentSubstreamPool: Sendable {
       }
     }
   }
+}
+
+private func duplicateTag(_ tag: AnyHashableSendable) {
+  reportIssue(
+    """
+    A duplicate tag was detected.
+
+        Tag: \(tag)
+
+    This is generally considered an application logic error, and you should make sure that all \
+    tags appended to the `tag` agent modifier are globally unique.
+
+    If you want to scope an agents tags to a local namespace, you can use the `tagNamespace` agent \
+    modifier. In doing so, duplicate tags will only be compared against the local namespace.
+    """
+  )
 }

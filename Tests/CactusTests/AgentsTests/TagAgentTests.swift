@@ -1,5 +1,6 @@
 import Cactus
 import CustomDump
+import IssueReporting
 import Testing
 
 @Suite
@@ -204,6 +205,22 @@ struct `TagAgent tests` {
 
     expectNoDifference(first.output, "First run: \(input)")
     expectNoDifference(second.output, input.count)
+  }
+
+  @Test
+  func `Duplicate Tags Report Issue`() async throws {
+    struct DuplicateTaggedAgent: CactusAgent {
+      func body(environment: CactusEnvironmentValues) -> some CactusAgent<String, String> {
+        PassthroughAgent()
+          .tag("duplicate")
+          .pipeOutput(to: PassthroughAgent().tag("duplicate"))
+      }
+    }
+
+    let session = CactusAgenticSession(DuplicateTaggedAgent())
+    await withExpectedIssue {
+      _ = try await session.respond(to: "Hello")
+    }
   }
 
   @Test
