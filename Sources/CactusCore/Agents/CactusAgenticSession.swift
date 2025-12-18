@@ -1,9 +1,7 @@
 import Foundation
-import Observation
 
 // MARK: - CactusAgenticSession
 
-@dynamicMemberLookup
 public final class CactusAgenticSession<
   Agent: CactusAgent & SendableMetatype
 >: Sendable, Identifiable {
@@ -16,10 +14,6 @@ public final class CactusAgenticSession<
   public let id = UUID()
 
   public let scopedMemory = CactusMemoryStore()
-
-  public subscript<Value>(dynamicMember keyPath: KeyPath<Agent, Value>) -> Value {
-    self.agent[keyPath: keyPath]
-  }
 
   public var isResponding: Bool {
     self.observationRegistrar.access(self, keyPath: \.isResponding)

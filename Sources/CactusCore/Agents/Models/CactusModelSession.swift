@@ -2,19 +2,61 @@ import Foundation
 
 // MARK: - CactusModelSession
 
-public typealias CactusModelSession<
-  Input: CactusPromptRepresentable,
+public final class CactusModelSession<
+  Input: CactusPromptRepresentable & Sendable,
   Output: ConvertibleFromCactusResponse & Sendable
-> = CactusAgenticSession<SingleModelAgent<Input, Output>>
+>: Sendable, Identifiable {
+  public typealias Response = CactusAgentResponse<Output>
+
+  private let agent: SingleModelAgent<Input, Output>
+  private let session: CactusAgenticSession<SingleModelAgent<Input, Output>>
+
+  private init(_ agent: SingleModelAgent<Input, Output>) {
+    self.agent = agent
+    self.session = CactusAgenticSession(agent)
+  }
+
+  public var id: UUID {
+    self.session.id
+  }
+
+  public var scopedMemory: CactusMemoryStore {
+    self.session.scopedMemory
+  }
+
+  public var isResponding: Bool {
+    self.session.isResponding
+  }
+
+  public func stream(
+    for message: Input,
+    in environment: CactusEnvironmentValues = CactusEnvironmentValues()
+  ) -> CactusAgentStream<Output> {
+    self.session.stream(for: message, in: environment)
+  }
+
+  public func respond(
+    to message: Input,
+    in environment: CactusEnvironmentValues = CactusEnvironmentValues()
+  ) async throws -> Response {
+    try await self.session.respond(to: message, in: environment)
+  }
+
+  public func configuredEnvironment(
+    from environment: CactusEnvironmentValues
+  ) -> CactusEnvironmentValues {
+    self.session.configuredEnvironment(from: environment)
+  }
+}
 
 // MARK: - Convenience Inits
 
-extension CactusModelSession {
-  public convenience init<Input: SendableMetatype, Output>(
+extension CactusModelSession where Input: SendableMetatype {
+  public convenience init(
     _ model: sending CactusLanguageModel,
     transcript: some CactusMemoryLocation<CactusTranscript>,
     functions: [any CactusFunction] = []
-  ) where Agent == SingleModelAgent<Input, Output> {
+  ) {
     let access = AgentModelAccess.direct(model)
     self.init(
       SingleModelAgent(
@@ -26,11 +68,11 @@ extension CactusModelSession {
     )
   }
 
-  public convenience init<Input: SendableMetatype, Output>(
+  public convenience init(
     _ loader: any CactusLanguageModelLoader,
     transcript: some CactusMemoryLocation<CactusTranscript>,
     functions: [any CactusFunction] = []
-  ) where Agent == SingleModelAgent<Input, Output> {
+  ) {
     self.init(
       SingleModelAgent(
         access: .loaded(loader),
@@ -41,12 +83,12 @@ extension CactusModelSession {
     )
   }
 
-  public convenience init<Input: SendableMetatype, Output>(
+  public convenience init(
     _ model: sending CactusLanguageModel,
     transcript: some CactusMemoryLocation<CactusTranscript>,
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: @escaping @Sendable () -> some CactusPromptRepresentable
-  ) where Agent == SingleModelAgent<Input, Output> {
+  ) {
     let access = AgentModelAccess.direct(model)
     self.init(
       SingleModelAgent(
@@ -58,12 +100,12 @@ extension CactusModelSession {
     )
   }
 
-  public convenience init<Input: SendableMetatype, Output>(
+  public convenience init(
     _ loader: any CactusLanguageModelLoader,
     transcript: some CactusMemoryLocation<CactusTranscript>,
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: @escaping @Sendable () -> some CactusPromptRepresentable
-  ) where Agent == SingleModelAgent<Input, Output> {
+  ) {
     self.init(
       SingleModelAgent(
         access: .loaded(loader),
@@ -74,11 +116,11 @@ extension CactusModelSession {
     )
   }
 
-  public convenience init<Input: SendableMetatype, Output>(
+  public convenience init(
     _ model: sending CactusLanguageModel,
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: @escaping @Sendable () -> some CactusPromptRepresentable
-  ) where Agent == SingleModelAgent<Input, Output> {
+  ) {
     self.init(
       model,
       transcript: .inMemory(_defaultAgenticSessionTranscriptKey).scope(.session),
@@ -87,11 +129,11 @@ extension CactusModelSession {
     )
   }
 
-  public convenience init<Input: SendableMetatype, Output>(
+  public convenience init(
     _ loader: any CactusLanguageModelLoader,
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: @escaping @Sendable () -> some CactusPromptRepresentable
-  ) where Agent == SingleModelAgent<Input, Output> {
+  ) {
     self.init(
       loader,
       transcript: .inMemory(_defaultAgenticSessionTranscriptKey).scope(.session),
@@ -101,33 +143,38 @@ extension CactusModelSession {
   }
 }
 
-// MARK: - Helpers
+// MARK: - Observable
 
-extension CactusModelSession {
-  public func transcript<Input: SendableMetatype, Output>(
+@available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
+extension CactusModelSession: _Observable {}
+
+// MARK: - FoundationModels Like APIs
+
+extension CactusModelSession where Input: SendableMetatype {
+  public func transcript(
     forceRefresh: Bool = false,
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
-  ) async throws -> CactusTranscript where Agent == SingleModelAgent<Input, Output> {
+  ) async throws -> CactusTranscript {
     let environment = self.configuredEnvironment(from: environment)
-    let transcriptMemory = self.$currentTranscript
+    let transcriptMemory = self.agent.$currentTranscript
     if transcriptMemory.isHydrated {
-      guard forceRefresh else { return self.currentTranscript }
+      guard forceRefresh else { return self.agent.currentTranscript }
       return try await transcriptMemory.refresh(in: environment)
     }
     return try await transcriptMemory.hydrate(in: environment)
   }
 
-  public func prewarm<Input: SendableMetatype, Output>(
+  public func prewarm(
     in environment: CactusEnvironmentValues = CactusEnvironmentValues()
-  ) async throws where Agent == SingleModelAgent<Input, Output> {
+  ) async throws {
     let environment = self.configuredEnvironment(from: environment)
-    try await self.access.prewarm(in: environment)
+    try await self.agent.access.prewarm(in: environment)
   }
 }
 
 // MARK: - Agent Wrapper
 
-public struct SingleModelAgent<
+private struct SingleModelAgent<
   Input: CactusPromptRepresentable & Sendable,
   Output: ConvertibleFromCactusResponse & Sendable
 >: CactusAgent {
@@ -148,11 +195,11 @@ public struct SingleModelAgent<
     self.systemPrompt = systemPrompt
   }
 
-  public func body(environment: CactusEnvironmentValues) -> some CactusAgent<Input, Output> {
+  func body(environment: CactusEnvironmentValues) -> some CactusAgent<Input, Output> {
     CactusModelAgent(
       access: self.access,
       transcript: self.$currentTranscript.binding,
-      systemPrompt: systemPrompt
+      systemPrompt: self.systemPrompt
     )
   }
 }
