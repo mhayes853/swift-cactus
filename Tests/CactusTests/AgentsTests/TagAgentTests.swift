@@ -237,6 +237,40 @@ struct `TagAgent tests` {
       try await stream.substream(as: String.self, for: "grandchild")
     }
   }
+
+  @Test
+  func `Duplicate Tags In Different Namespaces Can Be Retrieved`() async throws {
+    let session = CactusAgenticSession(
+      Run<String, String> { "First: \($0)" }
+        .tag("duplicate")
+        .namespace(.local("first"))
+        .pipeOutput(
+          to: Run<String, String> { "Second: \($0)" }
+            .tag("duplicate")
+            .namespace(.local("second"))
+        )
+    )
+
+    let stream = session.stream(for: "Hello")
+    let firstSubstream = try await stream.substream(
+      as: String.self,
+      for: "duplicate",
+      namespace: .local("first")
+    )
+    let secondSubstream = try await stream.substream(
+      as: String.self,
+      for: "duplicate",
+      namespace: .local("second")
+    )
+
+    async let firstResponse = firstSubstream.collectResponse()
+    async let secondResponse = secondSubstream.collectResponse()
+
+    let (first, second) = try await (firstResponse, secondResponse)
+
+    expectNoDifference(first.output, "First: Hello")
+    expectNoDifference(second.output, "Second: First: Hello")
+  }
 }
 
 private struct ParentPassthroughTaggedAgent: CactusAgent {

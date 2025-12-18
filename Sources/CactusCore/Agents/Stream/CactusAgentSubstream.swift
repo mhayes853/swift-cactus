@@ -13,9 +13,13 @@ public struct CactusAgentSubstream<Output: Sendable>: Sendable {
 extension CactusAgentStream {
   public func substream<TaggedOutput>(
     as _: TaggedOutput.Type,
-    for tag: some Hashable & Sendable
+    for tag: some Hashable & Sendable,
+    namespace: CactusAgentNamespace = .global
   ) async throws -> CactusAgentSubstream<TaggedOutput> {
-    let substream = try await self.storage.awaitSubstream(for: AnyHashableSendable(tag))
+    let substream = try await self.storage.awaitSubstream(
+      for: AnyHashableSendable(tag),
+      namespace: namespace
+    )
     guard let typed = substream as? CactusAgentStream<TaggedOutput> else {
       throw CactusAgentStreamError.invalidSubstreamType(TaggedOutput.self)
     }

@@ -179,12 +179,17 @@ extension CactusAgentStream {
 
     public func openSubstream<SubstreamOutput: Sendable>(
       tag: some Hashable & Sendable,
+      namespace: CactusAgentNamespace = .global,
       stream:
         @escaping @Sendable (
           CactusAgentStream<SubstreamOutput>.Continuation
         ) async throws -> CactusAgentStream<SubstreamOutput>.Response
     ) -> CactusAgentSubstream<SubstreamOutput> {
-      self.storage.openSubstream(tag: AnyHashableSendable(tag), run: stream)
+      self.storage.openSubstream(
+        tag: AnyHashableSendable(tag),
+        namespace: namespace,
+        run: stream
+      )
     }
 
     public func openSubstream<SubstreamOutput: Sendable>(

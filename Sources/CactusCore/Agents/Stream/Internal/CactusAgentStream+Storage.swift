@@ -64,15 +64,9 @@ extension CactusAgentStream {
       return typed
     }
 
-    func append<SubstreamOutput: Sendable>(
-      substream: CactusAgentStream<SubstreamOutput>,
-      tag: AnyHashableSendable
-    ) {
-      self.substreamPool.append(substream: substream, tag: tag)
-    }
-
     func openSubstream<SubstreamOutput: Sendable>(
       tag: AnyHashableSendable,
+      namespace: CactusAgentNamespace = .global,
       run:
         @escaping @Sendable (
           CactusAgentStream<SubstreamOutput>.Continuation
@@ -83,7 +77,8 @@ extension CactusAgentStream {
         isRootStream: false,
         run: run
       )
-      self.append(substream: substream, tag: tag)
+      let key = CactusAgentSubstreamPool.Key(tag: tag, namespace: namespace)
+      self.substreamPool.append(substream: substream, key: key)
       return CactusAgentSubstream(substream)
     }
 
@@ -101,8 +96,12 @@ extension CactusAgentStream {
       return CactusAgentSubstream(substream)
     }
 
-    func awaitSubstream(for tag: AnyHashableSendable) async throws -> any Sendable {
-      try await self.substreamPool.awaitSubstream(for: tag)
+    func awaitSubstream(
+      for tag: AnyHashableSendable,
+      namespace: CactusAgentNamespace = .global
+    ) async throws -> any Sendable {
+      let key = CactusAgentSubstreamPool.Key(tag: tag, namespace: namespace)
+      return try await self.substreamPool.awaitSubstream(for: key)
     }
 
     func agentResponse(from response: Response) throws -> CactusAgentResponse<Output> {

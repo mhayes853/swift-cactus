@@ -3,34 +3,39 @@ import IssueReporting
 // MARK: - CactusAgentSubstreamPool
 
 final class CactusAgentSubstreamPool: Sendable {
+  struct Key: Hashable, Sendable {
+    let tag: AnyHashableSendable
+    let namespace: CactusAgentNamespace
+  }
+
   private struct State {
     var isWorkflowFinished = false
-    var substreams = [AnyHashableSendable: any Sendable]()
-    var pending = [AnyHashableSendable: [UnsafeContinuation<any Sendable, any Error>]]()
+    var substreams = [Key: any Sendable]()
+    var pending = [Key: [UnsafeContinuation<any Sendable, any Error>]]()
   }
 
   private let state = Lock(State())
 
-  func append(substream: any Sendable, tag: AnyHashableSendable) {
+  func append(substream: any Sendable, key: Key) {
     self.state.withLock { state in
-      if state.substreams[tag] != nil {
-        duplicateTag(tag)
+      if state.substreams[key] != nil {
+        duplicateTag(key)
       }
-      state.substreams[tag] = substream
-      let continuations = state.pending.removeValue(forKey: tag) ?? []
+      state.substreams[key] = substream
+      let continuations = state.pending.removeValue(forKey: key) ?? []
       continuations.forEach { $0.resume(returning: substream) }
     }
   }
 
-  func awaitSubstream(for tag: AnyHashableSendable) async throws -> any Sendable {
+  func awaitSubstream(for key: Key) async throws -> any Sendable {
     try await withUnsafeThrowingContinuation { continuation in
       self.state.withLock { state in
-        if let direct = state.substreams[tag] {
+        if let direct = state.substreams[key] {
           continuation.resume(returning: direct)
         } else if state.isWorkflowFinished {
-          continuation.resume(throwing: CactusAgentStreamError.missingSubstream(for: tag))
+          continuation.resume(throwing: CactusAgentStreamError.missingSubstream(for: key.tag))
         } else {
-          state.pending[tag, default: []].append(continuation)
+          state.pending[key, default: []].append(continuation)
         }
       }
     }
@@ -43,8 +48,8 @@ final class CactusAgentSubstreamPool: Sendable {
       let current = state.pending
       state.pending.removeAll()
 
-      for (tag, continuations) in current {
-        let error = CactusAgentStreamError.missingSubstream(for: tag)
+      for (key, continuations) in current {
+        let error = CactusAgentStreamError.missingSubstream(for: key.tag)
         continuations.forEach { $0.resume(throwing: error) }
       }
     }
@@ -53,12 +58,13 @@ final class CactusAgentSubstreamPool: Sendable {
 
 // MARK: - Helpers
 
-private func duplicateTag(_ tag: AnyHashableSendable) {
+private func duplicateTag(_ key: CactusAgentSubstreamPool.Key) {
   reportIssue(
     """
     A duplicate tag was detected.
 
-        Tag: \(tag)
+        Tag: \(key.tag)
+        Namespace: \(key.namespace)
 
     This is generally considered an application logic error, and you should make sure that all \
     tags appended to the `tag` agent modifier are globally unique.
