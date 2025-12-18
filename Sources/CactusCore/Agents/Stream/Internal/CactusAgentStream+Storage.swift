@@ -6,9 +6,7 @@ extension CactusAgentStream {
     private let substreamPool: CactusAgentSubstreamPool
 
     private struct State {
-      var streamResponseContinuations = [
-        UnsafeContinuation<Response, any Error>
-      ]()
+      var streamResponseContinuations = [UnsafeContinuation<Response, any Error>]()
       var streamResponseResult: Result<Response, any Error>?
       var messageId = CactusMessageID()
       var finalResponseTokens = ""
@@ -22,10 +20,6 @@ extension CactusAgentStream {
     ) {
       self.isRootStream = isRootStream
       self.substreamPool = substreamPool
-    }
-
-    var streamResponseResult: Result<Response, any Error>? {
-      self.state.withLock { $0.streamResponseResult }
     }
 
     func addStreamResponseContinuation(
@@ -59,10 +53,7 @@ extension CactusAgentStream {
       }
     }
 
-    private func apply<Target>(
-      transforms: [Response._AnyTransform],
-      to value: Any
-    ) throws -> Target {
+    private func apply<Target>(transforms: [Response.Transform], to value: Any) throws -> Target {
       var current = value
       for transform in transforms {
         current = try transform(current)

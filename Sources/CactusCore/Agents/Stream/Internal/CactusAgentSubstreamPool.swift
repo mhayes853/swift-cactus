@@ -1,5 +1,7 @@
 import IssueReporting
 
+// MARK: - CactusAgentSubstreamPool
+
 final class CactusAgentSubstreamPool: Sendable {
   private struct State {
     var isWorkflowFinished = false
@@ -48,6 +50,8 @@ final class CactusAgentSubstreamPool: Sendable {
     }
   }
 }
+
+// MARK: - Helpers
 
 private func duplicateTag(_ tag: AnyHashableSendable) {
   reportIssue(

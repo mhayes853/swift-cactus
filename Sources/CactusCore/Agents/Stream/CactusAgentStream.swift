@@ -26,11 +26,11 @@ public struct CactusAgentStream<Output: Sendable>: Sendable {
 
 extension CactusAgentStream {
   public struct Response: Sendable {
-    typealias _AnyTransform = @Sendable (Any) throws -> Any
+    typealias Transform = @Sendable (Any) throws -> Any
 
     enum Action: Sendable {
       case returnOutputValue(Output)
-      case collectTokensIntoOutput(Any.Type, transforms: [_AnyTransform])
+      case collectTokensIntoOutput(Any.Type, transforms: [Transform])
     }
 
     let action: Action
