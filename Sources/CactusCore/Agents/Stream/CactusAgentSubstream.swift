@@ -41,7 +41,7 @@ extension CactusAgentSubstream {
 
 extension CactusAgentSubstream where Output: ConvertibleFromCactusResponse {
   public func collectRawResponse() async throws -> CactusResponse {
-    fatalError()
+    try await self.stream.collectRawResponse()
   }
 }
 
@@ -50,30 +50,34 @@ extension CactusAgentSubstream where Output: ConvertibleFromCactusResponse {
 extension CactusAgentSubstream
 where Output: ConvertibleFromCactusResponse, Output.Partial: ConvertibleFromCactusTokenStream {
   public struct Partials: AsyncSequence {
+    let base: CactusAgentStream<Output>.Partials
+
     public struct AsyncIterator: AsyncIteratorProtocol {
+      var base: CactusAgentStream<Output>.Partials.AsyncIterator
+
       public func next() async throws -> Output.Partial? {
-        fatalError()
+        try await self.base.next()
       }
 
       @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
       public func next(isolation actor: isolated (any Actor)?) async throws -> Output.Partial? {
-        nil
+        try await self.base.next(isolation: actor)
       }
     }
 
     public func makeAsyncIterator() -> AsyncIterator {
-      AsyncIterator()
+      AsyncIterator(base: self.base.makeAsyncIterator())
     }
   }
 
   public var partials: Partials {
-    Partials()
+    Partials(base: self.stream.partials)
   }
 
   public func onPartial(
     perform operation: (Result<Output.Partial, any Error>) -> Void
   ) -> CactusSubscription {
-    CactusSubscription {}
+    self.stream.onPartial(perform: operation)
   }
 }
 
@@ -81,31 +85,36 @@ where Output: ConvertibleFromCactusResponse, Output.Partial: ConvertibleFromCact
 
 extension CactusAgentSubstream where Output: ConvertibleFromCactusResponse {
   public struct Tokens: AsyncSequence {
+    let base: CactusAgentStream<Output>.Tokens
+
     public struct AsyncIterator: AsyncIteratorProtocol {
-      public func next() async throws -> CactusStreamedToken? {
-        nil
+      var base: CactusAgentStream<Output>.Tokens.AsyncIterator
+
+      public mutating func next() async throws -> CactusStreamedToken? {
+        try await self.base.next()
       }
 
       @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-      public func next(
+      public mutating func next(
         isolation actor: isolated (any Actor)?
       ) async throws -> CactusStreamedToken? {
-        nil
+        try await self.base.next(isolation: actor)
       }
     }
 
     public func makeAsyncIterator() -> AsyncIterator {
-      AsyncIterator()
+      AsyncIterator(base: self.base.makeAsyncIterator())
     }
   }
 
   public var tokens: Tokens {
-    Tokens()
+    Tokens(base: self.stream.tokens)
   }
 
   public func onToken(
-    perform operation: (Result<CactusStreamedToken, any Error>) -> Void
+    perform operation: @escaping @Sendable (CactusStreamedToken) -> Void,
+    onFinished: @escaping @Sendable (Result<Output, any Error>) -> Void = { _ in }
   ) -> CactusSubscription {
-    CactusSubscription {}
+    self.stream.onToken(perform: operation, onFinished: onFinished)
   }
 }
