@@ -1,3 +1,5 @@
+import Foundation
+
 extension CactusAgentStream {
   final class Storage: Sendable {
     struct InvalidOutputTypeError: Error {}
@@ -9,10 +11,11 @@ extension CactusAgentStream {
       var streamResponseContinuations = [UnsafeContinuation<Response, any Error>]()
       var streamResponseResult: Result<Response, any Error>?
       var messageId = CactusMessageID()
-      var finalResponseTokens = ""
+      var streamedTokens = [CactusStreamedToken]()
+      var tokenSubscribers = [UUID: TokenSubscriber]()
     }
 
-    private let state = Lock(State())
+    private let state = RecursiveLock(State())
 
     init(
       isRootStream: Bool = true,
@@ -35,10 +38,12 @@ extension CactusAgentStream {
     }
 
     func accumulate(token: CactusStreamedToken) {
-      self.state.withLock {
-        $0.finalResponseTokens += token.stringValue
-        $0.messageId = token.messageStreamId
+      let subscribers = self.state.withLock { state in
+        state.streamedTokens.append(token)
+        state.messageId = token.messageStreamId
+        return Array(state.tokenSubscribers.values)
       }
+      subscribers.forEach { $0.callback(.success(token)) }
     }
 
     func acceptStreamResponse(_ result: Result<Response, any Error>) {
@@ -50,6 +55,39 @@ extension CactusAgentStream {
         if self.isRootStream {
           self.substreamPool.markWorkflowFinished()
         }
+        for subscriber in state.tokenSubscribers.values {
+          if case .failure(let failure) = result {
+            subscriber.callback(.failure(failure))
+          }
+          subscriber.onFinished()
+        }
+        state.tokenSubscribers.removeAll()
+      }
+    }
+
+    func addTokenSubscriber(
+      _ callback: @escaping @Sendable (Result<CactusStreamedToken, any Error>) -> Void,
+      onFinished: @escaping @Sendable () -> Void = {}
+    ) -> CactusSubscription {
+      let id = UUID()
+
+      self.state.withLock { state in
+        for token in state.streamedTokens {
+          callback(.success(token))
+        }
+
+        if state.streamResponseResult == nil {
+          state.tokenSubscribers[id] = TokenSubscriber(
+            callback: callback,
+            onFinished: onFinished
+          )
+        } else {
+          onFinished()
+        }
+      }
+
+      return CactusSubscription { [weak self] in
+        self?.state.withLock { _ = $0.tokenSubscribers.removeValue(forKey: id) }
       }
     }
 
@@ -115,16 +153,18 @@ extension CactusAgentStream {
         }
 
         let responseValue = self.state.withLock { state in
-          (state.messageId, state.finalResponseTokens)
+          (state.messageId, state.streamedTokens.map(\.stringValue).joined())
         }
-        let cactusResponse = CactusResponse(
-          id: responseValue.0,
-          content: responseValue.1
-        )
+        let cactusResponse = CactusResponse(id: responseValue.0, content: responseValue.1)
         let converted = try convertibleType.init(cactusResponse: cactusResponse)
         let finalValue: Output = try self.apply(transforms: transforms, to: converted)
         return CactusAgentResponse(output: finalValue, metrics: response.metrics)
       }
+    }
+
+    private struct TokenSubscriber: Sendable {
+      let callback: @Sendable (Result<CactusStreamedToken, any Error>) -> Void
+      let onFinished: @Sendable () -> Void
     }
   }
 }

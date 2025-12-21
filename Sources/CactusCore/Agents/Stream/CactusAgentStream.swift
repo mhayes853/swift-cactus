@@ -2,7 +2,7 @@
 
 public struct CactusAgentStream<Output: Sendable>: Sendable {
   let storage: Storage
-  private let task: Task<Void, any Error>
+  private let task: Task<Void, Never>
 
   public init(run: sending @escaping (Continuation) async throws -> Response) {
     self.init(pool: CactusAgentSubstreamPool(), isRootStream: true, run: run)
@@ -138,32 +138,56 @@ where Output: ConvertibleFromCactusResponse, Output.Partial: ConvertibleFromCact
 
 extension CactusAgentStream where Output: ConvertibleFromCactusResponse {
   public struct Tokens: AsyncSequence {
+    let storage: Storage
+
     public struct AsyncIterator: AsyncIteratorProtocol {
-      public func next() async throws -> CactusStreamedToken? {
-        nil
+      var base: AsyncThrowingStream<CactusStreamedToken, any Error>.AsyncIterator
+
+      public mutating func next() async throws -> CactusStreamedToken? {
+        try await self.base.next()
       }
 
       @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-      public func next(
+      public mutating func next(
         isolation actor: isolated (any Actor)?
       ) async throws -> CactusStreamedToken? {
-        nil
+        try await self.base.next(isolation: actor)
       }
     }
 
     public func makeAsyncIterator() -> AsyncIterator {
-      AsyncIterator()
+      let (stream, continuation) = AsyncThrowingStream<CactusStreamedToken, any Error>.makeStream()
+      let subscription = self.storage.addTokenSubscriber { result in
+        switch result {
+        case .success(let token):
+          continuation.yield(token)
+        case .failure(let error):
+          continuation.finish(throwing: error)
+        }
+      } onFinished: {
+        continuation.finish()
+      }
+      continuation.onTermination = { t in
+        subscription.cancel()
+        switch t {
+        case .cancelled:
+          continuation.finish(throwing: CancellationError())
+        default:
+          break
+        }
+      }
+      return AsyncIterator(base: stream.makeAsyncIterator())
     }
   }
 
   public var tokens: Tokens {
-    Tokens()
+    Tokens(storage: self.storage)
   }
 
   public func onToken(
-    perform operation: (Result<CactusStreamedToken, any Error>) -> Void
+    perform operation: @escaping @Sendable (Result<CactusStreamedToken, any Error>) -> Void
   ) -> CactusSubscription {
-    CactusSubscription {}
+    self.storage.addTokenSubscriber(operation)
   }
 }
 

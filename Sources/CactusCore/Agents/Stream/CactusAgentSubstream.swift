@@ -90,12 +90,12 @@ extension CactusAgentSubstream where Output: ConvertibleFromCactusResponse {
     public struct AsyncIterator: AsyncIteratorProtocol {
       var base: CactusAgentStream<Output>.Tokens.AsyncIterator
 
-      public func next() async throws -> CactusStreamedToken? {
+      public mutating func next() async throws -> CactusStreamedToken? {
         try await self.base.next()
       }
 
       @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-      public func next(
+      public mutating func next(
         isolation actor: isolated (any Actor)?
       ) async throws -> CactusStreamedToken? {
         try await self.base.next(isolation: actor)
@@ -112,7 +112,7 @@ extension CactusAgentSubstream where Output: ConvertibleFromCactusResponse {
   }
 
   public func onToken(
-    perform operation: (Result<CactusStreamedToken, any Error>) -> Void
+    perform operation: @escaping @Sendable (Result<CactusStreamedToken, any Error>) -> Void
   ) -> CactusSubscription {
     self.stream.onToken(perform: operation)
   }
