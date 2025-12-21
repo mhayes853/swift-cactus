@@ -157,15 +157,15 @@ extension CactusAgentStream where Output: ConvertibleFromCactusResponse {
 
     public func makeAsyncIterator() -> AsyncIterator {
       let (stream, continuation) = AsyncThrowingStream<CactusStreamedToken, any Error>.makeStream()
-      let subscription = self.storage.addTokenSubscriber { result in
+      let subscription = self.storage.addTokenSubscriber { token in
+        continuation.yield(token)
+      } onFinished: { result in
         switch result {
-        case .success(let token):
-          continuation.yield(token)
+        case .success:
+          continuation.finish()
         case .failure(let error):
           continuation.finish(throwing: error)
         }
-      } onFinished: {
-        continuation.finish()
       }
       continuation.onTermination = { t in
         subscription.cancel()
@@ -185,9 +185,10 @@ extension CactusAgentStream where Output: ConvertibleFromCactusResponse {
   }
 
   public func onToken(
-    perform operation: @escaping @Sendable (Result<CactusStreamedToken, any Error>) -> Void
+    perform operation: @escaping @Sendable (CactusStreamedToken) -> Void,
+    onFinished: @escaping @Sendable (Result<Output, any Error>) -> Void = { _ in }
   ) -> CactusSubscription {
-    self.storage.addTokenSubscriber(operation)
+    self.storage.addTokenSubscriber(operation, onFinished: onFinished)
   }
 }
 

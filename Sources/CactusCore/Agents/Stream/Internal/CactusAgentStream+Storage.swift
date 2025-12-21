@@ -38,51 +38,50 @@ extension CactusAgentStream {
     }
 
     func accumulate(token: CactusStreamedToken) {
-      let subscribers = self.state.withLock { state in
+      self.state.withLock { state in
         state.streamedTokens.append(token)
         state.messageId = token.messageStreamId
-        return Array(state.tokenSubscribers.values)
+        for subscriber in state.tokenSubscribers.values {
+          subscriber.callback(token)
+        }
       }
-      subscribers.forEach { $0.callback(.success(token)) }
     }
 
     func acceptStreamResponse(_ result: Result<Response, any Error>) {
       self.state.withLock { state in
         guard state.streamResponseResult == nil else { return }
         state.streamResponseResult = result
+
+        let finishedResult = self.finishedResult(from: result)
+        for subscriber in state.tokenSubscribers.values {
+          subscriber.onFinished(finishedResult)
+        }
+        state.tokenSubscribers.removeAll()
+
         state.streamResponseContinuations.forEach { $0.resume(with: result) }
         state.streamResponseContinuations.removeAll()
+
         if self.isRootStream {
           self.substreamPool.markWorkflowFinished()
         }
-        for subscriber in state.tokenSubscribers.values {
-          if case .failure(let failure) = result {
-            subscriber.callback(.failure(failure))
-          }
-          subscriber.onFinished()
-        }
-        state.tokenSubscribers.removeAll()
       }
     }
 
     func addTokenSubscriber(
-      _ callback: @escaping @Sendable (Result<CactusStreamedToken, any Error>) -> Void,
-      onFinished: @escaping @Sendable () -> Void = {}
+      _ callback: @escaping @Sendable (CactusStreamedToken) -> Void,
+      onFinished: @escaping @Sendable (Result<Output, any Error>) -> Void = { _ in }
     ) -> CactusSubscription {
       let id = UUID()
 
       self.state.withLock { state in
         for token in state.streamedTokens {
-          callback(.success(token))
+          callback(token)
         }
 
-        if state.streamResponseResult == nil {
-          state.tokenSubscribers[id] = TokenSubscriber(
-            callback: callback,
-            onFinished: onFinished
-          )
+        if let streamResponseResult = state.streamResponseResult {
+          onFinished(self.finishedResult(from: streamResponseResult))
         } else {
-          onFinished()
+          state.tokenSubscribers[id] = TokenSubscriber(callback: callback, onFinished: onFinished)
         }
       }
 
@@ -162,9 +161,17 @@ extension CactusAgentStream {
       }
     }
 
+    private func finishedResult(
+      from result: Result<Response, any Error>
+    ) -> Result<Output, any Error> {
+      result.flatMap { response in
+        Result { try self.agentResponse(from: response).output }
+      }
+    }
+
     private struct TokenSubscriber: Sendable {
-      let callback: @Sendable (Result<CactusStreamedToken, any Error>) -> Void
-      let onFinished: @Sendable () -> Void
+      let callback: @Sendable (CactusStreamedToken) -> Void
+      let onFinished: @Sendable (Result<Output, any Error>) -> Void
     }
   }
 }

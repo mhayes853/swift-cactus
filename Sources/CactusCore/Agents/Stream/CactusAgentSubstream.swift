@@ -112,8 +112,9 @@ extension CactusAgentSubstream where Output: ConvertibleFromCactusResponse {
   }
 
   public func onToken(
-    perform operation: @escaping @Sendable (Result<CactusStreamedToken, any Error>) -> Void
+    perform operation: @escaping @Sendable (CactusStreamedToken) -> Void,
+    onFinished: @escaping @Sendable (Result<Output, any Error>) -> Void = { _ in }
   ) -> CactusSubscription {
-    self.stream.onToken(perform: operation)
+    self.stream.onToken(perform: operation, onFinished: onFinished)
   }
 }

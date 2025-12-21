@@ -25,15 +25,9 @@ struct `CactusAgentStream tests` {
       let stream = session.stream()
 
       let output = Lock("")
-      let errorCount = Lock(0)
 
-      let subscription = stream.onToken { result in
-        switch result {
-        case .success(let token):
-          output.withLock { $0 += token.stringValue }
-        case .failure:
-          errorCount.withLock { $0 += 1 }
-        }
+      let subscription = stream.onToken { token in
+        output.withLock { $0 += token.stringValue }
       }
 
       _ = subscription
@@ -41,7 +35,6 @@ struct `CactusAgentStream tests` {
       _ = try await stream.streamResponse()
 
       output.withLock { expectNoDifference($0, expectedStreamedOutput) }
-      errorCount.withLock { expectNoDifference($0, 0) }
     }
 
     @Test
@@ -53,18 +46,13 @@ struct `CactusAgentStream tests` {
       let subscription = Lock<CactusSubscription?>(nil)
 
       subscription.withLock {
-        $0 = stream.onToken { result in
-          switch result {
-          case .success(let token):
-            let count = output.withLock { output in
-              output += token.stringValue
-              return output.count
-            }
-            if count >= streamedTokenCount / 2 {
-              subscription.withLock { $0?.cancel() }
-            }
-          case .failure:
-            break
+        $0 = stream.onToken { token in
+          let count = output.withLock { output in
+            output += token.stringValue
+            return output.count
+          }
+          if count >= streamedTokenCount / 2 {
+            subscription.withLock { $0?.cancel() }
           }
         }
       }
@@ -132,18 +120,13 @@ struct `CactusAgentStream tests` {
 
       let output = Lock("")
 
-      let subscription = stream.onToken { result in
-        switch result {
-        case .success(let token):
-          let count = output.withLock { output in
-            output += token.stringValue
-            return output.count
-          }
-          if count >= streamedTokenCount / 2 {
-            stream.stop()
-          }
-        case .failure:
-          break
+      let subscription = stream.onToken { token in
+        let count = output.withLock { output in
+          output += token.stringValue
+          return output.count
+        }
+        if count >= streamedTokenCount / 2 {
+          stream.stop()
         }
       }
 
@@ -170,11 +153,66 @@ struct `CactusAgentStream tests` {
 
       expectNoDifference(output, expectedStreamedOutput)
     }
+
+    @Test
+    func `OnFinished Callback Receives Error When Agent Throws`() async throws {
+      let session = CactusAgenticSession(FailingStreamAgent())
+      let stream = session.stream()
+
+      let finished = Lock<Result<String, any Error>?>(nil)
+
+      let subscription = stream.onToken(
+        perform: { _ in },
+        onFinished: { result in
+          finished.withLock { $0 = result }
+        }
+      )
+
+      await #expect(throws: StreamTestError.self) {
+        _ = try await stream.streamResponse()
+      }
+
+      _ = subscription
+
+      finished.withLock { result in
+        _ = #expect(throws: StreamTestError.boom) {
+          try result?.get()
+        }
+      }
+    }
+
+    @Test
+    func `OnFinished Callback Receives Final Output`() async throws {
+      let session = CactusAgenticSession(CharacterStreamedAgent())
+      let stream = session.stream()
+
+      let finished = Lock<Result<String, any Error>?>(nil)
+
+      let subscription = stream.onToken(
+        perform: { _ in },
+        onFinished: { result in
+          finished.withLock { $0 = result }
+        }
+      )
+
+      _ = try await stream.streamResponse()
+
+      _ = subscription
+
+      try finished.withLock { result in
+        let output = try #require(try? result?.get())
+        expectNoDifference(output, expectedStreamedOutput)
+      }
+    }
   }
 }
 
 private let streamedTokenCount = 4096
 private let expectedStreamedOutput = String(repeating: "a", count: streamedTokenCount)
+
+private enum StreamTestError: Error, Hashable {
+  case boom
+}
 
 private struct CharacterStreamedAgent: CactusAgent {
   func body(environment: CactusEnvironmentValues) -> some CactusAgent<Void, String> {
@@ -188,6 +226,18 @@ private struct CharacterStreamedAgent: CactusAgent {
         await Task.yield()
       }
       return .collectTokensIntoOutput()
+    }
+  }
+}
+
+private struct FailingStreamAgent: CactusAgent {
+  func body(environment: CactusEnvironmentValues) -> some CactusAgent<Void, String> {
+    Stream { _, continuation in
+      let messageId = CactusMessageID()
+      continuation.yield(
+        token: CactusStreamedToken(messageStreamId: messageId, stringValue: "a")
+      )
+      throw StreamTestError.boom
     }
   }
 }
