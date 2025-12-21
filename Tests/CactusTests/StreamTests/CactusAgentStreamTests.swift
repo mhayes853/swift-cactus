@@ -76,7 +76,6 @@ struct `CactusAgentStream tests` {
         }
       }
 
-      await Task.megaYield()
       task.cancel()
 
       await #expect(throws: CancellationError.self) {
@@ -87,9 +86,7 @@ struct `CactusAgentStream tests` {
     }
 
     @Test
-    func `Tokens AsyncSequence Stops After Stream Stop When Agent Cooperates With Cancellation`()
-      async throws
-    {
+    func `Tokens AsyncSequence Stops After Stream Stop`() async throws {
       let session = CactusAgenticSession(CharacterStreamedAgent())
       let stream = session.stream()
 
@@ -101,7 +98,6 @@ struct `CactusAgentStream tests` {
         }
       }
 
-      await Task.megaYield()
       stream.stop()
 
       await #expect(throws: CancellationError.self) {
@@ -112,9 +108,7 @@ struct `CactusAgentStream tests` {
     }
 
     @Test
-    func `OnToken Callback Stops After Stream Stop When Agent Cooperates With Cancellation`()
-      async throws
-    {
+    func `OnToken Callback Stops After Stream Stop`() async throws {
       let session = CactusAgenticSession(CharacterStreamedAgent())
       let stream = session.stream()
 
