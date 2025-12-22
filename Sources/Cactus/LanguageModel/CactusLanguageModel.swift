@@ -657,6 +657,31 @@ extension CactusLanguageModel {
     }
   }
 
+  /// Transcribes the specified audio buffer.
+  ///
+  /// - Parameters:
+  ///   - buffer: The audio buffer to transcribe.
+  ///   - prompt: The prompt to use for transcription.
+  ///   - options: The ``Transcription/Options``.
+  ///   - transcriptionMaxBufferSize: The maximum buffer size to store the completion.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Returns: A ``Transcription``.
+  public func transcribe(
+    buffer: [UInt8],
+    prompt: String,
+    options: Transcription.Options? = nil,
+    transcriptionMaxBufferSize: Int? = nil,
+    onToken: (String) -> Void = { _ in }
+  ) throws -> Transcription {
+    try self.transcribe(
+      for: .buffer(buffer),
+      prompt: prompt,
+      options: options,
+      maxBufferSize: transcriptionMaxBufferSize,
+      onToken: onToken
+    )
+  }
+
   /// Transcribes the specified `audio` file.
   ///
   /// - Parameters:
@@ -668,6 +693,29 @@ extension CactusLanguageModel {
   /// - Returns: A ``Transcription``.
   public func transcribe(
     audio: URL,
+    prompt: String,
+    options: Transcription.Options? = nil,
+    maxBufferSize: Int? = nil,
+    onToken: (String) -> Void = { _ in }
+  ) throws -> Transcription {
+    try self.transcribe(
+      for: .audio(audio),
+      prompt: prompt,
+      options: options,
+      maxBufferSize: maxBufferSize,
+      onToken: onToken
+    )
+  }
+}
+
+extension CactusLanguageModel {
+  private enum TranscriptionRequest {
+    case audio(URL)
+    case buffer([UInt8])
+  }
+
+  private func transcribe(
+    for request: TranscriptionRequest,
     prompt: String,
     options: Transcription.Options? = nil,
     maxBufferSize: Int? = nil,
@@ -697,18 +745,36 @@ extension CactusLanguageModel {
     defer { buffer.deallocate() }
 
     let result = try withTokenCallback(onToken) { userData, onToken in
-      cactus_transcribe(
-        self.model,
-        audio.nativePath,
-        prompt,
-        buffer,
-        maxBufferSize * MemoryLayout<CChar>.stride,
-        String(decoding: try Self.inferenceEncoder.encode(options), as: UTF8.self),
-        onToken,
-        userData,
-        nil,
-        0
-      )
+      switch request {
+      case .audio(let audio):
+        return cactus_transcribe(
+          self.model,
+          audio.nativePath,
+          prompt,
+          buffer,
+          maxBufferSize * MemoryLayout<CChar>.stride,
+          String(decoding: try Self.inferenceEncoder.encode(options), as: UTF8.self),
+          onToken,
+          userData,
+          nil,
+          0
+        )
+      case .buffer(let pcmBuffer):
+        return try pcmBuffer.withUnsafeBufferPointer { rawBuffer in
+          cactus_transcribe(
+            self.model,
+            nil,
+            prompt,
+            buffer,
+            maxBufferSize * MemoryLayout<CChar>.stride,
+            String(decoding: try Self.inferenceEncoder.encode(options), as: UTF8.self),
+            onToken,
+            userData,
+            rawBuffer.baseAddress,
+            rawBuffer.count
+          )
+        }
+      }
     }
 
     var responseData = Data()
