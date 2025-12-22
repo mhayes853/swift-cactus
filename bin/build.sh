@@ -30,10 +30,6 @@ XCFRAMEWORK_PATH="$OUTPUT_DIR/CXXCactusDarwin.xcframework"
 echo "🗑️ Removing Existing Binaries"
 rm -drf "$ARTIFACT_BUNDLE_PATH" "$XCFRAMEWORK_PATH"
 
-sed -i "" "77a\\
-CACTUS_FFI_EXPORT const char* cactus_get_last_error();
-" "$SOURCE_DIR/ffi/cactus_ffi.h"
-
 cp "$SOURCE_DIR/ffi/cactus_ffi.h" "$BUILD_DIR/cactus.h"
 
 n_cpu=$(sysctl -n hw.logicalcpu 2>/dev/null || echo 4)

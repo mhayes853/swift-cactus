@@ -154,5 +154,17 @@
     "supports_tool_calling" : true,
     "supports_vision" : false,
     "suppports_completion" : true
+  },
+  {
+    "created_at" : 787990665.16751,
+    "description" : "Small and capable model in the latest generation of the Qwen series, capable of reasoning and function calling.",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/v1.3\/qwen3-0.6-pro.zip",
+    "name" : "Qwen 3 0.6B Pro",
+    "quantization" : 8,
+    "size_mb" : 914,
+    "slug" : "qwen3-0.6-pro",
+    "supports_tool_calling" : true,
+    "supports_vision" : false,
+    "suppports_completion" : true
   }
 ]

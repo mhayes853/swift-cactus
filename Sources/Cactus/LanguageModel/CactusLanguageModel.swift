@@ -223,9 +223,14 @@ extension CactusLanguageModel {
   /// - Parameters:
   ///   - text: The text to generate embeddings for.
   ///   - maxBufferSize: The size of the buffer to allocate to store the embeddings.
+  ///   - normalize: Whether to normalize the embeddings.
   /// - Returns: An array of float values.
-  public func embeddings(for text: String, maxBufferSize: Int? = nil) throws -> [Float] {
-    try self.embeddings(for: .text(text), maxBufferSize: maxBufferSize)
+  public func embeddings(
+    for text: String,
+    maxBufferSize: Int? = nil,
+    normalize: Bool = false
+  ) throws -> [Float] {
+    try self.embeddings(for: .text(text, normalize: normalize), maxBufferSize: maxBufferSize)
   }
 
   /// Generates embeddings for the specified `text` and stores them in the specified buffer.
@@ -233,10 +238,15 @@ extension CactusLanguageModel {
   /// - Parameters:
   ///   - text: The text to generate embeddings for.
   ///   - buffer: A `MutableSpan` buffer.
+  ///   - normalize: Whether to normalize the embeddings.
   /// - Returns: The number of dimensions.
   @discardableResult
-  public func embeddings(for text: String, buffer: inout MutableSpan<Float>) throws -> Int {
-    try self.embeddings(for: .text(text), buffer: &buffer)
+  public func embeddings(
+    for text: String,
+    buffer: inout MutableSpan<Float>,
+    normalize: Bool = false
+  ) throws -> Int {
+    try self.embeddings(for: .text(text, normalize: normalize), buffer: &buffer)
   }
 
   /// Generates embeddings for the specified `text` and stores them in the specified buffer.
@@ -244,12 +254,14 @@ extension CactusLanguageModel {
   /// - Parameters:
   ///   - text: The text to generate embeddings for.
   ///   - buffer: An `UnsafeMutableBufferPointer` buffer.
+  ///   - normalize: Whether to normalize the embeddings.
   /// - Returns: The number of dimensions.
   public func embeddings(
     for text: String,
-    buffer: UnsafeMutableBufferPointer<Float>
+    buffer: UnsafeMutableBufferPointer<Float>,
+    normalize: Bool = false
   ) throws -> Int {
-    try self.embeddings(for: .text(text), buffer: buffer)
+    try self.embeddings(for: .text(text, normalize: normalize), buffer: buffer)
   }
 
   /// Generates embeddings for the specified `image`.
@@ -358,8 +370,8 @@ extension CactusLanguageModel {
 
     let resultCode =
       switch request {
-      case .text(let text):
-        cactus_embed(self.model, text, buffer.baseAddress, rawBufferSize, &dimensions)
+      case .text(let text, let normalize):
+        cactus_embed(self.model, text, buffer.baseAddress, rawBufferSize, &dimensions, normalize)
       case .image(let image):
         cactus_image_embed(
           self.model,
@@ -408,7 +420,7 @@ extension CactusLanguageModel {
   }
 
   private enum EmbeddingsRequest {
-    case text(String)
+    case text(String, normalize: Bool)
     case image(URL)
     case audio(URL)
   }
@@ -693,7 +705,9 @@ extension CactusLanguageModel {
         maxBufferSize * MemoryLayout<CChar>.stride,
         String(decoding: try Self.inferenceEncoder.encode(options), as: UTF8.self),
         onToken,
-        userData
+        userData,
+        nil,
+        0
       )
     }
 

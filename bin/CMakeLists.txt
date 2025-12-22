@@ -16,6 +16,13 @@ file(GLOB GRAPH_SOURCES "${SOURCE_DIR}/graph/*.cpp")
 file(GLOB KERNEL_SOURCES "${SOURCE_DIR}/kernel/*.cpp")
 file(GLOB FFI_SOURCES "${SOURCE_DIR}/ffi/*.cpp")
 file(GLOB MODEL_SOURCES "${SOURCE_DIR}/models/*.cpp")
+file(GLOB NPU_SOURCES "${SOURCE_DIR}/npu/*.cpp")
+
+enable_language(OBJCXX)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(CACTUS_PRO_LIB "${SOURCE_DIR}/../libs/libcactus_pro.a")
+endif()
 
 set(HEADER_FILES
     ${SOURCE_DIR}/cactus.h
@@ -24,7 +31,8 @@ set(HEADER_FILES
     ${SOURCE_DIR}/kernel/kernel.h
     ${SOURCE_DIR}/kernel/kernel_utils.h
     ${SOURCE_DIR}/ffi/cactus_ffi.h
-    ${SOURCE_DIR}/ffi/ffi_utils.h
+    ${SOURCE_DIR}/ffi/cactus_utils.h
+    ${SOURCE_DIR}/npu/npu.h
     ${SOURCE_DIR}/models/model.h
 )
 
@@ -34,6 +42,7 @@ set(COMMON_SOURCES
     ${ENGINE_SOURCES}
     ${FFI_SOURCES}
     ${MODEL_SOURCES}
+    ${NPU_SOURCES}
 )
 
 if(NOT COMMON_SOURCES)
@@ -74,7 +83,20 @@ target_include_directories(CXXCactusDarwin PUBLIC
     ${SOURCE_DIR}/graph
     ${SOURCE_DIR}/kernel
     ${SOURCE_DIR}/ffi
+    ${SOURCE_DIR}/npu
 )
+
+find_library(COREML_FRAMEWORK CoreML REQUIRED)
+find_library(FOUNDATION_FRAMEWORK Foundation REQUIRED)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    find_package(CURL REQUIRED)
+    target_link_libraries(CXXCactusDarwin PUBLIC ${COREML_FRAMEWORK} ${FOUNDATION_FRAMEWORK} ${CURL_LIBRARIES})
+    target_include_directories(CXXCactusDarwin PUBLIC ${CURL_INCLUDE_DIRS})
+    target_link_libraries(CXXCactusDarwin PUBLIC "-force_load ${CACTUS_PRO_LIB}")
+else()
+    target_link_libraries(CXXCactusDarwin PUBLIC ${COREML_FRAMEWORK} ${FOUNDATION_FRAMEWORK})
+endif()
 
 target_compile_definitions(CXXCactusDarwin PRIVATE
     PLATFORM_CPU_ONLY=1
@@ -82,6 +104,10 @@ target_compile_definitions(CXXCactusDarwin PRIVATE
     __ARM_FEATURE_FP16_VECTOR_ARITHMETIC=1
     __ARM_FEATURE_DOTPROD=1
 )
+
+if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    target_compile_definitions(CXXCactusDarwin PRIVATE TARGET_OS_IPHONE=1)
+endif()
 
 target_compile_options(CXXCactusDarwin PRIVATE
     -pthread
