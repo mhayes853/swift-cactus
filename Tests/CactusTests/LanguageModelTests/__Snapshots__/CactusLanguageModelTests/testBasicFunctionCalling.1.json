@@ -1,5 +1,5 @@
 {
-  "decode_tokens" : 23,
+  "decode_tokens" : 27,
   "function_calls" : [
     {
       "arguments" : {
@@ -8,10 +8,10 @@
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 148,
-  "response" : "",
-  "time_to_first_token_ms" : 556.79,
-  "tokens_per_second" : 53.26,
-  "total_time_ms" : 969.85,
-  "total_tokens" : 171
+  "prefill_tokens" : 153,
+  "response" : "```json\n",
+  "time_to_first_token_ms" : 405.36,
+  "tokens_per_second" : 49.1,
+  "total_time_ms" : 934.86,
+  "total_tokens" : 180
 }

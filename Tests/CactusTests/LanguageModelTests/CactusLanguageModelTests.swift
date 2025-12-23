@@ -291,6 +291,10 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
         .system("You are a helpful weather assistant that can use tools."),
         .user("What is the weather in Santa Cruz?")
       ],
+      options: CactusLanguageModel.ChatCompletion.Options(
+        modelType: model.configurationFile.modelType ?? .qwen,
+        forceFunctions: true
+      ),
       functions: [
         CactusLanguageModel.FunctionDefinition(
           name: "get_weather",

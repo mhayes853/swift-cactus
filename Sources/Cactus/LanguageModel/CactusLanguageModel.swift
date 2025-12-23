@@ -865,6 +865,9 @@ extension CactusLanguageModel {
     /// An array of stop sequence phrases.
     public var stopSequences: [String]
 
+    /// Whether to force functions to be used by the model.
+    public var forceFunctions: Bool
+
     /// Creates options for generating inferences.
     ///
     /// - Parameters:
@@ -873,18 +876,21 @@ extension CactusLanguageModel {
     ///   - topP: The nucleus sampling.
     ///   - topK: The k most probable options to limit the next word to.
     ///   - stopSequences: An array of stop sequence phrases.
+    ///   - forceFunctions: Whether to force functions to be used by the model.
     public init(
       maxTokens: Int = 200,
       temperature: Float = 0.6,
       topP: Float = 0.95,
       topK: Int = 20,
-      stopSequences: [String] = Self.defaultStopSequences
+      stopSequences: [String] = Self.defaultStopSequences,
+      forceFunctions: Bool = false
     ) {
       self.maxTokens = maxTokens
       self.temperature = temperature
       self.topP = topP
       self.topK = topK
       self.stopSequences = stopSequences
+      self.forceFunctions = forceFunctions
     }
 
     /// Creates options for generating inferences.
@@ -893,16 +899,19 @@ extension CactusLanguageModel {
     ///   - maxTokens: The maximum number of tokens for the completion.
     ///   - modelType: The model type.
     ///   - stopSequences: An array of stop sequence phrases.
+    ///   - forceFunctions: Whether to force functions to be used by the model.
     public init(
       maxTokens: Int = 200,
       modelType: CactusLanguageModel.ModelType,
-      stopSequences: [String] = Self.defaultStopSequences
+      stopSequences: [String] = Self.defaultStopSequences,
+      forceFunctions: Bool = false
     ) {
       self.maxTokens = maxTokens
       self.temperature = modelType.defaultTemperature
       self.topP = modelType.defaultTopP
       self.topK = modelType.defaultTopK
       self.stopSequences = stopSequences
+      self.forceFunctions = forceFunctions
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -911,6 +920,7 @@ extension CactusLanguageModel {
       case topP = "top_p"
       case topK = "top_k"
       case stopSequences = "stop_sequences"
+      case forceFunctions = "force_tools"
     }
   }
 }
