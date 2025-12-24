@@ -147,12 +147,6 @@ let nanosecondsPerSecond = UInt64(1_000_000_000)
   }
 #endif
 
-extension CactusTelemetry.DeviceMetadata {
-  fileprivate static func mock() -> Self {
-    Self(model: "mac", os: "macOS", osVersion: "26.1", deviceId: UUID().uuidString, brand: "Apple")
-  }
-}
-
 private let testEvent = CactusTelemetry.LanguageModelInitEvent(
   configuration: CactusLanguageModel.Configuration(
     modelURL: temporaryModelDirectory().appendingPathComponent(CactusLanguageModel.testModelSlug)

@@ -64,9 +64,13 @@ extension CactusSupabaseClient {
 
   struct DeviceRegistration: Sendable, Codable {
     let deviceData: CactusTelemetry.DeviceMetadata
+    let deviceId: String?
+    let cactusProKey: String?
 
     private enum CodingKeys: String, CodingKey {
       case deviceData = "device_data"
+      case deviceId = "device_id"
+      case cactusProKey = "cactus_pro_key"
     }
   }
 
