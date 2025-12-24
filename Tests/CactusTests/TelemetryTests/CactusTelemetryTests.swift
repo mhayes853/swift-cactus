@@ -55,7 +55,10 @@ let nanosecondsPerSecond = UInt64(1_000_000_000)
 
 #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
   final class CactusDefaultTelemetryTests: XCTestCase {
+    private let secrets: Secrets! = .current
+
     override func setUp() async throws {
+      guard self.secrets != nil else { throw XCTSkip("secrets.json not found.") }
       try await super.setUp()
       try cleanupCactusUtilsDatabase()
     }

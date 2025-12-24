@@ -11,3 +11,4 @@ profile.txt
 *.pkg
 bin/build
 bin/cactus.h
+secrets.json
