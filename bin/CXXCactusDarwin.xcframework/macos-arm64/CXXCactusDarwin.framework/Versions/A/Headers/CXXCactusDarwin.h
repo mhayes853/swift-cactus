@@ -34,6 +34,26 @@ CACTUS_FFI_EXPORT int cactus_complete(
     void* user_data
 );
 
+CACTUS_FFI_EXPORT int cactus_tokenize(
+    cactus_model_t model,
+    const char* text,
+    uint32_t* token_buffer,
+    size_t token_buffer_len,
+    size_t* out_token_len
+);
+
+CACTUS_FFI_EXPORT int cactus_score_window(
+    cactus_model_t model,
+    const uint32_t* tokens,
+    size_t token_len,
+    size_t start,
+    size_t end,
+    size_t context,
+    char* response_buffer,
+    size_t buffer_size
+);
+
+
 CACTUS_FFI_EXPORT int cactus_transcribe(
     cactus_model_t model,
     const char* audio_file_path,

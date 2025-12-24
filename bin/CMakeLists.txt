@@ -24,6 +24,15 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(CACTUS_PRO_LIB "${SOURCE_DIR}/../libs/libcactus_pro.a")
 endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    string(TOLOWER "${CMAKE_OSX_SYSROOT}" SYSROOT_LOWER)
+    if(SYSROOT_LOWER MATCHES "simulator")
+        set(CACTUS_PRO_LIB "${CMAKE_SOURCE_DIR}/libcactus_pro-ios-simulator.a")
+    else()
+        set(CACTUS_PRO_LIB "${CMAKE_SOURCE_DIR}/libcactus_pro-ios.a")
+    endif()
+endif()
+
 set(HEADER_FILES
     ${SOURCE_DIR}/cactus.h
     ${SOURCE_DIR}/engine/engine.h
@@ -94,7 +103,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     target_link_libraries(CXXCactusDarwin PUBLIC ${COREML_FRAMEWORK} ${FOUNDATION_FRAMEWORK} ${CURL_LIBRARIES})
     target_include_directories(CXXCactusDarwin PUBLIC ${CURL_INCLUDE_DIRS})
     target_link_libraries(CXXCactusDarwin PUBLIC "-force_load ${CACTUS_PRO_LIB}")
-else()
+elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    target_link_libraries(CXXCactusDarwin PUBLIC "-force_load ${CACTUS_PRO_LIB}")
     target_link_libraries(CXXCactusDarwin PUBLIC ${COREML_FRAMEWORK} ${FOUNDATION_FRAMEWORK})
 endif()
 

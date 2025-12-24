@@ -3,15 +3,15 @@
   "function_calls" : [
     {
       "arguments" : {
-        "location" : "Santa Cruz"
+        "location" : "Sydney"
       },
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 153,
+  "prefill_tokens" : 128,
   "response" : "```json\n",
-  "time_to_first_token_ms" : 405.36,
-  "tokens_per_second" : 49.1,
-  "total_time_ms" : 934.86,
-  "total_tokens" : 180
+  "time_to_first_token_ms" : 936.34,
+  "tokens_per_second" : 46.9,
+  "total_time_ms" : 1490.7,
+  "total_tokens" : 155
 }

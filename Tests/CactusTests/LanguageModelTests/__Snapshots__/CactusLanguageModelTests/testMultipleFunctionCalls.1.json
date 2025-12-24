@@ -1,17 +1,17 @@
 {
-  "decode_tokens" : 64,
+  "decode_tokens" : 34,
   "function_calls" : [
     {
       "arguments" : {
-        "location" : "Berkeley"
+        "location" : "New York"
       },
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 221,
-  "response" : "```json\n",
-  "time_to_first_token_ms" : 1531.33,
-  "tokens_per_second" : 47.04,
-  "total_time_ms" : 2870.57,
-  "total_tokens" : 285
+  "prefill_tokens" : 190,
+  "response" : "Here's the function call for the get_weather tool:\n\n",
+  "time_to_first_token_ms" : 2065.34,
+  "tokens_per_second" : 44.06,
+  "total_time_ms" : 2814.32,
+  "total_tokens" : 224
 }
