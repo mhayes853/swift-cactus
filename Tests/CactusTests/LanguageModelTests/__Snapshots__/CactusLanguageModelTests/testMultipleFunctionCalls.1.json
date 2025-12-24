@@ -1,17 +1,17 @@
 {
-  "decode_tokens" : 34,
+  "decode_tokens" : 140,
   "function_calls" : [
     {
       "arguments" : {
-        "location" : "New York"
+        "location" : "Berkeley"
       },
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 190,
-  "response" : "Here's the function call for the get_weather tool:\n\n",
-  "time_to_first_token_ms" : 2065.34,
-  "tokens_per_second" : 44.06,
-  "total_time_ms" : 2814.32,
-  "total_tokens" : 224
+  "prefill_tokens" : 222,
+  "response" : "When you ask for the weather and population in Berkeley, I need to use the appropriate functions. Let me check:\n\n1. For getting the weather in Berkeley:\n   - Use `get_weather` function with parameters: location set to \"Berkeley\", units as \"celsius\" or \"farenheit\".\n\n2. For getting the population of Berkeley:\n   - Use `get_population` function with parameter: location set to \"Berkeley\".\n\nSince you asked both questions, I will call both functions at once.\n",
+  "time_to_first_token_ms" : 3009.96,
+  "tokens_per_second" : 16.27,
+  "total_time_ms" : 11553.23,
+  "total_tokens" : 362
 }

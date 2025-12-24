@@ -1,12 +1,12 @@
 {
-  "decode_tokens" : 108,
+  "decode_tokens" : 104,
   "function_calls" : [
 
   ],
   "prefill_tokens" : 272,
-  "response" : "The image depicts a young man with a cheerful expression, holding two books in his hands. He is smiling and appears to be happy. The man has short hair and is wearing a light-colored shirt with rolled-up sleeves, suggesting casual attire suitable for school or an outdoor activity. His posture and the way he holds the books indicate that he might be preparing for or taking a break from reading or studying. The background of the image is plain white, which puts full emphasis on the subject without any distractions from his surroundings.<|im_end|>",
-  "time_to_first_token_ms" : 3638.85,
-  "tokens_per_second" : 95.32,
-  "total_time_ms" : 4761.36,
-  "total_tokens" : 380
+  "response" : "The image depicts a young man with a cheerful expression, holding two books in his hands. He is smiling and appears to be happy. The man has short hair and is wearing a light-colored shirt with rolled-up sleeves, suggesting casual attire suitable for school or an academic setting. His posture and the way he holds the books indicate that he might be preparing for or taking notes during class. The background of the image is plain white, which puts full emphasis on him without any distractions from background elements.<|im_end|>",
+  "time_to_first_token_ms" : 3462.69,
+  "tokens_per_second" : 93.91,
+  "total_time_ms" : 4559.51,
+  "total_tokens" : 376
 }
