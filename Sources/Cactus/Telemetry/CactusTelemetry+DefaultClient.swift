@@ -21,7 +21,7 @@
       }
 
       public func deviceId() async throws -> CactusTelemetry.DeviceID? {
-        get_device_id().map { CactusTelemetry.DeviceID(cString: $0) }
+        get_device_id(nil).map { CactusTelemetry.DeviceID(cString: $0) }
       }
 
       public func registerDevice(
