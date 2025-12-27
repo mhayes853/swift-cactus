@@ -6,7 +6,7 @@
   /// ```swift
   /// import Cactus
   ///
-  /// Task { try await enablePro(key: "your_pro_key_here") }
+  /// Task { try await Cactus.enablePro(key: "your_pro_key_here") }
   /// ```
   @MainActor
   public func enablePro(key: String) async throws {
@@ -22,7 +22,7 @@
 /// import Cactus
 ///
 /// let metadata = CactusDeviceMetadata(/* ... */)
-/// Task { try await enablePro(key: "your_pro_key_here", deviceMetadata: metadata) }
+/// Task { try await Cactus.enablePro(key: "your_pro_key_here", deviceMetadata: metadata) }
 /// ```
 public func enablePro(key: String, deviceMetadata: CactusDeviceMetadata) async throws {
   #if canImport(cactus_util)
