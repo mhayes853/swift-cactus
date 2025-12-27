@@ -17,6 +17,7 @@ file(GLOB KERNEL_SOURCES "${SOURCE_DIR}/kernel/*.cpp")
 file(GLOB FFI_SOURCES "${SOURCE_DIR}/ffi/*.cpp")
 file(GLOB MODEL_SOURCES "${SOURCE_DIR}/models/*.cpp")
 file(GLOB NPU_SOURCES "${SOURCE_DIR}/npu/*.cpp")
+file(GLOB INDEX_SOURCES "${SOURCE_DIR}/index/*.cpp")
 
 enable_language(OBJCXX)
 
@@ -43,6 +44,7 @@ set(HEADER_FILES
     ${SOURCE_DIR}/ffi/cactus_utils.h
     ${SOURCE_DIR}/npu/npu.h
     ${SOURCE_DIR}/models/model.h
+    ${SOURCE_DIR}/index/index.h
 )
 
 set(COMMON_SOURCES
@@ -52,6 +54,7 @@ set(COMMON_SOURCES
     ${FFI_SOURCES}
     ${MODEL_SOURCES}
     ${NPU_SOURCES}
+    ${INDEX_SOURCES}
 )
 
 if(NOT COMMON_SOURCES)
@@ -93,6 +96,7 @@ target_include_directories(CXXCactusDarwin PUBLIC
     ${SOURCE_DIR}/kernel
     ${SOURCE_DIR}/ffi
     ${SOURCE_DIR}/npu
+    ${SOURCE_DIR}/index
 )
 
 find_library(COREML_FRAMEWORK CoreML REQUIRED)
