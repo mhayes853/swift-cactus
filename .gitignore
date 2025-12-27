@@ -11,3 +11,6 @@ profile.txt
 *.pkg
 bin/build
 bin/cactus.h
+secrets.json
+libcactus_pro-ios.a
+libcactus_pro-ios-simulator.a

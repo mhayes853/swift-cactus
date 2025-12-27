@@ -223,9 +223,14 @@ extension CactusLanguageModel {
   /// - Parameters:
   ///   - text: The text to generate embeddings for.
   ///   - maxBufferSize: The size of the buffer to allocate to store the embeddings.
+  ///   - normalize: Whether to normalize the embeddings.
   /// - Returns: An array of float values.
-  public func embeddings(for text: String, maxBufferSize: Int? = nil) throws -> [Float] {
-    try self.embeddings(for: .text(text), maxBufferSize: maxBufferSize)
+  public func embeddings(
+    for text: String,
+    maxBufferSize: Int? = nil,
+    normalize: Bool = false
+  ) throws -> [Float] {
+    try self.embeddings(for: .text(text, normalize: normalize), maxBufferSize: maxBufferSize)
   }
 
   /// Generates embeddings for the specified `text` and stores them in the specified buffer.
@@ -233,10 +238,15 @@ extension CactusLanguageModel {
   /// - Parameters:
   ///   - text: The text to generate embeddings for.
   ///   - buffer: A `MutableSpan` buffer.
+  ///   - normalize: Whether to normalize the embeddings.
   /// - Returns: The number of dimensions.
   @discardableResult
-  public func embeddings(for text: String, buffer: inout MutableSpan<Float>) throws -> Int {
-    try self.embeddings(for: .text(text), buffer: &buffer)
+  public func embeddings(
+    for text: String,
+    buffer: inout MutableSpan<Float>,
+    normalize: Bool = false
+  ) throws -> Int {
+    try self.embeddings(for: .text(text, normalize: normalize), buffer: &buffer)
   }
 
   /// Generates embeddings for the specified `text` and stores them in the specified buffer.
@@ -244,12 +254,14 @@ extension CactusLanguageModel {
   /// - Parameters:
   ///   - text: The text to generate embeddings for.
   ///   - buffer: An `UnsafeMutableBufferPointer` buffer.
+  ///   - normalize: Whether to normalize the embeddings.
   /// - Returns: The number of dimensions.
   public func embeddings(
     for text: String,
-    buffer: UnsafeMutableBufferPointer<Float>
+    buffer: UnsafeMutableBufferPointer<Float>,
+    normalize: Bool = false
   ) throws -> Int {
-    try self.embeddings(for: .text(text), buffer: buffer)
+    try self.embeddings(for: .text(text, normalize: normalize), buffer: buffer)
   }
 
   /// Generates embeddings for the specified `image`.
@@ -358,8 +370,8 @@ extension CactusLanguageModel {
 
     let resultCode =
       switch request {
-      case .text(let text):
-        cactus_embed(self.model, text, buffer.baseAddress, rawBufferSize, &dimensions)
+      case .text(let text, let normalize):
+        cactus_embed(self.model, text, buffer.baseAddress, rawBufferSize, &dimensions, normalize)
       case .image(let image):
         cactus_image_embed(
           self.model,
@@ -408,7 +420,7 @@ extension CactusLanguageModel {
   }
 
   private enum EmbeddingsRequest {
-    case text(String)
+    case text(String, normalize: Bool)
     case image(URL)
     case audio(URL)
   }
@@ -645,6 +657,31 @@ extension CactusLanguageModel {
     }
   }
 
+  /// Transcribes the specified audio buffer.
+  ///
+  /// - Parameters:
+  ///   - buffer: The audio buffer to transcribe.
+  ///   - prompt: The prompt to use for transcription.
+  ///   - options: The ``Transcription/Options``.
+  ///   - transcriptionMaxBufferSize: The maximum buffer size to store the completion.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Returns: A ``Transcription``.
+  public func transcribe(
+    buffer: [UInt8],
+    prompt: String,
+    options: Transcription.Options? = nil,
+    transcriptionMaxBufferSize: Int? = nil,
+    onToken: (String) -> Void = { _ in }
+  ) throws -> Transcription {
+    try self.transcribe(
+      for: .buffer(buffer),
+      prompt: prompt,
+      options: options,
+      maxBufferSize: transcriptionMaxBufferSize,
+      onToken: onToken
+    )
+  }
+
   /// Transcribes the specified `audio` file.
   ///
   /// - Parameters:
@@ -656,6 +693,29 @@ extension CactusLanguageModel {
   /// - Returns: A ``Transcription``.
   public func transcribe(
     audio: URL,
+    prompt: String,
+    options: Transcription.Options? = nil,
+    maxBufferSize: Int? = nil,
+    onToken: (String) -> Void = { _ in }
+  ) throws -> Transcription {
+    try self.transcribe(
+      for: .audio(audio),
+      prompt: prompt,
+      options: options,
+      maxBufferSize: maxBufferSize,
+      onToken: onToken
+    )
+  }
+}
+
+extension CactusLanguageModel {
+  private enum TranscriptionRequest {
+    case audio(URL)
+    case buffer([UInt8])
+  }
+
+  private func transcribe(
+    for request: TranscriptionRequest,
     prompt: String,
     options: Transcription.Options? = nil,
     maxBufferSize: Int? = nil,
@@ -685,16 +745,36 @@ extension CactusLanguageModel {
     defer { buffer.deallocate() }
 
     let result = try withTokenCallback(onToken) { userData, onToken in
-      cactus_transcribe(
-        self.model,
-        audio.nativePath,
-        prompt,
-        buffer,
-        maxBufferSize * MemoryLayout<CChar>.stride,
-        String(decoding: try Self.inferenceEncoder.encode(options), as: UTF8.self),
-        onToken,
-        userData
-      )
+      switch request {
+      case .audio(let audio):
+        return cactus_transcribe(
+          self.model,
+          audio.nativePath,
+          prompt,
+          buffer,
+          maxBufferSize * MemoryLayout<CChar>.stride,
+          String(decoding: try Self.inferenceEncoder.encode(options), as: UTF8.self),
+          onToken,
+          userData,
+          nil,
+          0
+        )
+      case .buffer(let pcmBuffer):
+        return try pcmBuffer.withUnsafeBufferPointer { rawBuffer in
+          cactus_transcribe(
+            self.model,
+            nil,
+            prompt,
+            buffer,
+            maxBufferSize * MemoryLayout<CChar>.stride,
+            String(decoding: try Self.inferenceEncoder.encode(options), as: UTF8.self),
+            onToken,
+            userData,
+            rawBuffer.baseAddress,
+            rawBuffer.count
+          )
+        }
+      }
     }
 
     var responseData = Data()
@@ -785,6 +865,9 @@ extension CactusLanguageModel {
     /// An array of stop sequence phrases.
     public var stopSequences: [String]
 
+    /// Whether to force functions to be used by the model.
+    public var forceFunctions: Bool
+
     /// Creates options for generating inferences.
     ///
     /// - Parameters:
@@ -793,18 +876,21 @@ extension CactusLanguageModel {
     ///   - topP: The nucleus sampling.
     ///   - topK: The k most probable options to limit the next word to.
     ///   - stopSequences: An array of stop sequence phrases.
+    ///   - forceFunctions: Whether to force functions to be used by the model.
     public init(
       maxTokens: Int = 200,
       temperature: Float = 0.6,
       topP: Float = 0.95,
       topK: Int = 20,
-      stopSequences: [String] = Self.defaultStopSequences
+      stopSequences: [String] = Self.defaultStopSequences,
+      forceFunctions: Bool = false
     ) {
       self.maxTokens = maxTokens
       self.temperature = temperature
       self.topP = topP
       self.topK = topK
       self.stopSequences = stopSequences
+      self.forceFunctions = forceFunctions
     }
 
     /// Creates options for generating inferences.
@@ -813,16 +899,19 @@ extension CactusLanguageModel {
     ///   - maxTokens: The maximum number of tokens for the completion.
     ///   - modelType: The model type.
     ///   - stopSequences: An array of stop sequence phrases.
+    ///   - forceFunctions: Whether to force functions to be used by the model.
     public init(
       maxTokens: Int = 200,
       modelType: CactusLanguageModel.ModelType,
-      stopSequences: [String] = Self.defaultStopSequences
+      stopSequences: [String] = Self.defaultStopSequences,
+      forceFunctions: Bool = false
     ) {
       self.maxTokens = maxTokens
       self.temperature = modelType.defaultTemperature
       self.topP = modelType.defaultTopP
       self.topK = modelType.defaultTopK
       self.stopSequences = stopSequences
+      self.forceFunctions = forceFunctions
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -831,6 +920,7 @@ extension CactusLanguageModel {
       case topP = "top_p"
       case topK = "top_k"
       case stopSequences = "stop_sequences"
+      case forceFunctions = "force_tools"
     }
   }
 }

@@ -1,12 +1,12 @@
 {
-  "decode_tokens" : 52,
+  "decode_tokens" : 104,
   "function_calls" : [
 
   ],
-  "prefill_tokens" : 314,
-  "response" : "The guy in the first image is smiling and appears to be happy. He is holding a notebook and a book, suggesting he might be preparing for or taking notes on an exam. His posture and expression indicate he is ready to engage with his study materials.<|im_end|>",
-  "time_to_first_token_ms" : 3186.62,
-  "tokens_per_second" : 97.21,
-  "total_time_ms" : 3711.27,
-  "total_tokens" : 366
+  "prefill_tokens" : 272,
+  "response" : "The image depicts a young man with a cheerful expression, holding two books in his hands. He is smiling and appears to be happy. The man has short hair and is wearing a light-colored shirt with rolled-up sleeves, suggesting casual attire suitable for school or an academic setting. His posture and the way he holds the books indicate that he might be preparing for or taking notes during class. The background of the image is plain white, which puts full emphasis on him without any distractions from background elements.<|im_end|>",
+  "time_to_first_token_ms" : 3462.69,
+  "tokens_per_second" : 93.91,
+  "total_time_ms" : 4559.51,
+  "total_tokens" : 376
 }

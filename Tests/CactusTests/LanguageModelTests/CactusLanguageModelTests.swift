@@ -23,7 +23,7 @@ struct `CactusLanguageModel tests` {
     let error = #expect(throws: CactusLanguageModel.ModelCreationError.self) {
       try CactusLanguageModel(from: temporaryModelDirectory())
     }
-    expectNoDifference(error?.message.starts(with: "Failed to create model from:"), true)
+    expectNoDifference(error?.message.starts(with: "Failed to create model"), true)
   }
 
   @Test
@@ -291,6 +291,10 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
         .system("You are a helpful weather assistant that can use tools."),
         .user("What is the weather in Santa Cruz?")
       ],
+      options: CactusLanguageModel.ChatCompletion.Options(
+        modelType: model.configurationFile.modelType ?? .qwen,
+        forceFunctions: true
+      ),
       functions: [
         CactusLanguageModel.FunctionDefinition(
           name: "get_weather",

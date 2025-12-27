@@ -17,6 +17,9 @@ You first must download the model you want to use using `CactusModelsDirectory`,
 ```swift
 import Cactus
 
+// (OPTIONAL) For NPU acceleration, email founders@cactuscompute.com to obtain a pro key.
+try await Cactus.enablePro(key: "your_pro_key_here")
+
 let modelURL = try await CactusModelsDirectory.shared
   .modelURL(for: "qwen3-0.6")
 let model = try CactusLanguageModel(from: modelURL)
@@ -171,6 +174,18 @@ let model = try CactusLanguageModel(from: modelURL)
 // whisper prompt.
 let transcription = try model.transcribe(
   audio: audioFileURL, 
+  prompt: "<|startoftranscript|><|en|><|transcribe|><|notimestamps|>"
+)
+```
+
+You can also transcribe directly from an `AVAudioPCMBuffer` directly.
+
+```swift
+import AVFoundation
+
+let buffer = try AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount)
+try model.transcribe(
+  buffer: buffer, 
   prompt: "<|startoftranscript|><|en|><|transcribe|><|notimestamps|>"
 )
 ```

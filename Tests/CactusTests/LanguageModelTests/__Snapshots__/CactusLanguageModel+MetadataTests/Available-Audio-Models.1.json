@@ -22,5 +22,29 @@
     "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/voice-models\/whisper-medium.zip",
     "size_mb" : 615,
     "slug" : "whisper-medium"
+  },
+  {
+    "created_at" : 787988513.47864,
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/voice-models\/v1.3\/whisper-tiny-pro.zip",
+    "size_mb" : 37,
+    "slug" : "whisper-tiny-pro"
+  },
+  {
+    "created_at" : 787991722.916648,
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/voice-models\/v1.3\/whisper-base-pro.zip",
+    "size_mb" : 75,
+    "slug" : "whisper-base-pro"
+  },
+  {
+    "created_at" : 787991902.352823,
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/voice-models\/v1.3\/whisper-small-pro.zip",
+    "size_mb" : 269,
+    "slug" : "whisper-small-pro"
+  },
+  {
+    "created_at" : 787993120.492317,
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/voice-models\/v1.3\/whisper-medium-pro.zip",
+    "size_mb" : 930,
+    "slug" : "whisper-medium-pro"
   }
 ]
