@@ -245,6 +245,82 @@ extension CactusLanguageModel {
   }
 }
 
+// MARK: - Score Window
+
+extension CactusLanguageModel {
+  /// An error thrown when trying to score a token window.
+  public struct ScoreTokenWindowError: Error, Hashable {
+    public let message: String
+  }
+
+  public struct TokenWindowScore: Hashable, Codable, Sendable {
+    public let logProbability: Double
+    public let tokenCount: Int
+
+    private enum CodingKeys: String, CodingKey {
+      case logProbability = "logprob"
+      case tokenCount = "tokens"
+    }
+  }
+
+  public func scoreTokenWindow(
+    tokens: [UInt32],
+    range: Range<Int>? = nil,
+    context: Int
+  ) throws -> TokenWindowScore {
+    try tokens.withUnsafeBufferPointer { buffer in
+      try self.scoreTokenWindow(tokens: buffer, range: range, context: context)
+    }
+  }
+
+  public func scoreTokenWindow(
+    tokens: Span<UInt32>,
+    range: Range<Int>? = nil,
+    context: Int
+  ) throws -> TokenWindowScore {
+    try tokens.withUnsafeBufferPointer { buffer in
+      try self.scoreTokenWindow(tokens: buffer, range: range, context: context)
+    }
+  }
+
+  public func scoreTokenWindow(
+    tokens: UnsafeBufferPointer<UInt32>,
+    range: Range<Int>? = nil,
+    context: Int
+  ) throws -> TokenWindowScore {
+    let start = range?.lowerBound ?? 0
+    let end = range?.upperBound ?? tokens.count
+    let responseBufferSize = 256
+    let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: responseBufferSize)
+    defer { responseBuffer.deallocate() }
+
+    let result = cactus_score_window(
+      self.model,
+      tokens.baseAddress,
+      tokens.count,
+      start,
+      end,
+      context,
+      responseBuffer,
+      responseBufferSize * MemoryLayout<CChar>.stride
+    )
+
+    var responseData = Data()
+    for i in 0..<strnlen(responseBuffer, responseBufferSize) {
+      responseData.append(UInt8(bitPattern: responseBuffer[i]))
+    }
+
+    guard result != -1 else {
+      let errorResponse = try Self.ffiDecoder.decode(
+        FFIErrorResponse.self,
+        from: responseData
+      )
+      throw ScoreTokenWindowError(message: errorResponse.error)
+    }
+    return try Self.ffiDecoder.decode(TokenWindowScore.self, from: responseData)
+  }
+}
+
 // MARK: - Embeddings
 
 extension CactusLanguageModel {
@@ -554,17 +630,17 @@ extension CactusLanguageModel {
     let functionsJSON =
       functions.isEmpty
       ? nil
-      : String(decoding: try Self.inferenceEncoder.encode(functions), as: UTF8.self)
+      : String(decoding: try Self.ffiEncoder.encode(functions), as: UTF8.self)
 
     let messages = messages.map { FFIMessage(message: $0) }
 
     let result = try withTokenCallback(onToken) { userData, onToken in
       cactus_complete(
         self.model,
-        String(decoding: try Self.inferenceEncoder.encode(messages), as: UTF8.self),
+        String(decoding: try Self.ffiEncoder.encode(messages), as: UTF8.self),
         buffer,
         maxBufferSize * MemoryLayout<CChar>.stride,
-        String(decoding: try Self.inferenceEncoder.encode(options), as: UTF8.self),
+        String(decoding: try Self.ffiEncoder.encode(options), as: UTF8.self),
         functionsJSON,
         onToken,
         userData
@@ -577,8 +653,8 @@ extension CactusLanguageModel {
     }
 
     guard result != -1 else {
-      let response = try? Self.inferenceDecoder.decode(
-        InferenceErrorResponse.self,
+      let response = try? Self.ffiDecoder.decode(
+        FFIErrorResponse.self,
         from: responseData
       )
       if response?.error.contains(bufferTooSmallEvent.message) == true {
@@ -594,7 +670,7 @@ extension CactusLanguageModel {
       )
       throw ChatCompletionError.generation(message: response?.error)
     }
-    let completion = try Self.inferenceDecoder.decode(ChatCompletion.self, from: responseData)
+    let completion = try Self.ffiDecoder.decode(ChatCompletion.self, from: responseData)
     CactusTelemetry.send(
       CactusTelemetry.LanguageModelCompletionEvent(
         chatCompletion: completion,
@@ -798,7 +874,7 @@ extension CactusLanguageModel {
           prompt,
           buffer,
           maxBufferSize * MemoryLayout<CChar>.stride,
-          String(decoding: try Self.inferenceEncoder.encode(options), as: UTF8.self),
+          String(decoding: try Self.ffiEncoder.encode(options), as: UTF8.self),
           onToken,
           userData,
           nil,
@@ -812,7 +888,7 @@ extension CactusLanguageModel {
             prompt,
             buffer,
             maxBufferSize * MemoryLayout<CChar>.stride,
-            String(decoding: try Self.inferenceEncoder.encode(options), as: UTF8.self),
+            String(decoding: try Self.ffiEncoder.encode(options), as: UTF8.self),
             onToken,
             userData,
             rawBuffer.baseAddress,
@@ -828,8 +904,8 @@ extension CactusLanguageModel {
     }
 
     guard result != -1 else {
-      let response = try? Self.inferenceDecoder.decode(
-        InferenceErrorResponse.self,
+      let response = try? Self.ffiDecoder.decode(
+        FFIErrorResponse.self,
         from: responseData
       )
       if response?.error.contains(bufferTooSmallEvent.message) == true {
@@ -845,7 +921,7 @@ extension CactusLanguageModel {
       )
       throw TranscriptionError.generation(message: response?.error)
     }
-    let transcription = try Self.inferenceDecoder.decode(Transcription.self, from: responseData)
+    let transcription = try Self.ffiDecoder.decode(Transcription.self, from: responseData)
     CactusTelemetry.send(
       CactusTelemetry.LanguageModelTranscriptionEvent(
         transcription: transcription,
@@ -1002,11 +1078,11 @@ extension CactusLanguageModel {
 }
 
 extension CactusLanguageModel {
-  private struct InferenceErrorResponse: Decodable {
+  private struct FFIErrorResponse: Decodable {
     let error: String
   }
 
-  private static let inferenceDecoder = {
+  private static let ffiDecoder = {
     let decoder = JSONDecoder()
     if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
       decoder.allowsJSON5 = true
@@ -1014,7 +1090,7 @@ extension CactusLanguageModel {
     return decoder
   }()
 
-  private static let inferenceEncoder = {
+  private static let ffiEncoder = {
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.withoutEscapingSlashes]
     return encoder

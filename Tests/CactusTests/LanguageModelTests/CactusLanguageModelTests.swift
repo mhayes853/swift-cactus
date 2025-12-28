@@ -101,6 +101,62 @@ struct `CactusLanguageModel tests` {
   }
 
   @Test
+  func `Scores Token Window With Tokens Array And Nil Range`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+    let tokens = try model.tokenize(
+      text: "Score this token window using the full token array."
+    )
+
+    let score = try model.scoreTokenWindow(tokens: tokens, range: nil, context: 0)
+
+    assertSnapshot(of: score, as: .json)
+  }
+
+  @Test
+  func `Scores Token Window With Tokens Array And Subrange`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+    let tokens = try model.tokenize(
+      text: "Score this token window using a subrange of tokens."
+    )
+
+    let range = 1..<4
+    let score = try model.scoreTokenWindow(tokens: tokens, range: range, context: 0)
+    assertSnapshot(of: score, as: .json)
+  }
+
+  @Test
+  @available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
+  func `Scores Token Window With Tokens Span And Nil Range`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+    let tokens = try model.tokenize(
+      text: "Score this token window using the full token span."
+    )
+
+    let span = tokens.span
+    let score = try model.scoreTokenWindow(tokens: span, range: nil, context: 0)
+
+    assertSnapshot(of: score, as: .json)
+  }
+
+  @Test
+  @available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
+  func `Scores Token Window With Tokens Span And Subrange`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+    let tokens = try model.tokenize(
+      text: "Score this token window using a subrange of token spans."
+    )
+
+    let range = 1..<4
+    let span = tokens.span
+    let score = try model.scoreTokenWindow(tokens: span, range: range, context: 0)
+    assertSnapshot(of: score, as: .json)
+  }
+
+  @Test
   func `Image Embeddings`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(slug: CactusLanguageModel.testVLMSlug)
     let model = try CactusLanguageModel(from: modelURL)
