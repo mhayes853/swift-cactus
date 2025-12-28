@@ -613,6 +613,32 @@ extension CactusLanguageModel {
     functions: [FunctionDefinition] = [],
     onToken: (String) -> Void = { _ in }
   ) throws -> ChatCompletion {
+    try self.chatCompletion(
+      messages: messages,
+      options: options,
+      maxBufferSize: maxBufferSize,
+      functions: functions
+    ) { token, _ in
+      onToken(token)
+    }
+  }
+
+  /// Generates a ``ChatCompletion``.
+  ///
+  /// - Parameters:
+  ///   - messages: The list of ``ChatMessage`` instances.
+  ///   - options: The ``ChatCompletion/Options``.
+  ///   - maxBufferSize: The maximum buffer size to store the completion.
+  ///   - functions: A list of ``FunctionDefinition`` instances.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Returns: A ``ChatCompletion``.
+  public func chatCompletion(
+    messages: [ChatMessage],
+    options: ChatCompletion.Options? = nil,
+    maxBufferSize: Int? = nil,
+    functions: [FunctionDefinition] = [],
+    onToken: (String, UInt32) -> Void
+  ) throws -> ChatCompletion {
     let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent
       .responseBufferTooSmall(name: "completion", configuration: self.configuration)
     let options =
@@ -795,6 +821,32 @@ extension CactusLanguageModel {
     onToken: (String) -> Void = { _ in }
   ) throws -> Transcription {
     try self.transcribe(
+      buffer: buffer,
+      prompt: prompt,
+      options: options,
+      transcriptionMaxBufferSize: transcriptionMaxBufferSize
+    ) { token, _ in
+      onToken(token)
+    }
+  }
+
+  /// Transcribes the specified audio buffer.
+  ///
+  /// - Parameters:
+  ///   - buffer: The audio buffer to transcribe.
+  ///   - prompt: The prompt to use for transcription.
+  ///   - options: The ``Transcription/Options``.
+  ///   - transcriptionMaxBufferSize: The maximum buffer size to store the completion.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Returns: A ``Transcription``.
+  public func transcribe(
+    buffer: [UInt8],
+    prompt: String,
+    options: Transcription.Options? = nil,
+    transcriptionMaxBufferSize: Int? = nil,
+    onToken: (String, UInt32) -> Void
+  ) throws -> Transcription {
+    try self.transcribe(
       for: .buffer(buffer),
       prompt: prompt,
       options: options,
@@ -820,6 +872,32 @@ extension CactusLanguageModel {
     onToken: (String) -> Void = { _ in }
   ) throws -> Transcription {
     try self.transcribe(
+      audio: audio,
+      prompt: prompt,
+      options: options,
+      maxBufferSize: maxBufferSize
+    ) { token, _ in
+      onToken(token)
+    }
+  }
+
+  /// Transcribes the specified `audio` file.
+  ///
+  /// - Parameters:
+  ///   - audio: The audio file to transcribe.
+  ///   - prompt: The prompt to use for transcription.
+  ///   - options: The ``Transcription/Options``.
+  ///   - maxBufferSize: The maximum buffer size to store the completion.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Returns: A ``Transcription``.
+  public func transcribe(
+    audio: URL,
+    prompt: String,
+    options: Transcription.Options? = nil,
+    maxBufferSize: Int? = nil,
+    onToken: (String, UInt32) -> Void
+  ) throws -> Transcription {
+    try self.transcribe(
       for: .audio(audio),
       prompt: prompt,
       options: options,
@@ -840,7 +918,7 @@ extension CactusLanguageModel {
     prompt: String,
     options: Transcription.Options? = nil,
     maxBufferSize: Int? = nil,
-    onToken: (String) -> Void = { _ in }
+    onToken: (String, UInt32) -> Void
   ) throws -> Transcription {
     guard self.configurationFile.modelType == .whisper else {
       CactusTelemetry.send(
@@ -1100,24 +1178,24 @@ extension CactusLanguageModel {
 // MARK: - Token Callback
 
 private func withTokenCallback<T>(
-  _ callback: (String) -> Void,
+  _ callback: (String, UInt32) -> Void,
   perform operation: (UnsafeMutableRawPointer, cactus_token_callback) throws -> T
 ) rethrows -> T {
   try withoutActuallyEscaping(callback) { onToken in
     let box = Unmanaged.passRetained(TokenCallbackBox(onToken))
     defer { box.release() }
-    return try operation(box.toOpaque()) { token, _, ptr in
+    return try operation(box.toOpaque()) { token, tokenId, ptr in
       guard let ptr, let token else { return }
       let box = Unmanaged<TokenCallbackBox>.fromOpaque(ptr).takeUnretainedValue()
-      box.callback(String(cString: token))
+      box.callback(String(cString: token), tokenId)
     }
   }
 }
 
 private final class TokenCallbackBox {
-  let callback: (String) -> Void
+  let callback: (String, UInt32) -> Void
 
-  init(_ callback: @escaping (String) -> Void) {
+  init(_ callback: @escaping (String, UInt32) -> Void) {
     self.callback = callback
   }
 }
