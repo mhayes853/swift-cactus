@@ -212,6 +212,12 @@ extension CactusLanguageModel {
     case invalidTokenization
   }
 
+  /// Tokenizes the specified `text`.
+  ///
+  /// - Parameters:
+  ///   - text: The text to tokenize.
+  ///   - maxBufferSize: The maximum buffer size for the tokenized output.
+  /// - Returns: An array of raw tokens.
   public func tokenize(text: String, maxBufferSize: Int = 1024) throws -> [UInt32] {
     let buffer = UnsafeMutableBufferPointer<UInt32>.allocate(capacity: maxBufferSize)
     defer { buffer.deallocate() }
@@ -219,11 +225,23 @@ extension CactusLanguageModel {
     return Array(buffer.prefix(count))
   }
 
+  /// Tokenizes the specified `text`.
+  ///
+  /// - Parameters:
+  ///   - text: The text to tokenize.
+  ///   - buffer: The buffer to store the tokenized output.
+  /// - Returns: The total number of tokens.
   @discardableResult
   public func tokenize(text: String, buffer: inout MutableSpan<UInt32>) throws -> Int {
     try buffer.withUnsafeMutableBufferPointer { try self.tokenize(text: text, buffer: $0) }
   }
 
+  /// Tokenizes the specified `text`.
+  ///
+  /// - Parameters:
+  ///   - text: The text to tokenize.
+  ///   - buffer: The buffer to store the tokenized output.
+  /// - Returns: The total number of tokens.
   @discardableResult
   public func tokenize(text: String, buffer: UnsafeMutableBufferPointer<UInt32>) throws -> Int {
     var tokenLength = 0
@@ -253,16 +271,27 @@ extension CactusLanguageModel {
     public let message: String
   }
 
+  /// Log probability score of a token window.
   public struct TokenWindowScore: Hashable, Codable, Sendable {
+    /// The log probability.
     public let logProbability: Double
-    public let tokenCount: Int
+
+    /// The number of tokens scored.
+    public let tokensScored: Int
 
     private enum CodingKeys: String, CodingKey {
       case logProbability = "logprob"
-      case tokenCount = "tokens"
+      case tokensScored = "tokens"
     }
   }
 
+  /// Calculates the log probability score of a token window.
+  ///
+  /// - Parameters:
+  ///   - tokens: The tokens to score.
+  ///   - range: The subrange of tokens to score.
+  ///   - context: The amount of tokens to use as context for scoring.
+  /// - Returns: ``TokenWindowScore``.
   public func scoreTokenWindow(
     tokens: [UInt32],
     range: Range<Int>? = nil,
@@ -273,6 +302,13 @@ extension CactusLanguageModel {
     }
   }
 
+  /// Calculates the log probability score of a token window.
+  ///
+  /// - Parameters:
+  ///   - tokens: The tokens to score.
+  ///   - range: The subrange of tokens to score.
+  ///   - context: The amount of tokens to use as context for scoring.
+  /// - Returns: ``TokenWindowScore``.
   public func scoreTokenWindow(
     tokens: Span<UInt32>,
     range: Range<Int>? = nil,
@@ -283,6 +319,13 @@ extension CactusLanguageModel {
     }
   }
 
+  /// Calculates the log probability score of a token window.
+  ///
+  /// - Parameters:
+  ///   - tokens: The tokens to score.
+  ///   - range: The subrange of tokens to score.
+  ///   - context: The amount of tokens to use as context for scoring.
+  /// - Returns: ``TokenWindowScore``.
   public func scoreTokenWindow(
     tokens: UnsafeBufferPointer<UInt32>,
     range: Range<Int>? = nil,

@@ -3,13 +3,24 @@ import Foundation
 
 // MARK: - CactusIndex
 
+/// An index for storing and querying document embeddings.
 public final class CactusIndex {
+  /// The maximum buffer size for a document's content or metadata.
   public static let maxBufferSize = 65535
+
+  /// The raw index pointer.
   public let index: cactus_index_t
+
+  /// The dimensionality of the embeddings stored in this index.
   public let embeddingDimensions: Int
 
   private let isIndexPointerManaged: Bool
 
+  /// Creates an index at the specified directory.
+  ///
+  /// - Parameters:
+  ///   - directory: The directory where the index will be stored.
+  ///   - embeddingDimensions: The dimensionality of the embeddings stored in the index.
   public convenience init(directory: URL, embeddingDimensions: Int) throws {
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
@@ -19,6 +30,12 @@ public final class CactusIndex {
     self.init(index: index, embeddingDimensions: embeddingDimensions, isIndexPointerManaged: true)
   }
 
+  /// Creates an index.
+  ///
+  /// - Parameters:
+  ///   - index: The raw index pointer.
+  ///   - embeddingDimensions: The dimensionality of the embeddings stored in the index.
+  ///   - isIndexPointerManaged: Whether the memory of the index pointer should be managed by the index.
   public init(
     index: cactus_index_t,
     embeddingDimensions: Int,
@@ -39,24 +56,29 @@ public final class CactusIndex {
 // MARK: - Document
 
 extension CactusIndex {
+  /// A stored document in an index.
   public struct Document: Hashable, Sendable, Identifiable {
     public typealias ID = Int32
 
-    public struct BufferSizes: Hashable, Sendable {
-      public var content: Int
-      public var metadata: Int
-
-      public init(content: Int, metadata: Int) {
-        self.content = content
-        self.metadata = metadata
-      }
-    }
-
+    /// The unique identifier of the document.
     public let id: ID
+
+    /// The embedding of the document.
     public var embedding: [Float]
+
+    /// An arbitrary string for metadata.
     public var metadata: String
+
+    /// The content of the document.
     public var content: String
 
+    /// Creates a document.
+    ///
+    /// - Parameters:
+    ///   - id: The unique identifier of the document.
+    ///   - embedding: The embedding of the document.
+    ///   - metadata: An arbitrary string for metadata.
+    ///   - content: The content of the document.
     public init(id: ID, embedding: [Float], metadata: String = "", content: String) {
       self.id = id
       self.embedding = embedding
@@ -66,7 +88,34 @@ extension CactusIndex {
   }
 }
 
+extension CactusIndex.Document {
+  /// The buffer sizes for retrieving documents.
+  public struct BufferSizes: Hashable, Sendable {
+    /// The buffer size for content.
+    public var content: Int
+
+    /// The buffer size for metadata.
+    public var metadata: Int
+
+    /// Creates buffer sizes.
+    ///
+    /// - Parameters:
+    ///   - content: The buffer size for content.
+    ///   - metadata: The buffer size for metadata.
+    public init(content: Int, metadata: Int) {
+      self.content = content
+      self.metadata = metadata
+    }
+  }
+}
+
 extension CactusIndex {
+  /// Attempts to retrieve the document with the specified id.
+  ///
+  /// - Parameters:
+  ///   - id: The id of the document to retrieve.
+  ///   - bufferSizes: The buffer sizes for retrieving the document.
+  /// - Returns: A ``Document``.
   public func document(
     withId id: Document.ID,
     bufferSizes: Document.BufferSizes? = nil
@@ -74,6 +123,12 @@ extension CactusIndex {
     try self.documents(withIds: [id], bufferSizes: bufferSizes.map { [$0] })[0]
   }
 
+  /// Attempts to retrieve the document with the specified ids.
+  ///
+  /// - Parameters:
+  ///   - ids: The ids of the documents to retrieve.
+  ///   - bufferSizes: The buffer sizes for retrieving the documents.
+  /// - Returns: An array of ``Document`` in the same order as the IDs.
   public func documents(
     withIds ids: [Document.ID],
     bufferSizes: [Document.BufferSizes]? = nil
@@ -240,10 +295,12 @@ extension CactusIndex {
 }
 
 extension CactusIndex {
+  /// Adds a ``Document`` to this index.
   public func add(document: Document) throws {
     try self.add(documents: [document])
   }
 
+  /// Adds multiple ``Document`` instances to this index.
   public func add(documents: [Document]) throws {
     let fields = try DocumentFieldPointers(documents, embeddingDimensions: self.embeddingDimensions)
     let result = cactus_index_add(
@@ -304,10 +361,12 @@ extension CactusIndex {
 }
 
 extension CactusIndex {
+  /// Removes a ``Document`` from this index by its id.
   public func deleteDocument(withId id: Document.ID) throws {
     try self.deleteDocuments(withIds: [id])
   }
 
+  /// Removes multiple ``Document`` instances from this index by the specified ids.
   public func deleteDocuments(withIds ids: [Document.ID]) throws {
     let result = ids.withUnsafeBufferPointer {
       cactus_index_delete(self.index, $0.baseAddress, $0.count)
@@ -319,11 +378,22 @@ extension CactusIndex {
 // MARK: - Query
 
 extension CactusIndex {
+  /// A query for retrieving similar documents.
   public struct Query: Sendable {
+    /// The embeddings to compare against.
     public var embeddings: [Float]
+
+    /// The maximum number of similar documents to retrieve.
     public var topK: Int
+
+    /// The minimum similarity score threshold for similar documents.
     public var scoreThreshold: Float
 
+    /// Creates a query.
+    /// - Parameters:
+    ///   - embeddings: The embeddings to compare against.
+    ///   - topK: The maximum number of similar documents to retrieve.
+    ///   - scoreThreshold: The minimum similarity score threshold for similar documents.
     public init(embeddings: [Float], topK: Int = 10, scoreThreshold: Float = Float(-1.0)) {
       self.embeddings = embeddings
       self.topK = topK
@@ -331,10 +401,14 @@ extension CactusIndex {
     }
   }
 
+  /// Runs the specified ``Query`` and returns the results.
   public func query(_ query: Query) throws -> [Query.Result] {
     try self.query([query])[0]
   }
 
+  /// Runs the specified ``Query`` instances and returns the results.
+  ///
+  /// - Returns: An array of arrays of ``Query.Result`` instances, in the same order as the queries.
   public func query(_ queries: [Query]) throws -> [[Query.Result]] {
     guard !queries.isEmpty else { return [] }
     var indexedBatches = [FFIOptions: [(index: Int, query: Query)]]()
@@ -371,8 +445,12 @@ extension CactusIndex {
 }
 
 extension CactusIndex.Query {
+  /// An individual document result of a query for matching similar documents.
   public struct Result: Sendable {
+    /// The id of the document.
     public let documentId: CactusIndex.Document.ID
+
+    /// The similarity score of the document relative to the query.
     public let score: Float
   }
 }
@@ -480,6 +558,7 @@ extension CactusIndex {
 // MARK: - Compact
 
 extension CactusIndex {
+  /// Compacts this index.
   public func compact() throws {
     let result = cactus_index_compact(self.index)
     guard result == 0 else { throw CactusIndexError.lastErrorMessage() }
