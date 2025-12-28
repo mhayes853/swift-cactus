@@ -1,12 +1,12 @@
 {
-  "decode_tokens" : 104,
+  "decode_tokens" : 200,
   "function_calls" : [
 
   ],
   "prefill_tokens" : 272,
-  "response" : "The image depicts a young man with a cheerful expression, holding two books in his hands. He is smiling and appears to be happy. The man has short hair and is wearing a light-colored shirt with rolled-up sleeves, suggesting casual attire suitable for school or an academic setting. His posture and the way he holds the books indicate that he might be preparing for or taking notes during class. The background of the image is plain white, which puts full emphasis on him without any distractions from background elements.<|im_end|>",
-  "time_to_first_token_ms" : 3462.69,
-  "tokens_per_second" : 93.91,
-  "total_time_ms" : 4559.51,
-  "total_tokens" : 376
+  "response" : "The image depicts a young man who appears to be in his early twenties. He is smiling and looking directly at the camera, exuding a sense of happiness and contentment. He has short, dark hair styled in a neat manner. The man is dressed casually in a light-colored button-up shirt with the sleeves rolled up to his elbows, suggesting that he might be on campus or attending an informal event.\n\nHe is holding two items: one book with black pages and another unidentified object that could possibly be a backpack or bag strap hanging from his shoulder. The presence of these items suggests that he might be carrying reading material for leisure or academic purposes while on campus or during an outdoor activity like walking to class.\n\nThe background of the image is plain white, which puts full emphasis on the subject without any distractions from other elements in the environment. This choice of background color and simplicity ensures that viewers' attention remains solely on the young man's cheerful expression",
+  "time_to_first_token_ms" : 3086.64,
+  "tokens_per_second" : 103.08,
+  "total_time_ms" : 5017.16,
+  "total_tokens" : 472
 }

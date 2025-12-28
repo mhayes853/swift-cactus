@@ -19,7 +19,32 @@
       onToken: (String) -> Void = { _ in }
     ) throws -> Transcription {
       try self.transcribe(
-        buffer: try buffer.pcmExportBytes(),
+        buffer: try buffer.whisperPCMBytes(),
+        prompt: prompt,
+        options: options,
+        transcriptionMaxBufferSize: transcriptionMaxBufferSize,
+        onToken: onToken
+      )
+    }
+
+    /// Transcribes the specified PCM buffer.
+    ///
+    /// - Parameters:
+    ///   - buffer: The PCM buffer to transcribe.
+    ///   - prompt: The prompt to use for transcription.
+    ///   - options: The ``Transcription/Options``.
+    ///   - transcriptionMaxBufferSize: The maximum buffer size to store the transcription.
+    ///   - onToken: A callback invoked whenever a token is generated.
+    /// - Returns: A ``Transcription``.
+    public func transcribe(
+      buffer: AVAudioPCMBuffer,
+      prompt: String,
+      options: Transcription.Options? = nil,
+      transcriptionMaxBufferSize: Int? = nil,
+      onToken: (String, UInt32) -> Void
+    ) throws -> Transcription {
+      try self.transcribe(
+        buffer: try buffer.whisperPCMBytes(),
         prompt: prompt,
         options: options,
         transcriptionMaxBufferSize: transcriptionMaxBufferSize,
@@ -37,7 +62,7 @@
       case missingData
     }
 
-    fileprivate func pcmExportBytes() throws -> [UInt8] {
+    fileprivate func whisperPCMBytes() throws -> [UInt8] {
       guard self.frameLength > 0 else { return [] }
 
       let inputFormat = self.format

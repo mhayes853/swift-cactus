@@ -368,3 +368,6 @@ class MainActivity : ComponentActivity() {
 - ``CactusTelemetry``
 - ``CactusTelemetry/Client``
 - ``CactusTelemetry/configure(_:client:logger:)``
+
+### Indexing
+- ``CactusIndex``
