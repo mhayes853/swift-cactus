@@ -1,4 +1,4 @@
-import CXXCactusDarwin
+import CXXCactusShims
 import Foundation
 
 // MARK: - CactusIndex
