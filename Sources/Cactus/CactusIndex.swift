@@ -341,7 +341,7 @@ extension CactusIndex {
 
         document.embedding.withUnsafeBufferPointer {
           let ptr = UnsafeMutableBufferPointer<Float>.allocate(capacity: embeddingDimensions)
-          memcpy(ptr.baseAddress, $0.baseAddress, embeddingDimensions * MemoryLayout<Float>.stride)
+          memcpy(ptr.baseAddress, $0.baseAddress!, embeddingDimensions * MemoryLayout<Float>.stride)
           self.embeddingPointers[index] = UnsafePointer(ptr.baseAddress)
         }
       }
