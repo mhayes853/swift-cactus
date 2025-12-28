@@ -1,17 +1,17 @@
 {
-  "decode_tokens" : 27,
+  "decode_tokens" : 20,
   "function_calls" : [
     {
       "arguments" : {
-        "location" : "New York"
+        "location" : "London"
       },
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 128,
-  "response" : "```json\n",
-  "time_to_first_token_ms" : 413.64,
-  "tokens_per_second" : 46.78,
-  "total_time_ms" : 969.39,
-  "total_tokens" : 155
+  "prefill_tokens" : 147,
+  "response" : "<|im_end|>",
+  "time_to_first_token_ms" : 382.4,
+  "tokens_per_second" : 50.33,
+  "total_time_ms" : 759.92,
+  "total_tokens" : 167
 }

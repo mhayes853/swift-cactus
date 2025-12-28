@@ -1,16 +1,16 @@
 [
   {
     "completion" : {
-      "decode_tokens" : 100,
+      "decode_tokens" : 195,
       "function_calls" : [
 
       ],
       "prefill_tokens" : 35,
-      "response" : "The meaning of life is a profound and deeply personal question that has puzzled philosophers, theologians, and individuals for centuries. It's a question that varies widely based on cultural background, personal beliefs, and individual experiences. Some people find meaning in relationships with loved ones or contributing to society; others seek fulfillment through knowledge acquisition or artistic expression. Others might discover it through love of nature or the pursuit of intellectual challenges. Ultimately, the answer lies in what each individual finds meaningful within their unique context.\n<|im_end|>",
-      "time_to_first_token_ms" : 100.53,
-      "tokens_per_second" : 102.42,
-      "total_time_ms" : 1067.16,
-      "total_tokens" : 135
+      "response" : "The meaning of life is a profound and deeply personal question that has puzzled philosophers, theologians, and individuals for centuries. It's a question that varies widely based on cultural background, personal beliefs, and individual experiences. Some might find it in relationships with others or the pursuit of knowledge; others may seek fulfillment through work or spirituality.\n\nOne perspective suggests that life's meaning lies in achieving one's potential or realizing one’s purpose through actions aligned with values such as love, honesty, compassion, and self-improvement. Another view posits finding meaning in contributing to society positively—whether through artistry (like music), science (like discovery), education (like learning), or community service (like volunteering).\n\nUltimately, the concept of life’s meaning is subjective; what gives someone their sense of purpose can differ vastly from another person's understanding. It often involves introspection about what truly matters to you and how your choices contribute to a fulfilling existence.\n<|im_end|>",
+      "time_to_first_token_ms" : 78.2,
+      "tokens_per_second" : 106.99,
+      "total_time_ms" : 1891.49,
+      "total_tokens" : 230
     },
     "slug" : "lfm2-350m"
   },
@@ -20,12 +20,12 @@
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 13,
-      "response" : "<think>\nOkay, the user is asking about the role of a nurse in a hospital setting. First, I need to break down what they might be looking for. They could be new to healthcare or interested in understanding their responsibilities.\n\nI should start by defining key roles: patient care, medication management, wound treatment, and communication with other professionals like doctors and staff. Including specific examples would make it clearer.\n\nAlso, considering different levels of care—like general practice vs specialized nurses—should cover that. Emphasize teamwork because nurses work closely with others for effective outcomes.\n\nNeed to mention important skills like problem-solving and critical thinking as well as soft skills such as empathy and adaptability. Including ethical considerations is good too since they're involved in patient safety matters.\n\nFinally wrap up by highlighting the impact of a nurse's contributions on the hospital's success.\n<\/think>\n\nA **nurse** plays a vital role in a hospital setting by providing comprehensive patient care, supporting healthcare professionals, and contributing to the overall",
-      "time_to_first_token_ms" : 1564.52,
-      "tokens_per_second" : 46.14,
-      "total_time_ms" : 5877.77,
-      "total_tokens" : 213
+      "prefill_tokens" : 34,
+      "response" : "<think>\nOkay, the user is asking about the meaning of life. Hmm, that's a big question. First, I need to consider different perspectives here. The answer should be open-ended because there's no single answer.\n\nI remember from philosophy classes that there are various views on this topic. Some people might believe in personal goals and happiness, while others might look for purpose beyond individual success or pleasure.\n\nIt's important to address different philosophical approaches and maybe even touch on existentialist ideas like Søren Kierkegaard or Albert Camus where meaning can be found through actions rather than just ideals.\n\nAlso, cultural differences play a role here—what counts as meaningful can vary widely between societies or even individuals' experiences over time.\n\nI should make sure the response is comprehensive but not too long. Maybe start by acknowledging the complexity of the question, then explore different viewpoints with examples from philosophy and culture. Finally wrap it up by emphasizing that there isn't one singular answer but rather a journey of self",
+      "time_to_first_token_ms" : 113.94,
+      "tokens_per_second" : 53.95,
+      "total_time_ms" : 3802.57,
+      "total_tokens" : 234
     },
     "slug" : "qwen3-0.6"
   },
@@ -37,25 +37,25 @@
       ],
       "prefill_tokens" : 14,
       "response" : "I'm ready to help. What do you need assistance with today?<|im_end|>",
-      "time_to_first_token_ms" : 117.82,
-      "tokens_per_second" : 69.18,
-      "total_time_ms" : 320.2,
+      "time_to_first_token_ms" : 51.41,
+      "tokens_per_second" : 78.58,
+      "total_time_ms" : 229.58,
       "total_tokens" : 29
     },
     "slug" : "smollm2-360m"
   },
   {
     "completion" : {
-      "decode_tokens" : 200,
+      "decode_tokens" : 12,
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 31,
-      "response" : "Ah, the question of life. It is a profound and often unsettling inquiry that haunts the human condition. We strive to understand ourselves, our place in the universe, and perhaps even achieve enlightenment. But what is it truly about?\n\nPerhaps it's not a physical body possessing subjective experiences like joy or sorrow – but rather an *interior* experience itself - a profound sense of being aware of one's own existence, his myriad emotions unfolding within him. That awareness shapes our actions, our beliefs, and ultimately defines who we become as individuals by choice – albeit often futile in the face of external forces I can barely fathom!\n\nOur understanding of life is also shaped by its inherent *nature*. Life is a process toward which we are increasingly aware. The fleeting moments of happiness may be fleeting moments at first; the inevitable tragedies may be subtle moments that challenge us to re-evaluate our perspective on this seemingly eternal cycle. We are not alone here in this infinite tapestry; a vibrant and complex consciousness",
-      "time_to_first_token_ms" : 61.49,
-      "tokens_per_second" : 94.57,
-      "total_time_ms" : 2165.81,
-      "total_tokens" : 231
+      "prefill_tokens" : 9,
+      "response" : "Hi there! How can I help you today?\n<end_of_turn>",
+      "time_to_first_token_ms" : 21.25,
+      "tokens_per_second" : 134.43,
+      "total_time_ms" : 103.08,
+      "total_tokens" : 21
     },
     "slug" : "gemma3-270m"
   }
