@@ -1,0 +1,10 @@
+▿ 3 elements
+  ▿ Result
+    - documentId: 3
+    - score: 0.6767578
+  ▿ Result
+    - documentId: 1
+    - score: 0.33911133
+  ▿ Result
+    - documentId: 2
+    - score: -0.095947266
