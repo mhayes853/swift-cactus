@@ -200,6 +200,51 @@ extension CactusLanguageModel {
   }
 }
 
+// MARK: - Tokenize
+
+extension CactusLanguageModel {
+  /// An error thrown when trying to tokenize text.
+  public enum TokenizeError: Error, Hashable {
+    /// The buffer size for the tokenized output was too small.
+    case bufferTooSmall
+
+    /// An error occurred during tokenization.
+    case invalidTokenization
+  }
+
+  public func tokenize(text: String, maxBufferSize: Int = 1024) throws -> [UInt32] {
+    let buffer = UnsafeMutableBufferPointer<UInt32>.allocate(capacity: maxBufferSize)
+    defer { buffer.deallocate() }
+    let count = try self.tokenize(text: text, buffer: buffer)
+    return Array(buffer.prefix(count))
+  }
+
+  @discardableResult
+  public func tokenize(text: String, buffer: inout MutableSpan<UInt32>) throws -> Int {
+    try buffer.withUnsafeMutableBufferPointer { try self.tokenize(text: text, buffer: $0) }
+  }
+
+  @discardableResult
+  public func tokenize(text: String, buffer: UnsafeMutableBufferPointer<UInt32>) throws -> Int {
+    var tokenLength = 0
+    let resultCode = cactus_tokenize(
+      self.model,
+      text,
+      buffer.baseAddress,
+      buffer.count,
+      &tokenLength
+    )
+    switch resultCode {
+    case -1:
+      throw TokenizeError.invalidTokenization
+    case -2:
+      throw TokenizeError.bufferTooSmall
+    default:
+      return tokenLength
+    }
+  }
+}
+
 // MARK: - Embeddings
 
 extension CactusLanguageModel {

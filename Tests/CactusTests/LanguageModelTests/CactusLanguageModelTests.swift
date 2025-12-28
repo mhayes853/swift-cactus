@@ -63,6 +63,44 @@ struct `CactusLanguageModel tests` {
   }
 
   @Test
+  func `Tokenizes Text And Snapshots Output`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+
+    let tokens = try model.tokenize(text: "Tokenize this text.")
+
+    expectNoDifference(tokens.isEmpty, false)
+    assertSnapshot(of: tokens, as: .json)
+  }
+
+  @Test
+  @available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
+  func `Tokenizes Text Into MutableSpan Buffer`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+    let text = "Buffer tokenization check."
+
+    var buffer = [UInt32](repeating: 0, count: 256)
+    var span = buffer.mutableSpan
+    let count = try model.tokenize(text: text, buffer: &span)
+
+    let arrayTokens = try model.tokenize(text: text)
+
+    expectNoDifference(count, arrayTokens.count)
+    expectNoDifference(buffer.prefix(count).contains { $0 != 0 }, true)
+  }
+
+  @Test
+  func `Throws Tokenize Error When Buffer Size Too Small`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+
+    #expect(throws: CactusLanguageModel.TokenizeError.bufferTooSmall) {
+      try model.tokenize(text: "This text will not fit.", maxBufferSize: 1)
+    }
+  }
+
+  @Test
   func `Image Embeddings`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(slug: CactusLanguageModel.testVLMSlug)
     let model = try CactusLanguageModel(from: modelURL)
