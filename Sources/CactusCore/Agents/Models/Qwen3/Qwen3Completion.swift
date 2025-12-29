@@ -1,0 +1,65 @@
+public struct Qwen3Completion<
+  Base: ConvertibleFromCactusResponse
+>: ConvertibleFromCactusResponse, Identifiable {
+  public let id: CactusMessageID
+  public let thinkingContent: String?
+  public let response: Base
+
+  public init(cactusResponse: CactusResponse) throws(Base.ConversionFailure) {
+    self.id = cactusResponse.id
+    let matches = thinkingContentRegex.matchGroups(from: cactusResponse.content)
+    if matches.isEmpty {
+      let thinkingPrefix = "<think>\n"
+      let thinkingContent =
+        cactusResponse.content.starts(with: thinkingPrefix)
+        ? String(cactusResponse.content.dropFirst(thinkingPrefix.count))
+        : nil
+      self.thinkingContent = thinkingContent
+      self.response = try Base(
+        cactusResponse: CactusResponse(
+          id: cactusResponse.id,
+          content: thinkingContent != nil ? "" : cactusResponse.content
+        )
+      )
+    } else {
+      self.thinkingContent = String(matches[0])
+      let baseResponse = matches.count > 1 ? matches[1] : ""
+      self.response = try Base(
+        cactusResponse: CactusResponse(id: cactusResponse.id, content: String(baseResponse))
+      )
+    }
+  }
+
+  public init(id: CactusMessageID, thinkingContent: String? = nil, response: Base) {
+    self.id = id
+    self.thinkingContent = thinkingContent
+    self.response = response
+  }
+}
+
+private let thinkingContentRegex = try! RegularExpression(
+  "<think>\n([\\s\\S]*?)\n<\\/think>\n\n([\\s\\S]*)"
+)
+
+extension Qwen3Completion: Sendable where Base: Sendable {}
+extension Qwen3Completion: Equatable where Base: Equatable {}
+extension Qwen3Completion: Hashable where Base: Hashable {}
+extension Qwen3Completion: Encodable where Base: Encodable {}
+extension Qwen3Completion: Decodable where Base: Decodable {}
+
+extension Qwen3Completion: CactusPromptRepresentable where Base: CactusPromptRepresentable {
+  public func promptContent(
+    in environment: CactusEnvironmentValues
+  ) throws(Base.PromptContentFailure) -> CactusPromptContent {
+    let baseContent = try self.response.promptContent(in: environment)
+    return CactusPromptContent {
+      GroupContent {
+        if let thinkingContent {
+          "<think>\n\(thinkingContent)\n</think>"
+        }
+        baseContent
+      }
+      .separated(by: "\n\n")
+    }
+  }
+}

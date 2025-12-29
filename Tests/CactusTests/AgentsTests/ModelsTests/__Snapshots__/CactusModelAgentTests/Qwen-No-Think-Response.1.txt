@@ -1,0 +1,18 @@
+▿ CactusAgentResponse<Qwen3Completion<String>>
+  ▿ metrics: 1 key/value pair
+    ▿ (2 elements)
+      ▿ key: CactusMessageID
+        - rawValue: 37B8EE05-C6BF-46EE-85D7-F21842B84084
+      ▿ value: CactusMessageMetric
+        - decodeTokens: 200
+        - prefillTokens: 13
+        - timeIntervalToFirstToken: 0.12515
+        - tokensPerSecond: 31.36
+        - totalTimeInterval: 6.471640000000001
+        - totalTokens: 213
+  ▿ output: Qwen3Completion<String>
+    ▿ id: CactusMessageID
+      - rawValue: 37B8EE05-C6BF-46EE-85D7-F21842B84084
+    - response: ""
+    ▿ thinkingContent: Optional<String>
+      - some: "Okay, the user is asking about a specific scenario involving a dog\'s behavior. They mentioned that their dog has been sitting on a couch for two hours without moving or interacting with people. The first time was when they were home alone but didn\'t interact with anyone else at all. Now they want to know if there are any signs indicating potential issues in the dog\'s behavior, such as fear or anxiety related to being left alone without interaction.\n\nFirst, I need to consider common signs of stress or anxiety in dogs. These could include avoiding eye contact with people or not wanting to interact at all. The user\'s dog has been sitting on a couch for two hours without moving or interacting. So, I should think about what behaviors might indicate that.\n\nPossible signs: lack of eye contact with people, avoiding eye contact when talking to them or even talking to the dog themselves, not wanting to interact at all, showing signs of distress like tail movements or changes in posture. Also, maybe the dog"

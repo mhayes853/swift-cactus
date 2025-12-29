@@ -1,0 +1,105 @@
+import Foundation
+
+// MARK: - CactusAgentRequest
+
+public struct CactusAgentRequest<Input: Sendable>: Sendable {
+  public var input: Input
+  public var environment: CactusEnvironmentValues
+
+  public init(
+    input: Input,
+    environment: CactusEnvironmentValues = CactusEnvironmentValues()
+  ) {
+    self.input = input
+    self.environment = environment
+  }
+}
+
+// MARK: - CactusAgentResponse
+
+public struct CactusAgentResponse<Output: Sendable>: Sendable {
+  public var output: Output
+  public var metrics: CactusMessageMetrics
+
+  public init(output: Output, metrics: CactusMessageMetrics) {
+    self.output = output
+    self.metrics = metrics
+  }
+}
+
+// MARK: - CactusAgent
+
+public protocol CactusAgent<Input, Output>: Sendable {
+  associatedtype Input: Sendable
+  associatedtype Output: Sendable
+
+  associatedtype Body
+
+  nonisolated(nonsending) func hydrate(request: CactusAgentRequest<Input>) async
+
+  @CactusAgentBuilder<Input, Output>
+  func body(environment: CactusEnvironmentValues) -> Body
+
+  nonisolated(nonsending) func primitiveStream(
+    request: CactusAgentRequest<Input>,
+    into continuation: CactusAgentStream<Output>.Continuation
+  ) async throws -> CactusAgentStream<Output>.Response
+}
+
+extension CactusAgent {
+  public nonisolated(nonsending) func stream(
+    request: CactusAgentRequest<Input>,
+    into continuation: CactusAgentStream<Output>.Continuation
+  ) async throws -> CactusAgentStream<Output>.Response {
+    await self.hydrate(request: request)
+    return try await self.primitiveStream(request: request, into: continuation)
+  }
+}
+
+extension CactusAgent where Body == Never {
+  @_transparent
+  public func body(environment: CactusEnvironmentValues) -> Never {
+    fatalError(
+      """
+      '\(Self.self)' has no body. …
+
+      Do not invoke an agent's 'body' method directly, as it may not exist. To run an agent, \
+      call 'CactusAgent.stream(request:into:)', instead.
+      """
+    )
+  }
+}
+
+extension CactusAgent where Body: CactusAgent<Input, Output> {
+  public nonisolated(nonsending) func primitiveStream(
+    request: CactusAgentRequest<Input>,
+    into continuation: CactusAgentStream<Output>.Continuation
+  ) async throws -> CactusAgentStream<Output>.Response {
+    try await self.body(environment: request.environment)
+      .stream(request: request, into: continuation)
+  }
+}
+
+// MARK: - Hydration
+
+extension CactusAgent {
+  public nonisolated(nonsending) func hydrate(request: CactusAgentRequest<Input>) async {
+    let env = request.environment
+    await withThrowingTaskGroup { group in
+      for child in Mirror(reflecting: self).children.map(\.value) {
+        guard let child = child as? any Hydratable else { continue }
+        group.addTask { try await child._hydrate(in: env) }
+      }
+    }
+  }
+}
+
+private protocol Hydratable: Sendable {
+  func _hydrate(in environment: CactusEnvironmentValues) async throws
+}
+
+extension Memory: Hydratable {
+  func _hydrate(in environment: CactusEnvironmentValues) async throws {
+    try await self.hydrate(in: environment)
+  }
+}

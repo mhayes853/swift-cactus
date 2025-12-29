@@ -1,12 +1,10 @@
 {
-  "decode_tokens" : 200,
-  "function_calls" : [
-
-  ],
-  "prefill_tokens" : 272,
-  "response" : "The image depicts a young man who appears to be in his early twenties. He is smiling and looking directly at the camera, exuding a sense of happiness and contentment. He has short, dark hair styled in a neat manner. The man is dressed casually in a light-colored button-up shirt with the sleeves rolled up to his elbows, suggesting that he might be on campus or attending an informal event.\n\nHe is holding two items: one book with black pages and another unidentified object that could possibly be a backpack or bag strap hanging from his shoulder. The presence of these items suggests that he might be carrying reading material for leisure or academic purposes while on campus or during an outdoor activity like walking to class.\n\nThe background of the image is plain white, which puts full emphasis on the subject without any distractions from other elements in the environment. This choice of background color and simplicity ensures that viewers' attention remains solely on the young man's cheerful expression",
-  "time_to_first_token_ms" : 3086.64,
-  "tokens_per_second" : 103.08,
-  "total_time_ms" : 5017.16,
-  "total_tokens" : 472
+  "decode_tokens": 53,
+  "function_calls": [],
+  "prefill_tokens": 314,
+  "response": "The guy in the first image is smiling and appears to be happy. He is holding a notebook and a book, suggesting he might be preparing for or has just finished studying. His posture and expression indicate he might be looking forward to his next assignment or exam.<|im_end|>",
+  "time_to_first_token_ms": 3218.8,
+  "tokens_per_second": 95.76,
+  "total_time_ms": 3761.83,
+  "total_tokens": 367
 }
