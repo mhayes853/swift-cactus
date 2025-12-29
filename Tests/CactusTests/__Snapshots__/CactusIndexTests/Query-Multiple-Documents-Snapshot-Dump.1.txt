@@ -1,0 +1,31 @@
+▿ 3 elements
+  ▿ 3 elements
+    ▿ Result
+      - documentId: 5
+      - score: -0.013839722
+    ▿ Result
+      - documentId: 6
+      - score: -0.24963379
+    ▿ Result
+      - documentId: 4
+      - score: -0.5888672
+  ▿ 3 elements
+    ▿ Result
+      - documentId: 4
+      - score: 0.18164062
+    ▿ Result
+      - documentId: 5
+      - score: 0.07904053
+    ▿ Result
+      - documentId: 6
+      - score: -0.22790527
+  ▿ 3 elements
+    ▿ Result
+      - documentId: 5
+      - score: 0.35546875
+    ▿ Result
+      - documentId: 4
+      - score: -0.13183594
+    ▿ Result
+      - documentId: 6
+      - score: -0.32861328

@@ -1,5 +1,4 @@
 #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
-  private import cactus_util
   import Foundation
   import IssueReporting
 
@@ -11,25 +10,25 @@
       static let shared = DefaultClient(client: .shared)
 
       private let client: CactusSupabaseClient
+      private let deviceRegistration: CactusDeviceRegistration
       private let batcher: CactusTelemetry.Batcher
 
       init(client: CactusSupabaseClient) {
         self.client = client
+        self.deviceRegistration = .shared
         self.batcher = CactusTelemetry.Batcher(fileURL: .telemetryBatch()) { batch in
           try await client.send(events: batch)
         }
       }
 
       public func deviceId() async throws -> CactusTelemetry.DeviceID? {
-        get_device_id().map { CactusTelemetry.DeviceID(cString: $0) }
+        await self.deviceRegistration.deviceId()
       }
 
       public func registerDevice(
         _ metadata: CactusTelemetry.DeviceMetadata
       ) async throws -> CactusTelemetry.DeviceID {
-        let registration = CactusSupabaseClient.DeviceRegistration(deviceData: metadata)
-        let payload = try await self.client.registerDevice(registration: registration)
-        return CactusTelemetry.DeviceID(cString: register_app(payload))
+        try await self.deviceRegistration.registerDevice(metadata)
       }
 
       public func send(

@@ -1,12 +1,10 @@
 {
-  "decode_tokens" : 86,
-  "function_calls" : [
-
-  ],
-  "prefill_tokens" : 129,
-  "response" : "To get the weather information for a specific location, you need to call the `get_weather` function. However, since no city name is provided in your query, I can't proceed with calling it. Please provide a city name so that I can retrieve the weather data for you.\n<|endoftext|>In this case, there are no results returned from the API call.\n\nIf you have any other questions or need further assistance please ask!<|im_end|>",
-  "time_to_first_token_ms" : 435.43,
-  "tokens_per_second" : 44.53,
-  "total_time_ms" : 2344.44,
-  "total_tokens" : 215
+  "decode_tokens": 86,
+  "function_calls": [],
+  "prefill_tokens": 129,
+  "response": "To get the weather information for a specific location, you need to call the `get_weather` function. However, since no city name is provided in your query, I can't proceed with calling it. Please provide a city name so that I can retrieve the weather data for you.\n<|endoftext|>In this case, there are no results returned from the API call.\n\nIf you have any other questions or need further assistance please ask!<|im_end|>",
+  "time_to_first_token_ms": 435.43,
+  "tokens_per_second": 44.53,
+  "total_time_ms": 2344.44,
+  "total_tokens": 215
 }

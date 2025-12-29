@@ -200,6 +200,170 @@ extension CactusLanguageModel {
   }
 }
 
+// MARK: - Tokenize
+
+extension CactusLanguageModel {
+  /// An error thrown when trying to tokenize text.
+  public enum TokenizeError: Error, Hashable {
+    /// The buffer size for the tokenized output was too small.
+    case bufferTooSmall
+
+    /// An error occurred during tokenization.
+    case invalidTokenization
+  }
+
+  /// Tokenizes the specified `text`.
+  ///
+  /// - Parameters:
+  ///   - text: The text to tokenize.
+  ///   - maxBufferSize: The maximum buffer size for the tokenized output.
+  /// - Returns: An array of raw tokens.
+  public func tokenize(text: String, maxBufferSize: Int = 1024) throws -> [UInt32] {
+    let buffer = UnsafeMutableBufferPointer<UInt32>.allocate(capacity: maxBufferSize)
+    defer { buffer.deallocate() }
+    let count = try self.tokenize(text: text, buffer: buffer)
+    return Array(buffer.prefix(count))
+  }
+
+  /// Tokenizes the specified `text`.
+  ///
+  /// - Parameters:
+  ///   - text: The text to tokenize.
+  ///   - buffer: The buffer to store the tokenized output.
+  /// - Returns: The total number of tokens.
+  @discardableResult
+  public func tokenize(text: String, buffer: inout MutableSpan<UInt32>) throws -> Int {
+    try buffer.withUnsafeMutableBufferPointer { try self.tokenize(text: text, buffer: $0) }
+  }
+
+  /// Tokenizes the specified `text`.
+  ///
+  /// - Parameters:
+  ///   - text: The text to tokenize.
+  ///   - buffer: The buffer to store the tokenized output.
+  /// - Returns: The total number of tokens.
+  @discardableResult
+  public func tokenize(text: String, buffer: UnsafeMutableBufferPointer<UInt32>) throws -> Int {
+    var tokenLength = 0
+    let resultCode = cactus_tokenize(
+      self.model,
+      text,
+      buffer.baseAddress,
+      buffer.count,
+      &tokenLength
+    )
+    switch resultCode {
+    case -1:
+      throw TokenizeError.invalidTokenization
+    case -2:
+      throw TokenizeError.bufferTooSmall
+    default:
+      return tokenLength
+    }
+  }
+}
+
+// MARK: - Score Window
+
+extension CactusLanguageModel {
+  /// An error thrown when trying to score a token window.
+  public struct ScoreTokenWindowError: Error, Hashable {
+    public let message: String
+  }
+
+  /// Log probability score of a token window.
+  public struct TokenWindowScore: Hashable, Codable, Sendable {
+    /// The log probability.
+    public let logProbability: Double
+
+    /// The number of tokens scored.
+    public let tokensScored: Int
+
+    private enum CodingKeys: String, CodingKey {
+      case logProbability = "logprob"
+      case tokensScored = "tokens"
+    }
+  }
+
+  /// Calculates the log probability score of a token window.
+  ///
+  /// - Parameters:
+  ///   - tokens: The tokens to score.
+  ///   - range: The subrange of tokens to score.
+  ///   - context: The amount of tokens to use as context for scoring.
+  /// - Returns: ``TokenWindowScore``.
+  public func scoreTokenWindow(
+    tokens: [UInt32],
+    range: Range<Int>? = nil,
+    context: Int
+  ) throws -> TokenWindowScore {
+    try tokens.withUnsafeBufferPointer { buffer in
+      try self.scoreTokenWindow(tokens: buffer, range: range, context: context)
+    }
+  }
+
+  /// Calculates the log probability score of a token window.
+  ///
+  /// - Parameters:
+  ///   - tokens: The tokens to score.
+  ///   - range: The subrange of tokens to score.
+  ///   - context: The amount of tokens to use as context for scoring.
+  /// - Returns: ``TokenWindowScore``.
+  public func scoreTokenWindow(
+    tokens: Span<UInt32>,
+    range: Range<Int>? = nil,
+    context: Int
+  ) throws -> TokenWindowScore {
+    try tokens.withUnsafeBufferPointer { buffer in
+      try self.scoreTokenWindow(tokens: buffer, range: range, context: context)
+    }
+  }
+
+  /// Calculates the log probability score of a token window.
+  ///
+  /// - Parameters:
+  ///   - tokens: The tokens to score.
+  ///   - range: The subrange of tokens to score.
+  ///   - context: The amount of tokens to use as context for scoring.
+  /// - Returns: ``TokenWindowScore``.
+  public func scoreTokenWindow(
+    tokens: UnsafeBufferPointer<UInt32>,
+    range: Range<Int>? = nil,
+    context: Int
+  ) throws -> TokenWindowScore {
+    let start = range?.lowerBound ?? 0
+    let end = range?.upperBound ?? tokens.count
+    let responseBufferSize = 256
+    let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: responseBufferSize)
+    defer { responseBuffer.deallocate() }
+
+    let result = cactus_score_window(
+      self.model,
+      tokens.baseAddress,
+      tokens.count,
+      start,
+      end,
+      context,
+      responseBuffer,
+      responseBufferSize * MemoryLayout<CChar>.stride
+    )
+
+    var responseData = Data()
+    for i in 0..<strnlen(responseBuffer, responseBufferSize) {
+      responseData.append(UInt8(bitPattern: responseBuffer[i]))
+    }
+
+    guard result != -1 else {
+      let errorResponse = try Self.ffiDecoder.decode(
+        FFIErrorResponse.self,
+        from: responseData
+      )
+      throw ScoreTokenWindowError(message: errorResponse.error)
+    }
+    return try Self.ffiDecoder.decode(TokenWindowScore.self, from: responseData)
+  }
+}
+
 // MARK: - Embeddings
 
 extension CactusLanguageModel {
@@ -223,9 +387,14 @@ extension CactusLanguageModel {
   /// - Parameters:
   ///   - text: The text to generate embeddings for.
   ///   - maxBufferSize: The size of the buffer to allocate to store the embeddings.
+  ///   - normalize: Whether to normalize the embeddings.
   /// - Returns: An array of float values.
-  public func embeddings(for text: String, maxBufferSize: Int? = nil) throws -> [Float] {
-    try self.embeddings(for: .text(text), maxBufferSize: maxBufferSize)
+  public func embeddings(
+    for text: String,
+    maxBufferSize: Int? = nil,
+    normalize: Bool = false
+  ) throws -> [Float] {
+    try self.embeddings(for: .text(text, normalize: normalize), maxBufferSize: maxBufferSize)
   }
 
   /// Generates embeddings for the specified `text` and stores them in the specified buffer.
@@ -233,10 +402,15 @@ extension CactusLanguageModel {
   /// - Parameters:
   ///   - text: The text to generate embeddings for.
   ///   - buffer: A `MutableSpan` buffer.
+  ///   - normalize: Whether to normalize the embeddings.
   /// - Returns: The number of dimensions.
   @discardableResult
-  public func embeddings(for text: String, buffer: inout MutableSpan<Float>) throws -> Int {
-    try self.embeddings(for: .text(text), buffer: &buffer)
+  public func embeddings(
+    for text: String,
+    buffer: inout MutableSpan<Float>,
+    normalize: Bool = false
+  ) throws -> Int {
+    try self.embeddings(for: .text(text, normalize: normalize), buffer: &buffer)
   }
 
   /// Generates embeddings for the specified `text` and stores them in the specified buffer.
@@ -244,12 +418,14 @@ extension CactusLanguageModel {
   /// - Parameters:
   ///   - text: The text to generate embeddings for.
   ///   - buffer: An `UnsafeMutableBufferPointer` buffer.
+  ///   - normalize: Whether to normalize the embeddings.
   /// - Returns: The number of dimensions.
   public func embeddings(
     for text: String,
-    buffer: UnsafeMutableBufferPointer<Float>
+    buffer: UnsafeMutableBufferPointer<Float>,
+    normalize: Bool = false
   ) throws -> Int {
-    try self.embeddings(for: .text(text), buffer: buffer)
+    try self.embeddings(for: .text(text, normalize: normalize), buffer: buffer)
   }
 
   /// Generates embeddings for the specified `image`.
@@ -358,8 +534,8 @@ extension CactusLanguageModel {
 
     let resultCode =
       switch request {
-      case .text(let text):
-        cactus_embed(self.model, text, buffer.baseAddress, rawBufferSize, &dimensions)
+      case .text(let text, let normalize):
+        cactus_embed(self.model, text, buffer.baseAddress, rawBufferSize, &dimensions, normalize)
       case .image(let image):
         cactus_image_embed(
           self.model,
@@ -408,7 +584,7 @@ extension CactusLanguageModel {
   }
 
   private enum EmbeddingsRequest {
-    case text(String)
+    case text(String, normalize: Bool)
     case image(URL)
     case audio(URL)
   }
@@ -480,6 +656,32 @@ extension CactusLanguageModel {
     functions: [FunctionDefinition] = [],
     onToken: (String) -> Void = { _ in }
   ) throws -> ChatCompletion {
+    try self.chatCompletion(
+      messages: messages,
+      options: options,
+      maxBufferSize: maxBufferSize,
+      functions: functions
+    ) { token, _ in
+      onToken(token)
+    }
+  }
+
+  /// Generates a ``ChatCompletion``.
+  ///
+  /// - Parameters:
+  ///   - messages: The list of ``ChatMessage`` instances.
+  ///   - options: The ``ChatCompletion/Options``.
+  ///   - maxBufferSize: The maximum buffer size to store the completion.
+  ///   - functions: A list of ``FunctionDefinition`` instances.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Returns: A ``ChatCompletion``.
+  public func chatCompletion(
+    messages: [ChatMessage],
+    options: ChatCompletion.Options? = nil,
+    maxBufferSize: Int? = nil,
+    functions: [FunctionDefinition] = [],
+    onToken: (String, UInt32) -> Void
+  ) throws -> ChatCompletion {
     let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent
       .responseBufferTooSmall(name: "completion", configuration: self.configuration)
     let options = options ?? self.defaultChatCompletionOptions
@@ -496,17 +698,17 @@ extension CactusLanguageModel {
     let functionsJSON =
       functions.isEmpty
       ? nil
-      : String(decoding: try Self.inferenceEncoder.encode(functions), as: UTF8.self)
+      : String(decoding: try Self.ffiEncoder.encode(functions), as: UTF8.self)
 
     let messages = messages.map { FFIMessage(message: $0) }
 
     let result = try withTokenCallback(onToken) { userData, onToken in
       cactus_complete(
         self.model,
-        String(decoding: try Self.inferenceEncoder.encode(messages), as: UTF8.self),
+        String(decoding: try Self.ffiEncoder.encode(messages), as: UTF8.self),
         buffer,
         maxBufferSize * MemoryLayout<CChar>.stride,
-        String(decoding: try Self.inferenceEncoder.encode(options), as: UTF8.self),
+        String(decoding: try Self.ffiEncoder.encode(options), as: UTF8.self),
         functionsJSON,
         onToken,
         userData
@@ -519,8 +721,8 @@ extension CactusLanguageModel {
     }
 
     guard result != -1 else {
-      let response = try? Self.inferenceDecoder.decode(
-        InferenceErrorResponse.self,
+      let response = try? Self.ffiDecoder.decode(
+        FFIErrorResponse.self,
         from: responseData
       )
       if response?.error.contains(bufferTooSmallEvent.message) == true {
@@ -536,7 +738,7 @@ extension CactusLanguageModel {
       )
       throw ChatCompletionError.generation(message: response?.error)
     }
-    let completion = try Self.inferenceDecoder.decode(ChatCompletion.self, from: responseData)
+    let completion = try Self.ffiDecoder.decode(ChatCompletion.self, from: responseData)
     CactusTelemetry.send(
       CactusTelemetry.LanguageModelCompletionEvent(
         chatCompletion: completion,
@@ -644,6 +846,57 @@ extension CactusLanguageModel {
     }
   }
 
+  /// Transcribes the specified audio buffer.
+  ///
+  /// - Parameters:
+  ///   - buffer: The audio buffer to transcribe.
+  ///   - prompt: The prompt to use for transcription.
+  ///   - options: The ``Transcription/Options``.
+  ///   - transcriptionMaxBufferSize: The maximum buffer size to store the completion.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Returns: A ``Transcription``.
+  public func transcribe(
+    buffer: [UInt8],
+    prompt: String,
+    options: Transcription.Options? = nil,
+    transcriptionMaxBufferSize: Int? = nil,
+    onToken: (String) -> Void = { _ in }
+  ) throws -> Transcription {
+    try self.transcribe(
+      buffer: buffer,
+      prompt: prompt,
+      options: options,
+      transcriptionMaxBufferSize: transcriptionMaxBufferSize
+    ) { token, _ in
+      onToken(token)
+    }
+  }
+
+  /// Transcribes the specified audio buffer.
+  ///
+  /// - Parameters:
+  ///   - buffer: The audio buffer to transcribe.
+  ///   - prompt: The prompt to use for transcription.
+  ///   - options: The ``Transcription/Options``.
+  ///   - transcriptionMaxBufferSize: The maximum buffer size to store the completion.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Returns: A ``Transcription``.
+  public func transcribe(
+    buffer: [UInt8],
+    prompt: String,
+    options: Transcription.Options? = nil,
+    transcriptionMaxBufferSize: Int? = nil,
+    onToken: (String, UInt32) -> Void
+  ) throws -> Transcription {
+    try self.transcribe(
+      for: .buffer(buffer),
+      prompt: prompt,
+      options: options,
+      maxBufferSize: transcriptionMaxBufferSize,
+      onToken: onToken
+    )
+  }
+
   /// Transcribes the specified `audio` file.
   ///
   /// - Parameters:
@@ -659,6 +912,55 @@ extension CactusLanguageModel {
     options: Transcription.Options? = nil,
     maxBufferSize: Int? = nil,
     onToken: (String) -> Void = { _ in }
+  ) throws -> Transcription {
+    try self.transcribe(
+      audio: audio,
+      prompt: prompt,
+      options: options,
+      maxBufferSize: maxBufferSize
+    ) { token, _ in
+      onToken(token)
+    }
+  }
+
+  /// Transcribes the specified `audio` file.
+  ///
+  /// - Parameters:
+  ///   - audio: The audio file to transcribe.
+  ///   - prompt: The prompt to use for transcription.
+  ///   - options: The ``Transcription/Options``.
+  ///   - maxBufferSize: The maximum buffer size to store the completion.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Returns: A ``Transcription``.
+  public func transcribe(
+    audio: URL,
+    prompt: String,
+    options: Transcription.Options? = nil,
+    maxBufferSize: Int? = nil,
+    onToken: (String, UInt32) -> Void
+  ) throws -> Transcription {
+    try self.transcribe(
+      for: .audio(audio),
+      prompt: prompt,
+      options: options,
+      maxBufferSize: maxBufferSize,
+      onToken: onToken
+    )
+  }
+}
+
+extension CactusLanguageModel {
+  private enum TranscriptionRequest {
+    case audio(URL)
+    case buffer([UInt8])
+  }
+
+  private func transcribe(
+    for request: TranscriptionRequest,
+    prompt: String,
+    options: Transcription.Options? = nil,
+    maxBufferSize: Int? = nil,
+    onToken: (String, UInt32) -> Void
   ) throws -> Transcription {
     guard self.configurationFile.modelType == .whisper else {
       CactusTelemetry.send(
@@ -684,16 +986,36 @@ extension CactusLanguageModel {
     defer { buffer.deallocate() }
 
     let result = try withTokenCallback(onToken) { userData, onToken in
-      cactus_transcribe(
-        self.model,
-        audio.nativePath,
-        prompt,
-        buffer,
-        maxBufferSize * MemoryLayout<CChar>.stride,
-        String(decoding: try Self.inferenceEncoder.encode(options), as: UTF8.self),
-        onToken,
-        userData
-      )
+      switch request {
+      case .audio(let audio):
+        return cactus_transcribe(
+          self.model,
+          audio.nativePath,
+          prompt,
+          buffer,
+          maxBufferSize * MemoryLayout<CChar>.stride,
+          String(decoding: try Self.ffiEncoder.encode(options), as: UTF8.self),
+          onToken,
+          userData,
+          nil,
+          0
+        )
+      case .buffer(let pcmBuffer):
+        return try pcmBuffer.withUnsafeBufferPointer { rawBuffer in
+          cactus_transcribe(
+            self.model,
+            nil,
+            prompt,
+            buffer,
+            maxBufferSize * MemoryLayout<CChar>.stride,
+            String(decoding: try Self.ffiEncoder.encode(options), as: UTF8.self),
+            onToken,
+            userData,
+            rawBuffer.baseAddress,
+            rawBuffer.count
+          )
+        }
+      }
     }
 
     var responseData = Data()
@@ -702,8 +1024,8 @@ extension CactusLanguageModel {
     }
 
     guard result != -1 else {
-      let response = try? Self.inferenceDecoder.decode(
-        InferenceErrorResponse.self,
+      let response = try? Self.ffiDecoder.decode(
+        FFIErrorResponse.self,
         from: responseData
       )
       if response?.error.contains(bufferTooSmallEvent.message) == true {
@@ -719,7 +1041,7 @@ extension CactusLanguageModel {
       )
       throw TranscriptionError.generation(message: response?.error)
     }
-    let transcription = try Self.inferenceDecoder.decode(Transcription.self, from: responseData)
+    let transcription = try Self.ffiDecoder.decode(Transcription.self, from: responseData)
     CactusTelemetry.send(
       CactusTelemetry.LanguageModelTranscriptionEvent(
         transcription: transcription,
@@ -784,6 +1106,9 @@ extension CactusLanguageModel {
     /// An array of stop sequence phrases.
     public var stopSequences: [String]
 
+    /// Whether to force functions to be used by the model.
+    public var forceFunctions: Bool
+
     /// Creates options for generating inferences.
     ///
     /// - Parameters:
@@ -792,18 +1117,21 @@ extension CactusLanguageModel {
     ///   - topP: The nucleus sampling.
     ///   - topK: The k most probable options to limit the next word to.
     ///   - stopSequences: An array of stop sequence phrases.
+    ///   - forceFunctions: Whether to force functions to be used by the model.
     public init(
       maxTokens: Int = 200,
       temperature: Float = 0.6,
       topP: Float = 0.95,
       topK: Int = 20,
-      stopSequences: [String] = Self.defaultStopSequences
+      stopSequences: [String] = Self.defaultStopSequences,
+      forceFunctions: Bool = false
     ) {
       self.maxTokens = maxTokens
       self.temperature = temperature
       self.topP = topP
       self.topK = topK
       self.stopSequences = stopSequences
+      self.forceFunctions = forceFunctions
     }
 
     /// Creates options for generating inferences.
@@ -812,16 +1140,19 @@ extension CactusLanguageModel {
     ///   - maxTokens: The maximum number of tokens for the completion.
     ///   - modelType: The model type.
     ///   - stopSequences: An array of stop sequence phrases.
+    ///   - forceFunctions: Whether to force functions to be used by the model.
     public init(
       maxTokens: Int = 200,
       modelType: CactusLanguageModel.ModelType,
-      stopSequences: [String] = Self.defaultStopSequences
+      stopSequences: [String] = Self.defaultStopSequences,
+      forceFunctions: Bool = false
     ) {
       self.maxTokens = maxTokens
       self.temperature = modelType.defaultTemperature
       self.topP = modelType.defaultTopP
       self.topK = modelType.defaultTopK
       self.stopSequences = stopSequences
+      self.forceFunctions = forceFunctions
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -830,6 +1161,7 @@ extension CactusLanguageModel {
       case topP = "top_p"
       case topK = "top_k"
       case stopSequences = "stop_sequences"
+      case forceFunctions = "force_tools"
     }
   }
 }
@@ -866,11 +1198,11 @@ extension CactusLanguageModel {
 }
 
 extension CactusLanguageModel {
-  private struct InferenceErrorResponse: Decodable {
+  private struct FFIErrorResponse: Decodable {
     let error: String
   }
 
-  private static let inferenceDecoder = {
+  private static let ffiDecoder = {
     let decoder = JSONDecoder()
     if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
       decoder.allowsJSON5 = true
@@ -878,7 +1210,7 @@ extension CactusLanguageModel {
     return decoder
   }()
 
-  private static let inferenceEncoder = {
+  private static let ffiEncoder = {
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.withoutEscapingSlashes]
     return encoder
@@ -888,24 +1220,24 @@ extension CactusLanguageModel {
 // MARK: - Token Callback
 
 private func withTokenCallback<T>(
-  _ callback: (String) -> Void,
+  _ callback: (String, UInt32) -> Void,
   perform operation: (UnsafeMutableRawPointer, cactus_token_callback) throws -> T
 ) rethrows -> T {
   try withoutActuallyEscaping(callback) { onToken in
     let box = Unmanaged.passRetained(TokenCallbackBox(onToken))
     defer { box.release() }
-    return try operation(box.toOpaque()) { token, _, ptr in
+    return try operation(box.toOpaque()) { token, tokenId, ptr in
       guard let ptr, let token else { return }
       let box = Unmanaged<TokenCallbackBox>.fromOpaque(ptr).takeUnretainedValue()
-      box.callback(String(cString: token))
+      box.callback(String(cString: token), tokenId)
     }
   }
 }
 
 private final class TokenCallbackBox {
-  let callback: (String) -> Void
+  let callback: (String, UInt32) -> Void
 
-  init(_ callback: @escaping (String) -> Void) {
+  init(_ callback: @escaping (String, UInt32) -> Void) {
     self.callback = callback
   }
 }

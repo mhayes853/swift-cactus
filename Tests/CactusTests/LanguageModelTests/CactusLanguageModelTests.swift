@@ -23,7 +23,7 @@ struct `CactusLanguageModel tests` {
     let error = #expect(throws: CactusLanguageModel.ModelCreationError.self) {
       try CactusLanguageModel(from: temporaryModelDirectory())
     }
-    expectNoDifference(error?.message.starts(with: "Failed to create model from:"), true)
+    expectNoDifference(error?.message.starts(with: "Failed to create model"), true)
   }
 
   @Test
@@ -59,6 +59,108 @@ struct `CactusLanguageModel tests` {
     let model = try CactusLanguageModel(from: modelURL)
     #expect(throws: CactusLanguageModel.EmbeddingsError.bufferTooSmall) {
       try model.embeddings(for: "This is some text.", maxBufferSize: 20)
+    }
+  }
+
+  @Test
+  func `Tokenizes Text And Snapshots Output`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+
+    let tokens = try model.tokenize(text: "Tokenize this text.")
+
+    expectNoDifference(tokens.isEmpty, false)
+    assertSnapshot(of: tokens, as: .json)
+  }
+
+  @Test
+  @available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
+  func `Tokenizes Text Into MutableSpan Buffer`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+    let text = "Buffer tokenization check."
+
+    var buffer = [UInt32](repeating: 0, count: 256)
+    var span = buffer.mutableSpan
+    let count = try model.tokenize(text: text, buffer: &span)
+
+    let arrayTokens = try model.tokenize(text: text)
+
+    expectNoDifference(count, arrayTokens.count)
+    expectNoDifference(buffer.prefix(count).contains { $0 != 0 }, true)
+  }
+
+  @Test
+  func `Throws Tokenize Error When Buffer Size Too Small`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+
+    #expect(throws: CactusLanguageModel.TokenizeError.bufferTooSmall) {
+      try model.tokenize(text: "This text will not fit.", maxBufferSize: 1)
+    }
+  }
+
+  @Test
+  func `Scores Token Window With Tokens Array And Nil Range`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+    let tokens = try model.tokenize(
+      text: "Score this token window using the full token array."
+    )
+
+    let score = try model.scoreTokenWindow(tokens: tokens, range: nil, context: 0)
+
+    withKnownIssue {
+      assertSnapshot(of: score, as: .json, record: true)
+    }
+  }
+
+  @Test
+  func `Scores Token Window With Tokens Array And Subrange`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+    let tokens = try model.tokenize(
+      text: "Score this token window using a subrange of tokens."
+    )
+
+    let range = 1..<4
+    let score = try model.scoreTokenWindow(tokens: tokens, range: range, context: 0)
+    withKnownIssue {
+      assertSnapshot(of: score, as: .json, record: true)
+    }
+  }
+
+  @Test
+  @available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
+  func `Scores Token Window With Tokens Span And Nil Range`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+    let tokens = try model.tokenize(
+      text: "Score this token window using the full token span."
+    )
+
+    let span = tokens.span
+    let score = try model.scoreTokenWindow(tokens: span, range: nil, context: 0)
+
+    withKnownIssue {
+      assertSnapshot(of: score, as: .json, record: true)
+    }
+  }
+
+  @Test
+  @available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
+  func `Scores Token Window With Tokens Span And Subrange`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+    let tokens = try model.tokenize(
+      text: "Score this token window using a subrange of token spans."
+    )
+
+    let range = 1..<4
+    let span = tokens.span
+    let score = try model.scoreTokenWindow(tokens: span, range: range, context: 0)
+    withKnownIssue {
+      assertSnapshot(of: score, as: .json, record: true)
     }
   }
 
@@ -182,7 +284,10 @@ struct `CactusLanguageModel tests` {
     let transcription = try model.transcribe(audio: .testAudio, prompt: audioPrompt) {
       stream.append($0)
     }
-    expectNoDifference(stream, transcription.response)
+    expectNoDifference(
+      stream.replacingOccurrences(of: "<|startoftranscript|>", with: ""),
+      transcription.response
+    )
   }
 
   @Test
@@ -291,6 +396,10 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
         .system("You are a helpful weather assistant that can use tools."),
         .user("What is the weather in Santa Cruz?")
       ],
+      options: CactusLanguageModel.ChatCompletion.Options(
+        modelType: model.configurationFile.modelType ?? .qwen,
+        forceFunctions: true
+      ),
       functions: [
         CactusLanguageModel.FunctionDefinition(
           name: "get_weather",

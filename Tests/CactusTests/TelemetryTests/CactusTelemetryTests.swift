@@ -4,10 +4,6 @@ import Foundation
 import Testing
 import XCTest
 
-#if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
-  import SQLite3
-#endif
-
 @Suite(.serialized)
 final class `CactusTelemetry tests` {
   deinit {
@@ -55,48 +51,47 @@ let nanosecondsPerSecond = UInt64(1_000_000_000)
 
 #if SWIFT_CACTUS_SUPPORTS_DEFAULT_TELEMETRY
   final class CactusDefaultTelemetryTests: XCTestCase {
-    override func setUp() async throws {
-      try await super.setUp()
-      try cleanupCactusUtilsDatabase()
-    }
-
     override func tearDown() {
       super.tearDown()
       CactusTelemetry.reset()
     }
 
     func testRegistersDeviceWithClientWhenConfigured() async throws {
-      let registersDevice = self.expectation(description: "registers")
+      try await withBlankCactusUtilsDatabase {
+        let registersDevice = self.expectation(description: "registers")
 
-      let device = CactusTelemetry.DeviceMetadata.mock()
+        let device = CactusTelemetry.DeviceMetadata.mock()
 
-      let client = DefaultWrapperTelemetryClient { id in
-        let realId = try await defaultClient.deviceId()
-        expectNoDifference(realId, id)
-        registersDevice.fulfill()
-      } onEventSent: { _ in
+        let client = DefaultWrapperTelemetryClient { id in
+          let realId = try await defaultClient.deviceId()
+          expectNoDifference(realId, id)
+          registersDevice.fulfill()
+        } onEventSent: { _ in
+        }
+
+        CactusTelemetry.configure(testTelemetryToken, deviceMetadata: device, client: client)
+        await self.fulfillment(of: [registersDevice], timeout: 10)
       }
-
-      CactusTelemetry.configure(testTelemetryToken, deviceMetadata: device, client: client)
-      await self.fulfillment(of: [registersDevice], timeout: 10)
     }
 
     func testCanSendEventsAfterRegisteringDevice() async throws {
-      let registersDevice = self.expectation(description: "registers")
-      let sendsEvent = self.expectation(description: "sends")
+      try await withBlankCactusUtilsDatabase {
+        let registersDevice = self.expectation(description: "registers")
+        let sendsEvent = self.expectation(description: "sends")
 
-      let client = DefaultWrapperTelemetryClient { _ in
-        registersDevice.fulfill()
-      } onEventSent: { e in
-        expectNoDifference(testEvent.name, e.name)
-        sendsEvent.fulfill()
+        let client = DefaultWrapperTelemetryClient { _ in
+          registersDevice.fulfill()
+        } onEventSent: { e in
+          expectNoDifference(testEvent.name, e.name)
+          sendsEvent.fulfill()
+        }
+
+        CactusTelemetry.configure(testTelemetryToken, deviceMetadata: .mock(), client: client)
+        await self.fulfillment(of: [registersDevice], timeout: 10)
+
+        CactusTelemetry.send(testEvent)
+        await self.fulfillment(of: [sendsEvent], timeout: 10)
       }
-
-      CactusTelemetry.configure(testTelemetryToken, deviceMetadata: .mock(), client: client)
-      await self.fulfillment(of: [registersDevice], timeout: 10)
-
-      CactusTelemetry.send(testEvent)
-      await self.fulfillment(of: [sendsEvent], timeout: 10)
     }
   }
 
@@ -129,26 +124,7 @@ let nanosecondsPerSecond = UInt64(1_000_000_000)
     .default
   }
 
-  private func cleanupCactusUtilsDatabase() throws {
-    #if os(macOS)
-      let url = URL(fileURLWithPath: "~/.cactus.db")
-    #else
-      let documentsDirectory =
-        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-      let url = documentsDirectory.appendingPathComponent("cactus.db")
-    #endif
-
-    var handle: OpaquePointer?
-    _ = sqlite3_open_v2(url.relativePath, &handle, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nil)
-    sqlite3_exec(handle, "DELETE FROM app_registrations;", nil, nil, nil)
-  }
 #endif
-
-extension CactusTelemetry.DeviceMetadata {
-  fileprivate static func mock() -> Self {
-    Self(model: "mac", os: "macOS", osVersion: "26.1", deviceId: UUID().uuidString, brand: "Apple")
-  }
-}
 
 private let testEvent = CactusTelemetry.LanguageModelInitEvent(
   configuration: CactusLanguageModel.Configuration(

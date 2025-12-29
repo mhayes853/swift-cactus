@@ -1,12 +1,10 @@
 {
-  "decode_tokens" : 57,
-  "function_calls" : [
-
-  ],
-  "prefill_tokens" : 210,
-  "response" : "I don't have access to real-time data or the ability to retrieve current weather and population information for Berkeley. However, I can help you find out more about it if you'd like. If there's anything else related to Berkeley that might be helpful, feel free to ask!<|im_end|>",
-  "time_to_first_token_ms" : 624.89,
-  "tokens_per_second" : 45.29,
-  "total_time_ms" : 1861.26,
-  "total_tokens" : 267
+  "decode_tokens": 57,
+  "function_calls": [],
+  "prefill_tokens": 210,
+  "response": "I don't have access to real-time data or the ability to retrieve current weather and population information for Berkeley. However, I can help you find out more about it if you'd like. If there's anything else related to Berkeley that might be helpful, feel free to ask!<|im_end|>",
+  "time_to_first_token_ms": 624.89,
+  "tokens_per_second": 45.29,
+  "total_time_ms": 1861.26,
+  "total_tokens": 267
 }

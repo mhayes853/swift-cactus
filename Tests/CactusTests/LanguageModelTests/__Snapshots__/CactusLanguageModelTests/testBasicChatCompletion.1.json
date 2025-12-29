@@ -1,62 +1,54 @@
 [
   {
-    "completion" : {
-      "decode_tokens" : 44,
-      "function_calls" : [
-
-      ],
-      "prefill_tokens" : 9,
-      "response" : "That's correct! What would you like to discuss or explore next? Are you interested in a specific topic, perhaps technology, literature, science fiction, or something else? Let me know what's on your mind.<|im_end|>",
-      "time_to_first_token_ms" : 39.54,
-      "tokens_per_second" : 111.65,
-      "total_time_ms" : 424.66,
-      "total_tokens" : 53
+    "completion": {
+      "decode_tokens": 44,
+      "function_calls": [],
+      "prefill_tokens": 9,
+      "response": "That's correct! What would you like to discuss or explore next? Are you interested in a specific topic, perhaps technology, literature, science fiction, or something else? Let me know what's on your mind.<|im_end|>",
+      "time_to_first_token_ms": 39.54,
+      "tokens_per_second": 111.65,
+      "total_time_ms": 424.66,
+      "total_tokens": 53
     },
-    "slug" : "lfm2-350m"
+    "slug": "lfm2-350m"
   },
   {
-    "completion" : {
-      "decode_tokens" : 200,
-      "function_calls" : [
-
-      ],
-      "prefill_tokens" : 34,
-      "response" : "<think>\nOkay, the user is asking about the meaning of life. First, I need to address their question in a way that's both respectful and open-ended. They might be looking for a philosophical answer or perhaps they're interested in personal insights.\n\nI should acknowledge that there isn't one \"right\" answer because each person has different experiences and values. It's important to highlight that meaning can vary widely depending on individual perspectives and circumstances.\n\nI should also consider if there are cultural or personal factors influencing how people define life's purpose. Maybe mention common themes like happiness, purpose, legacy, love etc., but not just list them without explanation.\n\nIt's crucial to frame the response with empathy towards the user’s possible intent—whether they seek advice on their own journey of self-discovery or maybe want a broader understanding of human experience. I need to ensure my answer is both informative and compassionate.\n<\/think>\n\nThe question of *what* defines life is deeply personal and subjective, as no single \"meaning",
-      "time_to_first_token_ms" : 125.28,
-      "tokens_per_second" : 51.06,
-      "total_time_ms" : 4022.8,
-      "total_tokens" : 234
+    "completion": {
+      "decode_tokens": 200,
+      "function_calls": [],
+      "prefill_tokens": 34,
+      "response": "<think>\nOkay, the user is asking about the meaning of life. First, I need to address their question in a way that's both respectful and open-ended. They might be looking for a philosophical answer or perhaps they're interested in personal insights.\n\nI should acknowledge that there isn't one \"right\" answer because each person has different experiences and values. It's important to highlight that meaning can vary widely depending on individual perspectives and circumstances.\n\nI should also consider if there are cultural or personal factors influencing how people define life's purpose. Maybe mention common themes like happiness, purpose, legacy, love etc., but not just list them without explanation.\n\nIt's crucial to frame the response with empathy towards the user’s possible intent—whether they seek advice on their own journey of self-discovery or maybe want a broader understanding of human experience. I need to ensure my answer is both informative and compassionate.\n<\/think>\n\nThe question of *what* defines life is deeply personal and subjective, as no single \"meaning",
+      "time_to_first_token_ms": 125.28,
+      "tokens_per_second": 51.06,
+      "total_time_ms": 4022.8,
+      "total_tokens": 234
     },
-    "slug" : "qwen3-0.6"
+    "slug": "qwen3-0.6"
   },
   {
-    "completion" : {
-      "decode_tokens" : 54,
-      "function_calls" : [
-
-      ],
-      "prefill_tokens" : 14,
-      "response" : "I'm an AI assistant specialized in generating ideas and facilitating creative thinking. I can help users explore new concepts, develop innovative solutions, and think outside the box to find novel approaches to their challenges. What's your problem or area where you'd like some fresh perspectives?<|im_end|>",
-      "time_to_first_token_ms" : 58.09,
-      "tokens_per_second" : 76.43,
-      "total_time_ms" : 751.55,
-      "total_tokens" : 68
+    "completion": {
+      "decode_tokens": 54,
+      "function_calls": [],
+      "prefill_tokens": 14,
+      "response": "I'm an AI assistant specialized in generating ideas and facilitating creative thinking. I can help users explore new concepts, develop innovative solutions, and think outside the box to find novel approaches to their challenges. What's your problem or area where you'd like some fresh perspectives?<|im_end|>",
+      "time_to_first_token_ms": 58.09,
+      "tokens_per_second": 76.43,
+      "total_time_ms": 751.55,
+      "total_tokens": 68
     },
-    "slug" : "smollm2-360m"
+    "slug": "smollm2-360m"
   },
   {
-    "completion" : {
-      "decode_tokens" : 200,
-      "function_calls" : [
-
-      ],
-      "prefill_tokens" : 31,
-      "response" : "As a philosophical inquiry, our fundamental question is not a single statement but rather an evolving concept.  It's about the *very* nature of existence, specifically within the context of human consciousness and subjective experience.\n\nFor me, \"the meaning of life\" stands as a bridge between our present reality and something far beyond – perhaps even beyond any scientific or philosophical framework we might currently conceive.  It's not about finding some grand narrative that encapsulates all aspects of human experience; it’s more about finding connection, purpose, and authenticity in striving for what feels right within an uncertain world called \"life.\"\n\nEssentially it is:\n*   Finding meaning through experiencing everything: to appreciate beauty & struggle; find values & ultimately find purpose in making choices\n*   Creating value because things feel wrong\/bad – but with the intention to make them better. What *does* become worthwhile when life becomes difficult?\n\n\nWhat do you think? Are there specific aspects of \"the meaning of life",
-      "time_to_first_token_ms" : 58.05,
-      "tokens_per_second" : 96.63,
-      "total_time_ms" : 2117.39,
-      "total_tokens" : 231
+    "completion": {
+      "decode_tokens": 12,
+      "function_calls": [],
+      "prefill_tokens": 31,
+      "response": "As a philosophical inquiry, our fundamental question is not a single statement but rather an evolving concept.  It's about the *very* nature of existence, specifically within the context of human consciousness and subjective experience.\n\nFor me, \"the meaning of life\" stands as a bridge between our present reality and something far beyond – perhaps even beyond any scientific or philosophical framework we might currently conceive.  It's not about finding some grand narrative that encapsulates all aspects of human experience; it’s more about finding connection, purpose, and authenticity in striving for what feels right within an uncertain world called \"life.\"\n\nEssentially it is:\n*   Finding meaning through experiencing everything: to appreciate beauty & struggle; find values & ultimately find purpose in making choices\n*   Creating value because things feel wrong\/bad – but with the intention to make them better. What *does* become worthwhile when life becomes difficult?\n\n\nWhat do you think? Are there specific aspects of \"the meaning of life",
+      "time_to_first_token_ms": 58.05,
+      "tokens_per_second": 96.63,
+      "total_time_ms": 2117.39,
+      "total_tokens": 231
     },
-    "slug" : "gemma3-270m"
+    "slug": "gemma3-270m"
   }
 ]
