@@ -4,7 +4,10 @@
 
   extension CactusTranscriptionStream {
     /// Inserts an `AVAudioPCMBuffer` into the stream.
-    public func insert(buffer: AVAudioPCMBuffer) async throws {
+    @discardableResult
+    public func insert(
+      buffer: AVAudioPCMBuffer
+    ) async throws -> CactusStreamTranscriber.ProcessedTranscription {
       try await self.insert(buffer: buffer.whisperPCMBytes())
     }
   }
