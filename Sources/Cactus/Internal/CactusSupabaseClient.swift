@@ -46,8 +46,13 @@ extension CactusSupabaseClient {
 // MARK: - Model Download URL
 
 extension CactusSupabaseClient {
-  func modelDownloadURL(for slug: String) -> URL {
-    URL(string: "\(self.cactusSupabaseURL)/storage/v1/object/public/cactus-models/\(slug).zip")!
+  func modelDownloadURL(for request: CactusLanguageModel.PlatformDownloadRequest) -> URL {
+    let base =
+      "\(self.cactusSupabaseURL)/storage/v1/object/public/cactus-models/\(request.version.rawValue)/\(request.quantization.rawValue)"
+    if let pro = request.pro {
+      return URL(string: "\(base)/pro/\(pro.rawValue)/\(request.slug).zip")!
+    }
+    return URL(string: "\(base)/\(request.slug).zip")!
   }
 
   func audioModelDownloadURL(for slug: String) -> URL {

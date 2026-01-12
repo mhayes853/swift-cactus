@@ -13,8 +13,8 @@ extension CactusLanguageModel {
     try await client.store(for: $audioDownloadQuery(for: slug)).fetch()
   }
 
-  static let testFunctionCallingModelSlug = "qwen3-0.6"
-  static let testModelSlug = "qwen3-0.6"
+  static let testFunctionCallingModelSlug = "qwen3-0.6b"
+  static let testModelSlug = "qwen3-0.6b"
   static let testVLMSlug = "lfm2-vl-450m"
   static let testTranscribeSlug = "whisper-small"
 

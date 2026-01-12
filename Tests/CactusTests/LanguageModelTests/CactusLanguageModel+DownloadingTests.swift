@@ -8,7 +8,7 @@ struct `CactusLanguageModelDownloading tests` {
   @Test
   func `Task Not Finished By Default`() async throws {
     let task = CactusLanguageModel.downloadModelTask(
-      from: CactusLanguageModel.modelDownloadURL(slug: CactusLanguageModel.testModelSlug),
+      request: .whisperSmall(),
       to: self.temporaryURL()
     )
     expectNoDifference(task.isFinished, false)
@@ -21,7 +21,7 @@ struct `CactusLanguageModelDownloading tests` {
     let observedIsPaused = Lock([Bool]())
 
     let task = CactusLanguageModel.downloadModelTask(
-      slug: CactusLanguageModel.testModelSlug,
+      request: .whisperSmall(),
       to: self.temporaryURL()
     )
 
@@ -97,7 +97,7 @@ struct `CactusLanguageModelDownloading tests` {
   func `Cancel Download From Concurrency Task`() async throws {
     let task = Task {
       try await CactusLanguageModel.downloadModel(
-        from: CactusLanguageModel.modelDownloadURL(slug: CactusLanguageModel.testModelSlug),
+        request: .whisperSmall(),
         to: self.temporaryURL()
       )
     }
@@ -111,7 +111,7 @@ struct `CactusLanguageModelDownloading tests` {
   @Test
   func `Cancel Download From Task`() async throws {
     let task = CactusLanguageModel.downloadModelTask(
-      from: CactusLanguageModel.modelDownloadURL(slug: CactusLanguageModel.testModelSlug),
+      request: .whisperSmall(),
       to: self.temporaryURL()
     )
 
