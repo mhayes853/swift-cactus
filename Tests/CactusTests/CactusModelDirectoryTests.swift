@@ -15,46 +15,52 @@
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
 
       expectNoDifference(directory.storedModels(), [])
-      expectNoDifference(directory.storedModelURL(for: CactusLanguageModel.testModelSlug), nil)
+      expectNoDifference(
+        directory.storedModelURL(for: CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)),
+        nil
+      )
     }
 
     @Test
     func `Stores Model When Loading`() async throws {
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
 
+      let request = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)
       let url = try await directory.modelURL(
-        for: CactusLanguageModel.testModelSlug,
+        for: request,
         configuration: self.configuration
       )
-      expectNoDifference(directory.storedModelURL(for: CactusLanguageModel.testModelSlug), url)
-      expectNoDifference(directory.storedModels().map(\.slug), [CactusLanguageModel.testModelSlug])
-      expectNoDifference(directory.storedModels().map(\.url), [url])
+      expectSameLocation(directory.storedModelURL(for: request), url)
+      expectNoDifference(directory.storedModels().map(\.request), [request])
+      expectSameLocation(directory.storedModels().map(\.url).first, url)
     }
 
     @Test
     func `Removes Model From Storage`() async throws {
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
 
+      let request = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)
       _ = try await directory.modelURL(
-        for: CactusLanguageModel.testModelSlug,
+        for: request,
         configuration: self.configuration
       )
-      try directory.removeModel(with: CactusLanguageModel.testModelSlug)
+      try directory.removeModel(with: request)
 
       expectNoDifference(directory.storedModels(), [])
-      expectNoDifference(directory.storedModelURL(for: CactusLanguageModel.testModelSlug), nil)
+      expectNoDifference(directory.storedModelURL(for: request), nil)
     }
 
     @Test
     func `Shares Model Download Tasks`() async throws {
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
 
+      let request = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)
       let t1 = try directory.modelDownloadTask(
-        for: CactusLanguageModel.testModelSlug,
+        for: request,
         configuration: self.configuration
       )
       let t2 = try directory.modelDownloadTask(
-        for: CactusLanguageModel.testModelSlug,
+        for: request,
         configuration: self.configuration
       )
       expectNoDifference(t1 === t2, true)
@@ -66,20 +72,22 @@
 
       expectNoDifference(directory.activeDownloadTasks.isEmpty, true)
 
+      let request = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)
       let t1 = try directory.modelDownloadTask(
-        for: CactusLanguageModel.testModelSlug,
+        for: request,
         configuration: self.configuration
       )
+      let vlmRequest = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testVLMSlug)
       let t2 = try directory.modelDownloadTask(
-        for: CactusLanguageModel.testVLMSlug,
+        for: vlmRequest,
         configuration: self.configuration
       )
       expectNoDifference(
-        directory.activeDownloadTasks[CactusLanguageModel.testModelSlug] === t1,
+        directory.activeDownloadTasks[request] === t1,
         true
       )
       expectNoDifference(
-        directory.activeDownloadTasks[CactusLanguageModel.testVLMSlug] === t2,
+        directory.activeDownloadTasks[vlmRequest] === t2,
         true
       )
     }
@@ -90,13 +98,14 @@
       func `Observes Newly Added Download Task`() async throws {
         let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
 
-        let tasks = Lock([[String: CactusLanguageModel.DownloadTask]]())
+        let tasks = Lock([[CactusLanguageModel.PlatformDownloadRequest: CactusLanguageModel.DownloadTask]]())
         let token = observe {
           tasks.withLock { $0.append(directory.activeDownloadTasks) }
         }
 
+        let request = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)
         let t1 = try directory.modelDownloadTask(
-          for: CactusLanguageModel.testModelSlug,
+          for: request,
           configuration: self.configuration
         )
         t1.resume()
@@ -106,7 +115,7 @@
 
         tasks.withLock {
           expectNoDifference($0[0].isEmpty, true)
-          expectNoDifference($0[1][CactusLanguageModel.testModelSlug] === t1, true)
+          expectNoDifference($0[1][request] === t1, true)
           expectNoDifference($0[2].isEmpty, true)
         }
         token.cancel()
@@ -117,15 +126,16 @@
     func `Uses New Download Task After Completion`() async throws {
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
 
+      let request = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)
       let t1 = try directory.modelDownloadTask(
-        for: CactusLanguageModel.testModelSlug,
+        for: request,
         configuration: self.configuration
       )
       t1.resume()
       try await t1.waitForCompletion()
 
       let t2 = try directory.modelDownloadTask(
-        for: CactusLanguageModel.testModelSlug,
+        for: request,
         configuration: self.configuration
       )
       expectNoDifference(t1 === t2, false)
@@ -137,13 +147,13 @@
         let count = Lock(0)
 
         func downloadModelTask(
-          slug: String,
+          request: CactusLanguageModel.PlatformDownloadRequest,
           to destination: URL,
           configuration: URLSessionConfiguration
         ) -> CactusLanguageModel.DownloadTask {
           self.count.withLock { $0 += 1 }
           return CactusLanguageModel.downloadModelTask(
-            slug: slug,
+            request: request,
             to: destination,
             configuration: configuration
           )
@@ -156,12 +166,13 @@
         downloadTaskCreator: creator
       )
 
+      let request = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)
       let url = try await directory.modelURL(
-        for: CactusLanguageModel.testModelSlug,
+        for: request,
         configuration: self.configuration
       )
       let url2 = try await directory.modelURL(
-        for: CactusLanguageModel.testModelSlug,
+        for: request,
         configuration: self.configuration
       )
       expectNoDifference(url, url2)
@@ -173,6 +184,16 @@
       configuration.protocolClasses = [TestURLProtocol.self]
       return configuration
     }
+  }
+
+  private func expectSameLocation(_ lhs: URL?, _ rhs: URL?) {
+    guard let lhs, let rhs else {
+      expectNoDifference(lhs, rhs)
+      return
+    }
+    let lhsPath = lhs.resolvingSymlinksInPath().standardizedFileURL.path
+    let rhsPath = rhs.resolvingSymlinksInPath().standardizedFileURL.path
+    expectNoDifference(lhsPath, rhsPath)
   }
 
   private final class TestURLProtocol: URLProtocol, @unchecked Sendable {
