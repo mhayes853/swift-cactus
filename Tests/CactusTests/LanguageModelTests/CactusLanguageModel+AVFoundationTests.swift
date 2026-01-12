@@ -13,7 +13,7 @@
         let transcription: CactusLanguageModel.Transcription
       }
 
-      let modelURL = try await CactusLanguageModel.testAudioModelURL(slug: "whisper-small")
+      let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
       let model = try CactusLanguageModel(from: modelURL)
 
       let buffer = try testAudioPCMBuffer()

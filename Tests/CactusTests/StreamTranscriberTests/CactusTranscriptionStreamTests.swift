@@ -13,7 +13,7 @@ struct `CactusTranscriptionStream tests` {
   #if canImport(AVFoundation)
     @Test
     func `Async Sequence Snapshot From Stream Inserts`() async throws {
-      let modelURL = try await CactusLanguageModel.testAudioModelURL(slug: "whisper-small")
+      let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
       let stream = try CactusTranscriptionStream(modelURL: modelURL, contextSize: 2048)
 
       let recordingTask = Task {

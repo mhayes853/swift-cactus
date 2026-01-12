@@ -24,7 +24,7 @@ struct `CactusStreamTranscriber tests` {
 
   @Test
   func `Stream Transcriber Does Not Deallocate Model Pointer`() async throws {
-    let modelURL = try await CactusLanguageModel.testAudioModelURL(slug: "whisper-small")
+    let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
     let modelPointer = try #require(cactus_init(modelURL.nativePath, 2048, nil))
     defer { cactus_destroy(modelPointer) }
 
@@ -46,7 +46,7 @@ struct `CactusStreamTranscriber tests` {
   #if canImport(AVFoundation)
     @Test
     func `Process Snapshot From Audio Slice`() async throws {
-      let modelURL = try await CactusLanguageModel.testAudioModelURL(slug: "whisper-small")
+      let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
       let transcriber = try CactusStreamTranscriber(modelURL: modelURL, contextSize: 2048)
 
       let fullBuffer = try testAudioPCMBuffer()
@@ -64,7 +64,7 @@ struct `CactusStreamTranscriber tests` {
 
     @Test
     func `Finalize Snapshot After Chunked Inserts`() async throws {
-      let modelURL = try await CactusLanguageModel.testAudioModelURL(slug: "whisper-small")
+      let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
       let transcriber = try CactusStreamTranscriber(modelURL: modelURL, contextSize: 2048)
 
       let fullBuffer = try testAudioPCMBuffer()
@@ -93,7 +93,7 @@ struct `CactusStreamTranscriber tests` {
 
     @Test
     func `Stream Transcriber Pointer Is Not Deallocated When Not Managed`() async throws {
-      let modelURL = try await CactusLanguageModel.testAudioModelURL(slug: "whisper-small")
+      let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
       let modelPointer = try #require(cactus_init(modelURL.nativePath, 2048, nil))
       defer { cactus_destroy(modelPointer) }
 

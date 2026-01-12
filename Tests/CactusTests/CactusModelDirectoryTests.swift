@@ -16,7 +16,7 @@
 
       expectNoDifference(directory.storedModels(), [])
       expectNoDifference(
-        directory.storedModelURL(for: CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)),
+        directory.storedModelURL(for: CactusLanguageModel.testModelRequest),
         nil
       )
     }
@@ -24,8 +24,7 @@
     @Test
     func `Stores Model When Loading`() async throws {
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
-
-      let request = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)
+      let request = CactusLanguageModel.testModelRequest
       let url = try await directory.modelURL(
         for: request,
         configuration: self.configuration
@@ -39,7 +38,7 @@
     func `Removes Model From Storage`() async throws {
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
 
-      let request = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)
+      let request = CactusLanguageModel.testModelRequest
       _ = try await directory.modelURL(
         for: request,
         configuration: self.configuration
@@ -54,7 +53,7 @@
     func `Shares Model Download Tasks`() async throws {
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
 
-      let request = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)
+      let request = CactusLanguageModel.testModelRequest
       let t1 = try directory.modelDownloadTask(
         for: request,
         configuration: self.configuration
@@ -72,12 +71,12 @@
 
       expectNoDifference(directory.activeDownloadTasks.isEmpty, true)
 
-      let request = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)
+      let request = CactusLanguageModel.testModelRequest
       let t1 = try directory.modelDownloadTask(
         for: request,
         configuration: self.configuration
       )
-      let vlmRequest = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testVLMSlug)
+      let vlmRequest = CactusLanguageModel.testVLMRequest
       let t2 = try directory.modelDownloadTask(
         for: vlmRequest,
         configuration: self.configuration
@@ -98,12 +97,14 @@
       func `Observes Newly Added Download Task`() async throws {
         let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
 
-        let tasks = Lock([[CactusLanguageModel.PlatformDownloadRequest: CactusLanguageModel.DownloadTask]]())
+        let tasks = Lock(
+          [[CactusLanguageModel.PlatformDownloadRequest: CactusLanguageModel.DownloadTask]]()
+        )
         let token = observe {
           tasks.withLock { $0.append(directory.activeDownloadTasks) }
         }
 
-        let request = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)
+        let request = CactusLanguageModel.testModelRequest
         let t1 = try directory.modelDownloadTask(
           for: request,
           configuration: self.configuration
@@ -126,7 +127,7 @@
     func `Uses New Download Task After Completion`() async throws {
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
 
-      let request = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)
+      let request = CactusLanguageModel.testModelRequest
       let t1 = try directory.modelDownloadTask(
         for: request,
         configuration: self.configuration
@@ -166,7 +167,7 @@
         downloadTaskCreator: creator
       )
 
-      let request = CactusLanguageModel.PlatformDownloadRequest(slug: CactusLanguageModel.testModelSlug)
+      let request = CactusLanguageModel.testModelRequest
       let url = try await directory.modelURL(
         for: request,
         configuration: self.configuration
