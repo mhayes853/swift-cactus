@@ -5,6 +5,27 @@ import Foundation
 
 /// A thread-safe wrapper around ``CactusStreamTranscriber`` that exposes an async sequence
 /// of processed transcriptions.
+///
+/// ```swift
+/// import AVFoundation
+///
+/// let modelURL = try await CactusModelsDirectory.shared
+///   .audioModelURL(for: "whisper-small")
+/// let stream = try CactusTranscriptionStream(modelURL: modelURL, contextSize: 2048)
+///
+/// let task = Task {
+///   for try await chunk in stream {
+///     print(chunk.confirmed, chunk.pending)
+///   }
+/// }
+///
+/// let buffer = try AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount)
+/// try await stream.insert(buffer: buffer)
+/// let finalized = try await stream.finish()
+/// print(finalized.confirmed)
+///
+/// _ = await task.value
+/// ```
 public final class CactusTranscriptionStream: Sendable {
   public typealias Element = CactusStreamTranscriber.ProcessedTranscription
 
@@ -98,7 +119,8 @@ extension CactusTranscriptionStream: AsyncSequence {
 
 extension CactusTranscriptionStream {
   /// Inserts a PCM audio buffer into the stream.
-  public func insert(buffer: [UInt8]) async throws {
+  @discardableResult
+  public func insert(buffer: [UInt8]) async throws -> Element {
     do {
       let transcription = try await self.transcriber.insertAndProcess(buffer: buffer)
       self.state.withLock { state in
@@ -106,6 +128,7 @@ extension CactusTranscriptionStream {
           handler(transcription)
         }
       }
+      return transcription
     } catch {
       self.state.withLock { state in
         for handler in state.errorHandlers.values {
@@ -117,7 +140,8 @@ extension CactusTranscriptionStream {
   }
 
   /// Inserts a PCM audio buffer into the stream.
-  public func insert(buffer: UnsafeBufferPointer<UInt8>) async throws {
+  @discardableResult
+  public func insert(buffer: UnsafeBufferPointer<UInt8>) async throws -> Element {
     try await self.insert(buffer: Array(buffer))
   }
 }
@@ -170,9 +194,9 @@ extension CactusTranscriptionStream {
     }
     return CactusSubscription {
       self.state.withLock { state in
-        _ = state.handlers.removeValue(forKey: id)
-        _ = state.errorHandlers.removeValue(forKey: id)
-        _ = state.finishers.removeValue(forKey: id)
+        state.handlers.removeValue(forKey: id)
+        state.errorHandlers.removeValue(forKey: id)
+        state.finishers.removeValue(forKey: id)
       }
     }
   }

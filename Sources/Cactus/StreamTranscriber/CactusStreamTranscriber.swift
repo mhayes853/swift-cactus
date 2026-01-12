@@ -3,7 +3,11 @@ import Foundation
 
 // MARK: - CactusStreamTranscriber
 
-/// A class for streaming audio transcriptions in real time.
+/// A low-level class for streaming audio transcriptions in real time.
+///
+/// This class provides a low-level interface for streaming audio transcriptions in real time, but
+/// is not thread-safe or conforms to `Sendable`. Use ``CactusTranscriptionStream`` for a
+/// higher-level thread-safe alternative.
 public final class CactusStreamTranscriber {
   private let isStreamPointerManaged: Bool
   private static let responseBufferSize = 8192

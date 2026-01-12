@@ -78,6 +78,32 @@ let completion = try model.chatCompletion(
 }
 ```
 
+### Streaming Transcription
+
+You can stream audio transcription results using `CactusTranscriptionStream`, which vends an async sequence of
+processed transcriptions.
+
+```swift
+import AVFoundation
+
+let modelURL = try await CactusModelsDirectory.shared
+  .audioModelURL(for: "whisper-small")
+let stream = try CactusTranscriptionStream(modelURL: modelURL, contextSize: 2048)
+
+let task = Task {
+  for try await chunk in stream {
+    print(chunk.confirmed, chunk.pending)
+  }
+}
+
+let buffer = try AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount)
+try await stream.insert(buffer: buffer)
+let finalized = try await stream.finish()
+print(finalized.confirmed)
+
+_ = await task.value
+```
+
 ### Function Calling
 
 You can pass a list of function definitions to the model, which the model can then invoke based on the schema of arguments you provide. The function calling format is based on the [JSON Schema format](https://datatracker.ietf.org/doc/html/draft-handrews-json-schema-validation-01).
