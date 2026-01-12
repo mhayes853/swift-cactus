@@ -14,7 +14,7 @@ extension CactusLanguageModel {
   }
 
   static let testFunctionCallingModelSlug = "qwen3-0.6"
-  static let testModelSlug = "lfm2-350m"
+  static let testModelSlug = "qwen3-0.6"
   static let testVLMSlug = "lfm2-vl-450m"
   static let testTranscribeSlug = "whisper-small"
 

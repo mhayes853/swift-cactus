@@ -2,7 +2,7 @@
   ▿ 3 elements
     ▿ Result
       - documentId: 5
-      - score: -0.013839722
+      - score: -0.0138549805
     ▿ Result
       - documentId: 6
       - score: -0.24963379
@@ -15,10 +15,10 @@
       - score: 0.18164062
     ▿ Result
       - documentId: 5
-      - score: 0.07904053
+      - score: 0.07910156
     ▿ Result
       - documentId: 6
-      - score: -0.22790527
+      - score: -0.22802734
   ▿ 3 elements
     ▿ Result
       - documentId: 5

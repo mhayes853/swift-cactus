@@ -422,7 +422,7 @@ extension CactusIndex {
 
     var results = Array(repeating: [Query.Result](), count: queries.count)
     for (option, batch) in indexedBatches {
-      let optionsJSON = String(decoding: try Self.queryEncoder.encode(option), as: UTF8.self)
+      let optionsJSON = String(decoding: try ffiEncoder.encode(option), as: UTF8.self)
       let embeddingPointers = try EmbeddingBatchPointers(
         embeddings: batch.map(\.query.embeddings),
         embeddingDimensions: self.embeddingDimensions
@@ -460,12 +460,6 @@ extension CactusIndex.Query {
 }
 
 extension CactusIndex {
-  private static let queryEncoder: JSONEncoder = {
-    let encoder = JSONEncoder()
-    encoder.outputFormatting = [.withoutEscapingSlashes]
-    return encoder
-  }()
-
   private struct FFIOptions: Hashable, Sendable, Codable {
     var topK: Int
     var scoreThreshold: Float
