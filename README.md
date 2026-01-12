@@ -20,8 +20,7 @@ import Cactus
 // (OPTIONAL) For NPU acceleration, email founders@cactuscompute.com to obtain a pro key.
 try await Cactus.enablePro(key: "your_pro_key_here")
 
-let modelURL = try await CactusModelsDirectory.shared
-  .modelURL(for: "qwen3-0.6")
+let modelURL = try await CactusModelsDirectory.shared.modelURL(for: .qwen3_0_6b())
 let model = try CactusLanguageModel(from: modelURL)
 
 let completion = try model.chatCompletion(
@@ -86,8 +85,7 @@ processed transcriptions.
 ```swift
 import AVFoundation
 
-let modelURL = try await CactusModelsDirectory.shared
-  .audioModelURL(for: "whisper-small")
+let modelURL = try await CactusModelsDirectory.shared.modelURL(for: .whisperSmall())
 let stream = try CactusTranscriptionStream(modelURL: modelURL, contextSize: 2048)
 
 let task = Task {
@@ -175,8 +173,7 @@ print(completion.functionCalls)
 VLMs allow you to pass images to the model for analysis. You can pass an array of URLs to image files when creating a `CactusLanguageModel.ChatMessage`.
 
 ```swift
-let modelURL = try await CactusModelsDirectory.shared
-  .modelURL(for: "lfm2-vl-450m")
+let modelURL = try await CactusModelsDirectory.shared.modelURL(for: .lfm2Vl_450m())
 let model = try CactusLanguageModel(from: modelURL)
 
 let completion = try model.chatCompletion(
@@ -192,8 +189,7 @@ let completion = try model.chatCompletion(
 Audio models allow you to transcribe audio files. You can pass the `URL` of an audio file to `CactusLanguageModel.transcribe` in order to transcribe it.
 
 ```swift
-let modelURL = try await CactusModelsDirectory.shared
-  .audioModelURL(for: "whisper-small")
+let modelURL = try await CactusModelsDirectory.shared.modelURL(for: .whisperSmall())
 let model = try CactusLanguageModel(from: modelURL)
 
 // See https://huggingface.co/openai/whisper-small#usage for more info on how to structure a 
