@@ -5,7 +5,7 @@ import Testing
 
 @Suite
 final class `FileMemoryLocation tests`: Sendable {
-  private let url = temporaryModelDirectory().appending(path: "\(UUID()).json")
+  private let url = temporaryModelDirectory().appendingPathComponent("\(UUID()).json")
 
   init() throws {
     try FileManager.default.createDirectory(
