@@ -6,6 +6,12 @@ BUILD_DIR="$SCRIPT_DIR/build"
 rm -drf "$BUILD_DIR"
 mkdir "$BUILD_DIR"
 
+COMMIT_SHA="${1:-}"
+CLONE_DESC="main branch"
+if [ -n "$COMMIT_SHA" ]; then
+    CLONE_DESC="commit $COMMIT_SHA"
+fi
+
 if [ -z "$ANDROID_NDK_HOME" ]; then
     if [ -n "$ANDROID_HOME" ]; then
         ANDROID_NDK_HOME=$(ls -d "$ANDROID_HOME/ndk/"* 2>/dev/null | sort -V | tail -1)
@@ -14,9 +20,44 @@ if [ -z "$ANDROID_NDK_HOME" ]; then
     fi
 fi
 
-echo "🔧 Cloning Cactus Repo"
+echo "🔧 Cloning Cactus Repo from $CLONE_DESC"
 CACTUS_ROOT_DIR="$BUILD_DIR/cactus"
 git clone git@github.com:cactus-compute/cactus.git "$CACTUS_ROOT_DIR"
+if [ -n "$COMMIT_SHA" ]; then
+    git -C "$CACTUS_ROOT_DIR" checkout "$COMMIT_SHA"
+    echo "✅ Checked out Cactus repo at commit $COMMIT_SHA"
+fi
+
+echo "🧹 Removing FEAT_INT8 build flags from CMakeLists.txt files"
+while IFS= read -r -d '' cmake_file; do
+    sed -i.bak \
+        -e '/FEAT_INT8/d' \
+        -e '/__ARM_FEATURE_MATMUL_INT8=1/d' \
+        -e 's/+i8mm//g' \
+        -e '/i8mm/d' \
+        "$cmake_file"
+    rm -f "$cmake_file.bak"
+
+    march_hits=$(rg -n "march=.*i8mm" "$cmake_file" 2>/dev/null || true)
+    if [ -n "$march_hits" ]; then
+        echo "🧾 Updated -march flags in $cmake_file"
+        echo "$march_hits"
+    fi
+done < <(find "$CACTUS_ROOT_DIR" -name CMakeLists.txt -print0)
+
+while IFS= read -r -d '' header_file; do
+    if rg -q "CACTUS_HAS_I8MM" "$header_file"; then
+        sed -i.bak \
+            -E '/^[[:space:]]*#define[[:space:]]+CACTUS_HAS_I8MM[[:space:]]+1[[:space:]]*$/d' \
+            "$header_file"
+        rm -f "$header_file.bak"
+        if rg -q "CACTUS_HAS_I8MM[[:space:]]+1" "$header_file"; then
+            echo "⚠️  CACTUS_HAS_I8MM still set to 1 in $header_file"
+        else
+            echo "✅ Removed CACTUS_HAS_I8MM define from $header_file"
+        fi
+    fi
+done < <(find "$CACTUS_ROOT_DIR/cactus" -name '*.h' -print0)
 
 CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release}
 ANDROID_DIR="$CACTUS_ROOT_DIR/android"
@@ -76,6 +117,8 @@ EOF
 }
 EOF
 
+    zip -r "$ARTIFACT_BUNDLE_PATH.zip" "$ARTIFACT_BUNDLE_PATH"
+    rm -drf "$ARTIFACT_BUNDLE_PATH"
     echo "✅ Finished creating Android artifactbundle"
 }
 
@@ -183,6 +226,8 @@ function build_apple_xcframework() {
 
     echo "✅ Apple XCFramework built:"
     echo "   $XCFRAMEWORK_PATH"
+    zip -r "$XCFRAMEWORK_PATH.zip" "$XCFRAMEWORK_PATH"
+    rm -drf "$XCFRAMEWORK_PATH"
 }
 
 build_android_artifactbundle

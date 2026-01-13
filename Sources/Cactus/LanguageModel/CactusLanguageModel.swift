@@ -175,7 +175,8 @@ extension CactusLanguageModel {
       if let modelSlug {
         self.modelSlug = modelSlug
       } else {
-        self.modelSlug = modelURL.lastPathComponent
+        let splits = modelURL.lastPathComponent.components(separatedBy: "--")
+        self.modelSlug = splits.isEmpty ? modelURL.lastPathComponent : splits[0]
       }
       self.corpusDirectoryURL = corpusDirectoryURL
     }
@@ -354,13 +355,13 @@ extension CactusLanguageModel {
     }
 
     guard result != -1 else {
-      let errorResponse = try Self.ffiDecoder.decode(
+      let errorResponse = try ffiDecoder.decode(
         FFIErrorResponse.self,
         from: responseData
       )
       throw ScoreTokenWindowError(message: errorResponse.error)
     }
-    return try Self.ffiDecoder.decode(TokenWindowScore.self, from: responseData)
+    return try ffiDecoder.decode(TokenWindowScore.self, from: responseData)
   }
 }
 
@@ -699,17 +700,17 @@ extension CactusLanguageModel {
     let functionsJSON =
       functions.isEmpty
       ? nil
-      : String(decoding: try Self.ffiEncoder.encode(functions), as: UTF8.self)
+      : String(decoding: try ffiEncoder.encode(functions), as: UTF8.self)
 
     let messages = messages.map { FFIMessage(message: $0) }
 
     let result = try withTokenCallback(onToken) { userData, onToken in
       cactus_complete(
         self.model,
-        String(decoding: try Self.ffiEncoder.encode(messages), as: UTF8.self),
+        String(decoding: try ffiEncoder.encode(messages), as: UTF8.self),
         buffer,
         maxBufferSize * MemoryLayout<CChar>.stride,
-        String(decoding: try Self.ffiEncoder.encode(options), as: UTF8.self),
+        String(decoding: try ffiEncoder.encode(options), as: UTF8.self),
         functionsJSON,
         onToken,
         userData
@@ -722,7 +723,7 @@ extension CactusLanguageModel {
     }
 
     guard result != -1 else {
-      let response = try? Self.ffiDecoder.decode(
+      let response = try? ffiDecoder.decode(
         FFIErrorResponse.self,
         from: responseData
       )
@@ -739,7 +740,7 @@ extension CactusLanguageModel {
       )
       throw ChatCompletionError.generation(message: response?.error)
     }
-    let completion = try Self.ffiDecoder.decode(ChatCompletion.self, from: responseData)
+    let completion = try ffiDecoder.decode(ChatCompletion.self, from: responseData)
     CactusTelemetry.send(
       CactusTelemetry.LanguageModelCompletionEvent(
         chatCompletion: completion,
@@ -995,7 +996,7 @@ extension CactusLanguageModel {
           prompt,
           buffer,
           maxBufferSize * MemoryLayout<CChar>.stride,
-          String(decoding: try Self.ffiEncoder.encode(options), as: UTF8.self),
+          String(decoding: try ffiEncoder.encode(options), as: UTF8.self),
           onToken,
           userData,
           nil,
@@ -1009,7 +1010,7 @@ extension CactusLanguageModel {
             prompt,
             buffer,
             maxBufferSize * MemoryLayout<CChar>.stride,
-            String(decoding: try Self.ffiEncoder.encode(options), as: UTF8.self),
+            String(decoding: try ffiEncoder.encode(options), as: UTF8.self),
             onToken,
             userData,
             rawBuffer.baseAddress,
@@ -1025,7 +1026,7 @@ extension CactusLanguageModel {
     }
 
     guard result != -1 else {
-      let response = try? Self.ffiDecoder.decode(
+      let response = try? ffiDecoder.decode(
         FFIErrorResponse.self,
         from: responseData
       )
@@ -1042,7 +1043,7 @@ extension CactusLanguageModel {
       )
       throw TranscriptionError.generation(message: response?.error)
     }
-    let transcription = try Self.ffiDecoder.decode(Transcription.self, from: responseData)
+    let transcription = try ffiDecoder.decode(Transcription.self, from: responseData)
     CactusTelemetry.send(
       CactusTelemetry.LanguageModelTranscriptionEvent(
         transcription: transcription,
@@ -1196,26 +1197,6 @@ extension CactusLanguageModel {
       self.configurationFile.hiddenDimensions ?? 1024
     )
   }
-}
-
-extension CactusLanguageModel {
-  private struct FFIErrorResponse: Decodable {
-    let error: String
-  }
-
-  private static let ffiDecoder = {
-    let decoder = JSONDecoder()
-    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-      decoder.allowsJSON5 = true
-    }
-    return decoder
-  }()
-
-  private static let ffiEncoder = {
-    let encoder = JSONEncoder()
-    encoder.outputFormatting = [.withoutEscapingSlashes]
-    return encoder
-  }()
 }
 
 // MARK: - Token Callback

@@ -61,8 +61,8 @@ let package = Package(
         )
       ]
     ),
-    .binaryTarget(name: "CXXCactusDarwin", path: "bin/CXXCactusDarwin.xcframework"),
-    .binaryTarget(name: "CXXCactus", path: "bin/CXXCactus.artifactbundle"),
-    .binaryTarget(name: "cactus_util", path: "bin/cactus_util.xcframework")
+    .binaryTarget(name: "CXXCactusDarwin", path: "bin/CXXCactusDarwin.xcframework.zip"),
+    .binaryTarget(name: "CXXCactus", path: "bin/CXXCactus.artifactbundle.zip"),
+    .binaryTarget(name: "cactus_util", path: "bin/cactus_util.xcframework.zip")
   ]
 )

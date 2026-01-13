@@ -1,5 +1,41 @@
 [
   {
+    "created_at" : 788805874.979918,
+    "description" : "Compact, energy-efficient model, capable of function calling.",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/functiongemma-270m-it.zip",
+    "name" : "FunctionGemma 3 270M",
+    "quantization" : 8,
+    "size_mb" : 182,
+    "slug" : "functiongemma-270m",
+    "supports_tool_calling" : true,
+    "supports_vision" : false,
+    "suppports_completion" : true
+  },
+  {
+    "created_at" : 788805874.979918,
+    "description" : "The most capable model in the LFM 2 series, designed for tool calling.",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-1.2b-tool.zip",
+    "name" : "LFM 2 1.2B Tool",
+    "quantization" : 8,
+    "size_mb" : 729,
+    "slug" : "lfm2-1.2b-tool",
+    "supports_tool_calling" : true,
+    "supports_vision" : false,
+    "suppports_completion" : true
+  },
+  {
+    "created_at" : 782069077.706082,
+    "description" : "Compact, energy-efficient model, capable of general conversation and summarization tasks.",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/v1.5\/gemma-3-270m-it.zip",
+    "name" : "Gemma 3 270M",
+    "quantization" : 8,
+    "size_mb" : 172,
+    "slug" : "gemma3-270m",
+    "supports_tool_calling" : false,
+    "supports_vision" : false,
+    "suppports_completion" : true
+  },
+  {
     "created_at" : 777686695.975939,
     "description" : "Small and capable model in the latest generation of the Qwen series, capable of reasoning and function calling.",
     "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/qwen3-0.6.zip",
@@ -36,18 +72,6 @@
     "suppports_completion" : true
   },
   {
-    "created_at" : 782069077.706082,
-    "description" : "Compact, energy-efficient model, capable of general conversation and summarization tasks.",
-    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/gemma3-270m.zip",
-    "name" : "Gemma 3 270M",
-    "quantization" : 8,
-    "size_mb" : 172,
-    "slug" : "gemma3-270m",
-    "supports_tool_calling" : false,
-    "supports_vision" : false,
-    "suppports_completion" : true
-  },
-  {
     "created_at" : 783022439.778701,
     "description" : "The most capable model in this LFM 2 series, designed for handling more complex reasoning and tasks directly on-device.",
     "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-1.2b.zip",
@@ -69,6 +93,18 @@
     "slug" : "lfm2-vl-450m",
     "supports_tool_calling" : false,
     "supports_vision" : true,
+    "suppports_completion" : true
+  },
+  {
+    "created_at" : 785548350.351919,
+    "description" : "The most capable model in the LFM 2 series, designed for RAG.",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-1.2b-rag.zip",
+    "name" : "LFM 2 1.2B RAG",
+    "quantization" : 8,
+    "size_mb" : 722,
+    "slug" : "lfm2-1.2b-rag",
+    "supports_tool_calling" : true,
+    "supports_vision" : false,
     "suppports_completion" : true
   },
   {
@@ -120,18 +156,6 @@
     "suppports_completion" : true
   },
   {
-    "created_at" : 785548350.351919,
-    "description" : "",
-    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-1.2b-rag.zip",
-    "name" : "LFM 2 1.2B RAG",
-    "quantization" : 8,
-    "size_mb" : 722,
-    "slug" : "lfm2-1.2b-rag",
-    "supports_tool_calling" : true,
-    "supports_vision" : false,
-    "suppports_completion" : true
-  },
-  {
     "created_at" : 783022335.056461,
     "description" : "A compact and efficient model from the LFM 2 series, ideal for fast, on-device chat and simple tasks.",
     "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/lfm2-350m.zip",
@@ -156,13 +180,85 @@
     "suppports_completion" : true
   },
   {
-    "created_at" : 787990665.16751,
+    "created_at" : 788751666.394756,
+    "description" : "Slightly larger model from the Gemma family, excellent for general conversation and summarization tasks.",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/v1.3\/gemma-3-1b-it-pro.zip",
+    "name" : "Gemma 3 1B Pro",
+    "quantization" : 8,
+    "size_mb" : 1280,
+    "slug" : "gemma3-1b-pro",
+    "supports_tool_calling" : false,
+    "supports_vision" : false,
+    "suppports_completion" : true
+  },
+  {
+    "created_at" : 788751666.394756,
+    "description" : "A compact and efficient model from the LFM 2 series, ideal for adding vision capabilities.",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/v1.3\/lfm2-vl-450m-pro.zip",
+    "name" : "LFM 2 VL 450M Pro",
+    "quantization" : 8,
+    "size_mb" : 490,
+    "slug" : "lfm2-vl-450m-pro",
+    "supports_tool_calling" : false,
+    "supports_vision" : true,
+    "suppports_completion" : true
+  },
+  {
+    "created_at" : 788751666.394756,
+    "description" : "Compact, energy-efficient model, capable of general conversation and summarization tasks.",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/v1.3\/gemma-3-270m-it-pro.zip",
+    "name" : "Gemma 3 270M Pro",
+    "quantization" : 8,
+    "size_mb" : 278,
+    "slug" : "gemma3-270m-pro",
+    "supports_tool_calling" : false,
+    "supports_vision" : false,
+    "suppports_completion" : true
+  },
+  {
+    "created_at" : 788751666.394756,
     "description" : "Small and capable model in the latest generation of the Qwen series, capable of reasoning and function calling.",
-    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/v1.3\/qwen3-0.6-pro.zip",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/v1.3\/qwen3-0.6b-pro.zip",
     "name" : "Qwen 3 0.6B Pro",
     "quantization" : 8,
-    "size_mb" : 914,
+    "size_mb" : 872,
     "slug" : "qwen3-0.6-pro",
+    "supports_tool_calling" : true,
+    "supports_vision" : false,
+    "suppports_completion" : true
+  },
+  {
+    "created_at" : 788751666.394756,
+    "description" : "Slighly larger model from the latest Qwen family, capable of reasoning and excellent function calling.",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/v1.3\/qwen3-1.7b-pro.zip",
+    "name" : "Qwen 3 1.7B Pro",
+    "quantization" : 8,
+    "size_mb" : 2529,
+    "slug" : "qwen3-1.7-pro",
+    "supports_tool_calling" : true,
+    "supports_vision" : false,
+    "suppports_completion" : true
+  },
+  {
+    "created_at" : 788751666.394756,
+    "description" : "The most capable vision model in LFM 2 series, designed for handling more complex image inputs.",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/v1.3\/lfm2-vl-1.6b-pro.zip",
+    "name" : "LFM 2 VL 1.6B Pro",
+    "quantization" : 8,
+    "size_mb" : 1772,
+    "slug" : "lfm2-vl-1.6b-pro",
+    "supports_tool_calling" : false,
+    "supports_vision" : true,
+    "suppports_completion" : true
+  },
+  {
+    "created_at" : 788751666.394756,
+    "description" : "Compact, energy-efficient model, capable of function calling.",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/v1.3\/functiongemma-270m-it-pro.zip",
+    "name" : "FunctionGemma 3 270M Pro",
+    "quantization" : 8,
+    "size_mb" : 279,
+    "slug" : "functiongemma-270m-pro",
     "supports_tool_calling" : true,
     "supports_vision" : false,
     "suppports_completion" : true

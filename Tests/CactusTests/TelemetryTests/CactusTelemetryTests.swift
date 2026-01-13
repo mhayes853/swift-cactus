@@ -128,6 +128,6 @@ let nanosecondsPerSecond = UInt64(1_000_000_000)
 
 private let testEvent = CactusTelemetry.LanguageModelInitEvent(
   configuration: CactusLanguageModel.Configuration(
-    modelURL: temporaryModelDirectory().appendingPathComponent(CactusLanguageModel.testModelSlug)
+    modelURL: temporaryModelDirectory().appendingPathComponent("blob")
   )
 )

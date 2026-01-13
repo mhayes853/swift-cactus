@@ -11,15 +11,17 @@ extension CactusLanguageModel {
   /// Returns the download `URL` for a model slug.
   ///
   /// - Parameter slug: The slug of the model.
+  @available(*, deprecated, message: "Use `PlatformDownloadRequest` instead.")
   public static func modelDownloadURL(slug: String) -> URL {
-    CactusSupabaseClient.shared.modelDownloadURL(for: slug)
+    PlatformDownloadRequest(slug: slug).url
   }
 
   /// Returns the download `URL` for an audio model slug.
   ///
   /// - Parameter slug: The slug of the model.
+  @available(*, deprecated, message: "Use `PlatformDownloadRequest` instead.")
   public static func audioModelDownloadURL(slug: String) -> URL {
-    CactusSupabaseClient.shared.audioModelDownloadURL(for: slug)
+    PlatformDownloadRequest(slug: slug).url
   }
 
   /// Downloads the model for the provided `slug` to the provided destination `URL`.
@@ -31,6 +33,11 @@ extension CactusLanguageModel {
   ///   - onProgress: A callback that is invoked when progress is made towards the download.
   /// - Returns: The destination`URL` of the downloaded model.
   @discardableResult
+  @available(
+    *,
+    deprecated,
+    message: "Use `downloadModel(request:)` with a `PlatformDownloadRequest` instead."
+  )
   public static func downloadModel(
     slug: String,
     to destination: URL,
@@ -38,7 +45,30 @@ extension CactusLanguageModel {
     onProgress: @escaping @Sendable (Result<DownloadProgress, any Error>) -> Void = { _ in }
   ) async throws -> URL {
     try await Self.downloadModel(
-      from: Self.modelDownloadURL(slug: slug),
+      request: PlatformDownloadRequest(slug: slug),
+      to: destination,
+      configuration: configuration,
+      onProgress: onProgress
+    )
+  }
+
+  /// Downloads the model for the provided ``HubDownloadRequest`` to the provided destination `URL`.
+  ///
+  /// - Parameters:
+  ///   - request: The ``HubDownloadRequest`` to download the model from.
+  ///   - destination: The `URL` to download the model to.
+  ///   - configuration: A `URLSessionConfiguration` for the download.
+  ///   - onProgress: A callback that is invoked when progress is made towards the download.
+  /// - Returns: The destination`URL` of the downloaded model.
+  @discardableResult
+  public static func downloadModel(
+    request: PlatformDownloadRequest,
+    to destination: URL,
+    configuration: URLSessionConfiguration = .default,
+    onProgress: @escaping @Sendable (Result<DownloadProgress, any Error>) -> Void = { _ in }
+  ) async throws -> URL {
+    try await Self.downloadModel(
+      from: request.url,
       to: destination,
       configuration: configuration,
       onProgress: onProgress
@@ -53,6 +83,11 @@ extension CactusLanguageModel {
   ///   - configuration: A `URLSessionConfiguration` for the download.
   ///   - onProgress: A callback that is invoked when progress is made towards the download.
   /// - Returns: The destination`URL` of the downloaded model.
+  @available(
+    *,
+    deprecated,
+    message: "Use `downloadModel(request:)` with a `PlatformDownloadRequest` instead."
+  )
   @discardableResult
   public static func downloadAudioModel(
     slug: String,
@@ -103,13 +138,39 @@ extension CactusLanguageModel {
   ///   - destination: The `URL` to download the model to.
   ///   - configuration: A `URLSessionConfiguration` for the download.
   /// - Returns: A ``DownloadTask``.
+  @available(
+    *,
+    deprecated,
+    message: "Use `downloadModelTask(request:)` with a `PlatformDownloadRequest` instead."
+  )
   public static func downloadModelTask(
     slug: String,
     to destination: URL,
     configuration: URLSessionConfiguration = .default
   ) -> DownloadTask {
     Self.downloadModelTask(
-      from: Self.modelDownloadURL(slug: slug),
+      request: PlatformDownloadRequest(slug: slug),
+      to: destination,
+      configuration: configuration
+    )
+  }
+
+  /// Returns a ``DownloadTask`` for the model with the specified ``HubDownloadRequest``.
+  ///
+  /// You must manually start the download by calling ``DownloadTask/resume()``.
+  ///
+  /// - Parameters:
+  ///   - request: The ``HubDownloadRequest`` for the model.
+  ///   - destination: The `URL` to download the model to.
+  ///   - configuration: A `URLSessionConfiguration` for the download.
+  /// - Returns: A ``DownloadTask``.
+  public static func downloadModelTask(
+    request: PlatformDownloadRequest,
+    to destination: URL,
+    configuration: URLSessionConfiguration = .default
+  ) -> DownloadTask {
+    Self.downloadModelTask(
+      from: request.url,
       to: destination,
       configuration: configuration
     )
@@ -124,16 +185,17 @@ extension CactusLanguageModel {
   ///   - destination: The `URL` to download the model to.
   ///   - configuration: A `URLSessionConfiguration` for the download.
   /// - Returns: A ``DownloadTask``.
+  @available(
+    *,
+    deprecated,
+    message: "Use `downloadModelTask(request:)` with a `PlatformDownloadRequest` instead."
+  )
   public static func downloadAudioModelTask(
     slug: String,
     to destination: URL,
     configuration: URLSessionConfiguration = .default
   ) -> DownloadTask {
-    Self.downloadModelTask(
-      from: Self.audioModelDownloadURL(slug: slug),
-      to: destination,
-      configuration: configuration
-    )
+    Self.downloadModelTask(slug: slug, to: destination, configuration: configuration)
   }
 
   /// Returns a ``DownloadTask`` for the model at the specificed source `URL`.
@@ -151,6 +213,229 @@ extension CactusLanguageModel {
     configuration: URLSessionConfiguration = .default
   ) -> DownloadTask {
     DownloadTask(from: url, to: destination, configuration: configuration)
+  }
+}
+
+// MARK: - PlatformDownloadRequest
+
+extension CactusLanguageModel {
+  /// A request to download a model from the cactus platform.
+  public struct PlatformDownloadRequest: Hashable, Sendable {
+    /// The quantization format of the model.
+    public struct Quantization: Hashable, Sendable, RawRepresentable {
+      public static let int4 = Self(rawValue: "int4")
+      public static let int8 = Self(rawValue: "int8")
+
+      public let rawValue: String
+
+      public init(rawValue: String) {
+        self.rawValue = rawValue
+      }
+    }
+
+    /// The library version of the model.
+    public struct Version: Hashable, Sendable, RawRepresentable {
+      public static let v1_5 = Self(rawValue: "v1.5")
+
+      public let rawValue: String
+
+      public init(rawValue: String) {
+        self.rawValue = rawValue
+      }
+    }
+
+    /// The pro version configuration for the model.
+    public struct Pro: Hashable, Sendable, RawRepresentable {
+      public static let apple = Self(rawValue: "apple")
+
+      public let rawValue: String
+
+      public init(rawValue: String) {
+        self.rawValue = rawValue
+      }
+    }
+
+    /// The model slug.
+    public var slug: String
+
+    /// The quantization format of the model.
+    public var quantization: Quantization
+
+    /// The library version of the model.
+    public var version: Version
+
+    /// The pro version configuration for the model.
+    public var pro: Pro?
+
+    /// A download URL for the model.
+    public var url: URL {
+      CactusSupabaseClient.shared.modelDownloadURL(for: self)
+    }
+
+    /// Creates a download request.
+    ///
+    /// - Parameters:
+    ///   - slug: The model slug.
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    ///   - pro: The pro version configuration for the model.
+    public init(
+      slug: String,
+      quantization: Quantization = .int4,
+      version: Version = .v1_5,
+      pro: Pro? = nil
+    ) {
+      self.slug = slug
+      self.quantization = quantization
+      self.version = version
+      self.pro = pro
+    }
+
+    /// Creates a download request for the `gemma-3-270m-it` model.
+    ///
+    /// - Parameter quantization: The quantization format of the model.
+    public static func gemma3_270mIt(quantization: Quantization = .int4) -> Self {
+      Self(slug: "gemma-3-270m-it", quantization: quantization, version: .v1_5)
+    }
+
+    /// Creates a download request for the `functiongemma-270m-it` model.
+    ///
+    /// - Parameter quantization: The quantization format of the model.
+    public static func functiongemma270mIt(quantization: Quantization = .int4) -> Self {
+      Self(slug: "functiongemma-270m-it", quantization: quantization, version: .v1_5)
+    }
+
+    /// Creates a download request for the `gemma-3-1b-it` model.
+    ///
+    /// - Parameter quantization: The quantization format of the model.
+    public static func gemma3_1bIt(quantization: Quantization = .int4) -> Self {
+      Self(slug: "gemma-3-1b-it", quantization: quantization, version: .v1_5)
+    }
+
+    /// Creates a download request for the `whisper-small` model.
+    ///
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - pro: The pro version configuration for the model.
+    public static func whisperSmall(
+      quantization: Quantization = .int4,
+      pro: Pro? = nil
+    ) -> Self {
+      Self(slug: "whisper-small", quantization: quantization, version: .v1_5, pro: pro)
+    }
+
+    /// Creates a download request for the `whisper-medium` model.
+    ///
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - pro: The pro version configuration for the model.
+    public static func whisperMedium(
+      quantization: Quantization = .int4,
+      pro: Pro? = nil
+    ) -> Self {
+      Self(slug: "whisper-medium", quantization: quantization, version: .v1_5, pro: pro)
+    }
+
+    /// Creates a download request for the `lfm2-350m` model.
+    ///
+    /// - Parameter quantization: The quantization format of the model.
+    public static func lfm2_350m(quantization: Quantization = .int4) -> Self {
+      Self(slug: "lfm2-350m", quantization: quantization, version: .v1_5)
+    }
+
+    /// Creates a download request for the `lfm2-700m` model.
+    ///
+    /// - Parameter quantization: The quantization format of the model.
+    public static func lfm2_700m(quantization: Quantization = .int4) -> Self {
+      Self(slug: "lfm2-700m", quantization: quantization, version: .v1_5)
+    }
+
+    /// Creates a download request for the `lfm2-1.2b-rag` model.
+    ///
+    /// - Parameter quantization: The quantization format of the model.
+    public static func lfm2_1_2bRag(quantization: Quantization = .int4) -> Self {
+      Self(slug: "lfm2-1.2b-rag", quantization: quantization, version: .v1_5)
+    }
+
+    /// Creates a download request for the `lfm2-1.2b-tool` model.
+    ///
+    /// - Parameter quantization: The quantization format of the model.
+    public static func lfm2_1_2bTool(quantization: Quantization = .int4) -> Self {
+      Self(slug: "lfm2-1.2b-tool", quantization: quantization, version: .v1_5)
+    }
+
+    /// Creates a download request for the `lfm2.5-1.2b-instruct` model.
+    ///
+    /// - Parameter quantization: The quantization format of the model.
+    public static func lfm2_5_1_2bInstruct(quantization: Quantization = .int4) -> Self {
+      Self(slug: "lfm2.5-1.2b-instruct", quantization: quantization, version: .v1_5)
+    }
+
+    /// Creates a download request for the `lfm2-vl-450m` model.
+    ///
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - pro: The pro version configuration for the model.
+    public static func lfm2Vl_450m(
+      quantization: Quantization = .int4,
+      pro: Pro? = nil
+    ) -> Self {
+      Self(slug: "lfm2-vl-450m", quantization: quantization, version: .v1_5, pro: pro)
+    }
+
+    /// Creates a download request for the `lfm2-vl-1.6b` model.
+    ///
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - pro: The pro version configuration for the model.
+    public static func lfm2Vl_1_6b(
+      quantization: Quantization = .int4,
+      pro: Pro? = nil
+    ) -> Self {
+      Self(slug: "lfm2-vl-1.6b", quantization: quantization, version: .v1_5, pro: pro)
+    }
+
+    /// Creates a download request for the `smollm2-360m-instruct` model.
+    ///
+    /// - Parameter quantization: The quantization format of the model.
+    public static func smollm2_360mInstruct(quantization: Quantization = .int4) -> Self {
+      Self(slug: "smollm2-360m-instruct", quantization: quantization, version: .v1_5)
+    }
+
+    /// Creates a download request for the `smollm2-1.7b-instruct` model.
+    ///
+    /// - Parameter quantization: The quantization format of the model.
+    public static func smollm2_1_7bInstruct(quantization: Quantization = .int4) -> Self {
+      Self(slug: "smollm2-1.7b-instruct", quantization: quantization, version: .v1_5)
+    }
+
+    /// Creates a download request for the `qwen3-0.6b` model.
+    ///
+    /// - Parameter quantization: The quantization format of the model.
+    public static func qwen3_0_6b(quantization: Quantization = .int4) -> Self {
+      Self(slug: "qwen3-0.6b", quantization: quantization, version: .v1_5)
+    }
+
+    /// Creates a download request for the `qwen3-embedding-0.6b` model.
+    ///
+    /// - Parameter quantization: The quantization format of the model.
+    public static func qwen3Embedding_0_6b(quantization: Quantization = .int4) -> Self {
+      Self(slug: "qwen3-embedding-0.6b", quantization: quantization, version: .v1_5)
+    }
+
+    /// Creates a download request for the `qwen3-1.7b` model.
+    ///
+    /// - Parameter quantization: The quantization format of the model.
+    public static func qwen3_1_7b(quantization: Quantization = .int4) -> Self {
+      Self(slug: "qwen3-1.7b", quantization: quantization, version: .v1_5)
+    }
+
+    /// Creates a download request for the `nomic-embed-text-v2-moe` model.
+    ///
+    /// - Parameter quantization: The quantization format of the model.
+    public static func nomicEmbedTextV2Moe(quantization: Quantization = .int4) -> Self {
+      Self(slug: "nomic-embed-text-v2-moe", quantization: quantization, version: .v1_5)
+    }
   }
 }
 

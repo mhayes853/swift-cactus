@@ -1,18 +1,18 @@
 ▿ Properties
-  - attentionHeadDimensions: 64
+  - attentionHeadDimensions: 128
   - attentionHeads: 16
   - attentionKVHeads: 8
-  - contextLengthTokens: 128000
+  - contextLengthTokens: 40960
   - expertCount: 0
-  - ffnIntermediateDimensions: 6656
+  - ffnIntermediateDimensions: 3072
   - hiddenDimensions: 1024
-  - layerCount: 16
-  - layerNormEpsilon: 1e-05
+  - layerCount: 28
+  - layerNormEpsilon: 1e-06
   ▿ modelType: ModelType
-    - defaultTemperature: 0.3
+    - defaultTemperature: 0.6
     - defaultTopK: 20
     - defaultTopP: 0.95
-    - identifier: "lfm2"
+    - identifier: "qwen"
   - moeEveryNLayers: 0
   ▿ precision: Precision
     - bits: 16
@@ -21,4 +21,4 @@
   - sharedExpertCount: 0
   - shouldTieWordEmbeddings: true
   - topExpertCount: 0
-  - vocabularySize: 65536
+  - vocabularySize: 151936
