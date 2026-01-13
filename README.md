@@ -347,7 +347,7 @@ You can add Swift Cactus to an Xcode project by adding it to your project as a p
 If you want to use Swift Cactus in a [SwiftPM](https://swift.org/package-manager/) project, it's as simple as adding it to your `Package.swift`.
 ``` swift
 dependencies: [
-  .package(url: "https://github.com/mhayes853/swift-cactus", from: "0.3.0")
+  .package(url: "https://github.com/mhayes853/swift-cactus", from: "1.5.0")
 ]
 ```
 
