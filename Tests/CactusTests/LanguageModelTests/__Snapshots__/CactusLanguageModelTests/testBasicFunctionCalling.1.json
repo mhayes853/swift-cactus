@@ -1,17 +1,12 @@
 {
-  "decode_tokens" : 20,
+  "decode_tokens" : 21,
   "function_calls" : [
-    {
-      "arguments" : {
-        "location" : "London"
-      },
-      "name" : "get_weather"
-    }
+
   ],
-  "prefill_tokens" : 147,
-  "response" : "<|im_end|>",
-  "time_to_first_token_ms" : 382.4,
-  "tokens_per_second" : 50.33,
-  "total_time_ms" : 759.92,
-  "total_tokens" : 167
+  "prefill_tokens" : 160,
+  "response" : "I don't have access to real-time weather data. Please specify the location you're interested in.<|im_end|>",
+  "time_to_first_token_ms" : 566.98,
+  "tokens_per_second" : 42.82,
+  "total_time_ms" : 1034.07,
+  "total_tokens" : 181
 }

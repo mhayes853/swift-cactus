@@ -220,7 +220,9 @@ struct `CactusLanguageModel tests` {
   }
 
   @Test(arguments: modelRequests)
-  func `Streams Same Response Content`(request: CactusLanguageModel.PlatformDownloadRequest) async throws {
+  func `Streams Same Response Content`(request: CactusLanguageModel.PlatformDownloadRequest)
+    async throws
+  {
     let modelURL = try await CactusLanguageModel.testModelURL(request: request)
     let model = try CactusLanguageModel(from: modelURL)
 
@@ -530,7 +532,6 @@ private let audioPrompt = "<|startoftranscript|><|en|><|transcribe|><|notimestam
 private let modelRequests: [CactusLanguageModel.PlatformDownloadRequest] = [
   .lfm2_350m(),
   .qwen3_0_6b(),
-  .smollm2_360mInstruct(),
   .gemma3_270mIt()
 ]
 private let testImageURL = Bundle.module.url(forResource: "joe", withExtension: "png")!

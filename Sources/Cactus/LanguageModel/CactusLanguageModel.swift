@@ -175,7 +175,8 @@ extension CactusLanguageModel {
       if let modelSlug {
         self.modelSlug = modelSlug
       } else {
-        self.modelSlug = modelURL.lastPathComponent
+        let splits = modelURL.lastPathComponent.components(separatedBy: "--")
+        self.modelSlug = splits.isEmpty ? modelURL.lastPathComponent : splits[0]
       }
       self.corpusDirectoryURL = corpusDirectoryURL
     }
@@ -353,7 +354,7 @@ extension CactusLanguageModel {
       responseData.append(UInt8(bitPattern: responseBuffer[i]))
     }
 
-    guard result == 0 else {
+    guard result != -1 else {
       let errorResponse = try ffiDecoder.decode(
         FFIErrorResponse.self,
         from: responseData
@@ -721,7 +722,7 @@ extension CactusLanguageModel {
       responseData.append(UInt8(bitPattern: buffer[i]))
     }
 
-    guard result == 0 else {
+    guard result != -1 else {
       let response = try? ffiDecoder.decode(
         FFIErrorResponse.self,
         from: responseData
@@ -1024,7 +1025,7 @@ extension CactusLanguageModel {
       responseData.append(UInt8(bitPattern: buffer[i]))
     }
 
-    guard result == 0 else {
+    guard result != -1 else {
       let response = try? ffiDecoder.decode(
         FFIErrorResponse.self,
         from: responseData
