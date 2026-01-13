@@ -99,7 +99,7 @@ try await stream.insert(buffer: buffer)
 let finalized = try await stream.finish()
 print(finalized.confirmed)
 
-_ = await task.value
+_ = try await task.value
 ```
 
 ### Function Calling
