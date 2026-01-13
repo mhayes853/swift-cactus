@@ -1,12 +1,10 @@
 {
-  "decode_tokens" : 95,
-  "function_calls" : [
-
-  ],
-  "prefill_tokens" : 304,
-  "response" : "The image depicts a young man with a confident and happy expression, holding a book in one hand and smiling at the camera. He is dressed in casual attire, wearing an open button-up shirt with rolled-up sleeves and a pocket on the left chest area. The background is plain white, emphasizing the subject without any distractions. The overall composition of the image suggests that it could be used for promotional material or as part of an advertisement for educational materials or books.<|im_end|>",
-  "time_to_first_token_ms" : 2900.53,
-  "tokens_per_second" : 79.04,
-  "total_time_ms" : 4089.88,
-  "total_tokens" : 399
+  "decode_tokens": 53,
+  "function_calls": [],
+  "prefill_tokens": 314,
+  "response": "The guy in the first image is smiling and appears to be happy. He is holding a notebook and a book, suggesting he might be preparing for or has just finished studying. His posture and expression indicate he might be looking forward to his next assignment or exam.<|im_end|>",
+  "time_to_first_token_ms": 3218.8,
+  "tokens_per_second": 95.76,
+  "total_time_ms": 3761.83,
+  "total_tokens": 367
 }

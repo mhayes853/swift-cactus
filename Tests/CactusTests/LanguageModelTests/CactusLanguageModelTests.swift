@@ -196,7 +196,7 @@ struct `CactusLanguageModel tests` {
     )
     let model = try CactusLanguageModel(from: modelURL)
 
-    let embeddings = try model.audioEmbeddings(for: testAudioURL)
+    let embeddings = try model.audioEmbeddings(for: .testAudio)
     let embedding = Embedding(slug: model.configuration.modelSlug, vector: embeddings)
 
     withKnownIssue {
@@ -210,7 +210,7 @@ struct `CactusLanguageModel tests` {
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.EmbeddingsError.audioNotSupported) {
-      try model.audioEmbeddings(for: testAudioURL)
+      try model.audioEmbeddings(for: .testAudio)
     }
   }
 
@@ -285,7 +285,7 @@ struct `CactusLanguageModel tests` {
     let model = try CactusLanguageModel(from: modelURL)
 
     var stream = ""
-    let transcription = try model.transcribe(audio: testAudioURL, prompt: audioPrompt) {
+    let transcription = try model.transcribe(audio: .testAudio, prompt: audioPrompt) {
       stream.append($0)
     }
     expectNoDifference(
@@ -302,7 +302,7 @@ struct `CactusLanguageModel tests` {
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.TranscriptionError.bufferSizeTooSmall) {
-      try model.transcribe(audio: testAudioURL, prompt: audioPrompt, maxBufferSize: 0)
+      try model.transcribe(audio: .testAudio, prompt: audioPrompt, maxBufferSize: 0)
     }
   }
 
@@ -312,7 +312,7 @@ struct `CactusLanguageModel tests` {
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.TranscriptionError.notSupported) {
-      try model.transcribe(audio: testAudioURL, prompt: audioPrompt)
+      try model.transcribe(audio: .testAudio, prompt: audioPrompt)
     }
   }
 
@@ -506,17 +506,12 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
   }
 
   func testAudioTranscription() async throws {
-    struct Transcription: Codable {
-      let slug: String
-      let transcription: CactusLanguageModel.Transcription
-    }
-
     let url = try await CactusLanguageModel.testAudioModelURL(
       request: CactusLanguageModel.testTranscribeRequest
     )
     let model = try CactusLanguageModel(from: url)
 
-    let transcription = try model.transcribe(audio: testAudioURL, prompt: audioPrompt)
+    let transcription = try model.transcribe(audio: .testAudio, prompt: audioPrompt)
 
     withExpectedIssue {
       assertSnapshot(
@@ -525,6 +520,29 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
         record: true
       )
     }
+  }
+
+  func testAudioTranscriptionWithTimestamps() async throws {
+    let url = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+    let model = try CactusLanguageModel(from: url)
+
+    let transcription = try model.transcribe(
+      audio: .testAudio,
+      prompt: "<|startoftranscript|><|en|><|transcribe|>"
+    )
+
+    withExpectedIssue {
+      assertSnapshot(
+        of: Transcription(slug: model.configuration.modelSlug, transcription: transcription),
+        as: .json,
+        record: true
+      )
+    }
+  }
+
+  private struct Transcription: Codable {
+    let slug: String
+    let transcription: CactusLanguageModel.Transcription
   }
 }
 
@@ -535,7 +553,6 @@ private let modelRequests: [CactusLanguageModel.PlatformDownloadRequest] = [
   .gemma3_270mIt()
 ]
 private let testImageURL = Bundle.module.url(forResource: "joe", withExtension: "png")!
-private let testAudioURL = Bundle.module.url(forResource: "test", withExtension: "wav")!
 
 extension CactusLanguageModel.ChatCompletion {
   fileprivate var cleanedResponse: String {

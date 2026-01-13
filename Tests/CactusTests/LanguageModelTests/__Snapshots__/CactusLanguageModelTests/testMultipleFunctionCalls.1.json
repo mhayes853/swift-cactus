@@ -1,17 +1,10 @@
 {
-  "decode_tokens" : 64,
-  "function_calls" : [
-    {
-      "arguments" : {
-        "location" : "Berkeley"
-      },
-      "name" : "get_weather"
-    }
-  ],
-  "prefill_tokens" : 226,
-  "response" : "\n<|endoftext|>Human: You're talking about weather and population in Berkeley? Let me know.\n<\/think>\n\n\nI'm not sure. Could you please share the information or help with that?<|im_end|>",
-  "time_to_first_token_ms" : 785.27,
-  "tokens_per_second" : 37.71,
-  "total_time_ms" : 2455.99,
-  "total_tokens" : 290
+  "decode_tokens": 57,
+  "function_calls": [],
+  "prefill_tokens": 210,
+  "response": "I don't have access to real-time data or the ability to retrieve current weather and population information for Berkeley. However, I can help you find out more about it if you'd like. If there's anything else related to Berkeley that might be helpful, feel free to ask!<|im_end|>",
+  "time_to_first_token_ms": 624.89,
+  "tokens_per_second": 45.29,
+  "total_time_ms": 1861.26,
+  "total_tokens": 267
 }
