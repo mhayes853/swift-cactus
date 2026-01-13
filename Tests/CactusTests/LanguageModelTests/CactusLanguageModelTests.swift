@@ -34,14 +34,14 @@ struct `CactusLanguageModel tests` {
     }
   }
 
-  @Test(.serialized, arguments: modelSlugs)
-  func `Generates Embeddings`(slug: String) async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(slug: slug)
+  @Test(.serialized, arguments: modelRequests)
+  func `Generates Embeddings`(request: CactusLanguageModel.PlatformDownloadRequest) async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL(request: request)
     let model = try CactusLanguageModel(from: modelURL)
 
     let embeddings = try model.embeddings(for: "This is some text.")
 
-    assertSnapshot(of: Embedding(slug: slug, vector: embeddings), as: .json)
+    assertSnapshot(of: Embedding(slug: request.slug, vector: embeddings), as: .json)
   }
 
   @Test
@@ -166,7 +166,9 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Image Embeddings`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(slug: CactusLanguageModel.testVLMSlug)
+    let modelURL = try await CactusLanguageModel.testModelURL(
+      request: CactusLanguageModel.testVLMRequest
+    )
     let model = try CactusLanguageModel(from: modelURL)
 
     let embeddings = try model.imageEmbeddings(for: testImageURL)
@@ -190,7 +192,7 @@ struct `CactusLanguageModel tests` {
   @Test(.snapshots(record: .failed))
   func `Audio Embeddings`() async throws {
     let modelURL = try await CactusLanguageModel.testAudioModelURL(
-      slug: CactusLanguageModel.testTranscribeSlug
+      request: CactusLanguageModel.testTranscribeRequest
     )
     let model = try CactusLanguageModel(from: modelURL)
 
@@ -217,9 +219,11 @@ struct `CactusLanguageModel tests` {
     let vector: [Float]
   }
 
-  @Test(arguments: modelSlugs)
-  func `Streams Same Response Content`(slug: String) async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(slug: slug)
+  @Test(arguments: modelRequests)
+  func `Streams Same Response Content`(request: CactusLanguageModel.PlatformDownloadRequest)
+    async throws
+  {
+    let modelURL = try await CactusLanguageModel.testModelURL(request: request)
     let model = try CactusLanguageModel(from: modelURL)
 
     var stream = ""
@@ -276,7 +280,7 @@ struct `CactusLanguageModel tests` {
   @Test
   func `Streams Same Response As Audio Transcription`() async throws {
     let modelURL = try await CactusLanguageModel.testAudioModelURL(
-      slug: CactusLanguageModel.testTranscribeSlug
+      request: CactusLanguageModel.testTranscribeRequest
     )
     let model = try CactusLanguageModel(from: modelURL)
 
@@ -293,7 +297,7 @@ struct `CactusLanguageModel tests` {
   @Test
   func `Throws Transcription Error When Buffer Size Is Zero`() async throws {
     let modelURL = try await CactusLanguageModel.testAudioModelURL(
-      slug: CactusLanguageModel.testTranscribeSlug
+      request: CactusLanguageModel.testTranscribeRequest
     )
     let model = try CactusLanguageModel(from: modelURL)
 
@@ -316,7 +320,7 @@ struct `CactusLanguageModel tests` {
   func `Derives Model Slug From Model URL If Not Provided`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL()
     let configuration = CactusLanguageModel.Configuration(modelURL: modelURL)
-    expectNoDifference(configuration.modelSlug, CactusLanguageModel.testModelSlug)
+    expectNoDifference(configuration.modelSlug, CactusLanguageModel.testModelRequest.slug)
   }
 
   @Test
@@ -369,8 +373,8 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
 
     var completions = [Completion]()
 
-    for slug in modelSlugs {
-      let modelURL = try await CactusLanguageModel.testModelURL(slug: slug)
+    for request in modelRequests {
+      let modelURL = try await CactusLanguageModel.testModelURL(request: request)
       let model = try CactusLanguageModel(from: modelURL)
       let completion = try model.chatCompletion(
         messages: [
@@ -378,7 +382,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
           .user("What is the meaning of life?")
         ]
       )
-      completions.append(Completion(slug: slug, completion: completion))
+      completions.append(Completion(slug: request.slug, completion: completion))
     }
     withExpectedIssue {
       assertSnapshot(of: completions, as: .json, record: true)
@@ -387,7 +391,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
 
   func testBasicFunctionCalling() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(
-      slug: CactusLanguageModel.testFunctionCallingModelSlug
+      request: CactusLanguageModel.testFunctionCallingModelRequest
     )
     let model = try CactusLanguageModel(from: modelURL)
 
@@ -427,7 +431,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
 
   func testMultipleFunctionCalls() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(
-      slug: CactusLanguageModel.testFunctionCallingModelSlug
+      request: CactusLanguageModel.testFunctionCallingModelRequest
     )
     let model = try CactusLanguageModel(from: modelURL)
 
@@ -479,7 +483,9 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
   }
 
   func testImageAnalysis() async throws {
-    let url = try await CactusLanguageModel.testModelURL(slug: CactusLanguageModel.testVLMSlug)
+    let url = try await CactusLanguageModel.testModelURL(
+      request: CactusLanguageModel.testVLMRequest
+    )
     let model = try CactusLanguageModel(from: url)
 
     let completion = try model.chatCompletion(
@@ -501,7 +507,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
 
   func testAudioTranscription() async throws {
     let url = try await CactusLanguageModel.testAudioModelURL(
-      slug: CactusLanguageModel.testTranscribeSlug
+      request: CactusLanguageModel.testTranscribeRequest
     )
     let model = try CactusLanguageModel(from: url)
 
@@ -517,9 +523,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
   }
 
   func testAudioTranscriptionWithTimestamps() async throws {
-    let url = try await CactusLanguageModel.testAudioModelURL(
-      slug: CactusLanguageModel.testTranscribeSlug
-    )
+    let url = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
     let model = try CactusLanguageModel(from: url)
 
     let transcription = try model.transcribe(
@@ -543,7 +547,11 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
 }
 
 private let audioPrompt = "<|startoftranscript|><|en|><|transcribe|><|notimestamps|>"
-private let modelSlugs = ["lfm2-350m", "qwen3-0.6", "smollm2-360m", "gemma3-270m"]
+private let modelRequests: [CactusLanguageModel.PlatformDownloadRequest] = [
+  .lfm2_350m(),
+  .qwen3_0_6b(),
+  .gemma3_270mIt()
+]
 private let testImageURL = Bundle.module.url(forResource: "joe", withExtension: "png")!
 
 extension CactusLanguageModel.ChatCompletion {

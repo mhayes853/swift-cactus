@@ -8,7 +8,9 @@ import Testing
 struct `CactusModelAgent tests` {
   @Test
   func `Basic Qwen Response`() async throws {
-    let url = try await CactusLanguageModel.testModelURL(slug: "qwen3-0.6")
+    let url = try await CactusLanguageModel.testModelURL(
+      request: CactusLanguageModel.testModelRequest
+    )
 
     let session = CactusAgenticSession(
       CactusModelAgent<String, Qwen3Completion<String>>(
@@ -27,7 +29,9 @@ struct `CactusModelAgent tests` {
 
   @Test
   func `Qwen No Think Response`() async throws {
-    let url = try await CactusLanguageModel.testModelURL(slug: "qwen3-0.6")
+    let url = try await CactusLanguageModel.testModelURL(
+      request: CactusLanguageModel.testModelRequest
+    )
 
     let session = CactusAgenticSession(
       CactusModelAgent<CactusPromptContent, Qwen3Completion<String>>(
@@ -51,7 +55,7 @@ struct `CactusModelAgent tests` {
 
   @Test
   func `Stores Transcript Between Responses`() async throws {
-    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+    let url = try await CactusLanguageModel.testModelURL(request: gemmaRequest)
 
     let systemPrompt = "You are a philosopher who can philosophize about things."
 
@@ -89,7 +93,7 @@ struct `CactusModelAgent tests` {
 
   @Test
   func `System Prompt Is Written To Transcript`() async throws {
-    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+    let url = try await CactusLanguageModel.testModelURL(request: gemmaRequest)
     let transcriptState = Lock(
       CactusTranscript(
         elements: CollectionOfOne(
@@ -116,7 +120,7 @@ struct `CactusModelAgent tests` {
 
   @Test
   func `Constant Transcript Binding Does Not Persist`() async throws {
-    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+    let url = try await CactusLanguageModel.testModelURL(request: gemmaRequest)
     let transcript = CactusTranscript(
       elements: CollectionOfOne(
         CactusTranscript.Element(id: CactusMessageID(), message: .system("Start"))
@@ -136,3 +140,5 @@ struct `CactusModelAgent tests` {
     expectNoDifference(binding.wrappedValue, transcript)
   }
 }
+
+private let gemmaRequest = CactusLanguageModel.PlatformDownloadRequest.gemma3_270mIt()

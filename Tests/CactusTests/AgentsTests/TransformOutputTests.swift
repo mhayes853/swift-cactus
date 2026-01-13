@@ -42,7 +42,9 @@ struct `TransformOutput tests` {
 
   @Test
   func `Transforms Model Output To Character Count`() async throws {
-    let url = try await CactusLanguageModel.testModelURL(slug: "qwen3-0.6")
+    let url = try await CactusLanguageModel.testModelURL(
+      request: CactusLanguageModel.testModelRequest
+    )
 
     let session = CactusAgenticSession(
       CactusModelAgent<String, String>(

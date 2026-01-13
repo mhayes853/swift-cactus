@@ -133,7 +133,7 @@ target_compile_options(CXXCactusDarwin PRIVATE
     -fomit-frame-pointer
     -funroll-loops
     -ftree-vectorize
-    -O3 -DNDEBUG
+    -O3
     -fvisibility=hidden -fvisibility-inlines-hidden
     -ffunction-sections -fdata-sections
     -march=armv8.2-a+fp16+simd+dotprod

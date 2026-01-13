@@ -1,5 +1,0 @@
-framework module CXXCactusDarwin {
-    umbrella header "CXXCactusDarwin.h"
-    export *
-    module * { export * }
-}

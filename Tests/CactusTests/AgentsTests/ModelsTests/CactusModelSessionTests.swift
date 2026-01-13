@@ -7,7 +7,7 @@ struct `CactusModelSession tests` {
   @Test
   func `Default Transcript Is Session Scoped`() async throws {
     let systemPrompt = "You are a helpful assistant."
-    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+    let url = try await CactusLanguageModel.testModelURL(request: gemmaRequest)
     let session = CactusModelSession<String, String>(.url(url)) {
       systemPrompt
     }
@@ -20,7 +20,7 @@ struct `CactusModelSession tests` {
 
   @Test
   func `Transcript Loads With No Messages And Default Location`() async throws {
-    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+    let url = try await CactusLanguageModel.testModelURL(request: gemmaRequest)
     let session = CactusModelSession<String, String>(.url(url)) {
       "You are a helpful assistant."
     }
@@ -31,7 +31,7 @@ struct `CactusModelSession tests` {
 
   @Test
   func `Loads Shared Scoped Transcript After Responding`() async throws {
-    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+    let url = try await CactusLanguageModel.testModelURL(request: gemmaRequest)
 
     let systemPrompt = "You are a philosopher who can philosophize about things."
     let userMessage = "What is the meaning of life?"
@@ -58,7 +58,7 @@ struct `CactusModelSession tests` {
 
   @Test
   func `Loads Transcript From Explicit Location Without Messages`() async throws {
-    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+    let url = try await CactusLanguageModel.testModelURL(request: gemmaRequest)
 
     let session = CactusModelSession<String, String>(
       .url(url),
@@ -73,7 +73,7 @@ struct `CactusModelSession tests` {
 
   @Test
   func `Force Refresh Reloads Shared Transcript`() async throws {
-    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+    let url = try await CactusLanguageModel.testModelURL(request: gemmaRequest)
 
     let systemPrompt = "You are a helpful assistant."
     let userMessage = "Hello world"
@@ -105,7 +105,7 @@ struct `CactusModelSession tests` {
 
   @Test
   func `Prewarm Uses Provided ModelStore`() async throws {
-    let url = try await CactusLanguageModel.testModelURL(slug: "gemma3-270m")
+    let url = try await CactusLanguageModel.testModelURL(request: gemmaRequest)
     let loader = CountingModelLoader(key: "prewarm", url: url)
     let session = CactusModelSession<String, String>(
       loader,
@@ -123,3 +123,5 @@ struct `CactusModelSession tests` {
     loader.count.withLock { expectNoDifference($0, 1) }
   }
 }
+
+private let gemmaRequest = CactusLanguageModel.PlatformDownloadRequest.gemma3_270mIt()
