@@ -1,12 +1,15 @@
 {
-  "decode_tokens" : 95,
+  "confidence" : 0.9069,
+  "decode_tokens" : 113,
+  "decode_tps" : 101.23,
   "function_calls" : [
 
   ],
-  "prefill_tokens" : 304,
-  "response" : "The image depicts a young man with a confident and happy expression, holding a book in one hand and smiling at the camera. He is dressed in casual attire, wearing an open button-up shirt with rolled-up sleeves and a pocket on the left chest area. The background is plain white, emphasizing the subject without any distractions. The overall composition of the image suggests that it could be used for promotional material or as part of an advertisement for educational materials or books.<|im_end|>",
-  "time_to_first_token_ms" : 2900.53,
-  "tokens_per_second" : 79.04,
-  "total_time_ms" : 4089.88,
-  "total_tokens" : 399
+  "prefill_tokens" : 272,
+  "prefill_tps" : 109.98,
+  "ram_usage_mb" : 1348.62,
+  "response" : "The image depicts a young man, likely in his late teens or early twenties, holding a book and a backpack. He is smiling and appears to be in the middle of reading or preparing for an activity. The background is plain white, which helps to focus attention on the subject. The man's attire includes a casual button-up shirt with rolled-up sleeves and what seems to be a patterned tie or scarf around his neck. His hair is neatly styled, adding to the overall impression of youthfulness and readiness for learning or travel.",
+  "time_to_first_token_ms" : 2473.09,
+  "total_time_ms" : 3579.43,
+  "total_tokens" : 385
 }

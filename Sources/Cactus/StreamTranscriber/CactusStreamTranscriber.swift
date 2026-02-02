@@ -37,9 +37,8 @@ public final class CactusStreamTranscriber {
   ///
   /// - Parameters:
   ///   - modelURL: The URL of the model.
-  ///   - contextSize: The context size.
-  public convenience init(modelURL: URL, contextSize: Int) throws {
-    guard let model = cactus_init(modelURL.nativePath, contextSize, nil) else {
+  public convenience init(modelURL: URL) throws {
+    guard let model = cactus_init(modelURL.nativePath, nil) else {
       throw CactusStreamTranscriberError()
     }
     try self.init(model: model, isModelPointerManaged: true)
@@ -51,7 +50,7 @@ public final class CactusStreamTranscriber {
   ///   - model: The raw model pointer.
   ///   - isModelPointerManaged: Whether or not the model pointer is managed by the instance.
   public convenience init(model: cactus_model_t, isModelPointerManaged: Bool = false) throws {
-    guard let streamTranscribe = cactus_stream_transcribe_init(model) else {
+    guard let streamTranscribe = cactus_stream_transcribe_start(model, nil) else {
       throw CactusStreamTranscriberError()
     }
     self.init(
@@ -73,7 +72,9 @@ public final class CactusStreamTranscriber {
 
   deinit {
     if self.isStreamPointerManaged {
-      cactus_stream_transcribe_destroy(self.streamTranscribe)
+      let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: Self.responseBufferSize)
+      defer { responseBuffer.deallocate() }
+      _ = cactus_stream_transcribe_stop(self.streamTranscribe, responseBuffer, Self.responseBufferSize)
     }
     if let model {
       cactus_destroy(model)
@@ -81,46 +82,10 @@ public final class CactusStreamTranscriber {
   }
 }
 
-// MARK: - Insert
-
-extension CactusStreamTranscriber {
-  /// Inserts a PCM audio buffer into this transcriber.
-  public func insert(buffer: [UInt8]) throws {
-    try buffer.withUnsafeBufferPointer { try self.insert(buffer: $0) }
-  }
-
-  /// Inserts a PCM audio buffer into this transcriber.
-  public func insert(buffer: UnsafeBufferPointer<UInt8>) throws {
-    let result = cactus_stream_transcribe_insert(
-      self.streamTranscribe,
-      buffer.baseAddress,
-      buffer.count
-    )
-    guard result == 0 else { throw CactusStreamTranscriberError() }
-  }
-}
-
 // MARK: - Process
 
 extension CactusStreamTranscriber {
-  /// Options for processing the existing audio in this transcriber.
-  public struct ProcessOptions: Codable, Sendable {
-    /// The threshold used when confirming previously transcribed text.
-    public var confirmationThreshold: Double
-
-    /// Creates process options.
-    ///
-    /// - Parameter confirmationThreshold: The threshold used when confirming previously transcribed text.
-    public init(confirmationThreshold: Double = 0.95) {
-      self.confirmationThreshold = confirmationThreshold
-    }
-
-    private enum CodingKeys: String, CodingKey {
-      case confirmationThreshold = "confirmation_threshold"
-    }
-  }
-
-  /// A result of processing the existing audio in this transcriber.
+  /// A result of processing audio in this transcriber.
   public struct ProcessedTranscription: Codable, Hashable, Sendable {
     /// The portion of the transcription that has been confirmed.
     public let confirmed: String
@@ -128,19 +93,30 @@ extension CactusStreamTranscriber {
     public let pending: String
   }
 
-  /// Processes the existing audio in this transcriber.
+  /// Processes a PCM audio buffer and returns interim transcription result.
   ///
-  /// - Parameter options: The ``ProcessOptions`` to use.
+  /// - Parameter buffer: The PCM audio buffer to process.
   /// - Returns: A ``ProcessedTranscription``.
-  public func process(options: ProcessOptions = ProcessOptions()) throws -> ProcessedTranscription {
+  public func process(buffer: [UInt8]) throws -> ProcessedTranscription {
+    try buffer.withUnsafeBufferPointer { rawBuffer in
+      try self.process(buffer: rawBuffer)
+    }
+  }
+
+  /// Processes a PCM audio buffer and returns interim transcription result.
+  ///
+  /// - Parameter buffer: The PCM audio buffer to process.
+  /// - Returns: A ``ProcessedTranscription``.
+  public func process(buffer: UnsafeBufferPointer<UInt8>) throws -> ProcessedTranscription {
     let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: Self.responseBufferSize)
     defer { responseBuffer.deallocate() }
 
     let result = cactus_stream_transcribe_process(
       self.streamTranscribe,
+      buffer.baseAddress,
+      buffer.count,
       responseBuffer,
-      Self.responseBufferSize * MemoryLayout<CChar>.stride,
-      String(decoding: try ffiEncoder.encode(options), as: UTF8.self)
+      Self.responseBufferSize * MemoryLayout<CChar>.stride
     )
 
     var responseData = Data()
@@ -157,7 +133,7 @@ extension CactusStreamTranscriber {
   }
 }
 
-// MARK: - Finalize
+// MARK: - Stop
 
 extension CactusStreamTranscriber {
   /// A finalized transcription of the audio.
@@ -166,12 +142,14 @@ extension CactusStreamTranscriber {
     public let confirmed: String
   }
 
-  /// Returns a finalized transcription of the audio in this transcriber.
-  public func finalize() throws -> FinalizedTranscription {
+  /// Stops streaming transcription and returns the finalized result.
+  ///
+  /// - Returns: A ``FinalizedTranscription``.
+  public func stop() throws -> FinalizedTranscription {
     let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: Self.responseBufferSize)
     defer { responseBuffer.deallocate() }
 
-    let result = cactus_stream_transcribe_finalize(
+    let result = cactus_stream_transcribe_stop(
       self.streamTranscribe,
       responseBuffer,
       Self.responseBufferSize * MemoryLayout<CChar>.stride
@@ -182,7 +160,7 @@ extension CactusStreamTranscriber {
       responseData.append(UInt8(bitPattern: responseBuffer[i]))
     }
 
-    guard result != 0 else {
+    guard result != -1 else {
       let response = try ffiDecoder.decode(FFIErrorResponse.self, from: responseData)
       throw CactusStreamTranscriberError(message: response.error)
     }

@@ -43,12 +43,6 @@ public final class CactusLanguageModel {
   /// The ``Configuration`` for this model.
   public let configuration: Configuration
 
-  /// The ``Properties`` for this model.
-  @available(*, deprecated, message: "Use `configurationFile` instead.")
-  public var properties: Properties {
-    Properties(file: self.configurationFile)
-  }
-
   /// The ``ConfigurationFile`` for this model.
   public let configurationFile: ConfigurationFile
 
@@ -61,18 +55,15 @@ public final class CactusLanguageModel {
   ///
   /// - Parameters:
   ///   - url: The local `URL` of the model.
-  ///   - contextSize: The context size.
   ///   - modelSlug: The model slug.
   ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
   public convenience init(
     from url: URL,
-    contextSize: Int = 2048,
     modelSlug: String? = nil,
     corpusDirectoryURL: URL? = nil
   ) throws {
     let configuration = Configuration(
       modelURL: url,
-      contextSize: contextSize,
       modelSlug: modelSlug,
       corpusDirectoryURL: corpusDirectoryURL
     )
@@ -87,7 +78,6 @@ public final class CactusLanguageModel {
       self.configuration = configuration
       let model = cactus_init(
         configuration.modelURL.nativePath,
-        configuration.contextSize,
         configuration.corpusDirectoryURL?.nativePath
       )
       guard let model else { throw ModelCreationError(configuration: configuration) }
@@ -148,9 +138,6 @@ extension CactusLanguageModel {
     /// The local `URL` of the model.
     public var modelURL: URL
 
-    /// The context size.
-    public var contextSize: Int
-
     /// The model slug.
     public var modelSlug: String
 
@@ -161,17 +148,14 @@ extension CactusLanguageModel {
     ///
     /// - Parameters:
     ///   - modelURL: The local `URL` of the model.
-    ///   - contextSize: The context size.
     ///   - modelSlug: The model slug.
     ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
     public init(
       modelURL: URL,
-      contextSize: Int = 2048,
       modelSlug: String? = nil,
       corpusDirectoryURL: URL? = nil
     ) {
       self.modelURL = modelURL
-      self.contextSize = contextSize
       if let modelSlug {
         self.modelSlug = modelSlug
       } else {
@@ -603,9 +587,6 @@ extension CactusLanguageModel {
     /// The raw response text from the model.
     public let response: String
 
-    /// The tokens per second rate.
-    public let tokensPerSecond: Double
-
     /// The number of prefilled tokens.
     public let prefillTokens: Int
 
@@ -617,6 +598,18 @@ extension CactusLanguageModel {
 
     /// A list of ``CactusLanguageModel/FunctionCall`` instances from the model.
     public let functionCalls: [FunctionCall]
+
+    /// The model's confidence in its response.
+    public let confidence: Double
+
+    /// The prefill tokens per second.
+    public let prefillTps: Double
+
+    /// The decode tokens per second.
+    public let decodeTps: Double
+
+    /// The current process RAM usage in MB.
+    public let ramUsageMb: Double
 
     private let timeToFirstTokenMs: Double
     private let totalTimeMs: Double
@@ -777,13 +770,16 @@ extension CactusLanguageModel.ChatCompletion: Decodable {
   public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.response = try container.decode(String.self, forKey: .response)
-    self.tokensPerSecond = try container.decode(Double.self, forKey: .tokensPerSecond)
     self.prefillTokens = try container.decode(Int.self, forKey: .prefillTokens)
     self.decodeTokens = try container.decode(Int.self, forKey: .decodeTokens)
     self.totalTokens = try container.decode(Int.self, forKey: .totalTokens)
     self.functionCalls =
       try container.decodeIfPresent([CactusLanguageModel.FunctionCall].self, forKey: .functionCalls)
       ?? []
+    self.confidence = try container.decode(Double.self, forKey: .confidence)
+    self.prefillTps = try container.decode(Double.self, forKey: .prefillTps)
+    self.decodeTps = try container.decode(Double.self, forKey: .decodeTps)
+    self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
     self.timeToFirstTokenMs = try container.decode(Double.self, forKey: .timeToFirstTokenMs)
     self.totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
   }
@@ -792,11 +788,14 @@ extension CactusLanguageModel.ChatCompletion: Decodable {
 extension CactusLanguageModel.ChatCompletion: Encodable {
   private enum CodingKeys: String, CodingKey {
     case response
-    case tokensPerSecond = "tokens_per_second"
     case prefillTokens = "prefill_tokens"
     case decodeTokens = "decode_tokens"
     case totalTokens = "total_tokens"
     case functionCalls = "function_calls"
+    case confidence
+    case prefillTps = "prefill_tps"
+    case decodeTps = "decode_tps"
+    case ramUsageMb = "ram_usage_mb"
     case timeToFirstTokenMs = "time_to_first_token_ms"
     case totalTimeMs = "total_time_ms"
   }
@@ -822,9 +821,6 @@ extension CactusLanguageModel {
     /// The raw response text from the model.
     public let response: String
 
-    /// The tokens per second rate.
-    public let tokensPerSecond: Double
-
     /// The number of prefilled tokens.
     public let prefillTokens: Int
 
@@ -833,6 +829,18 @@ extension CactusLanguageModel {
 
     /// The total amount of tokens that make up the response.
     public let totalTokens: Int
+
+    /// The model's confidence in its response.
+    public let confidence: Double
+
+    /// The prefill tokens per second.
+    public let prefillTps: Double
+
+    /// The decode tokens per second.
+    public let decodeTps: Double
+
+    /// The current process RAM usage in MB.
+    public let ramUsageMb: Double
 
     private let timeToFirstTokenMs: Double
     private let totalTimeMs: Double
@@ -1064,10 +1072,13 @@ extension CactusLanguageModel.Transcription: Decodable {
   public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.response = try container.decode(String.self, forKey: .response)
-    self.tokensPerSecond = try container.decode(Double.self, forKey: .tokensPerSecond)
     self.prefillTokens = try container.decode(Int.self, forKey: .prefillTokens)
     self.decodeTokens = try container.decode(Int.self, forKey: .decodeTokens)
     self.totalTokens = try container.decode(Int.self, forKey: .totalTokens)
+    self.confidence = try container.decode(Double.self, forKey: .confidence)
+    self.prefillTps = try container.decode(Double.self, forKey: .prefillTps)
+    self.decodeTps = try container.decode(Double.self, forKey: .decodeTps)
+    self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
     self.timeToFirstTokenMs = try container.decode(Double.self, forKey: .timeToFirstTokenMs)
     self.totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
   }
@@ -1076,10 +1087,13 @@ extension CactusLanguageModel.Transcription: Decodable {
 extension CactusLanguageModel.Transcription: Encodable {
   private enum CodingKeys: String, CodingKey {
     case response
-    case tokensPerSecond = "tokens_per_second"
     case prefillTokens = "prefill_tokens"
     case decodeTokens = "decode_tokens"
     case totalTokens = "total_tokens"
+    case confidence
+    case prefillTps = "prefill_tps"
+    case decodeTps = "decode_tps"
+    case ramUsageMb = "ram_usage_mb"
     case timeToFirstTokenMs = "time_to_first_token_ms"
     case totalTimeMs = "total_time_ms"
   }

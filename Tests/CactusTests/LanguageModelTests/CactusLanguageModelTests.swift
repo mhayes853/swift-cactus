@@ -45,15 +45,6 @@ struct `CactusLanguageModel tests` {
   }
 
   @Test
-  @available(*, deprecated)
-  func `Properties Dump`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
-    let model = try CactusLanguageModel(from: modelURL)
-
-    assertSnapshot(of: model.properties, as: .dump)
-  }
-
-  @Test
   func `Throws Buffer Too Small Error When Buffer Size Too Small`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL()
     let model = try CactusLanguageModel(from: modelURL)
@@ -352,7 +343,7 @@ struct `CactusLanguageModel tests` {
   @Test
   func `Embeddings From Model With Raw Pointer`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL()
-    let modelPtr = try #require(cactus_init(modelURL.nativePath, 2048, nil))
+    let modelPtr = try #require(cactus_init(modelURL.nativePath, nil))
 
     let model = try CactusLanguageModel(
       model: modelPtr,

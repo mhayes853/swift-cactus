@@ -1,10 +1,13 @@
 #if canImport(AVFoundation)
+  import Foundation
   import AVFoundation
 
   extension CactusStreamTranscriber {
-    /// Inserts an `AVAudioPCMBuffer` into this transcriber.
-    public func insert(buffer: AVAudioPCMBuffer) throws {
-      try self.insert(buffer: buffer.whisperPCMBytes())
+    /// Processes an `AVAudioPCMBuffer` and returns interim transcription result.
+    @discardableResult
+    public func process(buffer: AVAudioPCMBuffer) throws -> ProcessedTranscription {
+      let bytes = try buffer.cactusPCMBytes()
+      return try bytes.withUnsafeBufferPointer { try self.process(buffer: $0) }
     }
   }
 #endif

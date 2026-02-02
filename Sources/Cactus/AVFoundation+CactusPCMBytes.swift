@@ -8,14 +8,14 @@
       case missingData
     }
 
-    /// Extracts whisper compatible PCM bytes from this buffer.
-    public func whisperPCMBytes() throws -> [UInt8] {
+    /// Extracts cactus compatible PCM bytes from this buffer.
+    public func cactusPCMBytes() throws -> [UInt8] {
       guard self.frameLength > 0 else { return [] }
 
       let inputFormat = self.format
       let interleavedFormat = AVAudioFormat(
         commonFormat: .pcmFormatInt16,
-        sampleRate: whisperSampleRate,
+        sampleRate: cactusSampleRate,
         channels: inputFormat.channelCount,
         interleaved: true
       )
@@ -94,5 +94,5 @@
     }
   }
 
-  private let whisperSampleRate = Double(16_000)
+  private let cactusSampleRate = Double(16_000)
 #endif

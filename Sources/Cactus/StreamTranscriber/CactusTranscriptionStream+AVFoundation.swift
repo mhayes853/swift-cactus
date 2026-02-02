@@ -3,12 +3,13 @@
   import AVFoundation
 
   extension CactusTranscriptionStream {
-    /// Inserts an `AVAudioPCMBuffer` into the stream.
+    /// Processes an `AVAudioPCMBuffer` and returns interim transcription result.
     @discardableResult
-    public func insert(
+    public func process(
       buffer: AVAudioPCMBuffer
     ) async throws -> CactusStreamTranscriber.ProcessedTranscription {
-      try await self.insert(buffer: buffer.whisperPCMBytes())
+      let bytes = try buffer.cactusPCMBytes()
+      return try await self.process(buffer: bytes)
     }
   }
 #endif

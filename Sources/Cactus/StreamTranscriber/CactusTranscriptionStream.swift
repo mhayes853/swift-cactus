@@ -11,7 +11,7 @@ import Foundation
 ///
 /// let modelURL = try await CactusModelsDirectory.shared
 ///   .audioModelURL(for: "whisper-small")
-/// let stream = try CactusTranscriptionStream(modelURL: modelURL, contextSize: 2048)
+/// let stream = try CactusTranscriptionStream(modelURL: modelURL)
 ///
 /// let task = Task {
 ///   for try await chunk in stream {
@@ -67,11 +67,9 @@ public final class CactusTranscriptionStream: Sendable {
 
   /// Creates a transcription stream from a model URL.
   ///
-  /// - Parameters:
-  ///   - modelURL: The URL of the model.
-  ///   - contextSize: The context size.
-  public convenience init(modelURL: URL, contextSize: Int) throws {
-    let transcriber = try CactusStreamTranscriber(modelURL: modelURL, contextSize: contextSize)
+  /// - Parameter modelURL: The URL of the model.
+  public convenience init(modelURL: URL) throws {
+    let transcriber = try CactusStreamTranscriber(modelURL: modelURL)
     self.init(transcriber: transcriber)
   }
 
@@ -115,12 +113,12 @@ extension CactusTranscriptionStream: AsyncSequence {
   }
 }
 
-// MARK: - Insert
+// MARK: - Process
 
 extension CactusTranscriptionStream {
-  /// Inserts a PCM audio buffer into the stream.
+  /// Processes a PCM audio buffer and returns interim transcription result.
   @discardableResult
-  public func insert(buffer: [UInt8]) async throws -> Element {
+  public func process(buffer: [UInt8]) async throws -> Element {
     do {
       let transcription = try await self.transcriber.insertAndProcess(buffer: buffer)
       self.state.withLock { state in
@@ -139,10 +137,10 @@ extension CactusTranscriptionStream {
     }
   }
 
-  /// Inserts a PCM audio buffer into the stream.
+  /// Processes a PCM audio buffer and returns interim transcription result.
   @discardableResult
-  public func insert(buffer: UnsafeBufferPointer<UInt8>) async throws -> Element {
-    try await self.insert(buffer: Array(buffer))
+  public func process(buffer: UnsafeBufferPointer<UInt8>) async throws -> Element {
+    try await self.process(buffer: Array(buffer))
   }
 }
 
@@ -213,12 +211,11 @@ extension CactusTranscriptionStream {
     }
 
     func insertAndProcess(buffer: [UInt8]) throws -> Element {
-      try self.transcriber.insert(buffer: buffer)
-      return try self.transcriber.process()
+      try self.transcriber.process(buffer: buffer)
     }
 
     func finalize() throws -> CactusStreamTranscriber.FinalizedTranscription {
-      try self.transcriber.finalize()
+      try self.transcriber.stop()
     }
   }
 }
