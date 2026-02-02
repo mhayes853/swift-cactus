@@ -203,7 +203,7 @@ extension CactusLanguageModel {
   ///   - text: The text to tokenize.
   ///   - maxBufferSize: The maximum buffer size for the tokenized output.
   /// - Returns: An array of raw tokens.
-  public func tokenize(text: String, maxBufferSize: Int = 1024) throws -> [UInt32] {
+  public func tokenize(text: String, maxBufferSize: Int = 8192) throws -> [UInt32] {
     let buffer = UnsafeMutableBufferPointer<UInt32>.allocate(capacity: maxBufferSize)
     defer { buffer.deallocate() }
     let count = try self.tokenize(text: text, buffer: buffer)
@@ -680,7 +680,7 @@ extension CactusLanguageModel {
       .responseBufferTooSmall(name: "completion", configuration: self.configuration)
     let options =
       options ?? ChatCompletion.Options(modelType: self.configurationFile.modelType ?? .qwen)
-    let maxBufferSize = maxBufferSize ?? self.bufferSize(for: options.maxTokens)
+    let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else {
       CactusTelemetry.send(bufferTooSmallEvent)
       throw ChatCompletionError.bufferSizeTooSmall
@@ -986,7 +986,7 @@ extension CactusLanguageModel {
     let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent
       .responseBufferTooSmall(name: "transcription", configuration: self.configuration)
     let options = options ?? Transcription.Options(modelType: .whisper)
-    let maxBufferSize = maxBufferSize ?? self.bufferSize(for: options.maxTokens)
+    let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else {
       CactusTelemetry.send(bufferTooSmallEvent)
       throw TranscriptionError.bufferSizeTooSmall
@@ -1285,17 +1285,6 @@ extension CactusLanguageModel {
     }
 
     return try ffiDecoder.decode(RAGQueryResult.self, from: responseData)
-  }
-}
-
-// MARK: - Helpers
-
-extension CactusLanguageModel {
-  private func bufferSize(for contentLength: Int) -> Int {
-    max(
-      contentLength * (self.configurationFile.precision?.bits ?? 32),
-      self.configurationFile.hiddenDimensions ?? 1024
-    )
   }
 }
 
