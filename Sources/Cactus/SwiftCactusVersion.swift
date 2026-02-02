@@ -1,1 +1,1 @@
-public let swiftCactusVersion = "1.5.0"
+public let swiftCactusVersion = "1.6.0"
