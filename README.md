@@ -270,6 +270,32 @@ let pretty = try model.embeddings(for: "This is some pretty text")
 print(cosineSimilarity(fancy, pretty))
 ```
 
+### RAG (Retrieval-Augmented Generation)
+
+RAG models allow you to query a corpus of documents for relevant information. Create a model with a corpus directory containing your documents, then use `ragQuery` to search them.
+
+```swift
+let corpusURL = URL.documentsDirectory.appending(path: "swift-corpus")
+let modelURL = try await CactusModelsDirectory.shared.modelURL(for: .lfm2_1_2bRag())
+let model = try CactusLanguageModel(from: modelURL, corpusDirectoryURL: corpusURL)
+
+let result = try model.ragQuery(query: "What is async/await?")
+
+// [
+//   CactusLanguageModel.RAGChunk(
+//     score: 0.85,
+//     source: "document2.txt",
+//     content: "Async and await are fundamental concepts..."
+//   )
+// ]
+for chunk in result.chunks {
+  print("Score: \(chunk.score), Source: \(chunk.source)")
+  print("Content: \(chunk.content)")
+}
+```
+
+The RAG query uses hybrid search combining embeddings with BM25 rankings to find the most relevant document chunks.
+
 ### Telemetry (iOS and macOS Only)
 
 You can configure telemetry in the entry point of your app by calling `CactusTelemetry.configure`.

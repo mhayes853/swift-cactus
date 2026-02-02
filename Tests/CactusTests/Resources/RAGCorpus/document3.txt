@@ -1,0 +1,5 @@
+Memory management in Swift is primarily handled through Automatic Reference Counting (ARC). ARC automatically frees up memory when class instances are no longer needed. However, developers must be careful to avoid strong reference cycles that can prevent objects from being deallocated.
+
+Strong reference cycles occur when two class instances hold strong references to each other, creating a situation where neither can be released. To prevent this, Swift provides weak and unowned references. Weak references are optional and set to nil when the referenced instance is deallocated, while unowned references assume they will always have a value.
+
+Value types like structs and enums are copied when assigned to a new variable or passed to a function, eliminating many memory management concerns. This makes them ideal for simple data models and helps maintain predictability in your code.

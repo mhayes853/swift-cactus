@@ -45,15 +45,6 @@ struct `CactusLanguageModel tests` {
   }
 
   @Test
-  @available(*, deprecated)
-  func `Properties Dump`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
-    let model = try CactusLanguageModel(from: modelURL)
-
-    assertSnapshot(of: model.properties, as: .dump)
-  }
-
-  @Test
   func `Throws Buffer Too Small Error When Buffer Size Too Small`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL()
     let model = try CactusLanguageModel(from: modelURL)
@@ -352,7 +343,7 @@ struct `CactusLanguageModel tests` {
   @Test
   func `Embeddings From Model With Raw Pointer`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL()
-    let modelPtr = try #require(cactus_init(modelURL.nativePath, 2048, nil))
+    let modelPtr = try #require(cactus_init(modelURL.nativePath, nil))
 
     let model = try CactusLanguageModel(
       model: modelPtr,
@@ -361,6 +352,48 @@ struct `CactusLanguageModel tests` {
 
     let embeddings = try model.embeddings(for: "Some Text")
     expectNoDifference(embeddings.isEmpty, false)
+  }
+
+  @Test
+  func `Throws RAG Error When Model Does Not Support RAG`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL()
+    let model = try CactusLanguageModel(from: modelURL)
+
+    #expect(throws: CactusLanguageModel.RAGQueryError.ragNotSupported) {
+      try model.ragQuery(query: "What is Swift?")
+    }
+  }
+
+  @Test
+  func `Throws Buffer Too Small Error When RAG Buffer Size Too Small`() async throws {
+    let corpusURL = Bundle.module.url(forResource: "RAGCorpus", withExtension: nil)!
+    let modelURL = try await CactusLanguageModel.testModelURL(
+      request: .lfm2_1_2bRag()
+    )
+    let model = try CactusLanguageModel(
+      from: modelURL,
+      corpusDirectoryURL: corpusURL
+    )
+
+    #expect(throws: CactusLanguageModel.RAGQueryError.bufferSizeTooSmall) {
+      try model.ragQuery(query: "What is async/await?", maxBufferSize: 100)
+    }
+  }
+
+  @Test
+  func `Throws Buffer Too Small Error When RAG Buffer Size Is Zero`() async throws {
+    let corpusURL = Bundle.module.url(forResource: "RAGCorpus", withExtension: nil)!
+    let modelURL = try await CactusLanguageModel.testModelURL(
+      request: .lfm2_1_2bRag()
+    )
+    let model = try CactusLanguageModel(
+      from: modelURL,
+      corpusDirectoryURL: corpusURL
+    )
+
+    #expect(throws: CactusLanguageModel.RAGQueryError.bufferSizeTooSmall) {
+      try model.ragQuery(query: "What is async/await?", maxBufferSize: 0)
+    }
   }
 }
 
@@ -521,6 +554,29 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     withExpectedIssue {
       assertSnapshot(
         of: Transcription(slug: model.configuration.modelSlug, transcription: transcription),
+        as: .json,
+        record: true
+      )
+    }
+  }
+
+  func testRAGQuery() async throws {
+    struct RAGResult: Codable {
+      let slug: String
+      let result: CactusLanguageModel.RAGQueryResult
+    }
+
+    let corpusURL = Bundle.module.url(forResource: "RAGCorpus", withExtension: nil)!
+    let url = try await CactusLanguageModel.testModelURL(
+      request: .lfm2_1_2bRag()
+    )
+    let model = try CactusLanguageModel(from: url, corpusDirectoryURL: corpusURL)
+
+    let result = try model.ragQuery(query: "What is async/await?")
+
+    withExpectedIssue {
+      assertSnapshot(
+        of: RAGResult(slug: model.configuration.modelSlug, result: result),
         as: .json,
         record: true
       )

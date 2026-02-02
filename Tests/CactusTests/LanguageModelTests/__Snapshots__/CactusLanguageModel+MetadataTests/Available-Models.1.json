@@ -26,7 +26,7 @@
   {
     "created_at" : 782069077.706082,
     "description" : "Compact, energy-efficient model, capable of general conversation and summarization tasks.",
-    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/v1.5\/gemma-3-270m-it.zip",
+    "download_url" : "https:\/\/vlqqczxwyaodtcdmdmlw.supabase.co\/storage\/v1\/object\/public\/cactus-models\/gemma3-270m.zip",
     "name" : "Gemma 3 270M",
     "quantization" : 8,
     "size_mb" : 172,

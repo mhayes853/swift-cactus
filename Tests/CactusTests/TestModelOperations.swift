@@ -19,7 +19,7 @@ extension CactusLanguageModel {
 
   static let testFunctionCallingModelRequest = CactusLanguageModel.PlatformDownloadRequest
     .qwen3_0_6b()
-  static let testModelRequest = CactusLanguageModel.PlatformDownloadRequest.qwen3_0_6b()
+  static let testModelRequest = CactusLanguageModel.PlatformDownloadRequest.lfm2Vl_450m()
   static let testVLMRequest = CactusLanguageModel.PlatformDownloadRequest.lfm2Vl_450m()
   static let testTranscribeRequest = CactusLanguageModel.PlatformDownloadRequest.whisperSmall()
 

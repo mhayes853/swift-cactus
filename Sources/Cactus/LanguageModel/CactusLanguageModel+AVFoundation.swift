@@ -19,7 +19,7 @@
       onToken: (String) -> Void = { _ in }
     ) throws -> Transcription {
       try self.transcribe(
-        buffer: try buffer.whisperPCMBytes(),
+        buffer: try buffer.cactusPCMBytes(),
         prompt: prompt,
         options: options,
         transcriptionMaxBufferSize: transcriptionMaxBufferSize,
@@ -44,7 +44,7 @@
       onToken: (String, UInt32) -> Void
     ) throws -> Transcription {
       try self.transcribe(
-        buffer: try buffer.whisperPCMBytes(),
+        buffer: try buffer.cactusPCMBytes(),
         prompt: prompt,
         options: options,
         transcriptionMaxBufferSize: transcriptionMaxBufferSize,

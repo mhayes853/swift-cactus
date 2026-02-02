@@ -43,12 +43,6 @@ public final class CactusLanguageModel {
   /// The ``Configuration`` for this model.
   public let configuration: Configuration
 
-  /// The ``Properties`` for this model.
-  @available(*, deprecated, message: "Use `configurationFile` instead.")
-  public var properties: Properties {
-    Properties(file: self.configurationFile)
-  }
-
   /// The ``ConfigurationFile`` for this model.
   public let configurationFile: ConfigurationFile
 
@@ -61,18 +55,15 @@ public final class CactusLanguageModel {
   ///
   /// - Parameters:
   ///   - url: The local `URL` of the model.
-  ///   - contextSize: The context size.
   ///   - modelSlug: The model slug.
   ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
   public convenience init(
     from url: URL,
-    contextSize: Int = 2048,
     modelSlug: String? = nil,
     corpusDirectoryURL: URL? = nil
   ) throws {
     let configuration = Configuration(
       modelURL: url,
-      contextSize: contextSize,
       modelSlug: modelSlug,
       corpusDirectoryURL: corpusDirectoryURL
     )
@@ -87,7 +78,6 @@ public final class CactusLanguageModel {
       self.configuration = configuration
       let model = cactus_init(
         configuration.modelURL.nativePath,
-        configuration.contextSize,
         configuration.corpusDirectoryURL?.nativePath
       )
       guard let model else { throw ModelCreationError(configuration: configuration) }
@@ -148,9 +138,6 @@ extension CactusLanguageModel {
     /// The local `URL` of the model.
     public var modelURL: URL
 
-    /// The context size.
-    public var contextSize: Int
-
     /// The model slug.
     public var modelSlug: String
 
@@ -161,17 +148,14 @@ extension CactusLanguageModel {
     ///
     /// - Parameters:
     ///   - modelURL: The local `URL` of the model.
-    ///   - contextSize: The context size.
     ///   - modelSlug: The model slug.
     ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
     public init(
       modelURL: URL,
-      contextSize: Int = 2048,
       modelSlug: String? = nil,
       corpusDirectoryURL: URL? = nil
     ) {
       self.modelURL = modelURL
-      self.contextSize = contextSize
       if let modelSlug {
         self.modelSlug = modelSlug
       } else {
@@ -219,7 +203,7 @@ extension CactusLanguageModel {
   ///   - text: The text to tokenize.
   ///   - maxBufferSize: The maximum buffer size for the tokenized output.
   /// - Returns: An array of raw tokens.
-  public func tokenize(text: String, maxBufferSize: Int = 1024) throws -> [UInt32] {
+  public func tokenize(text: String, maxBufferSize: Int = 8192) throws -> [UInt32] {
     let buffer = UnsafeMutableBufferPointer<UInt32>.allocate(capacity: maxBufferSize)
     defer { buffer.deallocate() }
     let count = try self.tokenize(text: text, buffer: buffer)
@@ -603,9 +587,6 @@ extension CactusLanguageModel {
     /// The raw response text from the model.
     public let response: String
 
-    /// The tokens per second rate.
-    public let tokensPerSecond: Double
-
     /// The number of prefilled tokens.
     public let prefillTokens: Int
 
@@ -617,6 +598,18 @@ extension CactusLanguageModel {
 
     /// A list of ``CactusLanguageModel/FunctionCall`` instances from the model.
     public let functionCalls: [FunctionCall]
+
+    /// The model's confidence in its response.
+    public let confidence: Double
+
+    /// The prefill tokens per second.
+    public let prefillTps: Double
+
+    /// The decode tokens per second.
+    public let decodeTps: Double
+
+    /// The current process RAM usage in MB.
+    public let ramUsageMb: Double
 
     private let timeToFirstTokenMs: Double
     private let totalTimeMs: Double
@@ -687,7 +680,7 @@ extension CactusLanguageModel {
       .responseBufferTooSmall(name: "completion", configuration: self.configuration)
     let options =
       options ?? ChatCompletion.Options(modelType: self.configurationFile.modelType ?? .qwen)
-    let maxBufferSize = maxBufferSize ?? self.bufferSize(for: options.maxTokens)
+    let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else {
       CactusTelemetry.send(bufferTooSmallEvent)
       throw ChatCompletionError.bufferSizeTooSmall
@@ -777,13 +770,16 @@ extension CactusLanguageModel.ChatCompletion: Decodable {
   public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.response = try container.decode(String.self, forKey: .response)
-    self.tokensPerSecond = try container.decode(Double.self, forKey: .tokensPerSecond)
     self.prefillTokens = try container.decode(Int.self, forKey: .prefillTokens)
     self.decodeTokens = try container.decode(Int.self, forKey: .decodeTokens)
     self.totalTokens = try container.decode(Int.self, forKey: .totalTokens)
     self.functionCalls =
       try container.decodeIfPresent([CactusLanguageModel.FunctionCall].self, forKey: .functionCalls)
       ?? []
+    self.confidence = try container.decode(Double.self, forKey: .confidence)
+    self.prefillTps = try container.decode(Double.self, forKey: .prefillTps)
+    self.decodeTps = try container.decode(Double.self, forKey: .decodeTps)
+    self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
     self.timeToFirstTokenMs = try container.decode(Double.self, forKey: .timeToFirstTokenMs)
     self.totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
   }
@@ -792,11 +788,14 @@ extension CactusLanguageModel.ChatCompletion: Decodable {
 extension CactusLanguageModel.ChatCompletion: Encodable {
   private enum CodingKeys: String, CodingKey {
     case response
-    case tokensPerSecond = "tokens_per_second"
     case prefillTokens = "prefill_tokens"
     case decodeTokens = "decode_tokens"
     case totalTokens = "total_tokens"
     case functionCalls = "function_calls"
+    case confidence
+    case prefillTps = "prefill_tps"
+    case decodeTps = "decode_tps"
+    case ramUsageMb = "ram_usage_mb"
     case timeToFirstTokenMs = "time_to_first_token_ms"
     case totalTimeMs = "total_time_ms"
   }
@@ -822,9 +821,6 @@ extension CactusLanguageModel {
     /// The raw response text from the model.
     public let response: String
 
-    /// The tokens per second rate.
-    public let tokensPerSecond: Double
-
     /// The number of prefilled tokens.
     public let prefillTokens: Int
 
@@ -833,6 +829,18 @@ extension CactusLanguageModel {
 
     /// The total amount of tokens that make up the response.
     public let totalTokens: Int
+
+    /// The model's confidence in its response.
+    public let confidence: Double
+
+    /// The prefill tokens per second.
+    public let prefillTps: Double
+
+    /// The decode tokens per second.
+    public let decodeTps: Double
+
+    /// The current process RAM usage in MB.
+    public let ramUsageMb: Double
 
     private let timeToFirstTokenMs: Double
     private let totalTimeMs: Double
@@ -978,7 +986,7 @@ extension CactusLanguageModel {
     let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent
       .responseBufferTooSmall(name: "transcription", configuration: self.configuration)
     let options = options ?? Transcription.Options(modelType: .whisper)
-    let maxBufferSize = maxBufferSize ?? self.bufferSize(for: options.maxTokens)
+    let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else {
       CactusTelemetry.send(bufferTooSmallEvent)
       throw TranscriptionError.bufferSizeTooSmall
@@ -1064,10 +1072,13 @@ extension CactusLanguageModel.Transcription: Decodable {
   public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.response = try container.decode(String.self, forKey: .response)
-    self.tokensPerSecond = try container.decode(Double.self, forKey: .tokensPerSecond)
     self.prefillTokens = try container.decode(Int.self, forKey: .prefillTokens)
     self.decodeTokens = try container.decode(Int.self, forKey: .decodeTokens)
     self.totalTokens = try container.decode(Int.self, forKey: .totalTokens)
+    self.confidence = try container.decode(Double.self, forKey: .confidence)
+    self.prefillTps = try container.decode(Double.self, forKey: .prefillTps)
+    self.decodeTps = try container.decode(Double.self, forKey: .decodeTps)
+    self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
     self.timeToFirstTokenMs = try container.decode(Double.self, forKey: .timeToFirstTokenMs)
     self.totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
   }
@@ -1076,10 +1087,13 @@ extension CactusLanguageModel.Transcription: Decodable {
 extension CactusLanguageModel.Transcription: Encodable {
   private enum CodingKeys: String, CodingKey {
     case response
-    case tokensPerSecond = "tokens_per_second"
     case prefillTokens = "prefill_tokens"
     case decodeTokens = "decode_tokens"
     case totalTokens = "total_tokens"
+    case confidence
+    case prefillTps = "prefill_tps"
+    case decodeTps = "decode_tps"
+    case ramUsageMb = "ram_usage_mb"
     case timeToFirstTokenMs = "time_to_first_token_ms"
     case totalTimeMs = "total_time_ms"
   }
@@ -1188,14 +1202,89 @@ extension CactusLanguageModel {
   }
 }
 
-// MARK: - Helpers
+// MARK: - RAG Query
 
 extension CactusLanguageModel {
-  private func bufferSize(for contentLength: Int) -> Int {
-    max(
-      contentLength * (self.configurationFile.precision?.bits ?? 32),
-      self.configurationFile.hiddenDimensions ?? 1024
+  /// A result from querying a RAG (Retrieval-Augmented Generation) corpus.
+  public struct RAGQueryResult: Hashable, Sendable, Decodable, Encodable {
+    /// The relevant document chunks from the corpus, sorted by relevance score.
+    public let chunks: [RAGChunk]
+  }
+
+  /// A chunk from a RAG corpus with its relevance score and metadata.
+  public struct RAGChunk: Hashable, Sendable, Decodable, Encodable {
+    /// The relevance score of this chunk (0-1), computed using embeddings and BM25 rankings.
+    public let score: Double
+
+    /// The source file for this chunk.
+    public let source: String
+
+    /// The text content of this chunk.
+    public let content: String
+  }
+
+  /// An error thrown when querying a RAG corpus.
+  public enum RAGQueryError: Error, Hashable {
+    /// The response buffer was too small to contain the full results.
+    case bufferSizeTooSmall
+
+    /// The model does not have a corpus index loaded.
+    case ragNotSupported
+
+    /// An error occurred during RAG retrieval.
+    case generation(message: String?)
+  }
+
+  /// Queries the RAG corpus for documents relevant to the query.
+  ///
+  /// This method is only supported on models initialized with a corpus directory.
+  ///
+  /// The search is performed by combining embeddings and BM25 rankings to find the most relevant
+  /// document chunks from the corpus directory that was provided during model initialization.
+  ///
+  /// - Parameters:
+  ///   - query: The search query string to find relevant documents.
+  ///   - topK: The maximum number of chunks to return (default: 10).
+  ///   - maxBufferSize: The maximum buffer size for the response (default: 8192).
+  /// - Returns: A ``RAGQueryResult`` containing relevant document chunks.
+  public func ragQuery(
+    query: String,
+    topK: Int = 10,
+    maxBufferSize: Int? = nil
+  ) throws -> RAGQueryResult {
+    let maxBufferSize = maxBufferSize ?? 8192
+    guard maxBufferSize > 0 else { throw RAGQueryError.bufferSizeTooSmall }
+
+    let buffer = UnsafeMutablePointer<CChar>.allocate(capacity: maxBufferSize)
+    defer { buffer.deallocate() }
+
+    let result = cactus_rag_query(
+      self.model,
+      query,
+      buffer,
+      maxBufferSize * MemoryLayout<CChar>.stride,
+      topK
     )
+
+    var responseData = Data()
+    for i in 0..<strnlen(buffer, maxBufferSize) {
+      responseData.append(UInt8(bitPattern: buffer[i]))
+    }
+
+    guard result > 0 else {
+      let response = try? ffiDecoder.decode(
+        FFIErrorResponse.self,
+        from: responseData
+      )
+
+      if response?.error.contains("No corpus") == true {
+        throw RAGQueryError.ragNotSupported
+      }
+
+      throw RAGQueryError.bufferSizeTooSmall
+    }
+
+    return try ffiDecoder.decode(RAGQueryResult.self, from: responseData)
   }
 }
 

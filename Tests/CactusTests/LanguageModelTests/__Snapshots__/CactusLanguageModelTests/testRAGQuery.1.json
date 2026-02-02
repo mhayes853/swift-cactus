@@ -1,0 +1,32 @@
+{
+  "result" : {
+    "chunks" : [
+      {
+        "content" : "Async and await are fundamental concepts in modern Swift programming for handling asynchronous operations. Swift's async\/await syntax, introduced in Swift 5.5, provides a more readable and maintainable way to write concurrent code compared to completion handlers and callbacks.\n\nWhen you mark a function as async, it can suspend execution while waiting for an asynchronous operation to complete without blocking the current thread. The await keyword indicates a suspension point where the function can pause and resume later when the operation finishes.\n",
+        "score" : 0.01639,
+        "source" : "document2.txt"
+      },
+      {
+        "content" : "Swift actors provide a way to safely isolate mutable state in concurrent environments. By marking a class as an actor, you ensure that its properties and methods can only be accessed by one task at a time, preventing data races and ensuring thread safety.\n",
+        "score" : 0.01613,
+        "source" : "document2.txt"
+      },
+      {
+        "content" : "Value types like structs and enums are copied when assigned to a new variable or passed to a function, eliminating many memory management concerns. This makes them ideal for simple data models and helps maintain predictability in your code.\n",
+        "score" : 0.01587,
+        "source" : "document3.txt"
+      },
+      {
+        "content" : "Swift is a powerful and intuitive programming language developed by Apple. It was designed to be safe, fast, and expressive. Swift combines the best in modern language thinking with wisdom from the wider Apple engineering culture and the diverse contributions from its open-source community.\n\nSwift provides its own error handling model using the throws, throw, try, and catch keywords. This allows you to handle errors in a structured way and recover from them when necessary. The language also supports optional types, which help prevent null pointer exceptions by making the absence of a value explicit.\n",
+        "score" : 0.01562,
+        "source" : "document1.txt"
+      },
+      {
+        "content" : "Memory management in Swift is primarily handled through Automatic Reference Counting (ARC). ARC automatically frees up memory when class instances are no longer needed. However, developers must be careful to avoid strong reference cycles that can prevent objects from being deallocated.\n\nStrong reference cycles occur when two class instances hold strong references to each other, creating a situation where neither can be released. To prevent this, Swift provides weak and unowned references. Weak references are optional and set to nil when the referenced instance is deallocated, while unowned references assume they will always have a value.\n",
+        "score" : 0.01538,
+        "source" : "document3.txt"
+      }
+    ]
+  },
+  "slug" : "lfm2-1.2b-rag"
+}

@@ -14,7 +14,7 @@ struct `CactusTranscriptionStream tests` {
     @Test
     func `Async Sequence Snapshot From Stream Inserts`() async throws {
       let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
-      let stream = try CactusTranscriptionStream(modelURL: modelURL, contextSize: 2048)
+      let stream = try CactusTranscriptionStream(modelURL: modelURL)
 
       let recordingTask = Task {
         var chunks = [CactusStreamTranscriber.ProcessedTranscription]()
@@ -39,7 +39,7 @@ struct `CactusTranscriptionStream tests` {
           frameLength: frameLength
         )
 
-        try await stream.insert(buffer: chunk)
+        _ = try await stream.process(buffer: chunk)
       }
 
       _ = try await stream.finish()
