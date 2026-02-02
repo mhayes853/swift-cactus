@@ -1205,22 +1205,48 @@ extension CactusLanguageModel {
 // MARK: - RAG Query
 
 extension CactusLanguageModel {
+  /// A result from querying a RAG (Retrieval-Augmented Generation) corpus.
   public struct RAGQueryResult: Hashable, Sendable, Decodable, Encodable {
+    /// The relevant document chunks from the corpus, sorted by relevance score.
     public let chunks: [RAGChunk]
   }
 
+  /// A chunk from a RAG corpus with its relevance score and metadata.
   public struct RAGChunk: Hashable, Sendable, Decodable, Encodable {
+    /// The relevance score of this chunk (0-1), computed using embeddings and BM25 rankings.
     public let score: Double
+
+    /// The source file for this chunk.
     public let source: String
+
+    /// The text content of this chunk.
     public let content: String
   }
 
+  /// An error thrown when querying a RAG corpus.
   public enum RAGQueryError: Error, Hashable {
+    /// The response buffer was too small to contain the full results.
     case bufferSizeTooSmall
+
+    /// The model does not have a corpus index loaded.
     case ragNotSupported
+
+    /// An error occurred during RAG retrieval.
     case generation(message: String?)
   }
 
+  /// Queries the RAG corpus for documents relevant to the query.
+  ///
+  /// This method is only supported on models initialized with a corpus directory.
+  ///
+  /// The search is performed by combining embeddings and BM25 rankings to find the most relevant
+  /// document chunks from the corpus directory that was provided during model initialization.
+  ///
+  /// - Parameters:
+  ///   - query: The search query string to find relevant documents.
+  ///   - topK: The maximum number of chunks to return (default: 10).
+  ///   - maxBufferSize: The maximum buffer size for the response (default: 8192).
+  /// - Returns: A ``RAGQueryResult`` containing relevant document chunks.
   public func ragQuery(
     query: String,
     topK: Int = 10,
