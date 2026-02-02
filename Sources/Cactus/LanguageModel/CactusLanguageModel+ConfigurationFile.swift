@@ -145,6 +145,7 @@ extension CactusLanguageModel {
       case "smol": .smol
       case "lfm2": .lfm2
       case "qwen": .qwen
+      case "moonshine": .moonshine
       case "whisper": .whisper
       default: nil
       }
@@ -426,6 +427,14 @@ extension CactusLanguageModel {
     /// A model type for whisper models.
     public static let whisper = Self(
       identifier: "whisper",
+      defaultTemperature: 0.0,
+      defaultTopP: 0.0,
+      defaultTopK: 0
+    )
+
+    /// A model type for moonshine models.
+    public static let moonshine = Self(
+      identifier: "moonshine",
       defaultTemperature: 0.0,
       defaultTopP: 0.0,
       defaultTopK: 0

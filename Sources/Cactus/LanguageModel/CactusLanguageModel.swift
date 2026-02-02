@@ -1125,6 +1125,15 @@ extension CactusLanguageModel {
     /// Whether to force functions to be used by the model.
     public var forceFunctions: Bool
 
+    /// The minimum confidence threshold for tool selection (0.0-1.0).
+    public var confidenceThreshold: Float
+
+    /// The number of top results for tool RAG retrieval.
+    public var toolRagTopK: Int
+
+    /// Whether to include stop sequences in the response.
+    public var includeStopSequences: Bool
+
     /// Creates options for generating inferences.
     ///
     /// - Parameters:
@@ -1134,13 +1143,19 @@ extension CactusLanguageModel {
     ///   - topK: The k most probable options to limit the next word to.
     ///   - stopSequences: An array of stop sequence phrases.
     ///   - forceFunctions: Whether to force functions to be used by the model.
+    ///   - confidenceThreshold: The minimum confidence threshold for tool selection (0.0-1.0).
+    ///   - toolRagTopK: The number of top results for tool RAG retrieval.
+    ///   - includeStopSequences: Whether to include stop sequences in the response.
     public init(
       maxTokens: Int = 200,
       temperature: Float = 0.6,
       topP: Float = 0.95,
       topK: Int = 20,
       stopSequences: [String] = Self.defaultStopSequences,
-      forceFunctions: Bool = false
+      forceFunctions: Bool = false,
+      confidenceThreshold: Float = 0.7,
+      toolRagTopK: Int = 2,
+      includeStopSequences: Bool = false
     ) {
       self.maxTokens = maxTokens
       self.temperature = temperature
@@ -1148,6 +1163,9 @@ extension CactusLanguageModel {
       self.topK = topK
       self.stopSequences = stopSequences
       self.forceFunctions = forceFunctions
+      self.confidenceThreshold = confidenceThreshold
+      self.toolRagTopK = toolRagTopK
+      self.includeStopSequences = includeStopSequences
     }
 
     /// Creates options for generating inferences.
@@ -1157,11 +1175,17 @@ extension CactusLanguageModel {
     ///   - modelType: The model type.
     ///   - stopSequences: An array of stop sequence phrases.
     ///   - forceFunctions: Whether to force functions to be used by the model.
+    ///   - confidenceThreshold: The minimum confidence threshold for tool selection (0.0-1.0).
+    ///   - toolRagTopK: The number of top results for tool RAG retrieval.
+    ///   - includeStopSequences: Whether to include stop sequences in the response.
     public init(
       maxTokens: Int = 200,
       modelType: CactusLanguageModel.ModelType,
       stopSequences: [String] = Self.defaultStopSequences,
-      forceFunctions: Bool = false
+      forceFunctions: Bool = false,
+      confidenceThreshold: Float = 0.7,
+      toolRagTopK: Int = 2,
+      includeStopSequences: Bool = false
     ) {
       self.maxTokens = maxTokens
       self.temperature = modelType.defaultTemperature
@@ -1169,6 +1193,9 @@ extension CactusLanguageModel {
       self.topK = modelType.defaultTopK
       self.stopSequences = stopSequences
       self.forceFunctions = forceFunctions
+      self.confidenceThreshold = confidenceThreshold
+      self.toolRagTopK = toolRagTopK
+      self.includeStopSequences = includeStopSequences
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -1178,6 +1205,9 @@ extension CactusLanguageModel {
       case topK = "top_k"
       case stopSequences = "stop_sequences"
       case forceFunctions = "force_tools"
+      case confidenceThreshold = "confidence_threshold"
+      case toolRagTopK = "tool_rag_top_k"
+      case includeStopSequences = "include_stop_sequences"
     }
   }
 }
