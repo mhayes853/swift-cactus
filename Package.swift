@@ -48,7 +48,7 @@ let package = Package(
         .product(name: "IssueReportingTestSupport", package: "xctest-dynamic-overlay")
       ],
       exclude: ["LanguageModelTests/__Snapshots__", "JSONSchemaTests/__Snapshots__"],
-      resources: [.process("Resources")],
+      resources: [.copy("Resources")],
       swiftSettings: [supportsTelemetry]
     ),
     .target(

@@ -1202,6 +1202,66 @@ extension CactusLanguageModel {
   }
 }
 
+// MARK: - RAG Query
+
+extension CactusLanguageModel {
+  public struct RAGQueryResult: Hashable, Sendable, Decodable, Encodable {
+    public let chunks: [RAGChunk]
+  }
+
+  public struct RAGChunk: Hashable, Sendable, Decodable, Encodable {
+    public let score: Double
+    public let source: String
+    public let content: String
+  }
+
+  public enum RAGQueryError: Error, Hashable {
+    case bufferSizeTooSmall
+    case ragNotSupported
+    case generation(message: String?)
+  }
+
+  public func ragQuery(
+    query: String,
+    topK: Int = 10,
+    maxBufferSize: Int? = nil
+  ) throws -> RAGQueryResult {
+    let maxBufferSize = maxBufferSize ?? 8192
+    guard maxBufferSize > 0 else { throw RAGQueryError.bufferSizeTooSmall }
+
+    let buffer = UnsafeMutablePointer<CChar>.allocate(capacity: maxBufferSize)
+    defer { buffer.deallocate() }
+
+    let result = cactus_rag_query(
+      self.model,
+      query,
+      buffer,
+      maxBufferSize * MemoryLayout<CChar>.stride,
+      topK
+    )
+
+    var responseData = Data()
+    for i in 0..<strnlen(buffer, maxBufferSize) {
+      responseData.append(UInt8(bitPattern: buffer[i]))
+    }
+
+    guard result > 0 else {
+      let response = try? ffiDecoder.decode(
+        FFIErrorResponse.self,
+        from: responseData
+      )
+
+      if response?.error.contains("No corpus") == true {
+        throw RAGQueryError.ragNotSupported
+      }
+
+      throw RAGQueryError.bufferSizeTooSmall
+    }
+
+    return try ffiDecoder.decode(RAGQueryResult.self, from: responseData)
+  }
+}
+
 // MARK: - Helpers
 
 extension CactusLanguageModel {

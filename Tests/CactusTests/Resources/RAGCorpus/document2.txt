@@ -1,0 +1,5 @@
+Async and await are fundamental concepts in modern Swift programming for handling asynchronous operations. Swift's async/await syntax, introduced in Swift 5.5, provides a more readable and maintainable way to write concurrent code compared to completion handlers and callbacks.
+
+When you mark a function as async, it can suspend execution while waiting for an asynchronous operation to complete without blocking the current thread. The await keyword indicates a suspension point where the function can pause and resume later when the operation finishes.
+
+Swift actors provide a way to safely isolate mutable state in concurrent environments. By marking a class as an actor, you ensure that its properties and methods can only be accessed by one task at a time, preventing data races and ensuring thread safety.

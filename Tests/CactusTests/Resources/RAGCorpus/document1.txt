@@ -1,0 +1,3 @@
+Swift is a powerful and intuitive programming language developed by Apple. It was designed to be safe, fast, and expressive. Swift combines the best in modern language thinking with wisdom from the wider Apple engineering culture and the diverse contributions from its open-source community.
+
+Swift provides its own error handling model using the throws, throw, try, and catch keywords. This allows you to handle errors in a structured way and recover from them when necessary. The language also supports optional types, which help prevent null pointer exceptions by making the absence of a value explicit.
