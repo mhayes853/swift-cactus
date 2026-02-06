@@ -62,60 +62,6 @@ extension CactusSupabaseClient {
   }
 }
 
-// MARK: - Register Device
-
-extension CactusSupabaseClient {
-  typealias RegisterDevicePayload = String
-
-  struct DeviceRegistration: Sendable, Codable {
-    let deviceData: CactusTelemetry.DeviceMetadata
-    let deviceId: String?
-    let cactusProKey: String?
-
-    private enum CodingKeys: String, CodingKey {
-      case deviceData = "device_data"
-      case deviceId = "device_id"
-      case cactusProKey = "cactus_pro_key"
-    }
-  }
-
-  func registerDevice(registration: DeviceRegistration) async throws -> RegisterDevicePayload {
-    var request = self.baseRequest(for: self.baseURL(for: "/functions/v1/device-registration"))
-    request.httpMethod = "POST"
-    request.httpBody = try JSONEncoder().encode(registration)
-    let (data, resp) = try await self.session.data(for: request)
-    let statusCode = (resp as? HTTPURLResponse)?.statusCode
-    guard [200, 201].contains(statusCode ?? 0) else {
-      throw RegisterDeviceError(statusCode: statusCode)
-    }
-    return String(decoding: data, as: UTF8.self)
-  }
-
-  struct RegisterDeviceError: Error {
-    let statusCode: Int?
-  }
-}
-
-// MARK: - Send Telemetry Event
-
-extension CactusSupabaseClient {
-  func send(events: [CactusTelemetry.Batcher.Event]) async throws {
-    var request = self.baseRequest(for: self.baseURL(for: "/rest/v1/logs"))
-    request.addValue("return=minimal", forHTTPHeaderField: "Prefer")
-    request.httpMethod = "POST"
-    request.httpBody = try JSONEncoder().encode(events)
-    let (_, resp) = try await self.session.data(for: request)
-    let statusCode = (resp as? HTTPURLResponse)?.statusCode
-    guard [200, 201].contains(statusCode ?? 0) else {
-      throw TelemetryError(statusCode: statusCode)
-    }
-  }
-
-  struct TelemetryError: Error {
-    let statusCode: Int?
-  }
-}
-
 // MARK: - Helper
 
 extension CactusSupabaseClient {

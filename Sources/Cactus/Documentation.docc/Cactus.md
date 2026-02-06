@@ -14,9 +14,6 @@ You first must download the model you want to use using ``CactusModelsDirectory`
 ```swift
 import Cactus
 
-// (OPTIONAL) For NPU acceleration, email founders@cactuscompute.com to obtain a pro key.
-try await Cactus.enablePro(key: "your_pro_key_here")
-
 let modelURL = try await CactusModelsDirectory.shared.modelURL(for: .qwen3_0_6b())
 let model = try CactusLanguageModel(from: modelURL)
 
@@ -291,26 +288,6 @@ for chunk in result.chunks {
 
 The RAG query uses hybrid search combining embeddings with BM25 rankings to find the most relevant document chunks.
 
-### Telemetry (iOS and macOS Only)
-
-You can configure telemetry in the entry point of your app by calling ``CactusTelemetry/configure(_:logger:)``.
-
-```swift
-import Cactus
-import SwiftUI
-
-@main
-struct MyApp: App {
-  init() {
-    CactusTelemetry.configure("token-from-cactus-dashboard")
-  }
-
-  // ...
-}
-```
-
-`CactusLanguageModel` will automatically record telemetry events for every model initialization, chat completion, and embeddings generation, but you can also send telemetry events manually using ``CactusTelemetry/send(_:logger:)``. You can view the telemetry data in the cactus dashboard.
-
 ### Android Setup
 
 On Android certain APIs such as ``CactusModelsDirectory/shared`` require the use of the files directory. When your application launches on Android, make sure to set the `androidFilesDirectory` global variable to the path of the files directory.
@@ -417,11 +394,6 @@ class MainActivity : ComponentActivity() {
 - ``JSONSchema/ValueSchema``
 - ``JSONSchema/Validator``
 - ``JSONSchema/Validator/validate(value:with:)``
-
-### Telemetry
-- ``CactusTelemetry``
-- ``CactusTelemetry/Client``
-- ``CactusTelemetry/configure(_:client:logger:)``
 
 ### Indexing
 - ``CactusIndex``

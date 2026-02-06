@@ -1,15 +1,15 @@
 {
-  "confidence" : 0.9069,
-  "decode_tokens" : 113,
+  "confidence" : 0.9003,
+  "decode_tokens" : 200,
   "decode_tps" : 101.23,
   "function_calls" : [
 
   ],
   "prefill_tokens" : 272,
-  "prefill_tps" : 109.98,
-  "ram_usage_mb" : 1348.62,
-  "response" : "The image depicts a young man, likely in his late teens or early twenties, holding a book and a backpack. He is smiling and appears to be in the middle of reading or preparing for an activity. The background is plain white, which helps to focus attention on the subject. The man's attire includes a casual button-up shirt with rolled-up sleeves and what seems to be a patterned tie or scarf around his neck. His hair is neatly styled, adding to the overall impression of youthfulness and readiness for learning or travel.",
-  "time_to_first_token_ms" : 2473.09,
-  "total_time_ms" : 3579.43,
-  "total_tokens" : 385
+  "prefill_tps" : 105.72,
+  "ram_usage_mb" : 941.35,
+  "response" : "The image depicts a young man with short, dark hair and a friendly demeanor. He is smiling warmly at the camera, his eyes sparkling with joy and his teeth visible in the broad smile. His attire consists of a light-colored button-up shirt that appears to be made of cotton or linen, complete with rolled-up sleeves that suggest comfort and ease. The shirt features a small pocket on the left side of his chest, which adds to its casual style.\n\nIn one hand, he holds an open book that has white pages filled with black text on both sides. The book seems to be well-used but well-maintained, indicating it might hold significant personal value or knowledge for him. In the other hand, he holds another book closed by holding it up in front of him as if presenting it proudly or sharing something important with the camera. This action suggests a sense of pride and accomplishment in his literary pursuits or achievements related to reading and learning.\n\nThe",
+  "time_to_first_token_ms" : 2572.95,
+  "total_time_ms" : 4538.73,
+  "total_tokens" : 472
 }
