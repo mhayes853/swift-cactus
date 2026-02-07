@@ -74,30 +74,18 @@ public final class CactusLanguageModel {
   ///
   /// - Parameter configuration: The ``Configuration``.
   public init(configuration: Configuration) throws {
-    do {
-      self.configuration = configuration
-      let model = cactus_init(
-        configuration.modelURL.nativePath,
-        configuration.corpusDirectoryURL?.nativePath
-      )
-      guard let model else { throw ModelCreationError(configuration: configuration) }
-      self.model = model
-      let configFile = try ConfigurationFile(
-        contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
-      )
-      self.configurationFile = configFile
-      self.isModelPointerManaged = true
-      CactusTelemetry.send(CactusTelemetry.LanguageModelInitEvent(configuration: configuration))
-    } catch let error as ModelCreationError {
-      CactusTelemetry.send(
-        CactusTelemetry.LanguageModelErrorEvent(
-          name: "init",
-          message: error.message,
-          configuration: configuration
-        )
-      )
-      throw error
-    }
+    self.configuration = configuration
+    let model = cactus_init(
+      configuration.modelURL.nativePath,
+      configuration.corpusDirectoryURL?.nativePath
+    )
+    guard let model else { throw ModelCreationError(configuration: configuration) }
+    self.model = model
+    let configFile = try ConfigurationFile(
+      contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
+    )
+    self.configurationFile = configFile
+    self.isModelPointerManaged = true
   }
 
   /// Creates a language model from the specified model pointer and configuration.
@@ -120,7 +108,6 @@ public final class CactusLanguageModel {
     )
     self.model = model
     self.isModelPointerManaged = isModelPointerManaged
-    CactusTelemetry.send(CactusTelemetry.LanguageModelInitEvent(configuration: configuration))
   }
 
   deinit {
@@ -504,14 +491,8 @@ extension CactusLanguageModel {
     for request: EmbeddingsRequest,
     buffer: UnsafeMutableBufferPointer<Float>
   ) throws -> Int {
-    let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent(
-      name: "embedding",
-      message: "Buffer size too small",
-      configuration: self.configuration
-    )
     let size = buffer.count
     guard size > 0 else {
-      CactusTelemetry.send(bufferTooSmallEvent)
       throw EmbeddingsError.bufferTooSmall
     }
     var dimensions = 0
@@ -542,13 +523,6 @@ extension CactusLanguageModel {
     switch resultCode {
     case -1:
       let message = cactus_get_last_error().map { String(cString: $0) }
-      CactusTelemetry.send(
-        CactusTelemetry.LanguageModelErrorEvent(
-          name: "embedding",
-          message: message ?? "Unknown Error",
-          configuration: self.configuration
-        )
-      )
 
       if message?.contains("Image embeddings") == true {
         throw EmbeddingsError.imageNotSupported
@@ -558,12 +532,8 @@ extension CactusLanguageModel {
         throw EmbeddingsError.generation(message: message)
       }
     case -2:
-      CactusTelemetry.send(bufferTooSmallEvent)
       throw EmbeddingsError.bufferTooSmall
     default:
-      CactusTelemetry.send(
-        CactusTelemetry.LanguageModelEmbeddingsEvent(configuration: self.configuration)
-      )
       return dimensions
     }
   }
@@ -676,13 +646,10 @@ extension CactusLanguageModel {
     functions: [FunctionDefinition] = [],
     onToken: (String, UInt32) -> Void
   ) throws -> ChatCompletion {
-    let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent
-      .responseBufferTooSmall(name: "completion", configuration: self.configuration)
     let options =
       options ?? ChatCompletion.Options(modelType: self.configurationFile.modelType ?? .qwen)
     let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else {
-      CactusTelemetry.send(bufferTooSmallEvent)
       throw ChatCompletionError.bufferSizeTooSmall
     }
 
@@ -720,27 +687,12 @@ extension CactusLanguageModel {
         FFIErrorResponse.self,
         from: responseData
       )
-      if response?.error.contains(bufferTooSmallEvent.message) == true {
-        CactusTelemetry.send(bufferTooSmallEvent)
+      if response?.error.contains("Buffer not big enough") == true {
         throw ChatCompletionError.bufferSizeTooSmall
       }
-      CactusTelemetry.send(
-        CactusTelemetry.LanguageModelErrorEvent(
-          name: "completion",
-          message: response?.error ?? "Unknown error",
-          configuration: self.configuration
-        )
-      )
       throw ChatCompletionError.generation(message: response?.error)
     }
     let completion = try ffiDecoder.decode(ChatCompletion.self, from: responseData)
-    CactusTelemetry.send(
-      CactusTelemetry.LanguageModelCompletionEvent(
-        chatCompletion: completion,
-        options: options,
-        configuration: self.configuration
-      )
-    )
     return completion
   }
 
@@ -973,22 +925,12 @@ extension CactusLanguageModel {
     onToken: (String, UInt32) -> Void
   ) throws -> Transcription {
     guard self.configurationFile.modelType == .whisper else {
-      CactusTelemetry.send(
-        CactusTelemetry.LanguageModelErrorEvent(
-          name: "transcription",
-          message: "Transcription not supported",
-          configuration: self.configuration
-        )
-      )
       throw TranscriptionError.notSupported
     }
 
-    let bufferTooSmallEvent = CactusTelemetry.LanguageModelErrorEvent
-      .responseBufferTooSmall(name: "transcription", configuration: self.configuration)
     let options = options ?? Transcription.Options(modelType: .whisper)
     let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else {
-      CactusTelemetry.send(bufferTooSmallEvent)
       throw TranscriptionError.bufferSizeTooSmall
     }
 
@@ -1038,27 +980,12 @@ extension CactusLanguageModel {
         FFIErrorResponse.self,
         from: responseData
       )
-      if response?.error.contains(bufferTooSmallEvent.message) == true {
-        CactusTelemetry.send(bufferTooSmallEvent)
+      if response?.error.contains("Buffer not big enough") == true {
         throw TranscriptionError.bufferSizeTooSmall
       }
-      CactusTelemetry.send(
-        CactusTelemetry.LanguageModelErrorEvent(
-          name: "transcription",
-          message: response?.error ?? "Unknown error",
-          configuration: self.configuration
-        )
-      )
       throw TranscriptionError.generation(message: response?.error)
     }
     let transcription = try ffiDecoder.decode(Transcription.self, from: responseData)
-    CactusTelemetry.send(
-      CactusTelemetry.LanguageModelTranscriptionEvent(
-        transcription: transcription,
-        options: options,
-        configuration: self.configuration
-      )
-    )
     return transcription
   }
 }

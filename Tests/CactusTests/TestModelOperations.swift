@@ -2,6 +2,8 @@ import Cactus
 import Foundation
 import Operation
 
+let nanosecondsPerSecond = UInt64(1_000_000_000)
+
 // MARK: - TestModelDownloadQuery
 
 extension CactusLanguageModel {
