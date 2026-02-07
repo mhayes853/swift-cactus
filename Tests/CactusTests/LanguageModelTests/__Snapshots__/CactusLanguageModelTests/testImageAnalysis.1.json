@@ -1,15 +1,15 @@
 {
-  "confidence" : 0.9003,
-  "decode_tokens" : 200,
-  "decode_tps" : 101.23,
+  "confidence" : 0.9031,
+  "decode_tokens" : 155,
+  "decode_tps" : 94.02,
   "function_calls" : [
 
   ],
   "prefill_tokens" : 272,
-  "prefill_tps" : 105.72,
-  "ram_usage_mb" : 941.35,
-  "response" : "The image depicts a young man with short, dark hair and a friendly demeanor. He is smiling warmly at the camera, his eyes sparkling with joy and his teeth visible in the broad smile. His attire consists of a light-colored button-up shirt that appears to be made of cotton or linen, complete with rolled-up sleeves that suggest comfort and ease. The shirt features a small pocket on the left side of his chest, which adds to its casual style.\n\nIn one hand, he holds an open book that has white pages filled with black text on both sides. The book seems to be well-used but well-maintained, indicating it might hold significant personal value or knowledge for him. In the other hand, he holds another book closed by holding it up in front of him as if presenting it proudly or sharing something important with the camera. This action suggests a sense of pride and accomplishment in his literary pursuits or achievements related to reading and learning.\n\nThe",
-  "time_to_first_token_ms" : 2572.95,
-  "total_time_ms" : 4538.73,
-  "total_tokens" : 472
+  "prefill_tps" : 102.82,
+  "ram_usage_mb" : 942.16,
+  "response" : "The image depicts a young man with short, dark hair and a friendly smile. He is wearing a light-colored button-up shirt with the sleeves rolled up to his elbows. The shirt has a pocket on the left side of his chest, which appears to be made of denim material. On his right shoulder, there is an open book that he is holding in front of him. The book has visible pages and text on its cover, although the specific content cannot be discerned from this image alone.\n\nThe young man's pose suggests he might be engaged in reading or studying something interesting or engaging for him. His attire and demeanor give off an aura of casualness but also readiness for intellectual pursuits or leisurely activities such as reading and learning.",
+  "time_to_first_token_ms" : 2645.42,
+  "total_time_ms" : 4283.31,
+  "total_tokens" : 427
 }

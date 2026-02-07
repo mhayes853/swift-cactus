@@ -43,6 +43,9 @@ let package = Package(
           name: "CXXCactusDarwin",
           condition: .when(platforms: [.iOS, .macOS, .visionOS, .tvOS, .watchOS, .macCatalyst])
         )
+      ],
+      linkerSettings: [
+        .linkedLibrary("c++_shared", .when(platforms: [.android]))
       ]
     ),
     .binaryTarget(name: "CXXCactusDarwin", path: "bin/CXXCactusDarwin.xcframework.zip"),

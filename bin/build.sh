@@ -50,6 +50,8 @@ function build_android_artifactbundle() {
 
     sed -i.bak 's/set(CMAKE_CXX_STANDARD *17)/set(CMAKE_CXX_STANDARD 20)/' "$ANDROID_DIR/CMakeLists.txt"
 
+    sed -i.bak 's/target_link_libraries(cactus \${LOG_LIB} android)/target_link_libraries(cactus ${LOG_LIB} android c++_shared)/' "$ANDROID_DIR/CMakeLists.txt"
+
     $ANDROID_DIR/build.sh
     mkdir "$ARTIFACT_BUNDLE_PATH"
     mkdir -p "$ARTIFACT_BUNDLE_PATH/dist/android"

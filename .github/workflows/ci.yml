@@ -29,7 +29,7 @@ jobs:
 
   android:
     name: Android
-    runs-on: macos-26
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
         with:
