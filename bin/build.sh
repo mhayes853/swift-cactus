@@ -44,18 +44,12 @@ cp "$SOURCE_DIR/ffi/cactus_ffi.h" "$BUILD_DIR/cactus.h"
 
 n_cpu=$(sysctl -n hw.logicalcpu 2>/dev/null || echo 4)
 
-function build_android_artifactbundle() {
-    rm -drf "$OUTPUT_DIR/CXXCactus.artifactbundle"
-    echo "🤖 Building Cactus artifactbundle for Android platforms..."
+VARIANT_PATHS=()
+VARIANT_TRIPLES=()
 
-    sed -i.bak 's/set(CMAKE_CXX_STANDARD *17)/set(CMAKE_CXX_STANDARD 20)/' "$ANDROID_DIR/CMakeLists.txt"
-
-    sed -i.bak 's/target_link_libraries(cactus \${LOG_LIB} android)/target_link_libraries(cactus ${LOG_LIB} android c++_shared)/' "$ANDROID_DIR/CMakeLists.txt"
-
-    $ANDROID_DIR/build.sh
-    mkdir "$ARTIFACT_BUNDLE_PATH"
-    mkdir -p "$ARTIFACT_BUNDLE_PATH/dist/android"
-    cp -r "$ANDROID_DIR/libcactus.a" "$ARTIFACT_BUNDLE_PATH/dist/android/libcactus.a"
+function artifactbundle_init() {
+    rm -drf "$ARTIFACT_BUNDLE_PATH"
+    mkdir -p "$ARTIFACT_BUNDLE_PATH/dist"
     mkdir -p "$ARTIFACT_BUNDLE_PATH/include"
     cp -r "$BUILD_DIR/cactus.h" "$ARTIFACT_BUNDLE_PATH/include/cactus.h"
 
@@ -65,32 +59,123 @@ module CXXCactus {
     export *
 }
 EOF
-
-    cat > "$ARTIFACT_BUNDLE_PATH/info.json" << 'EOF'
-{
-  "schemaVersion": "1.0",
-  "artifacts": {
-    "cxxcactus": {
-      "type": "staticLibrary",
-      "version": "1.0.0",
-      "variants": [
-        {
-          "path": "dist/android/libcactus.a",
-          "supportedTriples": ["aarch64-unknown-linux-android"],
-          "staticLibraryMetadata": {
-            "headerPaths": ["include"],
-            "moduleMapPath": "include/module.modulemap"
-          }
-        }
-      ]
-    }
-  }
 }
-EOF
 
+function artifactbundle_add_variant() {
+    local RELATIVE_PATH="$1"
+    local SUPPORTED_TRIPLE="$2"
+    VARIANT_PATHS+=("$RELATIVE_PATH")
+    VARIANT_TRIPLES+=("$SUPPORTED_TRIPLE")
+}
+
+function artifactbundle_write_info_json() {
+    local INFO_FILE="$ARTIFACT_BUNDLE_PATH/info.json"
+    {
+        echo "{"
+        echo "  \"schemaVersion\": \"1.0\"," 
+        echo "  \"artifacts\": {"
+        echo "    \"cxxcactus\": {"
+        echo "      \"type\": \"staticLibrary\"," 
+        echo "      \"version\": \"1.0.0\"," 
+        echo "      \"variants\": ["
+        local i
+        for i in "${!VARIANT_PATHS[@]}"; do
+            local COMMA="," 
+            if [ "$i" -eq $((${#VARIANT_PATHS[@]} - 1)) ]; then
+                COMMA=""
+            fi
+            echo "        {"
+            echo "          \"path\": \"${VARIANT_PATHS[$i]}\"," 
+            echo "          \"supportedTriples\": [\"${VARIANT_TRIPLES[$i]}\"],"
+            echo "          \"staticLibraryMetadata\": {"
+            echo "            \"headerPaths\": [\"include\"],"
+            echo "            \"moduleMapPath\": \"include/module.modulemap\""
+            echo "          }"
+            echo "        }$COMMA"
+        done
+        echo "      ]"
+        echo "    }"
+        echo "  }"
+        echo "}"
+    } > "$INFO_FILE"
+}
+
+function artifactbundle_finalize() {
+    artifactbundle_write_info_json
     zip -r "$ARTIFACT_BUNDLE_PATH.zip" "$ARTIFACT_BUNDLE_PATH"
     rm -drf "$ARTIFACT_BUNDLE_PATH"
-    echo "✅ Finished creating Android artifactbundle"
+    echo "✅ Artifactbundle created at $ARTIFACT_BUNDLE_PATH.zip"
+}
+
+function build_android_variant() {
+    echo "🤖 Building Cactus artifactbundle variant for Android..."
+
+    sed -i.bak 's/set(CMAKE_CXX_STANDARD *17)/set(CMAKE_CXX_STANDARD 20)/' "$ANDROID_DIR/CMakeLists.txt"
+    sed -i.bak 's/target_link_libraries(cactus \${LOG_LIB} android)/target_link_libraries(cactus ${LOG_LIB} android c++_shared)/' "$ANDROID_DIR/CMakeLists.txt"
+
+    "$ANDROID_DIR/build.sh"
+
+    mkdir -p "$ARTIFACT_BUNDLE_PATH/dist/android"
+    cp -r "$ANDROID_DIR/libcactus.a" "$ARTIFACT_BUNDLE_PATH/dist/android/libcactus.a"
+    artifactbundle_add_variant "dist/android/libcactus.a" "aarch64-unknown-linux-android"
+    echo "✅ Finished Android artifactbundle variant"
+}
+
+function build_linux_arm_variant() {
+    local LINUX_ARM_OUT="$BUILD_DIR/linux-arm"
+    local HOST_OS
+    local HOST_ARCH
+    local LINUX_ARM_PROCESSOR="aarch64"
+    local CMAKE_TOOLCHAIN_FILE=""
+
+    echo "🐧 Building Cactus artifactbundle variant for Linux ARM..."
+
+    HOST_OS="$(uname -s)"
+    HOST_ARCH="$(uname -m)"
+
+    if [ "$HOST_OS" = "Linux" ] && { [ "$HOST_ARCH" = "aarch64" ] || [ "$HOST_ARCH" = "arm64" ]; }; then
+        echo "Using native Linux ARM toolchain ($HOST_ARCH)."
+    elif [ "$HOST_OS" = "Darwin" ] && [ "$HOST_ARCH" = "arm64" ]; then
+        CMAKE_TOOLCHAIN_FILE="$SCRIPT_DIR/linux-arm/aarch64-macos-cross.toolchain.cmake"
+        if [ ! -f "$CMAKE_TOOLCHAIN_FILE" ]; then
+            echo "Error: Missing Linux ARM toolchain file at $CMAKE_TOOLCHAIN_FILE"
+            exit 1
+        fi
+        echo "Using macOS cross toolchain file: $CMAKE_TOOLCHAIN_FILE"
+    else
+        echo "Error: Unsupported host for Linux ARM build: $HOST_OS/$HOST_ARCH"
+        echo "Linux ARM build is supported on native Linux ARM or Apple Silicon macOS."
+        exit 1
+    fi
+
+    local CMAKE_ARGS=(
+        -S "$SCRIPT_DIR/linux-arm"
+        -B "$LINUX_ARM_OUT"
+        -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE"
+        -DCMAKE_SYSTEM_PROCESSOR="$LINUX_ARM_PROCESSOR"
+    )
+
+    if [ -n "$CMAKE_TOOLCHAIN_FILE" ]; then
+        CMAKE_ARGS+=( -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TOOLCHAIN_FILE" )
+    fi
+
+    cmake "${CMAKE_ARGS[@]}"
+    cmake --build "$LINUX_ARM_OUT" --config "$CMAKE_BUILD_TYPE" -j "$n_cpu"
+
+    local LINUX_LIB_PATH="$LINUX_ARM_OUT/lib/libcactus.a"
+    if [ ! -f "$LINUX_LIB_PATH" ]; then
+        LINUX_LIB_PATH="$LINUX_ARM_OUT/libcactus.a"
+    fi
+
+    if [ ! -f "$LINUX_LIB_PATH" ]; then
+        echo "Error: Could not find Linux ARM static library output."
+        exit 1
+    fi
+
+    mkdir -p "$ARTIFACT_BUNDLE_PATH/dist/linux-arm64"
+    cp -r "$LINUX_LIB_PATH" "$ARTIFACT_BUNDLE_PATH/dist/linux-arm64/libcactus.a"
+    artifactbundle_add_variant "dist/linux-arm64/libcactus.a" "aarch64-unknown-linux-gnu"
+    echo "✅ Finished Linux ARM artifactbundle variant"
 }
 
 function build_apple_xcframework() {
@@ -112,7 +197,7 @@ function build_apple_xcframework() {
 
         echo "▶️  Building $PLATFORM ($SYS, $ARCH, $SDK)"
 
-        cmake -S "$SCRIPT_DIR" \
+        cmake -S "$SCRIPT_DIR/darwin" \
            -B "$OUT" \
            -GXcode \
            -DCMAKE_SYSTEM_NAME="$SYS" \
@@ -189,7 +274,6 @@ function build_apple_xcframework() {
         -framework "$VISIONOS_SIM" \
         -output "$XCFRAMEWORK_PATH"
 
-    # NB: macOS needs additional symlinks for SPM to detect the framework.
     MAC_DIR="$XCFRAMEWORK_PATH/macos-arm64/CXXCactusDarwin.framework"
     rm -rf "$MAC_DIR/Headers" "$MAC_DIR/Modules"
     ln -s Versions/A/Headers "$MAC_DIR/Headers"
@@ -201,7 +285,10 @@ function build_apple_xcframework() {
     rm -drf "$XCFRAMEWORK_PATH"
 }
 
-build_android_artifactbundle
+artifactbundle_init
+build_android_variant
+build_linux_arm_variant
+artifactbundle_finalize
 build_apple_xcframework
 
-rm -drf $BUILD_DIR
+rm -drf "$BUILD_DIR"

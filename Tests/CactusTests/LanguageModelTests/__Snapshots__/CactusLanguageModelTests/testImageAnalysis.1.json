@@ -1,15 +1,15 @@
 {
-  "confidence" : 0.8824,
-  "decode_tokens" : 53,
-  "decode_tps" : 84.08,
+  "confidence" : 0.9092,
+  "decode_tokens" : 123,
+  "decode_tps" : 55.82,
   "function_calls" : [
 
   ],
-  "prefill_tokens" : 314,
-  "prefill_tps" : 105.44,
-  "ram_usage_mb" : 981.33,
-  "response" : "The guy in the first image is smiling and holding a book, which suggests he might be excited or enthusiastic about what he's about to read. He also has a backpack on his shoulder, indicating that he might be going somewhere or carrying his belongings with him.",
-  "time_to_first_token_ms" : 2978,
-  "total_time_ms" : 3596.47,
-  "total_tokens" : 367
+  "prefill_tokens" : 272,
+  "prefill_tps" : 76.28,
+  "ram_usage_mb" : 940.99,
+  "response" : "The image depicts a young man holding two books. The books are positioned in such a way that they appear to be stacked on top of each other, with the top book slightly overlapping the bottom one. The man is smiling and looking directly at the camera, giving off an approachable and friendly vibe. He has short hair and is wearing a casual shirt with rolled-up sleeves, suggesting he might be in his early twenties or older. His expression conveys confidence and warmth, making him seem approachable and relatable to viewers who might see themselves in this character as someone who values knowledge or learning.",
+  "time_to_first_token_ms" : 3565.64,
+  "total_time_ms" : 5751.14,
+  "total_tokens" : 395
 }
