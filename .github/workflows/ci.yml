@@ -46,12 +46,15 @@ jobs:
   linux-arm:
     name: Linux ARM
     runs-on: ubuntu-24.04-arm
-    container: swift:6.2
+    container:
+      image: swift:6.2-noble
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
           lfs: true
+      - name: Install build dependencies
+        run: apt-get update && apt-get install -y cmake build-essential libcurl4-openssl-dev zip unzip
       - name: Build Swift Package on Linux ARM
         run: swift build
