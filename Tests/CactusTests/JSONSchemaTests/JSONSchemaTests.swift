@@ -51,9 +51,7 @@ struct `JSONSchema tests` {
 
   @Test
   func `Union Type JSON`() throws {
-    let value = JSONSchema.object(
-      valueSchema: .union(string: .string(minLength: 10), isBoolean: true)
-    )
+    let value = JSONSchema.union(string: .string(minLength: 10), bool: true)
     let json = "{\"minLength\":10,\"type\":[\"string\",\"boolean\"]}"
 
     let data = try Self.jsonEncoder.encode(value)
@@ -67,6 +65,18 @@ struct `JSONSchema tests` {
   func `Boolean Schema JSON`() throws {
     let schema = JSONSchema.boolean(true)
     let json = "true"
+
+    let data = try Self.jsonEncoder.encode(schema)
+    expectNoDifference(String(decoding: data, as: UTF8.self), json)
+
+    let decodedValue = try JSONDecoder().decode(JSONSchema.self, from: data)
+    expectNoDifference(schema, decodedValue)
+  }
+
+  @Test
+  func `Bool Value Type Schema JSON`() throws {
+    let schema = JSONSchema.bool()
+    let json = "{\"type\":\"boolean\"}"
 
     let data = try Self.jsonEncoder.encode(schema)
     expectNoDifference(String(decoding: data, as: UTF8.self), json)
@@ -159,6 +169,101 @@ struct `JSONSchema tests` {
       valueSchema: .union(number: .number(minimum: 10), isNullable: true)
     )
     expectNoDifference(schema.type, [.number, .null])
+  }
+
+  @Test
+  func `Typed Convenience Schemas Are Equivalent To Legacy APIs`() {
+    expectNoDifference(
+      JSONSchema.string(
+        title: "Title",
+        description: "Description",
+        minLength: 1,
+        maxLength: 10,
+        pattern: "[a-z]+",
+        default: "blob",
+        examples: ["blob"],
+        enum: ["blob", "jr"],
+        const: "blob"
+      ),
+      JSONSchema.object(
+        title: "Title",
+        description: "Description",
+        valueSchema: .string(minLength: 1, maxLength: 10, pattern: "[a-z]+"),
+        default: "blob",
+        examples: ["blob"],
+        enum: ["blob", "jr"],
+        const: "blob"
+      )
+    )
+
+    expectNoDifference(
+      JSONSchema.number(title: "N", description: "D", minimum: 1.5, maximum: 10),
+      JSONSchema.object(
+        title: "N",
+        description: "D",
+        valueSchema: .number(minimum: 1.5, maximum: 10)
+      )
+    )
+
+    expectNoDifference(
+      JSONSchema.integer(title: "N", description: "D", minimum: 1, maximum: 10),
+      JSONSchema.object(
+        title: "N",
+        description: "D",
+        valueSchema: .integer(minimum: 1, maximum: 10)
+      )
+    )
+
+    expectNoDifference(
+      JSONSchema.array(title: "A", description: "D", minItems: 1, maxItems: 3, uniqueItems: true),
+      JSONSchema.object(
+        title: "A",
+        description: "D",
+        valueSchema: .array(minItems: 1, maxItems: 3, uniqueItems: true)
+      )
+    )
+
+    expectNoDifference(
+      JSONSchema.object(
+        title: "Obj",
+        description: "D",
+        properties: ["name": .string(minLength: 1)],
+        required: ["name"]
+      ),
+      JSONSchema.object(
+        title: "Obj",
+        description: "D",
+        valueSchema: .object(
+          properties: ["name": .string(minLength: 1)],
+          required: ["name"]
+        )
+      )
+    )
+
+    expectNoDifference(
+      JSONSchema.null(title: "Null", description: "D"),
+      JSONSchema.object(title: "Null", description: "D", valueSchema: .null)
+    )
+
+    expectNoDifference(
+      JSONSchema.bool(title: "Bool", description: "D"),
+      JSONSchema.object(title: "Bool", description: "D", valueSchema: .boolean)
+    )
+
+    expectNoDifference(
+      JSONSchema.union(
+        title: "Union",
+        description: "D",
+        string: .string(minLength: 1),
+        bool: true,
+        null: true
+      ),
+      JSONSchema.object(
+        title: "Union",
+        description: "D",
+        valueSchema: .union(string: .string(minLength: 1), isBoolean: true, isNullable: true)
+      )
+    )
   }
 
   private static let jsonEncoder = {

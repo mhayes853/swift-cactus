@@ -9,11 +9,9 @@ extension JSONSchema {
   ///   name: "search",
   ///   description: "Find something",
   ///   parameters: .object(
-  ///     valueSchema: .object(
-  ///       properties: [
-  ///         "query": .object(valueSchema: .string(minLength: 1))
-  ///       ]
-  ///     )
+  ///     properties: [
+  ///       "query": .string(minLength: 1)
+  ///     ]
   ///   )
   /// )
   /// let completion = try model.chatCompletion(

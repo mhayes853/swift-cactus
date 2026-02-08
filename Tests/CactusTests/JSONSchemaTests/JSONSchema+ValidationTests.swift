@@ -87,7 +87,7 @@ struct `JSONSchemaValidation tests` {
     value: JSONSchema.Value
   ) {
     expectContainsFailureReason(
-      .object(valueSchema: .boolean),
+      .bool(),
       value,
       .typeMismatch(expected: .boolean)
     )
@@ -241,7 +241,7 @@ struct `JSONSchemaValidation tests` {
 
   @Test
   func `Boolean Value Valid When Type Is Boolean`() {
-    let schema = JSONSchema.object(valueSchema: .boolean)
+    let schema = JSONSchema.bool()
     expectValidates(schema, true)
     expectValidates(schema, false)
   }
@@ -381,7 +381,7 @@ struct `JSONSchemaValidation tests` {
   func `Array Allows Additional Items According To The Specified Schema`() {
     let item1Schema = JSONSchema.object(valueSchema: .number())
     let item2Schema = JSONSchema.object(valueSchema: .string())
-    let additionalSchema = JSONSchema.object(valueSchema: .boolean)
+    let additionalSchema = JSONSchema.bool()
     let schema = JSONSchema.object(
       valueSchema: .array(
         items: .itemsSchemas([item1Schema, item2Schema]),
@@ -493,7 +493,7 @@ struct `JSONSchemaValidation tests` {
   func `Object Ensures That All Additional Properties Are Validated By Schema`() {
     let p1Schema = JSONSchema.object(valueSchema: .string())
     let p2Schema = JSONSchema.object(valueSchema: .number())
-    let additionalSchema = JSONSchema.object(valueSchema: .boolean)
+    let additionalSchema = JSONSchema.bool()
     let schema = JSONSchema.object(
       valueSchema: .object(
         properties: ["a": p1Schema, "b": p2Schema],
@@ -673,17 +673,17 @@ struct `JSONSchemaValidation tests` {
     let schema = JSONSchema.object(
       valueSchema: .object(
         properties: [
-          "p1": .object(valueSchema: .string()),
+          "p1": .string(),
           "p2": .object(
             valueSchema: .object(
               properties: [
-                "p3": .object(valueSchema: .number()),
-                "p4": .object(valueSchema: .boolean)
+                "p3": .number(),
+                "p4": .bool()
               ],
               required: ["p3", "p4"]
             )
           ),
-          "p5": .object(valueSchema: .array(items: .schemaForAll(.object(valueSchema: .string()))))
+          "p5": .array(items: .schemaForAll(.string()))
         ]
       )
     )
