@@ -53,8 +53,10 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-          lfs: true
+          lfs: false
       - name: Install build dependencies
-        run: apt-get update && apt-get install -y cmake build-essential libcurl4-openssl-dev zip unzip
+        run: apt-get update && apt-get install -y cmake build-essential libcurl4-openssl-dev zip unzip git-lfs
+      - name: Fetch Git LFS objects
+        run: git lfs pull
       - name: Build Swift Package on Linux ARM
-        run: swift build
+        run: swift --version && swift build
