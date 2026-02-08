@@ -295,7 +295,7 @@ The RAG query uses hybrid search combining embeddings with BM25 rankings to find
 
 ### Android Setup
 
-On Android certain APIs such as `CactusModelsDirectory.shared` require the use of the files directory. When your application launches on Android, make sure to set the `androidFilesDirectory` global variable to the path of the files directory.
+On Android certain APIs such as `CactusModelsDirectory.shared` require the use of the files directory. When your application launches on Android, make sure to set `CactusModelsDirectory.sharedDirectoryURL` to the path of the files directory.
 
 ```swift
 import Cactus
@@ -304,7 +304,7 @@ import AndroidNativeAppGlue
 
 @_silgen_name("android_main")
 public func android_main(_ app: UnsafeMutablePointer<android_app>) {
-  Cactus.androidFilesDirectory = URL(
+  CactusModelsDirectory.sharedDirectoryURL = URL(
     fileURLWithPath: app.pointee.activity.pointee.internalDataPath
   )
   
@@ -312,7 +312,7 @@ public func android_main(_ app: UnsafeMutablePointer<android_app>) {
 }
 ```
 
-Alternatively, you could export a JNI function to set the `androidFilesDirectory` global variable, and call that function from kotlin.
+Alternatively, you could export a JNI function to set `CactusModelsDirectory.sharedDirectoryURL`, and call that function from kotlin.
 
 ```swift
 // In JNI module MyAppSwift
@@ -322,7 +322,7 @@ Alternatively, you could export a JNI function to set the `androidFilesDirectory
 import Cactus
 
 public func setAndroidFilesDirectory(_ path: String) {
-  Cactus.androidFilesDirectory = URL(fileURLWithPath: path)
+  CactusModelsDirectory.sharedDirectoryURL = URL(fileURLWithPath: path)
 }
 ```
 ```kotlin
@@ -335,6 +335,21 @@ class MainActivity : ComponentActivity() {
     MyAppSwift.setAndroidFilesDirectory(applicationContext.filesDir.absolutePath)
     // ...
   }
+}
+```
+
+### ARM Linux Setup
+
+On ARM Linux, APIs such as `CactusModelsDirectory.shared` do not have a default shared directory. Set `CactusModelsDirectory.sharedDirectoryURL` during application startup before using those APIs.
+
+```swift
+import Cactus
+import Foundation
+
+func bootstrapApp() {
+  CactusModelsDirectory.sharedDirectoryURL = URL(fileURLWithPath: "<models-directory>")
+
+  // ...
 }
 ```
 
