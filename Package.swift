@@ -38,7 +38,7 @@ let package = Package(
     .target(
       name: "CXXCactusShims",
       dependencies: [
-        .target(name: "CXXCactus", condition: .when(platforms: [.android])),
+        .target(name: "CXXCactus", condition: .when(platforms: [.android, .linux])),
         .target(
           name: "CXXCactusDarwin",
           condition: .when(platforms: [.iOS, .macOS, .visionOS, .tvOS, .watchOS, .macCatalyst])
