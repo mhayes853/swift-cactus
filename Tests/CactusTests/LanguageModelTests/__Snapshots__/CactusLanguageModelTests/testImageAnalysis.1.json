@@ -1,15 +1,15 @@
 {
-  "confidence" : 0.9031,
-  "decode_tokens" : 155,
-  "decode_tps" : 94.02,
+  "confidence" : 0.8824,
+  "decode_tokens" : 53,
+  "decode_tps" : 84.08,
   "function_calls" : [
 
   ],
-  "prefill_tokens" : 272,
-  "prefill_tps" : 102.82,
-  "ram_usage_mb" : 942.16,
-  "response" : "The image depicts a young man with short, dark hair and a friendly smile. He is wearing a light-colored button-up shirt with the sleeves rolled up to his elbows. The shirt has a pocket on the left side of his chest, which appears to be made of denim material. On his right shoulder, there is an open book that he is holding in front of him. The book has visible pages and text on its cover, although the specific content cannot be discerned from this image alone.\n\nThe young man's pose suggests he might be engaged in reading or studying something interesting or engaging for him. His attire and demeanor give off an aura of casualness but also readiness for intellectual pursuits or leisurely activities such as reading and learning.",
-  "time_to_first_token_ms" : 2645.42,
-  "total_time_ms" : 4283.31,
-  "total_tokens" : 427
+  "prefill_tokens" : 314,
+  "prefill_tps" : 105.44,
+  "ram_usage_mb" : 981.33,
+  "response" : "The guy in the first image is smiling and holding a book, which suggests he might be excited or enthusiastic about what he's about to read. He also has a backpack on his shoulder, indicating that he might be going somewhere or carrying his belongings with him.",
+  "time_to_first_token_ms" : 2978,
+  "total_time_ms" : 3596.47,
+  "total_tokens" : 367
 }

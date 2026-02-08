@@ -58,8 +58,13 @@ extension CactusModelsDirectory {
 
 extension URL {
   static let swiftCactusTestsDirectory = {
+    #if os(macOS)
+    URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+      .appendingPathComponent(".swift-cactus-tests")
+    #else
     FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
       .appendingPathComponent(".swift-cactus-tests")
+    #endif
   }()
 }
 
