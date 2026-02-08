@@ -442,16 +442,14 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
           name: "get_weather",
           description: "Get the weather in a given location",
           parameters: .object(
-            valueSchema: .object(
-              properties: [
-                "location": .object(
-                  description: "City name",
-                  valueSchema: .string(minLength: 1),
-                  examples: ["San Francisco"]
-                )
-              ],
-              required: ["location"]
-            )
+            properties: [
+              "location": .string(
+                description: "City name",
+                minLength: 1,
+                examples: ["San Francisco"]
+              )
+            ],
+            required: ["location"]
           )
         )
       ]
@@ -478,33 +476,29 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
           name: "get_weather",
           description: "Get the weather in a given location",
           parameters: .object(
-            valueSchema: .object(
-              properties: [
-                "location": .object(
-                  description: "City name",
-                  valueSchema: .string(minLength: 1),
-                  examples: ["San Francisco"]
-                ),
-                "units": .object(valueSchema: .string(), enum: ["celsius", "farenheit"])
-              ],
-              required: ["location"]
-            )
+            properties: [
+              "location": .string(
+                description: "City name",
+                minLength: 1,
+                examples: ["San Francisco"]
+              ),
+              "units": .string(enum: ["celsius", "farenheit"])
+            ],
+            required: ["location"]
           )
         ),
         CactusLanguageModel.FunctionDefinition(
           name: "get_population",
           description: "Gets the population of a given city",
           parameters: .object(
-            valueSchema: .object(
-              properties: [
-                "location": .object(
-                  description: "City name",
-                  valueSchema: .string(minLength: 1),
-                  examples: ["San Francisco"]
-                )
-              ],
-              required: ["location"]
-            )
+            properties: [
+              "location": .string(
+                description: "City name",
+                minLength: 1,
+                examples: ["San Francisco"]
+              )
+            ],
+            required: ["location"]
           )
         )
       ]

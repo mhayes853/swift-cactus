@@ -229,6 +229,611 @@ extension JSONSchema {
       )
     )
   }
+
+  private static func typed(
+    title: String? = nil,
+    description: String? = nil,
+    valueSchema: ValueSchema,
+    `default`: Value? = nil,
+    readOnly: Bool? = nil,
+    writeOnly: Bool? = nil,
+    examples: [Value]? = nil,
+    `enum`: [Value]? = nil,
+    const: Value? = nil,
+    allOf: [JSONSchema]? = nil,
+    anyOf: [JSONSchema]? = nil,
+    oneOf: [JSONSchema]? = nil,
+    not: JSONSchema? = nil,
+    `if`: JSONSchema? = nil,
+    then: JSONSchema? = nil,
+    `else`: JSONSchema? = nil,
+    format: String? = nil
+  ) -> Self {
+    .object(
+      title: title,
+      description: description,
+      valueSchema: valueSchema,
+      default: `default`,
+      readOnly: readOnly,
+      writeOnly: writeOnly,
+      examples: examples,
+      enum: `enum`,
+      const: const,
+      allOf: allOf,
+      anyOf: anyOf,
+      oneOf: oneOf,
+      not: not,
+      if: `if`,
+      then: then,
+      else: `else`,
+      format: format
+    )
+  }
+
+  /// Creates a string-specific object schema.
+  ///
+  /// - Parameters:
+  ///   - title: The title of the schema.
+  ///   - description: The description of the schema.
+  ///   - minLength: The minimum length of the string.
+  ///   - maxLength: The maximum length of the string.
+  ///   - pattern: A regular expression that the string must match.
+  ///   - default: The default value of the schema.
+  ///   - readOnly: Indicates whether the value is managed exclusively by the owning authority.
+  ///   - writeOnly: Indicates whether the value is present when retrieved from the owning authority.
+  ///   - examples: A list of example values.
+  ///   - enum: A list of allowed values.
+  ///   - const: The only allowed value.
+  ///   - allOf: A list of schemas in which the value must match all of them.
+  ///   - anyOf: A list of schemas in which the value must match at least one of them.
+  ///   - oneOf: A list of schemas in which the value must match exactly one of them.
+  ///   - not: A schema that the value must not match.
+  ///   - if: A schema to use for control flow.
+  ///   - then: A schema to match against if a value successfully matches against ``Object/if``.
+  ///   - else: A schema to match against if a value fails to match against ``Object/if``.
+  ///   - format: A string containing information for validating values not confined with the JSON Schema specification.
+  public static func string(
+    title: String? = nil,
+    description: String? = nil,
+    minLength: Int? = nil,
+    maxLength: Int? = nil,
+    pattern: String? = nil,
+    `default`: Value? = nil,
+    readOnly: Bool? = nil,
+    writeOnly: Bool? = nil,
+    examples: [Value]? = nil,
+    `enum`: [Value]? = nil,
+    const: Value? = nil,
+    allOf: [JSONSchema]? = nil,
+    anyOf: [JSONSchema]? = nil,
+    oneOf: [JSONSchema]? = nil,
+    not: JSONSchema? = nil,
+    `if`: JSONSchema? = nil,
+    then: JSONSchema? = nil,
+    `else`: JSONSchema? = nil,
+    format: String? = nil
+  ) -> Self {
+    .typed(
+      title: title,
+      description: description,
+      valueSchema: .string(minLength: minLength, maxLength: maxLength, pattern: pattern),
+      default: `default`,
+      readOnly: readOnly,
+      writeOnly: writeOnly,
+      examples: examples,
+      enum: `enum`,
+      const: const,
+      allOf: allOf,
+      anyOf: anyOf,
+      oneOf: oneOf,
+      not: not,
+      if: `if`,
+      then: then,
+      else: `else`,
+      format: format
+    )
+  }
+
+  /// Creates a number-specific object schema.
+  ///
+  /// - Parameters:
+  ///   - title: The title of the schema.
+  ///   - description: The description of the schema.
+  ///   - multipleOf: The value that the number must be a multiple of.
+  ///   - minimum: The minimum value (inclusive) of the number.
+  ///   - exclusiveMinimum: The minimum value (exclusive) of the number.
+  ///   - maximum: The maximum value (inclusive) of the number.
+  ///   - exclusiveMaximum: The maximum value (exclusive) of the number.
+  ///   - default: The default value of the schema.
+  ///   - readOnly: Indicates whether the value is managed exclusively by the owning authority.
+  ///   - writeOnly: Indicates whether the value is present when retrieved from the owning authority.
+  ///   - examples: A list of example values.
+  ///   - enum: A list of allowed values.
+  ///   - const: The only allowed value.
+  ///   - allOf: A list of schemas in which the value must match all of them.
+  ///   - anyOf: A list of schemas in which the value must match at least one of them.
+  ///   - oneOf: A list of schemas in which the value must match exactly one of them.
+  ///   - not: A schema that the value must not match.
+  ///   - if: A schema to use for control flow.
+  ///   - then: A schema to match against if a value successfully matches against ``Object/if``.
+  ///   - else: A schema to match against if a value fails to match against ``Object/if``.
+  ///   - format: A string containing information for validating values not confined with the JSON Schema specification.
+  public static func number(
+    title: String? = nil,
+    description: String? = nil,
+    multipleOf: Double? = nil,
+    minimum: Double? = nil,
+    exclusiveMinimum: Double? = nil,
+    maximum: Double? = nil,
+    exclusiveMaximum: Double? = nil,
+    `default`: Value? = nil,
+    readOnly: Bool? = nil,
+    writeOnly: Bool? = nil,
+    examples: [Value]? = nil,
+    `enum`: [Value]? = nil,
+    const: Value? = nil,
+    allOf: [JSONSchema]? = nil,
+    anyOf: [JSONSchema]? = nil,
+    oneOf: [JSONSchema]? = nil,
+    not: JSONSchema? = nil,
+    `if`: JSONSchema? = nil,
+    then: JSONSchema? = nil,
+    `else`: JSONSchema? = nil,
+    format: String? = nil
+  ) -> Self {
+    .typed(
+      title: title,
+      description: description,
+      valueSchema: .number(
+        multipleOf: multipleOf,
+        minimum: minimum,
+        exclusiveMinimum: exclusiveMinimum,
+        maximum: maximum,
+        exclusiveMaximum: exclusiveMaximum
+      ),
+      default: `default`,
+      readOnly: readOnly,
+      writeOnly: writeOnly,
+      examples: examples,
+      enum: `enum`,
+      const: const,
+      allOf: allOf,
+      anyOf: anyOf,
+      oneOf: oneOf,
+      not: not,
+      if: `if`,
+      then: then,
+      else: `else`,
+      format: format
+    )
+  }
+
+  /// Creates an integer-specific object schema.
+  ///
+  /// - Parameters:
+  ///   - title: The title of the schema.
+  ///   - description: The description of the schema.
+  ///   - multipleOf: The value that the integer must be a multiple of.
+  ///   - minimum: The minimum value (inclusive) of the integer.
+  ///   - exclusiveMinimum: The minimum value (exclusive) of the integer.
+  ///   - maximum: The maximum value (inclusive) of the integer.
+  ///   - exclusiveMaximum: The maximum value (exclusive) of the integer.
+  ///   - default: The default value of the schema.
+  ///   - readOnly: Indicates whether the value is managed exclusively by the owning authority.
+  ///   - writeOnly: Indicates whether the value is present when retrieved from the owning authority.
+  ///   - examples: A list of example values.
+  ///   - enum: A list of allowed values.
+  ///   - const: The only allowed value.
+  ///   - allOf: A list of schemas in which the value must match all of them.
+  ///   - anyOf: A list of schemas in which the value must match at least one of them.
+  ///   - oneOf: A list of schemas in which the value must match exactly one of them.
+  ///   - not: A schema that the value must not match.
+  ///   - if: A schema to use for control flow.
+  ///   - then: A schema to match against if a value successfully matches against ``Object/if``.
+  ///   - else: A schema to match against if a value fails to match against ``Object/if``.
+  ///   - format: A string containing information for validating values not confined with the JSON Schema specification.
+  public static func integer(
+    title: String? = nil,
+    description: String? = nil,
+    multipleOf: Int? = nil,
+    minimum: Int? = nil,
+    exclusiveMinimum: Int? = nil,
+    maximum: Int? = nil,
+    exclusiveMaximum: Int? = nil,
+    `default`: Value? = nil,
+    readOnly: Bool? = nil,
+    writeOnly: Bool? = nil,
+    examples: [Value]? = nil,
+    `enum`: [Value]? = nil,
+    const: Value? = nil,
+    allOf: [JSONSchema]? = nil,
+    anyOf: [JSONSchema]? = nil,
+    oneOf: [JSONSchema]? = nil,
+    not: JSONSchema? = nil,
+    `if`: JSONSchema? = nil,
+    then: JSONSchema? = nil,
+    `else`: JSONSchema? = nil,
+    format: String? = nil
+  ) -> Self {
+    .typed(
+      title: title,
+      description: description,
+      valueSchema: .integer(
+        multipleOf: multipleOf,
+        minimum: minimum,
+        exclusiveMinimum: exclusiveMinimum,
+        maximum: maximum,
+        exclusiveMaximum: exclusiveMaximum
+      ),
+      default: `default`,
+      readOnly: readOnly,
+      writeOnly: writeOnly,
+      examples: examples,
+      enum: `enum`,
+      const: const,
+      allOf: allOf,
+      anyOf: anyOf,
+      oneOf: oneOf,
+      not: not,
+      if: `if`,
+      then: then,
+      else: `else`,
+      format: format
+    )
+  }
+
+  /// Creates an array-specific object schema.
+  ///
+  /// - Parameters:
+  ///   - title: The title of the schema.
+  ///   - description: The description of the schema.
+  ///   - items: The schema for the items in the array.
+  ///   - additionalItems: A schema describing elements not covered by `items`.
+  ///   - minItems: The minimum number of items allowed in the array.
+  ///   - maxItems: The maximum number of items allowed in the array.
+  ///   - uniqueItems: A boolean that indicates whether all items in the array must be unique.
+  ///   - contains: A schema that must be contained within the array.
+  ///   - default: The default value of the schema.
+  ///   - readOnly: Indicates whether the value is managed exclusively by the owning authority.
+  ///   - writeOnly: Indicates whether the value is present when retrieved from the owning authority.
+  ///   - examples: A list of example values.
+  ///   - enum: A list of allowed values.
+  ///   - const: The only allowed value.
+  ///   - allOf: A list of schemas in which the value must match all of them.
+  ///   - anyOf: A list of schemas in which the value must match at least one of them.
+  ///   - oneOf: A list of schemas in which the value must match exactly one of them.
+  ///   - not: A schema that the value must not match.
+  ///   - if: A schema to use for control flow.
+  ///   - then: A schema to match against if a value successfully matches against ``Object/if``.
+  ///   - else: A schema to match against if a value fails to match against ``Object/if``.
+  ///   - format: A string containing information for validating values not confined with the JSON Schema specification.
+  public static func array(
+    title: String? = nil,
+    description: String? = nil,
+    items: ValueSchema.Array.Items? = nil,
+    additionalItems: JSONSchema? = nil,
+    minItems: Int? = nil,
+    maxItems: Int? = nil,
+    uniqueItems: Bool? = nil,
+    contains: JSONSchema? = nil,
+    `default`: Value? = nil,
+    readOnly: Bool? = nil,
+    writeOnly: Bool? = nil,
+    examples: [Value]? = nil,
+    `enum`: [Value]? = nil,
+    const: Value? = nil,
+    allOf: [JSONSchema]? = nil,
+    anyOf: [JSONSchema]? = nil,
+    oneOf: [JSONSchema]? = nil,
+    not: JSONSchema? = nil,
+    `if`: JSONSchema? = nil,
+    then: JSONSchema? = nil,
+    `else`: JSONSchema? = nil,
+    format: String? = nil
+  ) -> Self {
+    .typed(
+      title: title,
+      description: description,
+      valueSchema: .array(
+        items: items,
+        additionalItems: additionalItems,
+        minItems: minItems,
+        maxItems: maxItems,
+        uniqueItems: uniqueItems,
+        contains: contains
+      ),
+      default: `default`,
+      readOnly: readOnly,
+      writeOnly: writeOnly,
+      examples: examples,
+      enum: `enum`,
+      const: const,
+      allOf: allOf,
+      anyOf: anyOf,
+      oneOf: oneOf,
+      not: not,
+      if: `if`,
+      then: then,
+      else: `else`,
+      format: format
+    )
+  }
+
+  /// Creates an object-specific object schema.
+  ///
+  /// - Parameters:
+  ///   - title: The title of the schema.
+  ///   - description: The description of the schema.
+  ///   - properties: A dictionary of property names and their corresponding schemas.
+  ///   - required: An array of required property names.
+  ///   - minProperties: The minimum number of properties the object must have.
+  ///   - maxProperties: The maximum number of properties the object can have.
+  ///   - additionalProperties: A schema that defines constraints for additional properties not defined on the object.
+  ///   - patternProperties: A dictionary of regex patterns and corresponding schemas for matching property names.
+  ///   - propertyNames: A schema that defines constraints for property names.
+  ///   - default: The default value of the schema.
+  ///   - readOnly: Indicates whether the value is managed exclusively by the owning authority.
+  ///   - writeOnly: Indicates whether the value is present when retrieved from the owning authority.
+  ///   - examples: A list of example values.
+  ///   - enum: A list of allowed values.
+  ///   - const: The only allowed value.
+  ///   - allOf: A list of schemas in which the value must match all of them.
+  ///   - anyOf: A list of schemas in which the value must match at least one of them.
+  ///   - oneOf: A list of schemas in which the value must match exactly one of them.
+  ///   - not: A schema that the value must not match.
+  ///   - if: A schema to use for control flow.
+  ///   - then: A schema to match against if a value successfully matches against ``Object/if``.
+  ///   - else: A schema to match against if a value fails to match against ``Object/if``.
+  ///   - format: A string containing information for validating values not confined with the JSON Schema specification.
+  public static func object(
+    title: String? = nil,
+    description: String? = nil,
+    properties: [String: JSONSchema]? = nil,
+    required: [String]? = nil,
+    minProperties: Int? = nil,
+    maxProperties: Int? = nil,
+    additionalProperties: JSONSchema? = nil,
+    patternProperties: [String: JSONSchema]? = nil,
+    propertyNames: JSONSchema? = nil,
+    `default`: Value? = nil,
+    readOnly: Bool? = nil,
+    writeOnly: Bool? = nil,
+    examples: [Value]? = nil,
+    `enum`: [Value]? = nil,
+    const: Value? = nil,
+    allOf: [JSONSchema]? = nil,
+    anyOf: [JSONSchema]? = nil,
+    oneOf: [JSONSchema]? = nil,
+    not: JSONSchema? = nil,
+    `if`: JSONSchema? = nil,
+    then: JSONSchema? = nil,
+    `else`: JSONSchema? = nil,
+    format: String? = nil
+  ) -> Self {
+    .typed(
+      title: title,
+      description: description,
+      valueSchema: .object(
+        properties: properties,
+        required: required,
+        minProperties: minProperties,
+        maxProperties: maxProperties,
+        additionalProperties: additionalProperties,
+        patternProperties: patternProperties,
+        propertyNames: propertyNames
+      ),
+      default: `default`,
+      readOnly: readOnly,
+      writeOnly: writeOnly,
+      examples: examples,
+      enum: `enum`,
+      const: const,
+      allOf: allOf,
+      anyOf: anyOf,
+      oneOf: oneOf,
+      not: not,
+      if: `if`,
+      then: then,
+      else: `else`,
+      format: format
+    )
+  }
+
+  /// Creates a null-specific object schema.
+  ///
+  /// - Parameters:
+  ///   - title: The title of the schema.
+  ///   - description: The description of the schema.
+  ///   - default: The default value of the schema.
+  ///   - readOnly: Indicates whether the value is managed exclusively by the owning authority.
+  ///   - writeOnly: Indicates whether the value is present when retrieved from the owning authority.
+  ///   - examples: A list of example values.
+  ///   - enum: A list of allowed values.
+  ///   - const: The only allowed value.
+  ///   - allOf: A list of schemas in which the value must match all of them.
+  ///   - anyOf: A list of schemas in which the value must match at least one of them.
+  ///   - oneOf: A list of schemas in which the value must match exactly one of them.
+  ///   - not: A schema that the value must not match.
+  ///   - if: A schema to use for control flow.
+  ///   - then: A schema to match against if a value successfully matches against ``Object/if``.
+  ///   - else: A schema to match against if a value fails to match against ``Object/if``.
+  ///   - format: A string containing information for validating values not confined with the JSON Schema specification.
+  public static func null(
+    title: String? = nil,
+    description: String? = nil,
+    `default`: Value? = nil,
+    readOnly: Bool? = nil,
+    writeOnly: Bool? = nil,
+    examples: [Value]? = nil,
+    `enum`: [Value]? = nil,
+    const: Value? = nil,
+    allOf: [JSONSchema]? = nil,
+    anyOf: [JSONSchema]? = nil,
+    oneOf: [JSONSchema]? = nil,
+    not: JSONSchema? = nil,
+    `if`: JSONSchema? = nil,
+    then: JSONSchema? = nil,
+    `else`: JSONSchema? = nil,
+    format: String? = nil
+  ) -> Self {
+    .typed(
+      title: title,
+      description: description,
+      valueSchema: .null,
+      default: `default`,
+      readOnly: readOnly,
+      writeOnly: writeOnly,
+      examples: examples,
+      enum: `enum`,
+      const: const,
+      allOf: allOf,
+      anyOf: anyOf,
+      oneOf: oneOf,
+      not: not,
+      if: `if`,
+      then: then,
+      else: `else`,
+      format: format
+    )
+  }
+
+  /// Creates a boolean-specific object schema.
+  ///
+  /// - Parameters:
+  ///   - title: The title of the schema.
+  ///   - description: The description of the schema.
+  ///   - default: The default value of the schema.
+  ///   - readOnly: Indicates whether the value is managed exclusively by the owning authority.
+  ///   - writeOnly: Indicates whether the value is present when retrieved from the owning authority.
+  ///   - examples: A list of example values.
+  ///   - enum: A list of allowed values.
+  ///   - const: The only allowed value.
+  ///   - allOf: A list of schemas in which the value must match all of them.
+  ///   - anyOf: A list of schemas in which the value must match at least one of them.
+  ///   - oneOf: A list of schemas in which the value must match exactly one of them.
+  ///   - not: A schema that the value must not match.
+  ///   - if: A schema to use for control flow.
+  ///   - then: A schema to match against if a value successfully matches against ``Object/if``.
+  ///   - else: A schema to match against if a value fails to match against ``Object/if``.
+  ///   - format: A string containing information for validating values not confined with the JSON Schema specification.
+  public static func bool(
+    title: String? = nil,
+    description: String? = nil,
+    `default`: Value? = nil,
+    readOnly: Bool? = nil,
+    writeOnly: Bool? = nil,
+    examples: [Value]? = nil,
+    `enum`: [Value]? = nil,
+    const: Value? = nil,
+    allOf: [JSONSchema]? = nil,
+    anyOf: [JSONSchema]? = nil,
+    oneOf: [JSONSchema]? = nil,
+    not: JSONSchema? = nil,
+    `if`: JSONSchema? = nil,
+    then: JSONSchema? = nil,
+    `else`: JSONSchema? = nil,
+    format: String? = nil
+  ) -> Self {
+    .typed(
+      title: title,
+      description: description,
+      valueSchema: .boolean,
+      default: `default`,
+      readOnly: readOnly,
+      writeOnly: writeOnly,
+      examples: examples,
+      enum: `enum`,
+      const: const,
+      allOf: allOf,
+      anyOf: anyOf,
+      oneOf: oneOf,
+      not: not,
+      if: `if`,
+      then: then,
+      else: `else`,
+      format: format
+    )
+  }
+
+  /// Creates a union-specific object schema.
+  ///
+  /// - Parameters:
+  ///   - title: The title of the schema.
+  ///   - description: The description of the schema.
+  ///   - string: String-specific constraints included in the union.
+  ///   - bool: Whether the union includes the boolean type.
+  ///   - number: Number-specific constraints included in the union.
+  ///   - integer: Integer-specific constraints included in the union.
+  ///   - array: Array-specific constraints included in the union.
+  ///   - object: Object-specific constraints included in the union.
+  ///   - null: Whether the union includes the null type.
+  ///   - default: The default value of the schema.
+  ///   - readOnly: Indicates whether the value is managed exclusively by the owning authority.
+  ///   - writeOnly: Indicates whether the value is present when retrieved from the owning authority.
+  ///   - examples: A list of example values.
+  ///   - enum: A list of allowed values.
+  ///   - const: The only allowed value.
+  ///   - allOf: A list of schemas in which the value must match all of them.
+  ///   - anyOf: A list of schemas in which the value must match at least one of them.
+  ///   - oneOf: A list of schemas in which the value must match exactly one of them.
+  ///   - not: A schema that the value must not match.
+  ///   - if: A schema to use for control flow.
+  ///   - then: A schema to match against if a value successfully matches against ``Object/if``.
+  ///   - else: A schema to match against if a value fails to match against ``Object/if``.
+  ///   - format: A string containing information for validating values not confined with the JSON Schema specification.
+  public static func union(
+    title: String? = nil,
+    description: String? = nil,
+    string: ValueSchema.String? = nil,
+    bool: Bool = false,
+    number: ValueSchema.Number? = nil,
+    integer: ValueSchema.Integer? = nil,
+    array: ValueSchema.Array? = nil,
+    object: ValueSchema.Object? = nil,
+    null: Bool = false,
+    `default`: Value? = nil,
+    readOnly: Bool? = nil,
+    writeOnly: Bool? = nil,
+    examples: [Value]? = nil,
+    `enum`: [Value]? = nil,
+    const: Value? = nil,
+    allOf: [JSONSchema]? = nil,
+    anyOf: [JSONSchema]? = nil,
+    oneOf: [JSONSchema]? = nil,
+    not: JSONSchema? = nil,
+    `if`: JSONSchema? = nil,
+    then: JSONSchema? = nil,
+    `else`: JSONSchema? = nil,
+    format: String? = nil
+  ) -> Self {
+    .typed(
+      title: title,
+      description: description,
+      valueSchema: .union(
+        string: string,
+        isBoolean: bool,
+        array: array,
+        object: object,
+        number: number,
+        integer: integer,
+        isNullable: null
+      ),
+      default: `default`,
+      readOnly: readOnly,
+      writeOnly: writeOnly,
+      examples: examples,
+      enum: `enum`,
+      const: const,
+      allOf: allOf,
+      anyOf: anyOf,
+      oneOf: oneOf,
+      not: not,
+      if: `if`,
+      then: then,
+      else: `else`,
+      format: format
+    )
+  }
 }
 
 // MARK: - ExpressibleByBooleanLiteral

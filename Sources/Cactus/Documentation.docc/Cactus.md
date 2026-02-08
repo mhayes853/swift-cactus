@@ -110,16 +110,14 @@ let completion = try model.chatCompletion(
       name: "get_weather",
       description: "Get the weather in a given location",
       parameters: .object(
-        valueSchema: .object(
-          properties: [
-            "location": .object(
-              description: "City name, eg. 'San Francisco'",
-              valueSchema: .string(minLength: 1),
-              examples: ["San Francisco"]
-            )
-          ],
-          required: ["location"]
-        )
+        properties: [
+          "location": .string(
+            description: "City name, eg. 'San Francisco'",
+            minLength: 1,
+            examples: ["San Francisco"]
+          )
+        ],
+        required: ["location"]
       )
     )
   ]
@@ -140,11 +138,9 @@ print(completion.functionCalls)
 >   name: "search",
 >   description: "Find something",
 >   parameters: .object(
->     valueSchema: .object(
->       properties: [
->         "query": .object(valueSchema: .string(minLength: 1))
->       ]
->     )
+>     properties: [
+>       "query": .string(minLength: 1)
+>     ]
 >   )
 > )
 > let completion = try model.chatCompletion(
