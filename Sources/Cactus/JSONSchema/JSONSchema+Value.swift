@@ -42,7 +42,7 @@ extension JSONSchema {
 // MARK: - Encodable
 
 extension JSONSchema.Value: Encodable {
-  public func encode(to encoder: any Encoder) throws {
+  public func encode(to encoder: any Swift.Encoder) throws {
     var container = encoder.singleValueContainer()
     switch self {
     case .array(let array): try container.encode(array)
@@ -59,7 +59,7 @@ extension JSONSchema.Value: Encodable {
 // MARK: - Decodable
 
 extension JSONSchema.Value: Decodable {
-  public init(from decoder: any Decoder) throws {
+  public init(from decoder: any Swift.Decoder) throws {
     let container = try decoder.singleValueContainer()
     if let bool = try? container.decode(Bool.self) {
       self = .boolean(bool)
