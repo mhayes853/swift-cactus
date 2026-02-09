@@ -561,6 +561,120 @@ private struct _UnkeyedValueDecodingContainer: UnkeyedDecodingContainer {
     return try T(from: self.decoder.nestedDecoder(for: value, codingPath: codingPath))
   }
 
+  mutating func decodeIfPresent(_ type: Bool.Type) throws -> Bool? {
+    guard let container = try self.nextIfPresentContainer() else { return nil }
+    return try container.decode(Bool.self)
+  }
+
+  mutating func decodeIfPresent(_ type: String.Type) throws -> String? {
+    guard let container = try self.nextIfPresentContainer() else { return nil }
+    return try container.decode(String.self)
+  }
+
+  mutating func decodeIfPresent(_ type: Double.Type) throws -> Double? {
+    guard let container = try self.nextIfPresentContainer() else { return nil }
+    return try container.decode(Double.self)
+  }
+
+  mutating func decodeIfPresent(_ type: Float.Type) throws -> Float? {
+    guard let container = try self.nextIfPresentContainer() else { return nil }
+    return try container.decode(Float.self)
+  }
+
+  mutating func decodeIfPresent(_ type: Int.Type) throws -> Int? {
+    guard let container = try self.nextIfPresentContainer() else { return nil }
+    return try container.decode(Int.self)
+  }
+
+  mutating func decodeIfPresent(_ type: Int8.Type) throws -> Int8? {
+    guard let container = try self.nextIfPresentContainer() else { return nil }
+    return try container.decode(Int8.self)
+  }
+
+  mutating func decodeIfPresent(_ type: Int16.Type) throws -> Int16? {
+    guard let container = try self.nextIfPresentContainer() else { return nil }
+    return try container.decode(Int16.self)
+  }
+
+  mutating func decodeIfPresent(_ type: Int32.Type) throws -> Int32? {
+    guard let container = try self.nextIfPresentContainer() else { return nil }
+    return try container.decode(Int32.self)
+  }
+
+  mutating func decodeIfPresent(_ type: Int64.Type) throws -> Int64? {
+    guard let container = try self.nextIfPresentContainer() else { return nil }
+    return try container.decode(Int64.self)
+  }
+
+  mutating func decodeIfPresent(_ type: UInt.Type) throws -> UInt? {
+    guard let container = try self.nextIfPresentContainer() else { return nil }
+    return try container.decode(UInt.self)
+  }
+
+  mutating func decodeIfPresent(_ type: UInt8.Type) throws -> UInt8? {
+    guard let container = try self.nextIfPresentContainer() else { return nil }
+    return try container.decode(UInt8.self)
+  }
+
+  mutating func decodeIfPresent(_ type: UInt16.Type) throws -> UInt16? {
+    guard let container = try self.nextIfPresentContainer() else { return nil }
+    return try container.decode(UInt16.self)
+  }
+
+  mutating func decodeIfPresent(_ type: UInt32.Type) throws -> UInt32? {
+    guard let container = try self.nextIfPresentContainer() else { return nil }
+    return try container.decode(UInt32.self)
+  }
+
+  mutating func decodeIfPresent(_ type: UInt64.Type) throws -> UInt64? {
+    guard let container = try self.nextIfPresentContainer() else { return nil }
+    return try container.decode(UInt64.self)
+  }
+
+  mutating func decodeIfPresent<T>(_ type: T.Type) throws -> T? where T: Decodable {
+    guard let next = try self.nextIfPresent() else { return nil }
+    let value = next.value
+    let codingPath = next.codingPath
+
+    if type == Date.self {
+      guard let date = try self.decodeDate(value, codingPath: codingPath) as? T else {
+        throw DecodingError.typeMismatch(
+          type,
+          DecodingError.Context(codingPath: codingPath, debugDescription: "Expected \(type) value.")
+        )
+      }
+      return date
+    }
+    if type == Data.self {
+      guard let data = try self.decodeData(value, codingPath: codingPath) as? T else {
+        throw DecodingError.typeMismatch(
+          type,
+          DecodingError.Context(codingPath: codingPath, debugDescription: "Expected \(type) value.")
+        )
+      }
+      return data
+    }
+    if type == URL.self {
+      guard case .string(let string) = value,
+        let url = URL(string: string),
+        url.scheme != nil
+      else {
+        throw DecodingError.dataCorrupted(
+          DecodingError.Context(codingPath: codingPath, debugDescription: "Invalid URL string.")
+        )
+      }
+      guard let convertedURL = url as? T else {
+        throw DecodingError.typeMismatch(
+          type,
+          DecodingError.Context(codingPath: codingPath, debugDescription: "Expected \(type) value.")
+        )
+      }
+      return convertedURL
+    }
+
+    return try T(from: self.decoder.nestedDecoder(for: value, codingPath: codingPath))
+  }
+
   mutating func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type) throws
     -> KeyedDecodingContainer<NestedKey>
   where NestedKey: CodingKey {
@@ -589,6 +703,23 @@ private struct _UnkeyedValueDecodingContainer: UnkeyedDecodingContainer {
       value: value,
       codingPath: self.codingPath + [_IndexCodingKey(intValue: self.currentIndex - 1)]
     )
+  }
+
+  private mutating func nextIfPresentContainer() throws -> _SingleValueValueDecodingContainer? {
+    guard let next = try self.nextIfPresent() else { return nil }
+    return _SingleValueValueDecodingContainer(
+      decoder: self.decoder,
+      value: next.value,
+      codingPath: next.codingPath
+    )
+  }
+
+  private mutating func nextIfPresent() throws -> (value: JSONSchema.Value, codingPath: [any CodingKey])? {
+    guard !self.isAtEnd else { return nil }
+    let value = try self.next()
+    let codingPath = self.codingPath + [_IndexCodingKey(intValue: self.currentIndex - 1)]
+    if case .null = value { return nil }
+    return (value, codingPath)
   }
 
   private func decodeDate(_ value: JSONSchema.Value, codingPath: [any CodingKey]) throws -> Date {

@@ -78,6 +78,78 @@ struct `JSONSchemaValueDecoder tests` {
   }
 
   @Test
+  func `Value Decoder Decode If Present Returns Nil For Missing Key`() throws {
+    let value: JSONSchema.Value = .object([:])
+    try self.expectDecodes(DecodeIfPresentProbe.self, from: value, expected: DecodeIfPresentProbe(value: nil))
+  }
+
+  @Test
+  func `Value Decoder Decode If Present Returns Nil For Null Value`() throws {
+    let value: JSONSchema.Value = .object(["value": .null])
+    try self.expectDecodes(DecodeIfPresentProbe.self, from: value, expected: DecodeIfPresentProbe(value: nil))
+  }
+
+  @Test
+  func `Value Decoder Decode If Present Decodes Present Value`() throws {
+    let value: JSONSchema.Value = .object(["value": .string("blob")])
+    try self.expectDecodes(DecodeIfPresentProbe.self, from: value, expected: DecodeIfPresentProbe(value: "blob"))
+  }
+
+  @Test
+  func `Value Decoder Decode If Present Throws For Type Mismatch`() throws {
+    let value: JSONSchema.Value = .object(["value": .integer(1)])
+    #expect(throws: Error.self) {
+      _ = try JSONSchema.Value.Decoder().decode(DecodeIfPresentProbe.self, from: value)
+    }
+  }
+
+  @Test
+  func `Value Decoder Decode If Present Works With Convert From Snake Case`() throws {
+    let value: JSONSchema.Value = .object(["some_value": .string("blob")])
+    let decoder = JSONSchema.Value.Decoder()
+    decoder.keyDecodingStrategy = .convertFromSnakeCase
+    let actual = try decoder.decode(DecodeIfPresentSnakeProbe.self, from: value)
+    expectNoDifference(actual, DecodeIfPresentSnakeProbe(someValue: "blob"))
+  }
+
+  @Test
+  func `Value Decoder Decode If Present Works With Custom Key Strategy`() throws {
+    let value: JSONSchema.Value = .object(["x_value": .string("blob")])
+    let decoder = JSONSchema.Value.Decoder()
+    decoder.keyDecodingStrategy = .custom { codingPath in
+      let key = codingPath.last!.stringValue.replacingOccurrences(of: "x_", with: "")
+      return AnyCodingKey(stringValue: key)
+    }
+    let actual = try decoder.decode(DecodeIfPresentProbe.self, from: value)
+    expectNoDifference(actual, DecodeIfPresentProbe(value: "blob"))
+  }
+
+  @Test
+  func `Value Decoder Decode If Present Decodes Nested Optional Object`() throws {
+    let value: JSONSchema.Value = .object([
+      "child": .object(["name": .string("blob")])
+    ])
+    let actual = try JSONSchema.Value.Decoder().decode(DecodeIfPresentNestedObjectProbe.self, from: value)
+    expectNoDifference(actual, DecodeIfPresentNestedObjectProbe(child: DecodeIfPresentNestedObjectProbe.Child(name: "blob")))
+  }
+
+  @Test
+  func `Value Decoder Decode If Present Decodes Nested Optional Array`() throws {
+    let value: JSONSchema.Value = .object([
+      "items": .array([.integer(1), .integer(2), .integer(3)])
+    ])
+    let actual = try JSONSchema.Value.Decoder().decode(DecodeIfPresentArrayProbe.self, from: value)
+    expectNoDifference(actual, DecodeIfPresentArrayProbe(items: [1, 2, 3]))
+  }
+
+  @Test
+  func `Value Decoder Decode If Present On Unkeyed Container Advances Index`() throws {
+    let value: JSONSchema.Value = .array([.null, .string("blob")])
+    let actual = try JSONSchema.Value.Decoder().decode(DecodeIfPresentUnkeyedProbe.self, from: value)
+    expectNoDifference(actual, DecodeIfPresentUnkeyedProbe(first: nil, second: "blob"))
+  }
+
+  @Test
   func `Value Decoder Throws For Missing Required Key`() throws {
     #expect(throws: Error.self) {
       _ = try JSONSchema.Value.Decoder().decode(RequiredKeyContainer.self, from: .object([:]))
@@ -531,6 +603,78 @@ private struct AllKeysProbe: Decodable {
 
 private struct NonOptionalString: Codable, Equatable {
   let value: String
+}
+
+private struct DecodeIfPresentProbe: Decodable, Equatable {
+  let value: String?
+
+  init(value: String?) {
+    self.value = value
+  }
+
+  init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: AnyCodingKey.self)
+    self.value = try container.decodeIfPresent(String.self, forKey: AnyCodingKey(stringValue: "value"))
+  }
+}
+
+private struct DecodeIfPresentSnakeProbe: Decodable, Equatable {
+  let someValue: String?
+
+  init(someValue: String?) {
+    self.someValue = someValue
+  }
+
+  init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: AnyCodingKey.self)
+    self.someValue = try container.decodeIfPresent(String.self, forKey: AnyCodingKey(stringValue: "someValue"))
+  }
+}
+
+private struct DecodeIfPresentNestedObjectProbe: Decodable, Equatable {
+  struct Child: Decodable, Equatable {
+    let name: String
+  }
+
+  let child: Child?
+
+  init(child: Child?) {
+    self.child = child
+  }
+
+  init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: AnyCodingKey.self)
+    self.child = try container.decodeIfPresent(Child.self, forKey: AnyCodingKey(stringValue: "child"))
+  }
+}
+
+private struct DecodeIfPresentArrayProbe: Decodable, Equatable {
+  let items: [Int]?
+
+  init(items: [Int]?) {
+    self.items = items
+  }
+
+  init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: AnyCodingKey.self)
+    self.items = try container.decodeIfPresent([Int].self, forKey: AnyCodingKey(stringValue: "items"))
+  }
+}
+
+private struct DecodeIfPresentUnkeyedProbe: Decodable, Equatable {
+  let first: String?
+  let second: String?
+
+  init(first: String?, second: String?) {
+    self.first = first
+    self.second = second
+  }
+
+  init(from decoder: any Decoder) throws {
+    var container = try decoder.unkeyedContainer()
+    self.first = try container.decodeIfPresent(String.self)
+    self.second = try container.decodeIfPresent(String.self)
+  }
 }
 
 private struct AnyCodingKey: CodingKey {
