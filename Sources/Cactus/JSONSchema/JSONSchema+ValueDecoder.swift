@@ -219,7 +219,9 @@ private struct _KeyedValueDecodingContainer<Key: CodingKey>: KeyedDecodingContai
   let object: [String: JSONSchema.Value]
 
   var allKeys: [Key] {
-    self.object.keys.compactMap { Key(stringValue: $0) }
+    self.object.keys.compactMap {
+      Key(stringValue: self.transformedDecodedKey(forRawKey: $0))
+    }
   }
 
   func contains(_ key: Key) -> Bool {
@@ -231,11 +233,24 @@ private struct _KeyedValueDecodingContainer<Key: CodingKey>: KeyedDecodingContai
     case .useDefaultKeys:
       return self.object[key.stringValue] == nil ? nil : key.stringValue
     case .convertFromSnakeCase:
-      return self.object.keys.first { _convertFromSnakeCase($0) == key.stringValue }
-    case .custom(let closure):
       return self.object.keys.first {
-        closure(self.codingPath + [_StringCodingKey(stringValue: $0)]).stringValue == key.stringValue
+        self.transformedDecodedKey(forRawKey: $0) == key.stringValue
       }
+    case .custom:
+      return self.object.keys.first {
+        self.transformedDecodedKey(forRawKey: $0) == key.stringValue
+      }
+    }
+  }
+
+  private func transformedDecodedKey(forRawKey rawKey: String) -> String {
+    switch self.decoder.options.keyDecodingStrategy {
+    case .useDefaultKeys:
+      return rawKey
+    case .convertFromSnakeCase:
+      return _convertFromSnakeCase(rawKey)
+    case .custom(let closure):
+      return closure(self.codingPath + [_StringCodingKey(stringValue: rawKey)]).stringValue
     }
   }
 

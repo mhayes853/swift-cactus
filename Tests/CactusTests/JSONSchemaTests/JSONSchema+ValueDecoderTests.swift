@@ -353,6 +353,27 @@ struct `JSONSchemaValueDecoder tests` {
   }
 
   @Test
+  func `Value Decoder All Keys Uses Convert From Snake Case Strategy`() throws {
+    let payload: JSONSchema.Value = ["some_value": 1, "other_key": 2]
+    let decoder = JSONSchema.Value.Decoder()
+    decoder.keyDecodingStrategy = .convertFromSnakeCase
+    let result = try decoder.decode(AllKeysProbe.self, from: payload)
+    expectNoDifference(result.keys, ["otherKey", "someValue"])
+  }
+
+  @Test
+  func `Value Decoder All Keys Uses Custom Key Decoding Strategy`() throws {
+    let payload: JSONSchema.Value = ["x_name": 1, "x_count": 2]
+    let decoder = JSONSchema.Value.Decoder()
+    decoder.keyDecodingStrategy = .custom { codingPath in
+      let key = codingPath.last!.stringValue.replacingOccurrences(of: "x_", with: "")
+      return AnyCodingKey(stringValue: key)
+    }
+    let result = try decoder.decode(AllKeysProbe.self, from: payload)
+    expectNoDifference(result.keys, ["count", "name"])
+  }
+
+  @Test
   func `Value Decoder Type Mismatch Includes Coding Path`() throws {
     let error = #expect(throws: DecodingError.self) {
       _ = try JSONSchema.Value.Decoder().decode(Person.self, from: ["name": "blob", "age": "oops"])
@@ -496,6 +517,15 @@ private struct ConvertFromSnakeProbe: Decodable {
     let container = try decoder.container(keyedBy: AnyCodingKey.self)
     let camelCaseKey = try container.decode(String.self, forKey: AnyCodingKey(stringValue: "camelCaseKey"))
     self.found = try container.decode(Bool.self, forKey: AnyCodingKey(stringValue: camelCaseKey))
+  }
+}
+
+private struct AllKeysProbe: Decodable {
+  let keys: [String]
+
+  init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: AnyCodingKey.self)
+    self.keys = container.allKeys.map(\.stringValue).sorted()
   }
 }
 
