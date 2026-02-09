@@ -65,6 +65,13 @@ struct `JSONSchemaValueDecoder tests` {
   }
 
   @Test
+  func `Value Decoder Throws For Unsigned Integer Underflow`() throws {
+    #expect(throws: Error.self) {
+      _ = try JSONSchema.Value.Decoder().decode(UInt.self, from: .integer(-1))
+    }
+  }
+
+  @Test
   func `Value Decoder Distinguishes Missing Key And Null`() throws {
     try self.expectDecodes(OptionalKeyContainer.self, from: .object([:]), expected: OptionalKeyContainer(value: nil))
     try self.expectDecodes(OptionalKeyContainer.self, from: .object(["value": .null]), expected: OptionalKeyContainer(value: nil))

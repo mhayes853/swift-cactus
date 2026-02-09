@@ -265,16 +265,36 @@ private struct _KeyedValueEncodingContainer<Key: CodingKey>: KeyedEncodingContai
   func encode(_ value: Float, forKey key: Key) throws {
     self.set(try self.encodeFloat(value), for: key)
   }
-  func encode(_ value: Int, forKey key: Key) throws { self.set(.integer(value), for: key) }
-  func encode(_ value: Int8, forKey key: Key) throws { self.set(.integer(Int(value)), for: key) }
-  func encode(_ value: Int16, forKey key: Key) throws { self.set(.integer(Int(value)), for: key) }
-  func encode(_ value: Int32, forKey key: Key) throws { self.set(.integer(Int(value)), for: key) }
-  func encode(_ value: Int64, forKey key: Key) throws { self.set(.integer(Int(value)), for: key) }
-  func encode(_ value: UInt, forKey key: Key) throws { self.set(.integer(Int(value)), for: key) }
-  func encode(_ value: UInt8, forKey key: Key) throws { self.set(.integer(Int(value)), for: key) }
-  func encode(_ value: UInt16, forKey key: Key) throws { self.set(.integer(Int(value)), for: key) }
-  func encode(_ value: UInt32, forKey key: Key) throws { self.set(.integer(Int(value)), for: key) }
-  func encode(_ value: UInt64, forKey key: Key) throws { self.set(.integer(Int(value)), for: key) }
+  func encode(_ value: Int, forKey key: Key) throws {
+    self.set(try _encodeInteger(value, codingPath: self.codingPath + [key]), for: key)
+  }
+  func encode(_ value: Int8, forKey key: Key) throws {
+    self.set(try _encodeInteger(value, codingPath: self.codingPath + [key]), for: key)
+  }
+  func encode(_ value: Int16, forKey key: Key) throws {
+    self.set(try _encodeInteger(value, codingPath: self.codingPath + [key]), for: key)
+  }
+  func encode(_ value: Int32, forKey key: Key) throws {
+    self.set(try _encodeInteger(value, codingPath: self.codingPath + [key]), for: key)
+  }
+  func encode(_ value: Int64, forKey key: Key) throws {
+    self.set(try _encodeInteger(value, codingPath: self.codingPath + [key]), for: key)
+  }
+  func encode(_ value: UInt, forKey key: Key) throws {
+    self.set(try _encodeInteger(value, codingPath: self.codingPath + [key]), for: key)
+  }
+  func encode(_ value: UInt8, forKey key: Key) throws {
+    self.set(try _encodeInteger(value, codingPath: self.codingPath + [key]), for: key)
+  }
+  func encode(_ value: UInt16, forKey key: Key) throws {
+    self.set(try _encodeInteger(value, codingPath: self.codingPath + [key]), for: key)
+  }
+  func encode(_ value: UInt32, forKey key: Key) throws {
+    self.set(try _encodeInteger(value, codingPath: self.codingPath + [key]), for: key)
+  }
+  func encode(_ value: UInt64, forKey key: Key) throws {
+    self.set(try _encodeInteger(value, codingPath: self.codingPath + [key]), for: key)
+  }
 
   func encode<T>(_ value: T, forKey key: Key) throws where T: Encodable {
     let keyName = self.encoder.transformedKey(key)
@@ -402,16 +422,46 @@ private struct _UnkeyedValueEncodingContainer: UnkeyedEncodingContainer {
   mutating func encode(_ value: String) throws { self.append(.string(value)) }
   mutating func encode(_ value: Double) throws { self.append(try self.encodeDouble(value)) }
   mutating func encode(_ value: Float) throws { self.append(try self.encodeDouble(Double(value))) }
-  mutating func encode(_ value: Int) throws { self.append(.integer(value)) }
-  mutating func encode(_ value: Int8) throws { self.append(.integer(Int(value))) }
-  mutating func encode(_ value: Int16) throws { self.append(.integer(Int(value))) }
-  mutating func encode(_ value: Int32) throws { self.append(.integer(Int(value))) }
-  mutating func encode(_ value: Int64) throws { self.append(.integer(Int(value))) }
-  mutating func encode(_ value: UInt) throws { self.append(.integer(Int(value))) }
-  mutating func encode(_ value: UInt8) throws { self.append(.integer(Int(value))) }
-  mutating func encode(_ value: UInt16) throws { self.append(.integer(Int(value))) }
-  mutating func encode(_ value: UInt32) throws { self.append(.integer(Int(value))) }
-  mutating func encode(_ value: UInt64) throws { self.append(.integer(Int(value))) }
+  mutating func encode(_ value: Int) throws {
+    let indexKey = _IndexCodingKey(intValue: self.count)
+    self.append(try _encodeInteger(value, codingPath: self.codingPath + [indexKey]))
+  }
+  mutating func encode(_ value: Int8) throws {
+    let indexKey = _IndexCodingKey(intValue: self.count)
+    self.append(try _encodeInteger(value, codingPath: self.codingPath + [indexKey]))
+  }
+  mutating func encode(_ value: Int16) throws {
+    let indexKey = _IndexCodingKey(intValue: self.count)
+    self.append(try _encodeInteger(value, codingPath: self.codingPath + [indexKey]))
+  }
+  mutating func encode(_ value: Int32) throws {
+    let indexKey = _IndexCodingKey(intValue: self.count)
+    self.append(try _encodeInteger(value, codingPath: self.codingPath + [indexKey]))
+  }
+  mutating func encode(_ value: Int64) throws {
+    let indexKey = _IndexCodingKey(intValue: self.count)
+    self.append(try _encodeInteger(value, codingPath: self.codingPath + [indexKey]))
+  }
+  mutating func encode(_ value: UInt) throws {
+    let indexKey = _IndexCodingKey(intValue: self.count)
+    self.append(try _encodeInteger(value, codingPath: self.codingPath + [indexKey]))
+  }
+  mutating func encode(_ value: UInt8) throws {
+    let indexKey = _IndexCodingKey(intValue: self.count)
+    self.append(try _encodeInteger(value, codingPath: self.codingPath + [indexKey]))
+  }
+  mutating func encode(_ value: UInt16) throws {
+    let indexKey = _IndexCodingKey(intValue: self.count)
+    self.append(try _encodeInteger(value, codingPath: self.codingPath + [indexKey]))
+  }
+  mutating func encode(_ value: UInt32) throws {
+    let indexKey = _IndexCodingKey(intValue: self.count)
+    self.append(try _encodeInteger(value, codingPath: self.codingPath + [indexKey]))
+  }
+  mutating func encode(_ value: UInt64) throws {
+    let indexKey = _IndexCodingKey(intValue: self.count)
+    self.append(try _encodeInteger(value, codingPath: self.codingPath + [indexKey]))
+  }
 
   mutating func encode<T>(_ value: T) throws where T: Encodable {
     let index = self.count
@@ -520,16 +570,36 @@ private struct _SingleValueValueEncodingContainer: SingleValueEncodingContainer 
   mutating func encode(_ value: String) throws { self.assign(.string(value)) }
   mutating func encode(_ value: Double) throws { self.assign(try self.encodeDouble(value)) }
   mutating func encode(_ value: Float) throws { self.assign(try self.encodeDouble(Double(value))) }
-  mutating func encode(_ value: Int) throws { self.assign(.integer(value)) }
-  mutating func encode(_ value: Int8) throws { self.assign(.integer(Int(value))) }
-  mutating func encode(_ value: Int16) throws { self.assign(.integer(Int(value))) }
-  mutating func encode(_ value: Int32) throws { self.assign(.integer(Int(value))) }
-  mutating func encode(_ value: Int64) throws { self.assign(.integer(Int(value))) }
-  mutating func encode(_ value: UInt) throws { self.assign(.integer(Int(value))) }
-  mutating func encode(_ value: UInt8) throws { self.assign(.integer(Int(value))) }
-  mutating func encode(_ value: UInt16) throws { self.assign(.integer(Int(value))) }
-  mutating func encode(_ value: UInt32) throws { self.assign(.integer(Int(value))) }
-  mutating func encode(_ value: UInt64) throws { self.assign(.integer(Int(value))) }
+  mutating func encode(_ value: Int) throws {
+    self.assign(try _encodeInteger(value, codingPath: self.codingPath))
+  }
+  mutating func encode(_ value: Int8) throws {
+    self.assign(try _encodeInteger(value, codingPath: self.codingPath))
+  }
+  mutating func encode(_ value: Int16) throws {
+    self.assign(try _encodeInteger(value, codingPath: self.codingPath))
+  }
+  mutating func encode(_ value: Int32) throws {
+    self.assign(try _encodeInteger(value, codingPath: self.codingPath))
+  }
+  mutating func encode(_ value: Int64) throws {
+    self.assign(try _encodeInteger(value, codingPath: self.codingPath))
+  }
+  mutating func encode(_ value: UInt) throws {
+    self.assign(try _encodeInteger(value, codingPath: self.codingPath))
+  }
+  mutating func encode(_ value: UInt8) throws {
+    self.assign(try _encodeInteger(value, codingPath: self.codingPath))
+  }
+  mutating func encode(_ value: UInt16) throws {
+    self.assign(try _encodeInteger(value, codingPath: self.codingPath))
+  }
+  mutating func encode(_ value: UInt32) throws {
+    self.assign(try _encodeInteger(value, codingPath: self.codingPath))
+  }
+  mutating func encode(_ value: UInt64) throws {
+    self.assign(try _encodeInteger(value, codingPath: self.codingPath))
+  }
 
   mutating func encode<T>(_ value: T) throws where T: Encodable {
     if let date = value as? Date {
@@ -772,4 +842,20 @@ private func _encodeFiniteNumber(_ value: Double) -> JSONSchema.Value {
     return .integer(Int(value))
   }
   return .number(value)
+}
+
+private func _encodeInteger<T: BinaryInteger>(
+  _ value: T,
+  codingPath: [any CodingKey]
+) throws -> JSONSchema.Value {
+  guard let intValue = Int(exactly: value) else {
+    throw EncodingError.invalidValue(
+      value,
+      EncodingError.Context(
+        codingPath: codingPath,
+        debugDescription: "Integer value is out of range for JSONSchema.Value.integer storage."
+      )
+    )
+  }
+  return .integer(intValue)
 }

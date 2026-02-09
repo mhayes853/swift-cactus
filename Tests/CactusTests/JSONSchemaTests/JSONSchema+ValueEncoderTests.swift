@@ -54,6 +54,13 @@ struct `JSONSchemaValueEncoder tests` {
   }
 
   @Test
+  func `Value Encoder Throws For Integer Overflow`() throws {
+    #expect(throws: Error.self) {
+      _ = try JSONSchema.Value.Encoder().encode(UInt64.max)
+    }
+  }
+
+  @Test
   func `Value Encoder Date Strategy Deferred To Date`() throws {
     let date = Date(timeIntervalSince1970: 1_234)
     try self.expectEncodes(DateBox(date: date)) { encoder in
