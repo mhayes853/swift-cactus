@@ -8,7 +8,8 @@ import Testing
   .serialized,
   .macros(
     [
-      "JSONGenerable": JSONGenerableMacro.self
+      "JSONGenerable": JSONGenerableMacro.self,
+      "JSONGenerableIgnored": JSONGenerableIgnoredMacro.self
     ],
     record: .failed
   )

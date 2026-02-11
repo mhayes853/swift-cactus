@@ -537,7 +537,10 @@ extension JSONGenerableMacro {
       .compactMap { $0.as(AttributeSyntax.self) }
       .first {
         let name = $0.attributeName.trimmedDescription
-        return name == "StreamParseableIgnored" || name == "StreamParsing.StreamParseableIgnored"
+        return name == "JSONGenerableIgnored"
+          || name == "Cactus.JSONGenerableIgnored"
+          || name == "StreamParseableIgnored"
+          || name == "StreamParsing.StreamParseableIgnored"
       }
   }
 

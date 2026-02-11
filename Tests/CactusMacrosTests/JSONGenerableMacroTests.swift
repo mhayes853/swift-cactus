@@ -371,6 +371,135 @@ extension BaseTestSuite {
     }
 
     @Test
+    func `Ignores Explicitly Ignored Properties`() {
+      assertMacro {
+        """
+        @JSONGenerable
+        struct Person {
+          var name: String
+          @JSONGenerableIgnored
+          var age: Int
+        }
+        """
+      } expansion: {
+        #"""
+        struct Person {
+          var name: String
+          var age: Int
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "name": String.jsonSchema
+                ],
+                required: ["name"]
+              )
+            )
+          }
+
+          var streamPartialValue: Partial {
+            Partial(
+              name: self.name.streamPartialValue
+            )
+          }
+        }
+
+        extension Person: CactusCore.JSONGenerable, StreamParsingCore.StreamParseable {
+          struct Partial: StreamParsingCore.StreamParseableValue,
+            StreamParsingCore.StreamParseable {
+            typealias Partial = Self
+
+            var name: String.Partial?
+
+            init(
+              name: String.Partial? = nil
+            ) {
+              self.name = name
+            }
+
+            static func initialParseableValue() -> Self {
+              Self()
+            }
+
+            static func registerHandlers(
+              in handlers: inout some StreamParsingCore.StreamParserHandlers<Self>
+            ) {
+              handlers.registerKeyedHandler(forKey: "name", \.name)
+            }
+          }
+        }
+        """#
+      }
+    }
+
+    @Test
+    func `Ignores Multiple Explicitly Ignored Properties`() {
+      assertMacro {
+        """
+        @JSONGenerable
+        struct Person {
+          @JSONGenerableIgnored
+          var id: String
+          var name: String
+          @JSONGenerableIgnored
+          var age: Int
+        }
+        """
+      } expansion: {
+        #"""
+        struct Person {
+          var id: String
+          var name: String
+          var age: Int
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "name": String.jsonSchema
+                ],
+                required: ["name"]
+              )
+            )
+          }
+
+          var streamPartialValue: Partial {
+            Partial(
+              name: self.name.streamPartialValue
+            )
+          }
+        }
+
+        extension Person: CactusCore.JSONGenerable, StreamParsingCore.StreamParseable {
+          struct Partial: StreamParsingCore.StreamParseableValue,
+            StreamParsingCore.StreamParseable {
+            typealias Partial = Self
+
+            var name: String.Partial?
+
+            init(
+              name: String.Partial? = nil
+            ) {
+              self.name = name
+            }
+
+            static func initialParseableValue() -> Self {
+              Self()
+            }
+
+            static func registerHandlers(
+              in handlers: inout some StreamParsingCore.StreamParserHandlers<Self>
+            ) {
+              handlers.registerKeyedHandler(forKey: "name", \.name)
+            }
+          }
+        }
+        """#
+      }
+    }
+
+    @Test
     func `Ignores Instance Methods`() {
       assertMacro {
         """

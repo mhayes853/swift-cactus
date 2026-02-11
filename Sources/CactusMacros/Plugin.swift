@@ -4,6 +4,7 @@ import SwiftSyntaxMacros
 @main
 struct CactusMacrosPlugin: CompilerPlugin {
   let providingMacros: [any Macro.Type] = [
-    JSONGenerableMacro.self
+    JSONGenerableMacro.self,
+    JSONGenerableIgnoredMacro.self
   ]
 }
