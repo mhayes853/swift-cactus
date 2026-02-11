@@ -1,5 +1,5 @@
 {
-  "originHash" : "411e6356accab16a933e86412731fd50bb5678375de57bfa764e5cfe410bcf41",
+  "originHash" : "a98663ac034b39b235ee8f01bcb25d609b85f260e449e9a29fb5368fe031d1f3",
   "pins" : [
     {
       "identity" : "combine-schedulers",
@@ -101,6 +101,15 @@
       }
     },
     {
+      "identity" : "swift-macro-testing",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swift-macro-testing",
+      "state" : {
+        "revision" : "9ab11325daa51c7c5c10fcf16c92bac906717c7e",
+        "version" : "0.6.4"
+      }
+    },
+    {
       "identity" : "swift-operation",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mhayes853/swift-operation",
@@ -134,6 +143,15 @@
       "state" : {
         "revision" : "a8b7c5e0ed33d8ab8887d1654d9b59f2cbad529b",
         "version" : "1.18.7"
+      }
+    },
+    {
+      "identity" : "swift-stream-parsing",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mhayes853/swift-stream-parsing",
+      "state" : {
+        "revision" : "3be80ece10b360c825dba73fc91d095b78d6b418",
+        "version" : "0.1.2"
       }
     },
     {
