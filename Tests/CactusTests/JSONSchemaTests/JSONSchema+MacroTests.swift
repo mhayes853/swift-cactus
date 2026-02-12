@@ -93,6 +93,71 @@ struct `JSONSchemaMacro tests` {
       true
     )
   }
+
+  @Test(arguments: [
+    ["metadata": ["key": "value"], "tags": ["tag1": "value1"], "validatedMetadata": ["key": "value"]] as JSONSchema.Value,
+    ["metadata": ["a": "1", "b": "2", "c": "3"], "tags": ["tag1": "value1", "tag2": "value2"], "validatedMetadata": ["key": "value"]] as JSONSchema.Value,
+    ["metadata": ["tag1": "value1", "tag2": "value2"], "tags": ["tag1": "value1", "tag2": "value2"], "validatedMetadata": ["key": "value"]] as JSONSchema.Value,
+    ["metadata": ["a": "1", "b": "2"], "tags": ["tag1": "value1"], "counts": ["a": 1, "b": 2], "validatedMetadata": ["key": "value"]] as JSONSchema.Value,
+    ["metadata": ["a": "1"], "tags": ["tag1": "value1"], "counts": ["a": 1], "validatedMetadata": ["key": "value"]] as JSONSchema.Value,
+    ["metadata": ["key": "value"], "tags": ["tag1": "value1"], "counts": JSONSchema.Value.null, "validatedMetadata": ["key": "value"]] as JSONSchema.Value,
+    ["metadata": ["key": "value"], "tags": ["tag1": "value1"], "validatedMetadata": ["key": "value"]] as JSONSchema.Value
+  ])
+  func `Object Semantic Macros Validate Expected Valid Values`(value: JSONSchema.Value) {
+    #expect(throws: Never.self) {
+      try JSONSchema.Validator.shared.validate(value: value, with: JSONObjectSemanticPayload.jsonSchema)
+    }
+  }
+
+  @Test(arguments: [
+    (
+      ["metadata": [:] as JSONSchema.Value, "tags": ["tag1": "value1"], "validatedMetadata": ["key": "value"]] as JSONSchema.Value,
+      JSONSchema.ValidationError.Reason.objectPropertiesTooShort(minimum: 1),
+      [JSONSchema.ValidationError.PathElement.objectValue(property: "metadata")]
+    ),
+    (
+      ["metadata": ["a": "1", "b": "2", "c": "3", "d": "4"], "tags": ["tag1": "value1"], "validatedMetadata": ["key": "value"]] as JSONSchema.Value,
+      JSONSchema.ValidationError.Reason.objectPropertiesTooLong(maximum: 3),
+      [JSONSchema.ValidationError.PathElement.objectValue(property: "metadata")]
+    ),
+    (
+      ["metadata": ["key": "value"], "tags": ["tag1": "ab"], "validatedMetadata": ["key": "value"]] as JSONSchema.Value,
+      JSONSchema.ValidationError.Reason.stringLengthTooShort(minimum: 3),
+      [
+        JSONSchema.ValidationError.PathElement.objectValue(property: "tags"),
+        JSONSchema.ValidationError.PathElement.objectValue(property: "tag1")
+      ]
+    ),
+    (
+      ["metadata": ["key": "value"], "tags": ["tag1": "value1"], "counts": ["a": -1], "validatedMetadata": ["key": "value"]] as JSONSchema.Value,
+      JSONSchema.ValidationError.Reason.belowMinimum(inclusive: true, integer: 0),
+      [
+        JSONSchema.ValidationError.PathElement.objectValue(property: "counts"),
+        JSONSchema.ValidationError.PathElement.objectValue(property: "a")
+      ]
+    ),
+    (
+      ["metadata": ["key": "value"], "tags": ["tag1": "value1"], "validatedMetadata": ["key": "ab"]] as JSONSchema.Value,
+      JSONSchema.ValidationError.Reason.stringLengthTooShort(minimum: 3),
+      [
+        JSONSchema.ValidationError.PathElement.objectValue(property: "validatedMetadata"),
+        JSONSchema.ValidationError.PathElement.objectValue(property: "key")
+      ]
+    )
+  ])
+  func `Object Semantic Macros Validate Expected Invalid Values`(
+    value: JSONSchema.Value,
+    reason: JSONSchema.ValidationError.Reason,
+    path: [JSONSchema.ValidationError.PathElement]
+  ) {
+    let error = #expect(throws: JSONSchema.ValidationError.self) {
+      try JSONSchema.Validator.shared.validate(value: value, with: JSONObjectSemanticPayload.jsonSchema)
+    }
+    expectNoDifference(
+      error?.failures.contains { $0.path == path && $0.reason == reason },
+      true
+    )
+  }
 }
 
 @JSONSchema
@@ -118,4 +183,21 @@ private struct ArraySemanticPayload: Codable {
 
   @JSONNumberSchema(minimum: 0, exclusiveMaximum: 1)
   var confidences: [Double]?
+}
+
+@JSONSchema
+private struct JSONObjectSemanticPayload: Codable {
+  @JSONObjectSchema(minProperties: 1, maxProperties: 3)
+  var metadata: [String: String]
+
+  @JSONObjectSchema(minProperties: 1)
+  @JSONStringSchema(minLength: 3)
+  var tags: [String: String]
+
+  @JSONObjectSchema(minProperties: 1)
+  @JSONIntegerSchema(minimum: 0)
+  var counts: [String: Int]?
+
+  @JSONObjectSchema(additionalProperties: .string(minLength: 3))
+  var validatedMetadata: [String: String]
 }

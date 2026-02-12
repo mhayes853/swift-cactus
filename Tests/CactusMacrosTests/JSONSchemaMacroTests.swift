@@ -504,5 +504,127 @@ extension BaseTestSuite {
         """
       }
     }
+
+    @Test
+    func `Applies Full JSONObject Schema Properties`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONObjectSchema(minProperties: 1, maxProperties: 10)
+          var metadata: [String: String]
+        }
+        """
+      } expansion: {
+        """
+        struct Payload {
+          var metadata: [String: String]
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "metadata": .object(minProperties: 1, maxProperties: 10, additionalProperties: String.jsonSchema)
+                ],
+                required: ["metadata"]
+              )
+            )
+          }
+        }
+
+        extension Payload: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Combines JSONObject And String Semantic Schema Attributes`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONObjectSchema(minProperties: 1)
+          @JSONStringSchema(minLength: 3)
+          var tags: [String: String]
+        }
+        """
+      } expansion: {
+        """
+        struct Payload {
+          var tags: [String: String]
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "tags": .object(minProperties: 1, additionalProperties: .string(minLength: 3))
+                ],
+                required: ["tags"]
+              )
+            )
+          }
+        }
+
+        extension Payload: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Uses Union For Optional JSONObject Semantic Schema`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONIntegerSchema(minimum: 0)
+          var counts: [String: Int]?
+        }
+        """
+      } expansion: {
+        """
+        struct Payload {
+          var counts: [String: Int]?
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "counts": .union(object: .object(additionalProperties: .integer(minimum: 0)), null: true)
+                ]
+              )
+            )
+          }
+        }
+
+        extension Payload: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Rejects String Semantic Schema For Non String Dictionary Elements`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONStringSchema(minLength: 1)
+          var counts: [String: Int]
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONStringSchema(minLength: 1)
+          ┬──────────────────────────────
+          ╰─ 🛑 @JSONStringSchema can only be applied to properties of type String. Found 'counts: [String: Int]'.
+          var counts: [String: Int]
+        }
+        """
+      }
+    }
   }
 }

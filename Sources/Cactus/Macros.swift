@@ -45,6 +45,18 @@ public macro JSONIntegerSchema(
 public macro JSONBooleanSchema() =
   #externalMacro(module: "CactusMacros", type: "JSONBooleanSchemaMacro")
 
+/// Overrides schema synthesis for a dictionary property using semantic validation constraints.
+@attached(peer)
+public macro JSONObjectSchema(
+  properties: [Swift.String: JSONSchema]? = nil,
+  required: [Swift.String]? = nil,
+  minProperties: Int? = nil,
+  maxProperties: Int? = nil,
+  additionalProperties: JSONSchema? = nil,
+  patternProperties: [Swift.String: JSONSchema]? = nil,
+  propertyNames: JSONSchema? = nil
+) = #externalMacro(module: "CactusMacros", type: "JSONObjectSchemaMacro")
+
 /// Overrides schema synthesis for an array property using semantic validation constraints.
 @attached(peer)
 public macro JSONArraySchema(

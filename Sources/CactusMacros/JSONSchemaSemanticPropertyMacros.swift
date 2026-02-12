@@ -41,6 +41,16 @@ public enum JSONBooleanSchemaMacro: PeerMacro {
   }
 }
 
+public enum JSONObjectSchemaMacro: PeerMacro {
+  public static func expansion(
+    of node: AttributeSyntax,
+    providingPeersOf declaration: some DeclSyntaxProtocol,
+    in context: some MacroExpansionContext
+  ) throws -> [DeclSyntax] {
+    []
+  }
+}
+
 public enum JSONArraySchemaMacro: PeerMacro {
   public static func expansion(
     of node: AttributeSyntax,

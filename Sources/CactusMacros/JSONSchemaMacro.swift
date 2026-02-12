@@ -173,6 +173,7 @@ extension JSONSchemaMacro {
     case integer = "JSONIntegerSchema"
     case boolean = "JSONBooleanSchema"
     case array = "JSONArraySchema"
+    case object = "JSONObjectSchema"
   }
 
   private static let semanticSchemaKinds = Set<SemanticSchemaKind>([
@@ -180,7 +181,8 @@ extension JSONSchemaMacro {
     .number,
     .integer,
     .boolean,
-    .array
+    .array,
+    .object
   ])
 
   private static let primitiveSemanticSchemaKinds = Set<SemanticSchemaKind>([
@@ -217,6 +219,11 @@ extension JSONSchemaMacro {
     let isArray: Bool
     let arrayElementTypeName: String?
     let arrayElementBaseType: String?
+    let isDictionary: Bool
+    let dictionaryKeyTypeName: String?
+    let dictionaryKeyBaseType: String?
+    let dictionaryValueTypeName: String?
+    let dictionaryValueBaseType: String?
   }
 
   private struct StoredProperty {
@@ -231,6 +238,7 @@ extension JSONSchemaMacro {
     let primitive: AttributeSyntax?
     let primitiveKind: SemanticSchemaKind?
     let array: AttributeSyntax?
+    let object: AttributeSyntax?
   }
 
   private static func storedProperties(
@@ -325,6 +333,16 @@ extension JSONSchemaMacro {
 
     let parsedType = Self.parseTypeName(typeName)
 
+    if attributes.object != nil || parsedType.isDictionary {
+      return Self.objectPropertySchemaExpression(
+        attributes: attributes,
+        parsedType: parsedType,
+        propertyName: propertyName,
+        typeName: typeName,
+        context: context
+      )
+    }
+
     if attributes.array != nil || parsedType.isArray {
       return Self.arrayPropertySchemaExpression(
         attributes: attributes,
@@ -372,7 +390,8 @@ extension JSONSchemaMacro {
       all: semanticAttributes,
       primitive: primitiveAttribute,
       primitiveKind: primitiveAttribute.flatMap { Self.semanticSchemaKind(for: $0) },
-      array: semanticAttributes.first { Self.semanticSchemaKind(for: $0) == .array }
+      array: semanticAttributes.first { Self.semanticSchemaKind(for: $0) == .array },
+      object: semanticAttributes.first { Self.semanticSchemaKind(for: $0) == .object }
     )
   }
 
@@ -419,6 +438,143 @@ extension JSONSchemaMacro {
     return parsedType.isOptional
       ? ".union(array: .array(\(arrayArguments)), null: true)"
       : ".array(\(arrayArguments))"
+  }
+
+  private static func objectPropertySchemaExpression(
+    attributes: SemanticAttributeSelection,
+    parsedType: ParsedTypeName,
+    propertyName: String,
+    typeName: String,
+    context: some MacroExpansionContext
+  ) -> String? {
+    if let objectAttribute = attributes.object {
+      if !parsedType.isDictionary {
+        Self.diagnoseObjectSchemaRequiresDictionaryType(
+          in: objectAttribute,
+          propertyName: propertyName,
+          typeName: typeName,
+          context: context
+        )
+        return nil
+      }
+
+      guard let keyBaseType = parsedType.dictionaryKeyBaseType else {
+        return nil
+      }
+
+      if keyBaseType != "String" {
+        Self.diagnoseObjectSchemaRequiresStringKeys(
+          in: objectAttribute,
+          propertyName: propertyName,
+          typeName: typeName,
+          context: context
+        )
+        return nil
+      }
+    }
+
+    guard parsedType.isDictionary else { return nil }
+
+    let valueSchemaExpression = Self.dictionaryValueSchemaExpression(
+      attributes: attributes,
+      keyTypeName: parsedType.dictionaryKeyTypeName,
+      valueTypeName: parsedType.dictionaryValueTypeName,
+      valueBaseType: parsedType.dictionaryValueBaseType,
+      propertyName: propertyName,
+      context: context
+    )
+
+    let objectArguments = Self.objectSchemaArguments(
+      from: attributes.object,
+      valueSchemaExpression: valueSchemaExpression,
+      inferredValueTypeName: parsedType.dictionaryValueTypeName,
+      context: context
+    )
+    guard let objectArguments else { return nil }
+
+    return parsedType.isOptional
+      ? ".union(object: .object(\(objectArguments)), null: true)"
+      : ".object(\(objectArguments))"
+  }
+
+  private static func dictionaryValueSchemaExpression(
+    attributes: SemanticAttributeSelection,
+    keyTypeName: String?,
+    valueTypeName: String?,
+    valueBaseType: String?,
+    propertyName: String,
+    context: some MacroExpansionContext
+  ) -> String? {
+    guard
+      let primitiveAttribute = attributes.primitive,
+      let primitiveKind = attributes.primitiveKind,
+      let valueBaseType,
+      let valueTypeName,
+      let keyTypeName
+    else {
+      return nil
+    }
+
+    guard Self.isValid(type: valueBaseType, for: primitiveKind) else {
+      Self.diagnoseInvalidSemanticSchemaType(
+        in: primitiveAttribute,
+        schemaKind: primitiveKind,
+        propertyName: propertyName,
+        typeName: "[\(keyTypeName): \(valueTypeName)]",
+        context: context
+      )
+      return nil
+    }
+
+    let primitiveArguments = Self.semanticSchemaArguments(in: primitiveAttribute)
+    return Self.semanticSchemaExpression(
+      for: primitiveKind,
+      arguments: primitiveArguments,
+      isOptional: false
+    )
+  }
+
+  private static func objectSchemaArguments(
+    from objectAttribute: AttributeSyntax?,
+    valueSchemaExpression: String?,
+    inferredValueTypeName: String?,
+    context: some MacroExpansionContext
+  ) -> String? {
+    let rawArguments = objectAttribute.flatMap { Self.semanticSchemaArguments(in: $0) }
+    let normalizedArguments = rawArguments?
+      .replacingOccurrences(
+        of: "\\s+",
+        with: "",
+        options: .regularExpression
+      )
+    let hasAdditionalPropertiesArgument = normalizedArguments?.contains("additionalProperties:") ?? false
+
+    if hasAdditionalPropertiesArgument && valueSchemaExpression != nil {
+      if let objectAttribute {
+        context.diagnose(
+          Diagnostic(
+            node: objectAttribute,
+            message: MacroExpansionErrorMessage(
+              "Do not specify 'additionalProperties' in @JSONObjectSchema when using a semantic value attribute on the same property."
+            )
+          )
+        )
+      }
+      return nil
+    }
+
+    let resolvedValueSchemaExpression =
+      valueSchemaExpression ?? "\(inferredValueTypeName ?? "Any").jsonSchema"
+
+    if let rawArguments, !rawArguments.isEmpty {
+      if hasAdditionalPropertiesArgument {
+        return rawArguments
+      } else {
+        return "\(rawArguments), additionalProperties: \(resolvedValueSchemaExpression)"
+      }
+    }
+
+    return "additionalProperties: \(resolvedValueSchemaExpression)"
   }
 
   private static func arrayItemSchemaExpression(
@@ -503,13 +659,33 @@ extension JSONSchemaMacro {
       isOptional = false
     }
 
+    if let (keyType, valueType) = Self.dictionaryElementTypes(in: unwrappedType) {
+      return ParsedTypeName(
+        base: Self.baseTypeName(for: unwrappedType),
+        isOptional: isOptional,
+        isArray: false,
+        arrayElementTypeName: nil,
+        arrayElementBaseType: nil,
+        isDictionary: true,
+        dictionaryKeyTypeName: keyType,
+        dictionaryKeyBaseType: Self.baseTypeName(for: Self.unwrappedTypeName(keyType)),
+        dictionaryValueTypeName: valueType,
+        dictionaryValueBaseType: Self.baseTypeName(for: Self.unwrappedTypeName(valueType))
+      )
+    }
+
     if let arrayElementType = Self.arrayElementType(in: unwrappedType) {
       return ParsedTypeName(
         base: Self.baseTypeName(for: unwrappedType),
         isOptional: isOptional,
         isArray: true,
         arrayElementTypeName: arrayElementType,
-        arrayElementBaseType: Self.baseTypeName(for: Self.unwrappedTypeName(arrayElementType))
+        arrayElementBaseType: Self.baseTypeName(for: Self.unwrappedTypeName(arrayElementType)),
+        isDictionary: false,
+        dictionaryKeyTypeName: nil,
+        dictionaryKeyBaseType: nil,
+        dictionaryValueTypeName: nil,
+        dictionaryValueBaseType: nil
       )
     }
 
@@ -518,7 +694,12 @@ extension JSONSchemaMacro {
       isOptional: isOptional,
       isArray: false,
       arrayElementTypeName: nil,
-      arrayElementBaseType: nil
+      arrayElementBaseType: nil,
+      isDictionary: false,
+      dictionaryKeyTypeName: nil,
+      dictionaryKeyBaseType: nil,
+      dictionaryValueTypeName: nil,
+      dictionaryValueBaseType: nil
     )
   }
 
@@ -556,9 +737,33 @@ extension JSONSchemaMacro {
     return String(typeName.dropFirst(prefix.count).dropLast())
   }
 
-  private static func semanticSchemaAttributes(in variableDecl: VariableDeclSyntax)
-    -> [AttributeSyntax]
-  {
+  private static func dictionaryElementTypes(in typeName: String) -> (String, String)? {
+    let prefixes = ["Dictionary<", "Swift.Dictionary<", "["]
+    guard let prefix = prefixes.first(where: { typeName.hasPrefix($0) })
+    else {
+      return nil
+    }
+
+    if prefix == "[" && typeName.contains(":") {
+      let inner = String(typeName.dropFirst().dropLast())
+      let parts = inner.split(separator: ":", maxSplits: 1).map(String.init)
+      guard parts.count == 2 else { return nil }
+      return (parts[0].trimmingCharacters(in: .whitespaces), parts[1].trimmingCharacters(in: .whitespaces))
+    }
+
+    if prefix == "Dictionary<" || prefix == "Swift.Dictionary<" {
+      let inner = String(typeName.dropFirst(prefix.count).dropLast())
+      let parts = inner.split(separator: ",", maxSplits: 1).map(String.init)
+      guard parts.count == 2 else { return nil }
+      return (parts[0].trimmingCharacters(in: .whitespaces), parts[1].trimmingCharacters(in: .whitespaces))
+    }
+
+    return nil
+  }
+
+  private static func semanticSchemaAttributes(
+    in variableDecl: VariableDeclSyntax
+  ) -> [AttributeSyntax] {
     variableDecl.attributes
       .compactMap { $0.as(AttributeSyntax.self) }
       .filter {
@@ -608,7 +813,7 @@ extension JSONSchemaMacro {
       return ".bool()"
     case (.boolean, true):
       return ".union(bool: true, null: true)"
-    case (.array, _):
+    case (.array, _), (.object, _):
       return ""
     }
   }
@@ -663,15 +868,15 @@ extension JSONSchemaMacro {
   ) -> Bool {
     switch schemaKind {
     case .string:
-      return Self.stringSemanticTypes.contains(baseTypeName)
+      Self.stringSemanticTypes.contains(baseTypeName)
     case .number:
-      return Self.numberSemanticTypes.contains(baseTypeName)
+      Self.numberSemanticTypes.contains(baseTypeName)
     case .integer:
-      return Self.integerSemanticTypes.contains(baseTypeName)
+      Self.integerSemanticTypes.contains(baseTypeName)
     case .boolean:
-      return Self.booleanSemanticTypes.contains(baseTypeName)
-    case .array:
-      return false
+      Self.booleanSemanticTypes.contains(baseTypeName)
+    case .array, .object:
+      false
     }
   }
 
@@ -715,12 +920,47 @@ extension JSONSchemaMacro {
     case .array:
       message =
         "@JSONArraySchema can only be applied to array properties. Found '\(propertyName): \(typeName)'."
+    case .object:
+      message =
+        "@JSONObjectSchema can only be applied to dictionary properties. Found '\(propertyName): \(typeName)'."
     }
 
     context.diagnose(
       Diagnostic(
         node: attribute,
         message: MacroExpansionErrorMessage(message)
+      )
+    )
+  }
+
+  private static func diagnoseObjectSchemaRequiresDictionaryType(
+    in attribute: AttributeSyntax,
+    propertyName: String,
+    typeName: String,
+    context: some MacroExpansionContext
+  ) {
+    context.diagnose(
+      Diagnostic(
+        node: attribute,
+        message: MacroExpansionErrorMessage(
+          "@JSONObjectSchema can only be applied to dictionary properties. Found '\(propertyName): \(typeName)'."
+        )
+      )
+    )
+  }
+
+  private static func diagnoseObjectSchemaRequiresStringKeys(
+    in attribute: AttributeSyntax,
+    propertyName: String,
+    typeName: String,
+    context: some MacroExpansionContext
+  ) {
+    context.diagnose(
+      Diagnostic(
+        node: attribute,
+        message: MacroExpansionErrorMessage(
+          "@JSONObjectSchema can only be applied to dictionary properties with String keys. Found '\(propertyName): \(typeName)'."
+        )
       )
     )
   }

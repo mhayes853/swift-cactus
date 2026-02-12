@@ -14,7 +14,8 @@ import Testing
       "JSONNumberSchema": JSONNumberSchemaMacro.self,
       "JSONIntegerSchema": JSONIntegerSchemaMacro.self,
       "JSONBooleanSchema": JSONBooleanSchemaMacro.self,
-      "JSONArraySchema": JSONArraySchemaMacro.self
+      "JSONArraySchema": JSONArraySchemaMacro.self,
+      "JSONObjectSchema": JSONObjectSchemaMacro.self
     ],
     record: .failed
   )
