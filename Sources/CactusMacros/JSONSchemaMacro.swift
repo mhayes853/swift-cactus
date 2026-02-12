@@ -1,3 +1,4 @@
+import Foundation
 import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxBuilder
@@ -89,7 +90,7 @@ public enum JSONSchemaMacro: ExtensionMacro, MemberMacro {
 
     let propertyPairs = activeProperties
       .map { property in
-        "\"\(property.name)\": \(property.typeName).jsonSchema"
+        "\"\(property.name)\": \(property.schemaExpression ?? "\(property.typeName).jsonSchema")"
       }
       .joined(separator: ",\n          ")
 
@@ -164,10 +165,51 @@ public enum JSONSchemaMacro: ExtensionMacro, MemberMacro {
 // MARK: - StoredProperty
 
 extension JSONSchemaMacro {
+  private enum SemanticSchemaKind: String {
+    case string = "JSONStringSchema"
+    case number = "JSONNumberSchema"
+    case integer = "JSONIntegerSchema"
+    case boolean = "JSONBooleanSchema"
+  }
+
+  private static let semanticSchemaKinds = Set<SemanticSchemaKind>([
+    .string,
+    .number,
+    .integer,
+    .boolean
+  ])
+
+  private static let stringSemanticTypes = Set(["String"])
+
+  private static let numberSemanticTypes = Set(["Double", "Float", "CGFloat", "Decimal"])
+
+  private static let integerSemanticTypes = Set([
+    "Int",
+    "Int8",
+    "Int16",
+    "Int32",
+    "Int64",
+    "UInt",
+    "UInt8",
+    "UInt16",
+    "UInt32",
+    "UInt64",
+    "Int128",
+    "UInt128"
+  ])
+
+  private static let booleanSemanticTypes = Set(["Bool"])
+
+  private struct ParsedTypeName {
+    let base: String
+    let isOptional: Bool
+  }
+
   private struct StoredProperty {
     let name: String
     let typeName: String
     let isIgnored: Bool
+    let schemaExpression: String?
   }
 
   private static func storedProperties(
@@ -213,7 +255,8 @@ extension JSONSchemaMacro {
         Self.storedProperty(
           from: variableDecl,
           propertyName: identifierPattern.identifier.text,
-          type: type
+          type: type,
+          context: context
         )
       )
     }
@@ -223,14 +266,192 @@ extension JSONSchemaMacro {
   private static func storedProperty(
     from variableDecl: VariableDeclSyntax,
     propertyName: String,
-    type: TypeSyntax
+    type: TypeSyntax,
+    context: some MacroExpansionContext
   ) -> StoredProperty {
     let isIgnored = Self.jsonSchemaIgnoredAttribute(in: variableDecl) != nil
     let typeName = type.trimmedDescription
+    let schemaExpression = Self.schemaExpression(
+      for: variableDecl,
+      propertyName: propertyName,
+      typeName: typeName,
+      context: context
+    )
     return StoredProperty(
       name: propertyName,
       typeName: typeName,
-      isIgnored: isIgnored
+      isIgnored: isIgnored,
+      schemaExpression: schemaExpression
+    )
+  }
+
+  private static func schemaExpression(
+    for variableDecl: VariableDeclSyntax,
+    propertyName: String,
+    typeName: String,
+    context: some MacroExpansionContext
+  ) -> String? {
+    let semanticAttributes = Self.semanticSchemaAttributes(in: variableDecl)
+    guard !semanticAttributes.isEmpty else { return nil }
+
+    if semanticAttributes.count > 1 {
+      context.diagnose(
+        Diagnostic(
+          node: variableDecl,
+          message: MacroExpansionErrorMessage(
+            "Only one semantic JSON schema attribute can be applied to a stored property."
+          )
+        )
+      )
+      return nil
+    }
+
+    let attribute = semanticAttributes[0]
+    guard let schemaKind = Self.semanticSchemaKind(for: attribute) else {
+      return nil
+    }
+
+    let parsedType = Self.parseTypeName(typeName)
+    guard Self.isValid(type: parsedType.base, for: schemaKind) else {
+      Self.diagnoseInvalidSemanticSchemaType(
+        in: attribute,
+        schemaKind: schemaKind,
+        propertyName: propertyName,
+        typeName: typeName,
+        context: context
+      )
+      return nil
+    }
+
+    let initializerArguments = Self.semanticSchemaArguments(in: attribute)
+    return Self.semanticSchemaExpression(
+      for: schemaKind,
+      arguments: initializerArguments,
+      isOptional: parsedType.isOptional
+    )
+  }
+
+  private static func parseTypeName(_ typeName: String) -> ParsedTypeName {
+    let trimmed = typeName.replacingOccurrences(of: " ", with: "")
+
+    if trimmed.hasSuffix("?") {
+      let base = String(trimmed.dropLast())
+      return ParsedTypeName(base: Self.baseTypeName(for: base), isOptional: true)
+    }
+
+    if let innerType = Self.optionalInnerType(in: trimmed) {
+      return ParsedTypeName(base: Self.baseTypeName(for: innerType), isOptional: true)
+    }
+
+    return ParsedTypeName(base: Self.baseTypeName(for: trimmed), isOptional: false)
+  }
+
+  private static func optionalInnerType(in typeName: String) -> String? {
+    let optionalPrefixes = ["Optional<", "Swift.Optional<"]
+    guard let prefix = optionalPrefixes.first(where: { typeName.hasPrefix($0) }),
+      typeName.hasSuffix(">")
+    else {
+      return nil
+    }
+    return String(typeName.dropFirst(prefix.count).dropLast())
+  }
+
+  private static func baseTypeName(for typeName: String) -> String {
+    typeName.split(separator: ".").last.map(String.init) ?? typeName
+  }
+
+  private static func semanticSchemaAttributes(in variableDecl: VariableDeclSyntax) -> [AttributeSyntax] {
+    variableDecl.attributes
+      .compactMap { $0.as(AttributeSyntax.self) }
+      .filter {
+        guard let kind = Self.semanticSchemaKind(for: $0) else { return false }
+        return Self.semanticSchemaKinds.contains(kind)
+      }
+  }
+
+  private static func semanticSchemaKind(for attribute: AttributeSyntax) -> SemanticSchemaKind? {
+    let fullName = attribute.attributeName.trimmedDescription
+    let name = fullName.split(separator: ".").last.map(String.init) ?? fullName
+    return SemanticSchemaKind(rawValue: name)
+  }
+
+  private static func semanticSchemaArguments(in attribute: AttributeSyntax) -> String? {
+    let description = attribute.trimmedDescription
+    guard let openParen = description.firstIndex(of: "("), description.hasSuffix(")") else {
+      return nil
+    }
+    let start = description.index(after: openParen)
+    let end = description.index(before: description.endIndex)
+    let arguments = description[start..<end].trimmingCharacters(in: .whitespacesAndNewlines)
+    return arguments.isEmpty ? nil : arguments
+  }
+
+  private static func semanticSchemaExpression(
+    for schemaKind: SemanticSchemaKind,
+    arguments: String?,
+    isOptional: Bool
+  ) -> String {
+    let callSuffix = arguments.map { "(\($0))" } ?? "()"
+
+    switch (schemaKind, isOptional) {
+    case (.string, false):
+      return ".string\(callSuffix)"
+    case (.string, true):
+      return ".union(string: .string\(callSuffix), null: true)"
+    case (.number, false):
+      return ".number\(callSuffix)"
+    case (.number, true):
+      return ".union(number: .number\(callSuffix), null: true)"
+    case (.integer, false):
+      return ".integer\(callSuffix)"
+    case (.integer, true):
+      return ".union(integer: .integer\(callSuffix), null: true)"
+    case (.boolean, false):
+      return ".bool()"
+    case (.boolean, true):
+      return ".union(bool: true, null: true)"
+    }
+  }
+
+  private static func isValid(type baseTypeName: String, for schemaKind: SemanticSchemaKind) -> Bool {
+    switch schemaKind {
+    case .string:
+      return Self.stringSemanticTypes.contains(baseTypeName)
+    case .number:
+      return Self.numberSemanticTypes.contains(baseTypeName)
+    case .integer:
+      return Self.integerSemanticTypes.contains(baseTypeName)
+    case .boolean:
+      return Self.booleanSemanticTypes.contains(baseTypeName)
+    }
+  }
+
+  private static func diagnoseInvalidSemanticSchemaType(
+    in attribute: AttributeSyntax,
+    schemaKind: SemanticSchemaKind,
+    propertyName: String,
+    typeName: String,
+    context: some MacroExpansionContext
+  ) {
+    let message: String
+    switch schemaKind {
+    case .string:
+      message = "@JSONStringSchema can only be applied to properties of type String. Found '\(propertyName): \(typeName)'."
+    case .number:
+      message =
+        "@JSONNumberSchema can only be applied to number properties (Double, Float, CGFloat, Decimal). Found '\(propertyName): \(typeName)'."
+    case .integer:
+      message =
+        "@JSONIntegerSchema can only be applied to integer properties (Int, Int8, Int16, Int32, Int64, UInt, UInt8, UInt16, UInt32, UInt64, Int128, UInt128). Found '\(propertyName): \(typeName)'."
+    case .boolean:
+      message = "@JSONBooleanSchema can only be applied to properties of type Bool. Found '\(propertyName): \(typeName)'."
+    }
+
+    context.diagnose(
+      Diagnostic(
+        node: attribute,
+        message: MacroExpansionErrorMessage(message)
+      )
     )
   }
 

@@ -9,7 +9,11 @@ import Testing
   .macros(
     [
       "JSONSchema": JSONSchemaMacro.self,
-      "JSONSchemaIgnored": JSONSchemaIgnoredMacro.self
+      "JSONSchemaIgnored": JSONSchemaIgnoredMacro.self,
+      "JSONStringSchema": JSONStringSchemaMacro.self,
+      "JSONNumberSchema": JSONNumberSchemaMacro.self,
+      "JSONIntegerSchema": JSONIntegerSchemaMacro.self,
+      "JSONBooleanSchema": JSONBooleanSchemaMacro.self
     ],
     record: .failed
   )
