@@ -58,7 +58,7 @@ struct `JSONGenerable tests` {
   }
 }
 
-private struct Person: Equatable, JSONGenerable, Codable {
+private struct Person: Equatable, JSONGenerable {
   var name: String
   var age: Int
   var nickname: String?
@@ -77,23 +77,7 @@ private struct Person: Equatable, JSONGenerable, Codable {
   }
 }
 
-extension Person: StreamParseableValue {
-  typealias Partial = Self
-
-  var streamPartialValue: Self { self }
-
-  static func initialParseableValue() -> Self {
-    Self(name: "", age: 0, nickname: nil)
-  }
-
-  static func registerHandlers(in handlers: inout some StreamParserHandlers<Self>) {
-    handlers.registerKeyedHandler(forKey: "name", \.name)
-    handlers.registerKeyedHandler(forKey: "age", \.age)
-    handlers.registerKeyedHandler(forKey: "nickname", \.nickname)
-  }
-}
-
-private struct SnakeCaseUser: Equatable, JSONGenerable, Codable {
+private struct SnakeCaseUser: Equatable, JSONGenerable {
   var firstName: String
   var age: Int
 
@@ -110,22 +94,7 @@ private struct SnakeCaseUser: Equatable, JSONGenerable, Codable {
   }
 }
 
-extension SnakeCaseUser: StreamParseableValue {
-  typealias Partial = Self
-
-  var streamPartialValue: Self { self }
-
-  static func initialParseableValue() -> Self {
-    Self(firstName: "", age: 0)
-  }
-
-  static func registerHandlers(in handlers: inout some StreamParserHandlers<Self>) {
-    handlers.registerKeyedHandler(forKey: "firstName", \.firstName)
-    handlers.registerKeyedHandler(forKey: "age", \.age)
-  }
-}
-
-@JSONGenerable
+@JSONSchema
 private struct MacroUser: Equatable, Codable {
   var name: String
 }

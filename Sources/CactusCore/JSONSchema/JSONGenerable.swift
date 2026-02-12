@@ -1,15 +1,18 @@
 import Foundation
 import StreamParsing
 
-// MARK: - JSONGenerable
+// MARK: - JSONSchemaRepresentable
 
-/// A type that can generate and decode itself from a JSON schema value.
-public protocol JSONGenerable: StreamParseable {
+/// A type that can generate a JSON schema description of itself.
+public protocol JSONSchemaRepresentable {
   /// The JSON schema describing this type.
   static var jsonSchema: JSONSchema { get }
 }
 
-extension JSONGenerable where Self: Decodable {
+/// A type that can generate a JSON schema and decode itself from a JSON value.
+public typealias JSONGenerable = JSONSchemaRepresentable & Codable
+
+extension JSONSchemaRepresentable where Self: Codable {
   /// Creates this type from a JSON schema value.
   ///
   /// - Parameters:
@@ -28,97 +31,98 @@ extension JSONGenerable where Self: Decodable {
 
 // MARK: - Scalar Types
 
-extension String: JSONGenerable {
+extension String: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .string() }
 }
 
-extension Bool: JSONGenerable {
+extension Bool: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .bool() }
 }
 
-extension Double: JSONGenerable {
+extension Double: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .number() }
 }
 
-extension Float: JSONGenerable {
+extension Float: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .number() }
 }
 
-extension Int8: JSONGenerable {
+extension Int8: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .integer() }
 }
 
-extension Int16: JSONGenerable {
+extension Int16: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .integer() }
 }
 
-extension Int32: JSONGenerable {
+extension Int32: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .integer() }
 }
 
-extension Int64: JSONGenerable {
+extension Int64: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .integer() }
 }
 
-extension Int: JSONGenerable {
+extension Int: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .integer() }
 }
 
-extension UInt8: JSONGenerable {
+extension UInt8: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .integer(minimum: 0) }
 }
 
-extension UInt16: JSONGenerable {
+extension UInt16: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .integer(minimum: 0) }
 }
 
-extension UInt32: JSONGenerable {
+extension UInt32: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .integer(minimum: 0) }
 }
 
-extension UInt64: JSONGenerable {
+extension UInt64: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .integer(minimum: 0) }
 }
 
-extension UInt: JSONGenerable {
+extension UInt: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .integer(minimum: 0) }
 }
 
 @available(StreamParsing128BitIntegers, *)
-extension Int128: JSONGenerable {
+extension Int128: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .integer() }
 }
 
 @available(StreamParsing128BitIntegers, *)
-extension UInt128: JSONGenerable {
+extension UInt128: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .integer(minimum: 0) }
 }
 
 // MARK: - Foundation
 
-extension Data: JSONGenerable {
+extension Data: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .string() }
 }
 
-extension Decimal: JSONGenerable {
+extension Decimal: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .number() }
 }
 
 // MARK: - Generic Containers
 
-extension Array: JSONGenerable where Element: JSONGenerable {
+extension Array: JSONSchemaRepresentable where Element: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema {
     .array(items: .schemaForAll(Element.jsonSchema))
   }
 }
 
-extension Dictionary: JSONGenerable where Key == String, Value: JSONGenerable {
+extension Dictionary: JSONSchemaRepresentable
+where Key == String, Value: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema {
     .object(additionalProperties: Value.jsonSchema)
   }
 }
 
-extension Optional: JSONGenerable where Wrapped: JSONGenerable {
+extension Optional: JSONSchemaRepresentable where Wrapped: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema {
     .object(anyOf: [Wrapped.jsonSchema, .null()])
   }
@@ -127,7 +131,7 @@ extension Optional: JSONGenerable where Wrapped: JSONGenerable {
 #if canImport(CoreGraphics)
   import CoreGraphics
 
-  extension CGFloat: JSONGenerable {
+  extension CGFloat: JSONSchemaRepresentable {
     public static var jsonSchema: JSONSchema { .number() }
   }
 #endif
