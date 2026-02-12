@@ -4,12 +4,12 @@ import StreamParsing
 // MARK: - JSONGenerable
 
 /// A type that can generate and decode itself from a JSON schema value.
-public protocol JSONGenerable: Decodable, StreamParseable {
+public protocol JSONGenerable: StreamParseable {
   /// The JSON schema describing this type.
   static var jsonSchema: JSONSchema { get }
 }
 
-extension JSONGenerable {
+extension JSONGenerable where Self: Decodable {
   /// Creates this type from a JSON schema value.
   ///
   /// - Parameters:

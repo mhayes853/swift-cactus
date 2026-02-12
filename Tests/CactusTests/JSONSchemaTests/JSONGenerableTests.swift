@@ -58,7 +58,7 @@ struct `JSONGenerable tests` {
   }
 }
 
-private struct Person: Equatable, JSONGenerable {
+private struct Person: Equatable, JSONGenerable, Codable {
   var name: String
   var age: Int
   var nickname: String?
@@ -93,7 +93,7 @@ extension Person: StreamParseableValue {
   }
 }
 
-private struct SnakeCaseUser: Equatable, JSONGenerable {
+private struct SnakeCaseUser: Equatable, JSONGenerable, Codable {
   var firstName: String
   var age: Int
 
@@ -126,6 +126,6 @@ extension SnakeCaseUser: StreamParseableValue {
 }
 
 @JSONGenerable
-private struct MacroUser: Equatable {
+private struct MacroUser: Equatable, Codable {
   var name: String
 }
