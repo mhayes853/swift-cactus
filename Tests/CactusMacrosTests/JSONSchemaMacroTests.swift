@@ -236,6 +236,184 @@ extension BaseTestSuite {
     }
 
     @Test
+    func `Applies String Semantic Schema To String Array Property`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONStringSchema(minLength: 2)
+          var tags: [String]
+        }
+        """
+      } expansion: {
+        """
+        struct Payload {
+          var tags: [String]
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "tags": .array(items: .schemaForAll(.string(minLength: 2)))
+                ],
+                required: ["tags"]
+              )
+            )
+          }
+        }
+
+        extension Payload: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Combines Array And Item Semantic Schema Attributes`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONArraySchema(minItems: 1, uniqueItems: true)
+          @JSONIntegerSchema(minimum: 0)
+          var counts: [Int]
+        }
+        """
+      } expansion: {
+        """
+        struct Payload {
+          var counts: [Int]
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "counts": .array(items: .schemaForAll(.integer(minimum: 0)), minItems: 1, uniqueItems: true)
+                ],
+                required: ["counts"]
+              )
+            )
+          }
+        }
+
+        extension Payload: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Uses Explicit Array Items Argument Instead Of Inferred Element Schema`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONArraySchema(items: .schemaForAll(.integer(minimum: 0)), minItems: 1)
+          var tags: [String]
+        }
+        """
+      } expansion: {
+        """
+        struct Payload {
+          var tags: [String]
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "tags": .array(items: .schemaForAll(.integer(minimum: 0)), minItems: 1)
+                ],
+                required: ["tags"]
+              )
+            )
+          }
+        }
+
+        extension Payload: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Uses Union For Optional Number Array Semantic Schema`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONNumberSchema(minimum: 0, exclusiveMaximum: 1)
+          var confidences: [Double]?
+        }
+        """
+      } expansion: {
+        """
+        struct Payload {
+          var confidences: [Double]?
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "confidences": .union(array: .array(items: .schemaForAll(.number(minimum: 0, exclusiveMaximum: 1))), null: true)
+                ]
+              )
+            )
+          }
+        }
+
+        extension Payload: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Rejects Array Semantic Schema On Non Array Property`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Person {
+          @JSONArraySchema(minItems: 1)
+          var name: String
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Person {
+          @JSONArraySchema(minItems: 1)
+          ┬────────────────────────────
+          ╰─ 🛑 @JSONArraySchema can only be applied to array properties. Found 'name: String'.
+          var name: String
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Rejects String Semantic Schema For Non String Array Elements`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONStringSchema(minLength: 1)
+          var counts: [Int]
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONStringSchema(minLength: 1)
+          ┬──────────────────────────────
+          ╰─ 🛑 @JSONStringSchema can only be applied to properties of type String. Found 'counts: Int'.
+          var counts: [Int]
+        }
+        """
+      }
+    }
+
+    @Test
     func `Rejects String Semantic Schema On Non String Property`() {
       assertMacro {
         """

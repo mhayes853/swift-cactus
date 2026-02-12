@@ -9,6 +9,7 @@ struct CactusMacrosPlugin: CompilerPlugin {
     JSONStringSchemaMacro.self,
     JSONNumberSchemaMacro.self,
     JSONIntegerSchemaMacro.self,
-    JSONBooleanSchemaMacro.self
+    JSONBooleanSchemaMacro.self,
+    JSONArraySchemaMacro.self
   ]
 }

@@ -44,3 +44,14 @@ public macro JSONIntegerSchema(
 @attached(peer)
 public macro JSONBooleanSchema() =
   #externalMacro(module: "CactusMacros", type: "JSONBooleanSchemaMacro")
+
+/// Overrides schema synthesis for an array property using semantic validation constraints.
+@attached(peer)
+public macro JSONArraySchema(
+  items: JSONSchema.ValueSchema.Array.Items? = nil,
+  additionalItems: JSONSchema? = nil,
+  minItems: Int? = nil,
+  maxItems: Int? = nil,
+  uniqueItems: Bool? = nil,
+  contains: JSONSchema? = nil
+) = #externalMacro(module: "CactusMacros", type: "JSONArraySchemaMacro")

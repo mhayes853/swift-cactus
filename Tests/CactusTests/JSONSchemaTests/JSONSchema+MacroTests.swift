@@ -1,0 +1,121 @@
+import Cactus
+import CustomDump
+import Testing
+
+@Suite
+struct `JSONSchemaMacro tests` {
+  @Test(arguments: [
+    ["name": "blob", "age": 42, "confidence": 0.7] as JSONSchema.Value,
+    ["name": "blob", "age": 42] as JSONSchema.Value,
+    ["name": "blob", "age": 42, "confidence": .null] as JSONSchema.Value
+  ])
+  func `Semantic Macros Validate Expected Valid Values`(value: JSONSchema.Value) {
+    #expect(throws: Never.self) {
+      try JSONSchema.Validator.shared.validate(value: value, with: SemanticPayload.jsonSchema)
+    }
+  }
+
+  @Test(arguments: [
+    (
+      ["name": "ab", "age": 42] as JSONSchema.Value,
+      JSONSchema.ValidationError.Reason.stringLengthTooShort(minimum: 3),
+      [JSONSchema.ValidationError.PathElement.objectValue(property: "name")]
+    ),
+    (
+      ["name": "blob", "age": 17] as JSONSchema.Value,
+      JSONSchema.ValidationError.Reason.belowMinimum(inclusive: true, integer: 18),
+      [JSONSchema.ValidationError.PathElement.objectValue(property: "age")]
+    ),
+    (
+      ["name": "blob", "age": 42, "confidence": 1.0] as JSONSchema.Value,
+      JSONSchema.ValidationError.Reason.aboveMaximum(inclusive: false, number: 1),
+      [JSONSchema.ValidationError.PathElement.objectValue(property: "confidence")]
+    )
+  ])
+  func `Semantic Macros Validate Expected Invalid Values`(
+    value: JSONSchema.Value,
+    reason: JSONSchema.ValidationError.Reason,
+    path: [JSONSchema.ValidationError.PathElement]
+  ) {
+    let error = #expect(throws: JSONSchema.ValidationError.self) {
+      try JSONSchema.Validator.shared.validate(value: value, with: SemanticPayload.jsonSchema)
+    }
+    expectNoDifference(
+      error?.failures.contains { $0.path == path && $0.reason == reason },
+      true
+    )
+  }
+
+  @Test(arguments: [
+    ["tags": ["a"], "counts": [1], "confidences": [0.2, 0.9]] as JSONSchema.Value,
+    ["tags": ["a"], "counts": [1]] as JSONSchema.Value,
+    ["tags": ["a"], "counts": [1], "confidences": .null] as JSONSchema.Value
+  ])
+  func `Array Item Semantic Macros Validate Expected Valid Values`(value: JSONSchema.Value) {
+    #expect(throws: Never.self) {
+      try JSONSchema.Validator.shared.validate(value: value, with: ArraySemanticPayload.jsonSchema)
+    }
+  }
+
+  @Test(arguments: [
+    (
+      ["tags": JSONSchema.Value.array([]), "counts": [1]] as JSONSchema.Value,
+      JSONSchema.ValidationError.Reason.arrayLengthTooShort(minimum: 1),
+      [JSONSchema.ValidationError.PathElement.objectValue(property: "tags")]
+    ),
+    (
+      ["tags": ["a"], "counts": [-1]] as JSONSchema.Value,
+      JSONSchema.ValidationError.Reason.belowMinimum(inclusive: true, integer: 0),
+      [
+        JSONSchema.ValidationError.PathElement.objectValue(property: "counts"),
+        JSONSchema.ValidationError.PathElement.arrayItem(index: 0)
+      ]
+    ),
+    (
+      ["tags": ["a"], "counts": [1], "confidences": [1.0]] as JSONSchema.Value,
+      JSONSchema.ValidationError.Reason.aboveMaximum(inclusive: false, number: 1),
+      [
+        JSONSchema.ValidationError.PathElement.objectValue(property: "confidences"),
+        JSONSchema.ValidationError.PathElement.arrayItem(index: 0)
+      ]
+    )
+  ])
+  func `Array Item Semantic Macros Validate Expected Invalid Values`(
+    value: JSONSchema.Value,
+    reason: JSONSchema.ValidationError.Reason,
+    path: [JSONSchema.ValidationError.PathElement]
+  ) {
+    let error = #expect(throws: JSONSchema.ValidationError.self) {
+      try JSONSchema.Validator.shared.validate(value: value, with: ArraySemanticPayload.jsonSchema)
+    }
+    expectNoDifference(
+      error?.failures.contains { $0.path == path && $0.reason == reason },
+      true
+    )
+  }
+}
+
+@JSONSchema
+private struct SemanticPayload: Codable {
+  @JSONStringSchema(minLength: 3, maxLength: 10, pattern: "^[a-z]+$")
+  var name: String
+
+  @JSONIntegerSchema(minimum: 18, maximum: 99)
+  var age: Int
+
+  @JSONNumberSchema(minimum: 0, exclusiveMaximum: 1)
+  var confidence: Double?
+}
+
+@JSONSchema
+private struct ArraySemanticPayload: Codable {
+  @JSONArraySchema(minItems: 1)
+  var tags: [String]
+
+  @JSONArraySchema(minItems: 1, uniqueItems: true)
+  @JSONIntegerSchema(minimum: 0)
+  var counts: [Int]
+
+  @JSONNumberSchema(minimum: 0, exclusiveMaximum: 1)
+  var confidences: [Double]?
+}
