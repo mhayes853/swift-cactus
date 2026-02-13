@@ -293,7 +293,20 @@ extension JSONSchemaMacro {
     type: TypeSyntax,
     context: some MacroExpansionContext
   ) -> StoredProperty {
-    let isIgnored = Self.jsonSchemaIgnoredAttribute(in: variableDecl) != nil
+    let ignoredAttribute = Self.jsonSchemaIgnoredAttribute(in: variableDecl)
+    let isIgnored = ignoredAttribute != nil
+    let semanticAttributes = Self.semanticSchemaAttributes(in: variableDecl)
+    
+    if isIgnored && !semanticAttributes.isEmpty {
+      if let firstSemanticAttribute = semanticAttributes.first {
+        Self.diagnoseConflictingSchemaAttributes(
+          in: firstSemanticAttribute,
+          propertyName: propertyName,
+          context: context
+        )
+      }
+    }
+    
     let typeName = type.trimmedDescription
     let schemaExpression = Self.schemaExpression(
       for: variableDecl,
@@ -976,6 +989,21 @@ extension JSONSchemaMacro {
         node: variableDecl,
         message: MacroExpansionErrorMessage(
           "Only stored properties are supported."
+        )
+      )
+    )
+  }
+
+  private static func diagnoseConflictingSchemaAttributes(
+    in attribute: AttributeSyntax,
+    propertyName: String,
+    context: some MacroExpansionContext
+  ) {
+    context.diagnose(
+      Diagnostic(
+        node: attribute,
+        message: MacroExpansionErrorMessage(
+          "@JSONSchemaIgnored cannot be combined with other JSON schema attributes on the same property."
         )
       )
     )

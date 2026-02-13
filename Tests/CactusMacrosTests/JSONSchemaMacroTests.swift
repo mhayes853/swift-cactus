@@ -626,5 +626,30 @@ extension BaseTestSuite {
         """
       }
     }
+
+    @Test
+    func `Rejects JSONSchemaIgnored Combined With Semantic Schema Attributes`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaIgnored
+          @JSONStringSchema(minLength: 1)
+          var name: String
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaIgnored
+          @JSONStringSchema(minLength: 1)
+          ┬──────────────────────────────
+          ╰─ 🛑 @JSONSchemaIgnored cannot be combined with other JSON schema attributes on the same property.
+          var name: String
+        }
+        """
+      }
+    }
   }
 }
