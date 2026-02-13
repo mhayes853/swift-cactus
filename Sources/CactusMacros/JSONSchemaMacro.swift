@@ -61,25 +61,20 @@ public enum JSONSchemaMacro: ExtensionMacro, MemberMacro {
   }
 
   private static func hasExistingJSONSchema(in declaration: StructDeclSyntax) -> Bool {
-    for member in declaration.memberBlock.members {
+    declaration.memberBlock.members.contains { member in
       guard let variableDecl = member.decl.as(VariableDeclSyntax.self),
         Self.isStatic(variableDecl)
       else {
-        continue
+        return false
       }
 
-      for binding in variableDecl.bindings {
-        guard
-          let identifierPattern = binding.pattern.as(IdentifierPatternSyntax.self),
-          identifierPattern.identifier.text == "jsonSchema"
-        else {
-          continue
+      return variableDecl.bindings.contains { binding in
+        guard let identifierPattern = binding.pattern.as(IdentifierPatternSyntax.self) else {
+          return false
         }
-        return true
+        return identifierPattern.identifier.text == "jsonSchema"
       }
     }
-
-    return false
   }
 
   private static func jsonSchemaProperty(
@@ -140,19 +135,25 @@ public enum JSONSchemaMacro: ExtensionMacro, MemberMacro {
   }
 
   private static func accessModifier(for declaration: StructDeclSyntax) -> String? {
-    for modifier in declaration.modifiers {
+    declaration.modifiers.first { modifier in
+      switch modifier.name.tokenKind {
+      case .keyword(.public), .keyword(.fileprivate), .keyword(.private):
+        true
+      default:
+        false
+      }
+    }.map { modifier in
       switch modifier.name.tokenKind {
       case .keyword(.public):
-        return "public"
+        "public"
       case .keyword(.fileprivate):
-        return "fileprivate"
+        "fileprivate"
       case .keyword(.private):
-        return nil
+        ""
       default:
-        continue
+        ""
       }
-    }
-    return nil
+    }.flatMap { $0.isEmpty ? nil : $0 }
   }
 
   private static func modifierPrefix(for accessModifier: String?) -> String {
@@ -245,14 +246,12 @@ extension JSONSchemaMacro {
     in declaration: StructDeclSyntax,
     context: some MacroExpansionContext
   ) -> [StoredProperty] {
-    var properties = [StoredProperty]()
-    for member in declaration.memberBlock.members {
+    declaration.memberBlock.members.reduce(into: [StoredProperty]()) { properties, member in
       guard let variableDecl = member.decl.as(VariableDeclSyntax.self) else {
-        continue
+        return
       }
       properties.append(contentsOf: Self.storedProperties(from: variableDecl, context: context))
     }
-    return properties
   }
 
   private static func storedProperties(
@@ -264,32 +263,28 @@ extension JSONSchemaMacro {
       return []
     }
 
-    var properties = [StoredProperty]()
-    for binding in variableDecl.bindings {
+    return variableDecl.bindings.compactMap { binding -> StoredProperty? in
       if Self.isComputedProperty(binding) {
         Self.diagnoseUnsupportedJSONSchemaMember(in: variableDecl, context: context)
-        continue
+        return nil
       }
 
       guard let identifierPattern = binding.pattern.as(IdentifierPatternSyntax.self) else {
-        continue
+        return nil
       }
 
       guard let type = binding.typeAnnotation?.type else {
         Self.diagnoseMissingTypeAnnotation(in: binding, context: context)
-        continue
+        return nil
       }
 
-      properties.append(
-        Self.storedProperty(
-          from: variableDecl,
-          propertyName: identifierPattern.identifier.text,
-          type: type,
-          context: context
-        )
+      return Self.storedProperty(
+        from: variableDecl,
+        propertyName: identifierPattern.identifier.text,
+        type: type,
+        context: context
       )
     }
-    return properties
   }
 
   private static func storedProperty(
@@ -903,26 +898,19 @@ extension JSONSchemaMacro {
     typeName: String,
     context: some MacroExpansionContext
   ) {
-    let message: String
-    switch schemaKind {
+    let message: String = switch schemaKind {
     case .string:
-      message =
-        "@JSONStringSchema can only be applied to properties of type String. Found '\(propertyName): \(typeName)'."
+      "@JSONStringSchema can only be applied to properties of type String. Found '\(propertyName): \(typeName)'."
     case .number:
-      message =
-        "@JSONNumberSchema can only be applied to number properties (Double, Float, CGFloat, Decimal). Found '\(propertyName): \(typeName)'."
+      "@JSONNumberSchema can only be applied to number properties (Double, Float, CGFloat, Decimal). Found '\(propertyName): \(typeName)'."
     case .integer:
-      message =
-        "@JSONIntegerSchema can only be applied to integer properties (Int, Int8, Int16, Int32, Int64, UInt, UInt8, UInt16, UInt32, UInt64, Int128, UInt128). Found '\(propertyName): \(typeName)'."
+      "@JSONIntegerSchema can only be applied to integer properties (Int, Int8, Int16, Int32, Int64, UInt, UInt8, UInt16, UInt32, UInt64, Int128, UInt128). Found '\(propertyName): \(typeName)'."
     case .boolean:
-      message =
-        "@JSONBooleanSchema can only be applied to properties of type Bool. Found '\(propertyName): \(typeName)'."
+      "@JSONBooleanSchema can only be applied to properties of type Bool. Found '\(propertyName): \(typeName)'."
     case .array:
-      message =
-        "@JSONArraySchema can only be applied to array properties. Found '\(propertyName): \(typeName)'."
+      "@JSONArraySchema can only be applied to array properties. Found '\(propertyName): \(typeName)'."
     case .object:
-      message =
-        "@JSONObjectSchema can only be applied to dictionary properties. Found '\(propertyName): \(typeName)'."
+      "@JSONObjectSchema can only be applied to dictionary properties. Found '\(propertyName): \(typeName)'."
     }
 
     context.diagnose(
@@ -995,19 +983,18 @@ extension JSONSchemaMacro {
 
   private static func isComputedProperty(_ binding: PatternBindingSyntax) -> Bool {
     guard let accessorBlock = binding.accessorBlock else { return false }
-    switch accessorBlock.accessors {
+    return switch accessorBlock.accessors {
     case .getter:
-      return true
+      true
     case .accessors(let accessors):
-      for accessor in accessors {
+      accessors.contains { accessor in
         switch accessor.accessorSpecifier.tokenKind {
         case .keyword(.get), .keyword(.set):
-          return true
+          true
         default:
-          continue
+          false
         }
       }
-      return false
     }
   }
 
