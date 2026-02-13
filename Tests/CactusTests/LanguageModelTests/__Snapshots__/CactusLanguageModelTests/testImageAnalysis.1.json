@@ -1,15 +1,15 @@
 {
-  "confidence" : 0.9104,
-  "decode_tokens" : 200,
-  "decode_tps" : 17.04,
+  "confidence" : 0.8793,
+  "decode_tokens" : 75,
+  "decode_tps" : 91.99,
   "function_calls" : [
 
   ],
-  "prefill_tokens" : 272,
-  "prefill_tps" : 22.41,
-  "ram_usage_mb" : 939.76,
-  "response" : "The image depicts a young man with short, dark hair and a friendly demeanor. He is smiling warmly at the camera, his eyes sparkling with joy and warmth. His attire consists of a casual button-up shirt that appears to be light-colored, possibly white or cream. The shirt features long sleeves that reach just above the elbows, suggesting it might be suitable for cooler weather or casual settings.\n\nIn his right hand, he holds an open book with visible pages that suggest he is reading or about to read something interesting. The book has a black cover and white pages inside, which contrasts sharply against the lighter background of the image. This contrast draws attention to both him and the book he's holding.\n\nThe young man's left hand rests casually on his hip, adding to his relaxed and approachable appearance. His posture is upright yet relaxed, indicating confidence in himself and what he might be reading about or doing at this moment.\n\nOverall, the image conveys",
-  "time_to_first_token_ms" : 12135.02,
-  "total_time_ms" : 23813.64,
-  "total_tokens" : 472
+  "prefill_tokens" : 314,
+  "prefill_tps" : 117.53,
+  "ram_usage_mb" : 1065.74,
+  "response" : "The guy in the first image is smiling and holding a book, which suggests he might be excited or enthusiastic about what he's about to read. He also has a backpack on his shoulder, indicating that he might be on his way to school or another form of education. The presence of the book could imply that he is preparing for an exam or studying for an upcoming test.",
+  "time_to_first_token_ms" : 2671.55,
+  "total_time_ms" : 3475.98,
+  "total_tokens" : 389
 }
