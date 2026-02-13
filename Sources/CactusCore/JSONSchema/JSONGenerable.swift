@@ -1,5 +1,5 @@
 import Foundation
-import StreamParsing
+import StreamParsingCore
 
 // MARK: - JSONSchemaRepresentable
 

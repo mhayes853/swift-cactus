@@ -20,7 +20,7 @@ let package = Package(
     .package(url: "https://github.com/vapor-community/Zip", from: "2.2.7"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.3.3"),
     .package(url: "https://github.com/mhayes853/swift-operation", from: "0.3.1"),
-    .package(url: "https://github.com/mhayes853/swift-stream-parsing", from: "0.1.0"),
+    .package(url: "https://github.com/mhayes853/swift-stream-parsing", from: "0.1.3"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.6.4"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.4.3"),
     .package(url: "https://github.com/swiftlang/swift-syntax", "600.0.0"..<"603.0.0"),
@@ -32,13 +32,17 @@ let package = Package(
       dependencies: [
         "CXXCactusShims",
         .product(name: "Zip", package: "Zip"),
-        .product(name: "StreamParsing", package: "swift-stream-parsing")
+        .product(name: "StreamParsingCore", package: "swift-stream-parsing")
       ],
       swiftSettings: [.enableExperimentalFeature(StreamParsing128BitIntegers)]
     ),
     .target(
       name: "Cactus",
-      dependencies: ["CactusCore", "CactusMacros"]
+      dependencies: [
+        "CactusCore",
+        "CactusMacros",
+        .product(name: "StreamParsing", package: "swift-stream-parsing")
+      ]
     ),
     .macro(
       name: "CactusMacros",
