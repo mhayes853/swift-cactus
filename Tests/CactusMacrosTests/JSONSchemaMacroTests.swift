@@ -651,5 +651,38 @@ extension BaseTestSuite {
         """
       }
     }
+    
+    @Test
+    func `Uses Inner Union For Optional Type With Semantic Attribute In Dictionary`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONIntegerSchema(minimum: 0)
+          var counts: [String: Int?]
+        }
+        """
+      } expansion: {
+        """
+        struct Payload {
+          var counts: [String: Int?]
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "counts": .object(additionalProperties: .union(integer: .integer(minimum: 0), null: true))
+                ],
+                required: ["counts"]
+              )
+            )
+          }
+        }
+
+        extension Payload: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
   }
 }
