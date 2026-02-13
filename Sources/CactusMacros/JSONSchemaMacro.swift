@@ -612,10 +612,11 @@ extension JSONSchemaMacro {
     }
 
     let primitiveArguments = Self.semanticSchemaArguments(in: primitiveAttribute)
+    let elementIsOptional = Self.isOptionalTypeName(elementTypeName)
     return Self.semanticSchemaExpression(
       for: primitiveKind,
       arguments: primitiveArguments,
-      isOptional: false
+      isOptional: elementIsOptional
     )
   }
 
