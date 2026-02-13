@@ -10,12 +10,12 @@ public protocol JSONSchemaRepresentable {
 }
 
 /// A type that can generate a JSON schema and decode itself from a JSON value.
-public typealias JSONGenerable = JSONSchemaRepresentable & Codable
+public typealias JSONGenerable = JSONSchemaRepresentable & Decodable
 
 /// A type that can generate a JSON schema and decode itself incrementally from a JSON payload.
-public typealias JSONStreamGenerable = JSONSchemaRepresentable & StreamParseable
+public typealias JSONStreamGenerable = JSONGenerable & StreamParseable
 
-extension JSONSchemaRepresentable where Self: Codable {
+extension JSONSchemaRepresentable where Self: Decodable {
   /// Creates this type from a JSON schema value.
   ///
   /// - Parameters:
