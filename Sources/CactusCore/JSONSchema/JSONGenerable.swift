@@ -32,6 +32,30 @@ extension JSONSchemaRepresentable where Self: Codable {
   }
 }
 
+extension JSONSchemaRepresentable
+where
+  Self: Decodable & StreamParseable,
+  Self.Partial: Encodable
+{
+  /// Creates this type from a partial value.
+  ///
+  /// - Parameters:
+  ///   - partial: The partial value to encode, validate, and decode.
+  ///   - encoder: An encoder used to encode `partial` to a JSON schema value.
+  ///   - validator: A validator used to validate the encoded value against ``jsonSchema``.
+  ///   - decoder: A decoder used to decode the validated value.
+  public init(
+    from partial: Self.Partial,
+    encoder: JSONSchema.Value.Encoder = JSONSchema.Value.Encoder(),
+    validator: JSONSchema.Validator = .shared,
+    decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
+  ) throws {
+    let jsonValue = try encoder.encode(partial)
+    try validator.validate(value: jsonValue, with: Self.jsonSchema)
+    self = try decoder.decode(Self.self, from: jsonValue)
+  }
+}
+
 // MARK: - Scalar Types
 
 extension String: JSONSchemaRepresentable {
