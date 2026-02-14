@@ -156,6 +156,7 @@ extension CactusLanguageModel {
     onToken: (String, UInt32) -> Void
   ) throws -> JSONChatCompletion<Output> {
     let jsonOutputOptions = options ?? JSONChatCompletionOptions<Output>()
+    var accumulator = NonThinkingTokenAccumulator()
     let completion = try self.chatCompletion(
       messages: try self.messagesWithJSONSchemaPrompt(
         messages: messages,
@@ -165,12 +166,16 @@ extension CactusLanguageModel {
       options: jsonOutputOptions.chatCompletionOptions,
       maxBufferSize: maxBufferSize,
       functions: functions,
-      onToken: onToken
+      onToken: { token, tokenID in
+        _ = accumulator.append(token)
+        onToken(token, tokenID)
+      }
     )
     return JSONChatCompletion(
       output: Result {
         try self.resolveJSONOutput(
           from: completion,
+          filteredResponse: accumulator.response,
           validator: jsonOutputOptions.validator,
           decoder: jsonOutputOptions.decoder
         )
@@ -300,7 +305,7 @@ extension CactusLanguageModel {
     onToken: (String, UInt32, Output.Partial?) -> Void
   ) throws -> JSONChatCompletion<Output> {
     let jsonOutputOptions = options ?? JSONChatCompletionOptions<Output>()
-    var thinkFilter = JSONOutputThinkFilter()
+    var accumulator = NonThinkingTokenAccumulator()
     var stream = PartialsStream<Output.Partial, JSONStreamParser<Output.Partial>>(
       from: .json(configuration: configuration)
     )
@@ -324,6 +329,8 @@ extension CactusLanguageModel {
       maxBufferSize: maxBufferSize,
       functions: functions
     ) { token, tokenID in
+      let visibleToken = accumulator.append(token)
+
       if functionCallStartTokenIDs.contains(tokenID) {
         hasDetectedFunctionCall = true
       }
@@ -333,14 +340,13 @@ extension CactusLanguageModel {
         return
       }
 
-      let jsonToken = thinkFilter.filter(token)
-      if jsonToken.isEmpty {
+      guard let visibleToken else {
         onToken(token, tokenID, nil)
         return
       }
 
       do {
-        let partial = try stream.next(jsonToken.utf8)
+        let partial = try stream.next(visibleToken.utf8)
         onToken(token, tokenID, partial)
       } catch {
         hasParserFailed = true
@@ -352,6 +358,7 @@ extension CactusLanguageModel {
       output: Result {
         try self.resolveJSONOutput(
           from: completion,
+          filteredResponse: accumulator.response,
           validator: jsonOutputOptions.validator,
           decoder: jsonOutputOptions.decoder
         )
@@ -393,6 +400,7 @@ extension CactusLanguageModel {
 
   private func resolveJSONOutput<Output: JSONGenerable>(
     from completion: ChatCompletion,
+    filteredResponse: String,
     validator: JSONSchema.Validator,
     decoder: JSONSchema.Value.Decoder
   ) throws -> Output {
@@ -400,88 +408,32 @@ extension CactusLanguageModel {
       throw JSONOutputError.functionCallReturned(completion.functionCalls)
     }
 
-    var thinkFilter = JSONOutputThinkFilter()
-    let jsonText = thinkFilter.filter(completion.response)
-      .trimmingCharacters(in: .whitespacesAndNewlines)
+    let jsonText = filteredResponse.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !jsonText.isEmpty else { throw JSONOutputError.missingJSONPayload }
     let value = try ffiDecoder.decode(JSONSchema.Value.self, from: Data(jsonText.utf8))
     return try Output(jsonValue: value, validator: validator, decoder: decoder)
   }
 }
 
-// MARK: - JSONOutputThinkFilter
+// MARK: - NonThinkingTokenAccumulator
 
-private struct JSONOutputThinkFilter {
-  private static let openTag = "<think>"
-  private static let closeTag = "</think>"
-
-  private var buffer = ""
+private struct NonThinkingTokenAccumulator {
   private var isInsideThinkTag = false
+  private(set) var response = ""
 
-  mutating func filter(_ text: String) -> String {
-    self.buffer += text
-    var output = ""
-
-    while true {
-      if self.isInsideThinkTag {
-        guard let closeRange = self.buffer.range(of: Self.closeTag) else {
-          self.buffer = String(self.buffer.suffix(Self.closeTag.count - 1))
-          return output
-        }
-        self.buffer.removeSubrange(..<closeRange.upperBound)
-        self.isInsideThinkTag = false
-        continue
-      }
-
-      let openRange = self.buffer.range(of: Self.openTag)
-      let closeRange = self.buffer.range(of: Self.closeTag)
-      switch (openRange, closeRange) {
-      case (.none, .none):
-        let keepCount = self.trailingTagPrefixLength(self.buffer)
-        if keepCount == 0 {
-          output += self.buffer
-          self.buffer = ""
-        } else {
-          let splitIndex = self.buffer.index(self.buffer.endIndex, offsetBy: -keepCount)
-          output += self.buffer[..<splitIndex]
-          self.buffer = String(self.buffer[splitIndex...])
-        }
-        return output
-
-      case (.some(let open), .none):
-        output += self.buffer[..<open.lowerBound]
-        self.buffer.removeSubrange(..<open.upperBound)
-        self.isInsideThinkTag = true
-
-      case (.none, .some(let close)):
-        output += self.buffer[..<close.lowerBound]
-        self.buffer.removeSubrange(..<close.upperBound)
-
-      case (.some(let open), .some(let close)):
-        if open.lowerBound <= close.lowerBound {
-          output += self.buffer[..<open.lowerBound]
-          self.buffer.removeSubrange(..<open.upperBound)
-          self.isInsideThinkTag = true
-        } else {
-          output += self.buffer[..<close.lowerBound]
-          self.buffer.removeSubrange(..<close.upperBound)
-        }
-      }
+  @discardableResult
+  mutating func append(_ token: String) -> String? {
+    switch token {
+    case "<think>":
+      self.isInsideThinkTag = true
+      return nil
+    case "</think>":
+      self.isInsideThinkTag = false
+      return nil
+    default:
+      guard !self.isInsideThinkTag else { return nil }
+      self.response += token
+      return token
     }
-  }
-
-  private func trailingTagPrefixLength(_ string: String) -> Int {
-    let maxCount = min(string.count, max(Self.openTag.count, Self.closeTag.count) - 1)
-    if maxCount <= 0 {
-      return 0
-    }
-
-    for count in stride(from: maxCount, through: 1, by: -1) {
-      let suffix = String(string.suffix(count))
-      if Self.openTag.hasPrefix(suffix) || Self.closeTag.hasPrefix(suffix) {
-        return count
-      }
-    }
-    return 0
   }
 }
