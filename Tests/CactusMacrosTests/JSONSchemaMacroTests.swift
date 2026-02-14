@@ -75,6 +75,39 @@ extension BaseTestSuite {
     }
 
     @Test
+    func `Can Override Property Key For Schema Generation`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Person {
+          @JSONSchemaKey("first_name")
+          var firstName: String
+        }
+        """
+      } expansion: {
+        """
+        struct Person {
+          var firstName: String
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "first_name": String.jsonSchema
+                ],
+                required: ["first_name"]
+              )
+            )
+          }
+        }
+
+        extension Person: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
     func `Rejects Enum Declarations`() {
       assertMacro {
         """
@@ -651,7 +684,57 @@ extension BaseTestSuite {
         """
       }
     }
-    
+
+    @Test
+    func `Rejects JSONSchemaIgnored Combined With JSONSchemaKey`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaIgnored
+          @JSONSchemaKey("display_name")
+          var name: String
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaIgnored
+          @JSONSchemaKey("display_name")
+          ┬─────────────────────────────
+          ╰─ 🛑 @JSONSchemaIgnored cannot be combined with other JSON schema attributes on the same property.
+          var name: String
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Rejects Multiple JSONSchemaKey Attributes On One Property`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaKey("display_name")
+          @JSONSchemaKey("name")
+          var name: String
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaKey("display_name")
+          @JSONSchemaKey("name")
+          ┬─────────────────────
+          ╰─ 🛑 Only one @JSONSchemaKey attribute can be applied to a stored property.
+          var name: String
+        }
+        """
+      }
+    }
+
     @Test
     func `Uses Inner Union For Optional Type With Semantic Attribute In Dictionary`() {
       assertMacro {
