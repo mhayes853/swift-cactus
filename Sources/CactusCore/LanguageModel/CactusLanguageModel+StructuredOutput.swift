@@ -1,6 +1,81 @@
 import Foundation
 import StreamParsingCore
 
+// MARK: - Stream Chat Completion
+
+extension CactusLanguageModel {
+  /// Generates a ``ChatCompletion`` with parser-driven partial updates.
+  ///
+  /// - Parameters:
+  ///   - messages: The list of ``ChatMessage`` instances.
+  ///   - parser: The parser used to incrementally derive partial values from generated tokens.
+  ///   - options: The ``ChatCompletion/Options``.
+  ///   - maxBufferSize: The maximum buffer size to store the completion.
+  ///   - functions: A list of ``FunctionDefinition`` instances.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Throws: Any parser error thrown while processing generated tokens.
+  /// - Returns: A ``ChatCompletion``.
+  public func streamChatCompletion<Parser: TokenParser>(
+    messages: [ChatMessage],
+    parser: Parser,
+    options: ChatCompletion.Options? = nil,
+    maxBufferSize: Int? = nil,
+    functions: [FunctionDefinition] = [],
+    onToken: (String, Parser.Partial?) -> Void = { _, _ in }
+  ) throws -> ChatCompletion {
+    try self.streamChatCompletion(
+      messages: messages,
+      parser: parser,
+      options: options,
+      maxBufferSize: maxBufferSize,
+      functions: functions
+    ) { token, _, partial in
+      onToken(token, partial)
+    }
+  }
+
+  /// Generates a ``ChatCompletion`` with parser-driven partial updates.
+  ///
+  /// - Parameters:
+  ///   - messages: The list of ``ChatMessage`` instances.
+  ///   - parser: The parser used to incrementally derive partial values from generated tokens.
+  ///   - options: The ``ChatCompletion/Options``.
+  ///   - maxBufferSize: The maximum buffer size to store the completion.
+  ///   - functions: A list of ``FunctionDefinition`` instances.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Throws: Any parser error thrown while processing generated tokens.
+  /// - Returns: A ``ChatCompletion``.
+  public func streamChatCompletion<Parser: TokenParser>(
+    messages: [ChatMessage],
+    parser: Parser,
+    options: ChatCompletion.Options? = nil,
+    maxBufferSize: Int? = nil,
+    functions: [FunctionDefinition] = [],
+    onToken: (String, UInt32, Parser.Partial?) -> Void
+  ) throws -> ChatCompletion {
+    var parser = parser
+    var parserError: (any Error)?
+    let completion = try self.chatCompletion(
+      messages: messages,
+      options: options,
+      maxBufferSize: maxBufferSize,
+      functions: functions
+    ) { token, tokenID in
+      do {
+        let partial = try parser.parse(token: token, tokenId: tokenID, model: self)
+        onToken(token, tokenID, partial)
+      } catch {
+        parserError = error
+        self.stop()
+      }
+    }
+    if let parserError {
+      throw parserError
+    }
+    return completion
+  }
+}
+
 // MARK: - JSONChatCompletion
 
 extension CactusLanguageModel {
@@ -306,52 +381,23 @@ extension CactusLanguageModel {
   ) throws -> JSONChatCompletion<Output> {
     let jsonOutputOptions = options ?? JSONChatCompletionOptions<Output>()
     var accumulator = NonThinkingTokenAccumulator()
-    var stream = PartialsStream<Output.Partial, JSONStreamParser<Output.Partial>>(
-      from: .json(configuration: configuration)
+    let parser = StreamParsingTokenParser(
+      streamParser: JSONStreamParser<Output.Partial>(configuration: configuration)
     )
-    var hasDetectedFunctionCall = false
-    var hasParserFailed = false
-    let functionCallStartTokenIDs: Set<UInt32> =
-      switch self.configurationFile.modelType {
-      case .qwen: [151657]
-      case .lfm2: [10]
-      case .gemma: [48]
-      default: []
-      }
 
-    let completion = try self.chatCompletion(
+    let completion = try self.streamChatCompletion(
       messages: try self.messagesWithJSONSchemaPrompt(
         messages: messages,
         output: outputType,
         jsonSystemPrompt: jsonOutputOptions.jsonSystemPrompt
       ),
+      parser: parser,
       options: jsonOutputOptions.chatCompletionOptions,
       maxBufferSize: maxBufferSize,
       functions: functions
-    ) { token, tokenID in
-      let visibleToken = accumulator.append(token)
-
-      if functionCallStartTokenIDs.contains(tokenID) {
-        hasDetectedFunctionCall = true
-      }
-
-      if hasDetectedFunctionCall || hasParserFailed {
-        onToken(token, tokenID, nil)
-        return
-      }
-
-      guard let visibleToken else {
-        onToken(token, tokenID, nil)
-        return
-      }
-
-      do {
-        let partial = try stream.next(visibleToken.utf8)
-        onToken(token, tokenID, partial)
-      } catch {
-        hasParserFailed = true
-        onToken(token, tokenID, nil)
-      }
+    ) { token, tokenID, partial in
+      _ = accumulator.append(token)
+      onToken(token, tokenID, partial)
     }
 
     return JSONChatCompletion(
@@ -412,28 +458,5 @@ extension CactusLanguageModel {
     guard !jsonText.isEmpty else { throw JSONOutputError.missingJSONPayload }
     let value = try ffiDecoder.decode(JSONSchema.Value.self, from: Data(jsonText.utf8))
     return try Output(jsonValue: value, validator: validator, decoder: decoder)
-  }
-}
-
-// MARK: - NonThinkingTokenAccumulator
-
-private struct NonThinkingTokenAccumulator {
-  private var isInsideThinkTag = false
-  private(set) var response = ""
-
-  @discardableResult
-  mutating func append(_ token: String) -> String? {
-    switch token {
-    case "<think>":
-      self.isInsideThinkTag = true
-      return nil
-    case "</think>":
-      self.isInsideThinkTag = false
-      return nil
-    default:
-      guard !self.isInsideThinkTag else { return nil }
-      self.response += token
-      return token
-    }
   }
 }
