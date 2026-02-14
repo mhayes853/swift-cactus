@@ -86,7 +86,7 @@ public enum JSONSchemaMacro: ExtensionMacro, MemberMacro {
     let propertyPairs =
       activeProperties
       .map { property in
-        "\"\(property.name)\": \(property.schemaExpression ?? "\(property.typeName).jsonSchema")"
+        "\"\(property.schemaKey)\": \(property.schemaExpression ?? "\(property.typeName).jsonSchema")"
       }
       .joined(separator: ",\n          ")
 
@@ -94,7 +94,7 @@ public enum JSONSchemaMacro: ExtensionMacro, MemberMacro {
       activeProperties
       .filter { !Self.isOptionalTypeName($0.typeName) }
       .map { property in
-        "\"\(property.name)\""
+        "\"\(property.schemaKey)\""
       }
       .joined(separator: ", ")
 
@@ -229,6 +229,7 @@ extension JSONSchemaMacro {
 
   private struct StoredProperty {
     let name: String
+    let schemaKey: String
     let typeName: String
     let isIgnored: Bool
     let schemaExpression: String?
@@ -295,12 +296,20 @@ extension JSONSchemaMacro {
   ) -> StoredProperty {
     let ignoredAttribute = Self.jsonSchemaIgnoredAttribute(in: variableDecl)
     let isIgnored = ignoredAttribute != nil
+    let keyAttribute = Self.jsonSchemaKeyAttribute(
+      in: variableDecl,
+      propertyName: propertyName,
+      context: context
+    )
+    let schemaKey = keyAttribute.flatMap {
+      Self.schemaKeyValue(in: $0, propertyName: propertyName, context: context)
+    } ?? propertyName
     let semanticAttributes = Self.semanticSchemaAttributes(in: variableDecl)
-    
-    if isIgnored && !semanticAttributes.isEmpty {
-      if let firstSemanticAttribute = semanticAttributes.first {
+
+    if isIgnored && (!semanticAttributes.isEmpty || keyAttribute != nil) {
+      if let conflictingAttribute = keyAttribute ?? semanticAttributes.first {
         Self.diagnoseConflictingSchemaAttributes(
-          in: firstSemanticAttribute,
+          in: conflictingAttribute,
           propertyName: propertyName,
           context: context
         )
@@ -316,6 +325,7 @@ extension JSONSchemaMacro {
     )
     return StoredProperty(
       name: propertyName,
+      schemaKey: schemaKey,
       typeName: typeName,
       isIgnored: isIgnored,
       schemaExpression: schemaExpression
@@ -1037,5 +1047,102 @@ extension JSONSchemaMacro {
         let name = $0.attributeName.trimmedDescription
         return name == "JSONSchemaIgnored" || name == "Cactus.JSONSchemaIgnored"
       }
+  }
+
+  private static func jsonSchemaKeyAttribute(
+    in variableDecl: VariableDeclSyntax,
+    propertyName: String,
+    context: some MacroExpansionContext
+  ) -> AttributeSyntax? {
+    let attributes = Self.jsonSchemaKeyAttributes(in: variableDecl)
+
+    guard attributes.count <= 1 else {
+      if let duplicateAttribute = attributes.dropFirst().first {
+        Self.diagnoseDuplicateJSONSchemaKeyAttribute(
+          in: duplicateAttribute,
+          propertyName: propertyName,
+          context: context
+        )
+      }
+      return nil
+    }
+
+    return attributes.first
+  }
+
+  private static func jsonSchemaKeyAttributes(
+    in variableDecl: VariableDeclSyntax
+  ) -> [AttributeSyntax] {
+    variableDecl.attributes
+      .compactMap { $0.as(AttributeSyntax.self) }
+      .filter {
+        let name = $0.attributeName.trimmedDescription
+        return name == "JSONSchemaKey" || name == "Cactus.JSONSchemaKey"
+      }
+  }
+
+  private static func schemaKeyValue(
+    in attribute: AttributeSyntax,
+    propertyName: String,
+    context: some MacroExpansionContext
+  ) -> String? {
+    let description = attribute.trimmedDescription
+
+    guard
+      let openParen = description.firstIndex(of: "("),
+      description.hasSuffix(")")
+    else {
+      Self.diagnoseInvalidJSONSchemaKeyAttribute(
+        in: attribute,
+        propertyName: propertyName,
+        context: context
+      )
+      return nil
+    }
+
+    let start = description.index(after: openParen)
+    let end = description.index(before: description.endIndex)
+    let argument = description[start..<end].trimmingCharacters(in: .whitespacesAndNewlines)
+
+    guard argument.count >= 2, argument.first == "\"", argument.last == "\"" else {
+      Self.diagnoseInvalidJSONSchemaKeyAttribute(
+        in: attribute,
+        propertyName: propertyName,
+        context: context
+      )
+      return nil
+    }
+
+    return String(argument.dropFirst().dropLast())
+  }
+
+  private static func diagnoseDuplicateJSONSchemaKeyAttribute(
+    in attribute: AttributeSyntax,
+    propertyName: String,
+    context: some MacroExpansionContext
+  ) {
+    context.diagnose(
+      Diagnostic(
+        node: attribute,
+        message: MacroExpansionErrorMessage(
+          "Only one @JSONSchemaKey attribute can be applied to a stored property."
+        )
+      )
+    )
+  }
+
+  private static func diagnoseInvalidJSONSchemaKeyAttribute(
+    in attribute: AttributeSyntax,
+    propertyName: String,
+    context: some MacroExpansionContext
+  ) {
+    context.diagnose(
+      Diagnostic(
+        node: attribute,
+        message: MacroExpansionErrorMessage(
+          "@JSONSchemaKey must be declared as @JSONSchemaKey(\"schema_key\") on '\(propertyName)'."
+        )
+      )
+    )
   }
 }

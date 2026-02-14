@@ -12,6 +12,11 @@ public macro JSONSchema() = #externalMacro(module: "CactusMacros", type: "JSONSc
 public macro JSONSchemaIgnored() =
   #externalMacro(module: "CactusMacros", type: "JSONSchemaIgnoredMacro")
 
+/// Overrides a stored property's synthesized key in the generated ``JSONSchema`` object.
+@attached(peer)
+public macro JSONSchemaKey(_ key: Swift.String) =
+  #externalMacro(module: "CactusMacros", type: "JSONSchemaKeyMacro")
+
 /// Overrides schema synthesis for a string property using semantic validation constraints.
 @attached(peer)
 public macro JSONStringSchema(
