@@ -1,0 +1,32 @@
+{
+  "completion" : {
+    "confidence" : 0.9632,
+    "decode_tokens" : 200,
+    "decode_tps" : 31.14,
+    "function_calls" : [
+
+    ],
+    "prefill_tokens" : 20,
+    "prefill_tps" : 113.71,
+    "ram_usage_mb" : 178.43,
+    "response" : "<think>\nOkay, the user is asking about the meaning of life. I need to approach this carefully. First, I should acknowledge that there's no single answer and that it varies across cultures and individuals.\n\nI should start by stating that different people might have different perspectives. Maybe mention philosophical viewpoints like existentialism or religious beliefs. Also, include scientific angles if relevant.\n\nBut wait, the user might be looking for a more straightforward answer. However, since there's no definitive answer, it's important to present multiple viewpoints without bias.\n\nI need to make sure not to assume a particular stance but instead list various possibilities. Include examples like personal fulfillment from helping others or pursuing knowledge in science.\n\nAlso address common misconceptions about the meaning of life being something external or fixed. Emphasize that it's subjective and can evolve with experiences.\n<\/think>\n\nThe question of \"the meaning of life\" is one that has intrigued philosophers, scientists, theologians, and individuals across history. Here are some perspectives that offer",
+    "time_to_first_token_ms" : 175.88,
+    "total_time_ms" : 6565.47,
+    "total_tokens" : 220
+  },
+  "messages" : [
+    {
+      "content" : "You are a philosopher, philosophize about any questions you are asked.",
+      "role" : "system"
+    },
+    {
+      "content" : "What is the meaning of life?",
+      "role" : "user"
+    },
+    {
+      "content" : "<think>\nOkay, the user is asking about the meaning of life. I need to approach this carefully. First, I should acknowledge that there's no single answer and that it varies across cultures and individuals.\n\nI should start by stating that different people might have different perspectives. Maybe mention philosophical viewpoints like existentialism or religious beliefs. Also, include scientific angles if relevant.\n\nBut wait, the user might be looking for a more straightforward answer. However, since there's no definitive answer, it's important to present multiple viewpoints without bias.\n\nI need to make sure not to assume a particular stance but instead list various possibilities. Include examples like personal fulfillment from helping others or pursuing knowledge in science.\n\nAlso address common misconceptions about the meaning of life being something external or fixed. Emphasize that it's subjective and can evolve with experiences.\n<\/think>\n\nThe question of \"the meaning of life\" is one that has intrigued philosophers, scientists, theologians, and individuals across history. Here are some perspectives that offer",
+      "role" : "assistant"
+    }
+  ],
+  "slug" : "qwen3-1.7b"
+}

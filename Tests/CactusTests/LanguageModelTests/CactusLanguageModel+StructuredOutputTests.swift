@@ -6,13 +6,13 @@ import Testing
 @Suite
 struct `CactusLanguageModelStructuredOutput tests` {
   @Test
-  func `JSON Chat Completion Returns Structured Output`() async throws {
+  func `JSON Complete Returns JSON Completed Chat Turn`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
     let model = try CactusLanguageModel(from: modelURL)
 
-    var completion: CactusLanguageModel.JSONChatCompletion<RecipeOutput>?
+    var completion: CactusLanguageModel.JSONCompletedChatTurn<RecipeOutput>?
     for _ in 0..<3 where completion == nil {
-      let attempt = try model.jsonChatCompletion(
+      let attempt = try model.jsonComplete(
         messages: [
           .system("You are a helpful cooking assistant."),
           .user("Provide a simple recipe object with a title and servings count.")
@@ -42,13 +42,13 @@ struct `CactusLanguageModelStructuredOutput tests` {
   }
 
   @Test
-  func `JSON Chat Completion Without System Prompt Injects Schema Prompt`() async throws {
+  func `JSON Complete Appends Schema Prompt To Last User Message`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
     let model = try CactusLanguageModel(from: modelURL)
 
-    var completion: CactusLanguageModel.JSONChatCompletion<RecipeOutput>?
+    var completion: CactusLanguageModel.JSONCompletedChatTurn<RecipeOutput>?
     for _ in 0..<3 where completion == nil {
-      let attempt = try model.jsonChatCompletion(
+      let attempt = try model.jsonComplete(
         messages: [
           .user("Return a JSON recipe object with title and servings.")
         ],
@@ -77,11 +77,34 @@ struct `CactusLanguageModelStructuredOutput tests` {
   }
 
   @Test
-  func `JSON Chat Completion Returns Function Call Failure Result`() async throws {
+  func `JSON Complete Appends Schema Prompt As User Message When No User Message Exists`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
     let model = try CactusLanguageModel(from: modelURL)
 
-    let completion = try model.jsonChatCompletion(
+    let completed = try model.jsonComplete(
+      messages: [
+        .system("You are a helpful cooking assistant.")
+      ],
+      as: RecipeOutput.self,
+      options: CactusLanguageModel.JSONChatCompletionOptions(
+        chatCompletionOptions: self.chatOptions(for: model)
+      )
+    )
+
+    let userMessages = completed.messages.filter { $0.role == .user }
+    guard let schemaMessage = userMessages.last else {
+      Issue.record("Expected schema prompt to be appended as a user message.")
+      return
+    }
+    expectNoDifference(schemaMessage.content.contains("JSON Schema:"), true)
+  }
+
+  @Test
+  func `JSON Complete Returns Function Call Failure Result`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
+    let model = try CactusLanguageModel(from: modelURL)
+
+    let completion = try model.jsonComplete(
       messages: [
         .system("You are a weather assistant that must use functions when available."),
         .user("What is the weather in Santa Cruz?")
@@ -101,12 +124,12 @@ struct `CactusLanguageModelStructuredOutput tests` {
   }
 
   @Test
-  func `JSON Chat Completion Returns Failure Result For Incomplete JSON Payload`() async throws {
+  func `JSON Complete Returns Failure Result For Incomplete JSON Payload`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
     let model = try CactusLanguageModel(from: modelURL)
 
     var didStop = false
-    let completion = try model.jsonChatCompletion(
+    let completion = try model.jsonComplete(
       messages: [
         .system("You are a helpful cooking assistant."),
         .user("Generate a recipe JSON object with title and servings.")
@@ -126,17 +149,17 @@ struct `CactusLanguageModelStructuredOutput tests` {
   }
 
   @Test
-  func `JSON Streamable Chat Completion Emits Partials And Final Structured Output`() async throws {
+  func `JSON Streamable Complete Emits Partials And Returns JSON Completed Chat Turn`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
     let model = try CactusLanguageModel(from: modelURL)
 
-    var completion: CactusLanguageModel.JSONChatCompletion<RecipeStreamOutput>?
+    var completion: CactusLanguageModel.JSONCompletedChatTurn<RecipeStreamOutput>?
     var sawPartial = false
 
     for _ in 0..<3 where completion == nil {
       let attempt =
         try model
-        .jsonStreamableChatCompletion(
+        .jsonStreamableComplete(
           messages: [
             .system("You are a helpful cooking assistant."),
             .user("Provide a recipe object with title and servings.")
@@ -177,16 +200,16 @@ struct `CactusLanguageModelStructuredOutput tests` {
   }
 
   @Test
-  func `JSON Streamable Chat Completion Without System Prompt Injects Schema Prompt`() async throws
+  func `JSON Streamable Complete Appends Schema Prompt To Last User Message`() async throws
   {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
     let model = try CactusLanguageModel(from: modelURL)
 
-    var completion: CactusLanguageModel.JSONChatCompletion<RecipeStreamOutput>?
+    var completion: CactusLanguageModel.JSONCompletedChatTurn<RecipeStreamOutput>?
     for _ in 0..<3 where completion == nil {
       let attempt =
         try model
-        .jsonStreamableChatCompletion(
+        .jsonStreamableComplete(
           messages: [
             .user("Return a JSON object with title and servings.")
           ],
@@ -217,13 +240,13 @@ struct `CactusLanguageModelStructuredOutput tests` {
   }
 
   @Test
-  func `JSON Streamable Chat Completion Returns Function Call Failure Result`() async throws {
+  func `JSON Streamable Complete Returns Function Call Failure Result`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
     let model = try CactusLanguageModel(from: modelURL)
 
     let completion =
       try model
-      .jsonStreamableChatCompletion(
+      .jsonStreamableComplete(
         messages: [
           .system("You are a weather assistant that must use functions when available."),
           .user("What is the weather in Santa Cruz?")
@@ -244,7 +267,7 @@ struct `CactusLanguageModelStructuredOutput tests` {
   }
 
   @Test
-  func `JSON Streamable Chat Completion Returns Failure Result For Incomplete JSON Payload`()
+  func `JSON Streamable Complete Returns Failure Result For Incomplete JSON Payload`()
     async throws
   {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
@@ -253,7 +276,7 @@ struct `CactusLanguageModelStructuredOutput tests` {
     var didStop = false
     let completion =
       try model
-      .jsonStreamableChatCompletion(
+      .jsonStreamableComplete(
         messages: [
           .system("You are a helpful cooking assistant."),
           .user("Generate a recipe JSON object with title and servings.")

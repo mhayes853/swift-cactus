@@ -218,7 +218,7 @@ struct `CactusLanguageModel tests` {
     let model = try CactusLanguageModel(from: modelURL)
 
     var stream = ""
-    let completion = try model.chatCompletion(
+    let completion = try model.complete(
       messages: [
         .system("You are a philosopher, philosophize about any questions you are asked."),
         .user("What is the meaning of life?")
@@ -226,11 +226,104 @@ struct `CactusLanguageModel tests` {
       options: CactusLanguageModel.ChatCompletion.Options(
         maxTokens: 1024,
         modelType: model.configurationFile.modelType ?? .qwen
-      )
-    ) { token in
-      stream.append(token)
+      ),
+      onToken: { token, _ in
+        stream.append(token)
+      }
+    )
+    expectNoDifference(stream, completion.completion.cleanedResponse)
+  }
+
+  @Test
+  func `Complete Returns Completed Chat Turn`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
+    let model = try CactusLanguageModel(from: modelURL)
+
+    let completed = try model.complete(
+      messages: [
+        .system("You are a philosopher, philosophize about any questions you are asked."),
+        .user("What is the meaning of life?")
+      ]
+    )
+
+    expectNoDifference(completed.messages.last?.role, .assistant)
+    expectNoDifference(completed.completion.response.isEmpty, false)
+  }
+
+  @Test
+  func `Complete Returned Messages Can Be Reused For Next Complete`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
+    let model = try CactusLanguageModel(from: modelURL)
+    let options = CactusLanguageModel.ChatCompletion.Options(
+      maxTokens: 128,
+      modelType: model.configurationFile.modelType ?? .qwen
+    )
+
+    let first = try model.complete(
+      messages: [
+        .system("You are a concise assistant."),
+        .user("Give one sentence about Swift.")
+      ],
+      options: options
+    )
+
+    let second = try model.complete(
+      messages: first.messages + [.user("Now rephrase it in fewer words.")],
+      options: options
+    )
+
+    expectNoDifference(second.messages.last?.role, .assistant)
+    expectNoDifference(second.completion.response.isEmpty, false)
+  }
+
+  @Test
+  func `Complete Includes Function Call Tokens In Returned Assistant Message`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
+    let model = try CactusLanguageModel(from: modelURL)
+
+    let completed = try model.complete(
+      messages: [
+        .system("You are a weather assistant that must use tools when available."),
+        .user("What is the weather in Santa Cruz?")
+      ],
+      options: CactusLanguageModel.ChatCompletion.Options(
+        maxTokens: 256,
+        modelType: model.configurationFile.modelType ?? .qwen,
+        forceFunctions: true
+      ),
+      functions: [self.weatherFunction]
+    )
+
+    guard completed.completion.functionCalls.isEmpty == false else {
+      withKnownIssue {
+        Issue.record("Model did not emit function calls for the tool-forced prompt.")
+      }
+      return
     }
-    expectNoDifference(stream, completion.cleanedResponse)
+
+    let assistantMessage = completed.messages.last(where: { $0.role == .assistant })?.content ?? ""
+    expectNoDifference(assistantMessage.contains("<tool_call>"), true)
+  }
+
+  @Test
+  func `Complete Reused Messages Reduce Prefill Tokens Compared To Reset Baseline`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
+    let model = try CactusLanguageModel(from: modelURL)
+
+    let first = try model.complete(
+      messages: [
+        .system("You are a concise assistant."),
+        .user("Explain closures in Swift in one sentence.")
+      ]
+    )
+
+    let continuationMessages = first.messages + [.user("Now summarize that in five words.")]
+
+    let hit = try model.complete(messages: continuationMessages)
+    model.reset()
+    let miss = try model.complete(messages: continuationMessages)
+
+    expectNoDifference(hit.completion.prefillTokens <= miss.completion.prefillTokens, true)
   }
 
   @Test
@@ -239,7 +332,7 @@ struct `CactusLanguageModel tests` {
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.ChatCompletionError.bufferSizeTooSmall) {
-      try model.chatCompletion(
+      try model.complete(
         messages: [
           CactusLanguageModel.ChatMessage(
             role: .system,
@@ -252,13 +345,26 @@ struct `CactusLanguageModel tests` {
     }
   }
 
+  private var weatherFunction: CactusLanguageModel.FunctionDefinition {
+    CactusLanguageModel.FunctionDefinition(
+      name: "get_weather",
+      description: "Get weather in a location",
+      parameters: .object(
+        properties: [
+          "location": .string(minLength: 1)
+        ],
+        required: ["location"]
+      )
+    )
+  }
+
   @Test
   func `Throws Chat Completion Error When Buffer Size Zero`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL()
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.ChatCompletionError.bufferSizeTooSmall) {
-      try model.chatCompletion(
+      try model.complete(
         messages: [
           .system("You are a philosopher, philosophize about any questions you are asked."),
           .user("What is the meaning of life?")
@@ -398,6 +504,35 @@ struct `CactusLanguageModel tests` {
 }
 
 final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
+  func testComplete() async throws {
+    struct Completion: Encodable {
+      let slug: String
+      let completion: CactusLanguageModel.ChatCompletion
+      let messages: [CactusLanguageModel.ChatMessage]
+    }
+
+    let request = CactusLanguageModel.PlatformDownloadRequest.qwen3_1_7b()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: request)
+    let model = try CactusLanguageModel(from: modelURL)
+    let completed = try model.complete(
+      messages: [
+        .system("You are a philosopher, philosophize about any questions you are asked."),
+        .user("What is the meaning of life?")
+      ]
+    )
+    withExpectedIssue {
+      assertSnapshot(
+        of: Completion(
+          slug: request.slug,
+          completion: completed.completion,
+          messages: completed.messages
+        ),
+        as: .json,
+        record: true
+      )
+    }
+  }
+
   func testBasicChatCompletion() async throws {
     struct Completion: Codable {
       let slug: String
@@ -409,13 +544,13 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     for request in modelRequests {
       let modelURL = try await CactusLanguageModel.testModelURL(request: request)
       let model = try CactusLanguageModel(from: modelURL)
-      let completion = try model.chatCompletion(
+      let completed = try model.complete(
         messages: [
           .system("You are a philosopher, philosophize about any questions you are asked."),
           .user("What is the meaning of life?")
         ]
       )
-      completions.append(Completion(slug: request.slug, completion: completion))
+      completions.append(Completion(slug: request.slug, completion: completed.completion))
     }
     withExpectedIssue {
       assertSnapshot(of: completions, as: .json, record: true)
@@ -428,7 +563,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     )
     let model = try CactusLanguageModel(from: modelURL)
 
-    let completion = try model.chatCompletion(
+    let completed = try model.complete(
       messages: [
         .system("You are a helpful weather assistant that can use tools."),
         .user("What is the weather in Santa Cruz?")
@@ -456,7 +591,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     )
 
     withExpectedIssue {
-      assertSnapshot(of: completion, as: .json, record: true)
+      assertSnapshot(of: completed.completion, as: .json, record: true)
     }
   }
 
@@ -466,7 +601,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     )
     let model = try CactusLanguageModel(from: modelURL)
 
-    let completion = try model.chatCompletion(
+    let completed = try model.complete(
       messages: [
         .system("You are a helpful weather assistant that can use tools."),
         .user("What is the weather and population in Berkeley?")
@@ -505,7 +640,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     )
 
     withExpectedIssue {
-      assertSnapshot(of: completion, as: .json, record: true)
+      assertSnapshot(of: completed.completion, as: .json, record: true)
     }
   }
 
@@ -515,7 +650,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     )
     let model = try CactusLanguageModel(from: url)
 
-    let completion = try model.chatCompletion(
+    let completed = try model.complete(
       messages: [
         .system(
           """
@@ -528,7 +663,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     )
 
     withExpectedIssue {
-      assertSnapshot(of: completion, as: .json, record: true)
+      assertSnapshot(of: completed.completion, as: .json, record: true)
     }
   }
 

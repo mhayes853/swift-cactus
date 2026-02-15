@@ -1,10 +1,24 @@
 import Foundation
 import StreamParsingCore
 
-// MARK: - Stream Chat Completion
+// MARK: - Stream Complete
 
 extension CactusLanguageModel {
-  /// Generates a ``ChatCompletion`` with parser-driven partial updates.
+  /// Generates a completed chat turn with parser-driven partial updates.
+  ///
+  /// ```swift
+  /// let parser = CactusLanguageModel.StreamParsingTokenParser(
+  ///   streamParser: JSONStreamParser<MyPartial>(configuration: .init())
+  /// )
+  ///
+  /// let completed = try model.streamComplete(
+  ///   messages: [.user("Return JSON")],
+  ///   parser: parser
+  /// ) { _, partial in
+  ///   print(partial)
+  /// }
+  /// print(completed.completion.response)
+  /// ```
   ///
   /// - Parameters:
   ///   - messages: The list of ``ChatMessage`` instances.
@@ -13,17 +27,16 @@ extension CactusLanguageModel {
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
-  /// - Throws: Any parser error thrown while processing generated tokens.
-  /// - Returns: A ``ChatCompletion``.
-  public func streamChatCompletion<Parser: TokenParser>(
+  /// - Returns: A ``CactusLanguageModel/CompletedChatTurn``.
+  public func streamComplete<Parser: TokenParser>(
     messages: [ChatMessage],
     parser: Parser,
     options: ChatCompletion.Options? = nil,
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String, Parser.Partial?) -> Void = { _, _ in }
-  ) throws -> ChatCompletion {
-    try self.streamChatCompletion(
+  ) throws -> CompletedChatTurn {
+    try self.streamComplete(
       messages: messages,
       parser: parser,
       options: options,
@@ -34,7 +47,22 @@ extension CactusLanguageModel {
     }
   }
 
-  /// Generates a ``ChatCompletion`` with parser-driven partial updates.
+  /// Generates a completed chat turn with parser-driven partial updates.
+  ///
+  /// ```swift
+  /// let parser = CactusLanguageModel.StreamParsingTokenParser(
+  ///   streamParser: JSONStreamParser<MyPartial>(configuration: .init())
+  /// )
+  ///
+  /// let completed = try model.streamComplete(
+  ///   messages: [.user("Return JSON")],
+  ///   parser: parser
+  /// ) { _, _, partial in
+  ///   print(partial)
+  /// }
+  /// print(completed.messages.count)
+  /// ```
+  ///
   ///
   /// - Parameters:
   ///   - messages: The list of ``ChatMessage`` instances.
@@ -44,18 +72,18 @@ extension CactusLanguageModel {
   ///   - functions: A list of ``FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
   /// - Throws: Any parser error thrown while processing generated tokens.
-  /// - Returns: A ``ChatCompletion``.
-  public func streamChatCompletion<Parser: TokenParser>(
+  /// - Returns: A ``CactusLanguageModel/CompletedChatTurn``.
+  public func streamComplete<Parser: TokenParser>(
     messages: [ChatMessage],
     parser: Parser,
     options: ChatCompletion.Options? = nil,
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String, UInt32, Parser.Partial?) -> Void
-  ) throws -> ChatCompletion {
+  ) throws -> CompletedChatTurn {
     var parser = parser
     var parserError: (any Error)?
-    let completion = try self.chatCompletion(
+    let completedTurn = try self.complete(
       messages: messages,
       options: options,
       maxBufferSize: maxBufferSize,
@@ -72,28 +100,31 @@ extension CactusLanguageModel {
     if let parserError {
       throw parserError
     }
-    return completion
+    return completedTurn
   }
 }
 
-// MARK: - JSONChatCompletion
+// MARK: - JSON Completed Chat Turn
 
 extension CactusLanguageModel {
-  /// A chat completion result that includes a typed JSON output.
+  /// A completed JSON chat turn that includes typed output.
   ///
   /// The ``output`` contains the parsed value when generation produced valid JSON matching
-  /// the target JSON schema. If generation was interrupted, invalid, or resulted in function calls,
+  /// the target schema. If generation was interrupted, invalid, or resulted in function calls,
   /// the ``output`` is a failure.
-  public struct JSONChatCompletion<Output: Decodable> {
+  public struct JSONCompletedChatTurn<Output: Decodable> {
     /// The parsed JSON output result.
     public let output: Result<Output, any Error>
 
     /// The raw chat completion returned by the model.
     public let completion: ChatCompletion
+
+    /// Canonical conversation messages that include the generated assistant turn.
+    public let messages: [ChatMessage]
   }
 
-  /// Options for generating a ``JSONChatCompletion``.
-  public struct JSONChatCompletionOptions<Output: Decodable>: Sendable {
+  /// Options for generating a ``JSONCompletedChatTurn``.
+  public struct JSONChatCompletionOptions: Sendable {
     /// The base ``ChatCompletion/Options`` used for inference.
     public var chatCompletionOptions: ChatCompletion.Options?
 
@@ -103,32 +134,24 @@ extension CactusLanguageModel {
     /// The decoder used when constructing ``Output`` from a JSON value.
     public var decoder: JSONSchema.Value.Decoder
 
-    /// An optional callback for overriding the injected JSON system prompt.
-    ///
-    /// When `nil`, a default prompt containing the JSON schema is used.
-    public var jsonSystemPrompt: (@Sendable (Output.Type, JSONSchema) throws -> String)?
-
-    /// Creates options for generating a ``JSONChatCompletion``.
+    /// Creates options for generating a ``JSONCompletedChatTurn``.
     ///
     /// - Parameters:
     ///   - chatCompletionOptions: The base ``ChatCompletion/Options`` used for inference.
     ///   - validator: The validator used when constructing ``Output`` from a JSON value.
     ///   - decoder: The decoder used when constructing ``Output`` from a JSON value.
-    ///   - jsonSystemPrompt: An optional callback for overriding the injected JSON system prompt.
     public init(
       chatCompletionOptions: ChatCompletion.Options? = nil,
       validator: JSONSchema.Validator = .shared,
-      decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder(),
-      jsonSystemPrompt: (@Sendable (Output.Type, JSONSchema) throws -> String)? = nil
+      decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
     ) {
       self.chatCompletionOptions = chatCompletionOptions
       self.validator = validator
       self.decoder = decoder
-      self.jsonSystemPrompt = jsonSystemPrompt
     }
   }
 
-  /// An error thrown when resolving typed JSON output from a chat completion.
+  /// An error thrown when resolving typed JSON output from a completion.
   public enum JSONOutputError: Error, Sendable {
     /// The model returned function calls instead of a final JSON payload.
     case functionCallReturned([FunctionCall])
@@ -137,7 +160,7 @@ extension CactusLanguageModel {
     case missingJSONPayload
   }
 
-  /// Generates a ``JSONChatCompletion`` with a required schema parameter.
+  /// Generates a ``JSONCompletedChatTurn`` with a required schema parameter.
   ///
   /// Use this method when you want to generate structured JSON output for any `Decodable` type,
   /// but need to provide the JSON schema explicitly at the callsite.
@@ -159,7 +182,7 @@ extension CactusLanguageModel {
   ///   required: ["title", "servings"]
   /// )
   ///
-  /// let completion = try model.jsonChatCompletion(
+  /// let completion = try model.jsonComplete(
   ///   messages: [
   ///     .system("You are a helpful cooking assistant."),
   ///     .user("Create a recipe with a title and servings.")
@@ -176,22 +199,22 @@ extension CactusLanguageModel {
   /// - Parameters:
   ///   - messages: The list of ``ChatMessage`` instances.
   ///   - as: The output type to decode from the JSON payload.
-  ///   - schema: The JSON schema to validate against and use for the system prompt.
+  ///   - schema: The JSON schema to validate against and inject into the user prompt.
   ///   - options: The ``JSONChatCompletionOptions``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
-  /// - Returns: A ``JSONChatCompletion``.
-  public func jsonChatCompletion<Output: Decodable>(
+  /// - Returns: A ``JSONCompletedChatTurn``.
+  public func jsonComplete<Output: Decodable>(
     messages: [ChatMessage],
     as outputType: Output.Type,
     schema: JSONSchema,
-    options: JSONChatCompletionOptions<Output>? = nil,
+    options: JSONChatCompletionOptions = JSONChatCompletionOptions(),
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String) -> Void = { _ in }
-  ) throws -> JSONChatCompletion<Output> {
-    try self.jsonChatCompletion(
+  ) throws -> JSONCompletedChatTurn<Output> {
+    try self.jsonComplete(
       messages: messages,
       as: outputType,
       schema: schema,
@@ -203,7 +226,7 @@ extension CactusLanguageModel {
     }
   }
 
-  /// Generates a ``JSONChatCompletion`` with a required schema parameter.
+  /// Generates a ``JSONCompletedChatTurn`` with a required schema parameter.
   ///
   /// Use this method when you want to generate structured JSON output for any `Decodable` type,
   /// but need to provide the JSON schema explicitly at the callsite.
@@ -225,7 +248,7 @@ extension CactusLanguageModel {
   ///   required: ["title", "servings"]
   /// )
   ///
-  /// let completion = try model.jsonChatCompletion(
+  /// let completion = try model.jsonComplete(
   ///   messages: [
   ///     .system("You are a helpful cooking assistant."),
   ///     .user("Create a recipe with a title and servings.")
@@ -242,56 +265,58 @@ extension CactusLanguageModel {
   /// - Parameters:
   ///   - messages: The list of ``ChatMessage`` instances.
   ///   - as: The output type to decode from the JSON payload.
-  ///   - schema: The JSON schema to validate against and use for the system prompt.
+  ///   - schema: The JSON schema to validate against and inject into the user prompt.
   ///   - options: The ``JSONChatCompletionOptions``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
-  /// - Returns: A ``JSONChatCompletion``.
-  public func jsonChatCompletion<Output: Decodable>(
+  /// - Returns: A ``JSONCompletedChatTurn``.
+  public func jsonComplete<Output: Decodable>(
     messages: [ChatMessage],
     as outputType: Output.Type,
     schema: JSONSchema,
-    options: JSONChatCompletionOptions<Output>? = nil,
+    options: JSONChatCompletionOptions = JSONChatCompletionOptions(),
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String, UInt32) -> Void
-  ) throws -> JSONChatCompletion<Output> {
-    let jsonOutputOptions = options ?? JSONChatCompletionOptions<Output>()
+  ) throws -> JSONCompletedChatTurn<Output> {
     var accumulator = NonThinkingTokenAccumulator()
-    let completion = try self.chatCompletion(
+    let completedTurn = try self.complete(
       messages: self.messagesWithJSONSchemaPrompt(
         messages: messages,
-        jsonSchema: schema,
-        jsonSystemPrompt: jsonOutputOptions.jsonSystemPrompt
+        jsonSchema: schema
       ),
-      options: jsonOutputOptions.chatCompletionOptions,
+      options: options.chatCompletionOptions,
       maxBufferSize: maxBufferSize,
       functions: functions,
       onToken: { token, tokenID in
-        _ = accumulator.append(token)
+        accumulator.append(token)
         onToken(token, tokenID)
       }
     )
-    return JSONChatCompletion(
+    return JSONCompletedChatTurn(
       output: Result {
         try self.resolveJSONOutput(
-          from: completion,
+          from: completedTurn.completion,
           filteredResponse: accumulator.response,
           jsonSchema: schema,
-          validator: jsonOutputOptions.validator,
-          decoder: jsonOutputOptions.decoder
+          validator: options.validator,
+          decoder: options.decoder
         )
       },
-      completion: completion
+      completion: completedTurn.completion,
+      messages: completedTurn.messages
     )
   }
 
-  /// Generates a streamable ``JSONChatCompletion`` with a required schema parameter.
+  /// Generates a streamable ``JSONCompletedChatTurn`` with a required schema parameter.
   ///
   /// Use this method when you want to generate streaming structured JSON output for any
   /// `Decodable & StreamParseable` type, but need to provide the JSON schema explicitly
   /// at the callsite.
+  ///
+  /// During streaming, partial values are best-effort and may be `nil` when no parseable JSON
+  /// fragment is available for a token.
   ///
   /// ```swift
   /// @StreamParseable
@@ -310,7 +335,7 @@ extension CactusLanguageModel {
   ///   required: ["title", "servings"]
   /// )
   ///
-  /// let completion = try model.jsonStreamableChatCompletion(
+  /// let completion = try model.jsonStreamableComplete(
   ///   messages: [
   ///     .system("You are a helpful cooking assistant."),
   ///     .user("Create a recipe with a title and servings.")
@@ -331,24 +356,24 @@ extension CactusLanguageModel {
   /// - Parameters:
   ///   - messages: The list of ``ChatMessage`` instances.
   ///   - as: The output type to decode from the JSON payload.
-  ///   - schema: The JSON schema to validate against and use for the system prompt.
+  ///   - schema: The JSON schema to validate against and inject into the user prompt.
   ///   - configuration: The ``JSONStreamParserConfiguration``.
   ///   - options: The ``JSONChatCompletionOptions``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
-  /// - Returns: A ``JSONChatCompletion``.
-  public func jsonStreamableChatCompletion<Output: Decodable & StreamParseable>(
+  /// - Returns: A ``JSONCompletedChatTurn``.
+  public func jsonStreamableComplete<Output: Decodable & StreamParseable>(
     messages: [ChatMessage],
     as outputType: Output.Type,
     schema: JSONSchema,
     configuration: JSONStreamParserConfiguration = JSONStreamParserConfiguration(),
-    options: JSONChatCompletionOptions<Output>? = nil,
+    options: JSONChatCompletionOptions = JSONChatCompletionOptions(),
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String, Output.Partial?) -> Void = { _, _ in }
-  ) throws -> JSONChatCompletion<Output> {
-    try self.jsonStreamableChatCompletion(
+  ) throws -> JSONCompletedChatTurn<Output> {
+    try self.jsonStreamableComplete(
       messages: messages,
       as: outputType,
       schema: schema,
@@ -361,11 +386,14 @@ extension CactusLanguageModel {
     }
   }
 
-  /// Generates a streamable ``JSONChatCompletion`` with a required schema parameter.
+  /// Generates a streamable ``JSONCompletedChatTurn`` with a required schema parameter.
   ///
   /// Use this method when you want to generate streaming structured JSON output for any
   /// `Decodable & StreamParseable` type, but need to provide the JSON schema explicitly
   /// at the callsite.
+  ///
+  /// During streaming, partial values are best-effort and may be `nil` when no parseable JSON
+  /// fragment is available for a token.
   ///
   /// ```swift
   /// @StreamParseable
@@ -384,7 +412,7 @@ extension CactusLanguageModel {
   ///   required: ["title", "servings"]
   /// )
   ///
-  /// let completion = try model.jsonStreamableChatCompletion(
+  /// let completion = try model.jsonStreamableComplete(
   ///   messages: [
   ///     .system("You are a helpful cooking assistant."),
   ///     .user("Create a recipe with a title and servings.")
@@ -405,37 +433,35 @@ extension CactusLanguageModel {
   /// - Parameters:
   ///   - messages: The list of ``ChatMessage`` instances.
   ///   - as: The output type to decode from the JSON payload.
-  ///   - schema: The JSON schema to validate against and use for the system prompt.
+  ///   - schema: The JSON schema to validate against and inject into the user prompt.
   ///   - configuration: The ``JSONStreamParserConfiguration``.
   ///   - options: The ``JSONChatCompletionOptions``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
-  /// - Returns: A ``JSONChatCompletion``.
-  public func jsonStreamableChatCompletion<Output: Decodable & StreamParseable>(
+  /// - Returns: A ``JSONCompletedChatTurn``.
+  public func jsonStreamableComplete<Output: Decodable & StreamParseable>(
     messages: [ChatMessage],
     as outputType: Output.Type,
     schema: JSONSchema,
     configuration: JSONStreamParserConfiguration = JSONStreamParserConfiguration(),
-    options: JSONChatCompletionOptions<Output>? = nil,
+    options: JSONChatCompletionOptions = JSONChatCompletionOptions(),
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String, UInt32, Output.Partial?) -> Void
-  ) throws -> JSONChatCompletion<Output> {
-    let jsonOutputOptions = options ?? JSONChatCompletionOptions<Output>()
+  ) throws -> JSONCompletedChatTurn<Output> {
     var accumulator = NonThinkingTokenAccumulator()
     let parser = StreamParsingTokenParser(
       streamParser: JSONStreamParser<Output.Partial>(configuration: configuration)
     )
 
-    let completion = try self.streamChatCompletion(
+    let completedTurn = try self.streamComplete(
       messages: self.messagesWithJSONSchemaPrompt(
         messages: messages,
-        jsonSchema: schema,
-        jsonSystemPrompt: jsonOutputOptions.jsonSystemPrompt
+        jsonSchema: schema
       ),
       parser: parser,
-      options: jsonOutputOptions.chatCompletionOptions,
+      options: options.chatCompletionOptions,
       maxBufferSize: maxBufferSize,
       functions: functions
     ) { token, tokenID, partial in
@@ -443,21 +469,24 @@ extension CactusLanguageModel {
       onToken(token, tokenID, partial)
     }
 
-    return JSONChatCompletion(
+    return JSONCompletedChatTurn(
       output: Result {
         try self.resolveJSONOutput(
-          from: completion,
+          from: completedTurn.completion,
           filteredResponse: accumulator.response,
           jsonSchema: schema,
-          validator: jsonOutputOptions.validator,
-          decoder: jsonOutputOptions.decoder
+          validator: options.validator,
+          decoder: options.decoder
         )
       },
-      completion: completion
+      completion: completedTurn.completion,
+      messages: completedTurn.messages
     )
   }
 
-  // MARK: - JSONGenerable JSON Chat Completion
+  // MARK: - JSONGenerable JSON Complete
+
+  /// Generates a ``JSONCompletedChatTurn`` for any ``JSONGenerable`` output type.
   ///
   /// The output may fail to parse when the model emits function calls instead of final content, or
   /// when the final response does not contain valid JSON matching the target schema.
@@ -469,7 +498,7 @@ extension CactusLanguageModel {
   ///   var servings: Int
   /// }
   ///
-  /// let completion = try model.jsonChatCompletion(
+  /// let completion = try model.jsonComplete(
   ///   messages: [
   ///     .system("You are a helpful cooking assistant."),
   ///     .user("Create a recipe with a title and servings.")
@@ -489,16 +518,16 @@ extension CactusLanguageModel {
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
-  /// - Returns: A ``JSONChatCompletion``.
-  public func jsonChatCompletion<Output: JSONGenerable>(
+  /// - Returns: A ``JSONCompletedChatTurn``.
+  public func jsonComplete<Output: JSONGenerable>(
     messages: [ChatMessage],
     as outputType: Output.Type = Output.self,
-    options: JSONChatCompletionOptions<Output>? = nil,
+    options: JSONChatCompletionOptions = JSONChatCompletionOptions(),
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String) -> Void = { _ in }
-  ) throws -> JSONChatCompletion<Output> {
-    try self.jsonChatCompletion(
+  ) throws -> JSONCompletedChatTurn<Output> {
+    try self.jsonComplete(
       messages: messages,
       as: outputType,
       options: options,
@@ -509,7 +538,7 @@ extension CactusLanguageModel {
     }
   }
 
-  /// Generates a ``JSONChatCompletion``.
+  /// Generates a ``JSONCompletedChatTurn`` for any ``JSONGenerable`` output type.
   ///
   /// The output may fail to parse when the model emits function calls instead of final content, or
   /// when the final response does not contain valid JSON matching the target schema.
@@ -521,7 +550,7 @@ extension CactusLanguageModel {
   ///   var servings: Int
   /// }
   ///
-  /// let completion = try model.jsonChatCompletion(
+  /// let completion = try model.jsonComplete(
   ///   messages: [
   ///     .system("You are a helpful cooking assistant."),
   ///     .user("Create a recipe with a title and servings.")
@@ -541,16 +570,16 @@ extension CactusLanguageModel {
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
-  /// - Returns: A ``JSONChatCompletion``.
-  public func jsonChatCompletion<Output: JSONGenerable>(
+  /// - Returns: A ``JSONCompletedChatTurn``.
+  public func jsonComplete<Output: JSONGenerable>(
     messages: [ChatMessage],
     as outputType: Output.Type = Output.self,
-    options: JSONChatCompletionOptions<Output>? = nil,
+    options: JSONChatCompletionOptions = JSONChatCompletionOptions(),
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String, UInt32) -> Void
-  ) throws -> JSONChatCompletion<Output> {
-    try self.jsonChatCompletion(
+  ) throws -> JSONCompletedChatTurn<Output> {
+    try self.jsonComplete(
       messages: messages,
       as: outputType,
       schema: Output.jsonSchema,
@@ -561,7 +590,7 @@ extension CactusLanguageModel {
     )
   }
 
-  /// Generates a streamable ``JSONChatCompletion`` with incremental partial output updates.
+  /// Generates a streamable ``JSONCompletedChatTurn`` for any ``JSONStreamGenerable`` output type.
   ///
   /// The final output may fail to parse when the model emits function calls instead of final
   /// content, or when the final response does not contain valid JSON matching the target schema.
@@ -579,7 +608,7 @@ extension CactusLanguageModel {
   ///
   /// extension Recipe.Partial: Encodable {}
   ///
-  /// let completion = try model.jsonStreamableChatCompletion(
+  /// let completion = try model.jsonStreamableComplete(
   ///   messages: [
   ///     .system("You are a helpful cooking assistant."),
   ///     .user("Create a recipe with a title and servings.")
@@ -589,7 +618,7 @@ extension CactusLanguageModel {
   ///     chatCompletionOptions: .init(modelType: model.configurationFile.modelType ?? .qwen)
   ///   )
   /// ) { _, _, partial in
-  ///   // 🔵 If this is nil, then either the model is thinking, generating a function call, or misbehaving.
+  ///   // If nil, the model may be thinking, generating a function call, or misbehaving.
   ///   if let partial {
   ///     print("\nPartial: \(partial)")
   ///   }
@@ -605,17 +634,17 @@ extension CactusLanguageModel {
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
-  /// - Returns: A ``JSONChatCompletion``.
-  public func jsonStreamableChatCompletion<Output: JSONStreamGenerable>(
+  /// - Returns: A ``JSONCompletedChatTurn``.
+  public func jsonStreamableComplete<Output: JSONStreamGenerable>(
     messages: [ChatMessage],
     as outputType: Output.Type = Output.self,
     configuration: JSONStreamParserConfiguration = JSONStreamParserConfiguration(),
-    options: JSONChatCompletionOptions<Output>? = nil,
+    options: JSONChatCompletionOptions = JSONChatCompletionOptions(),
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String, Output.Partial?) -> Void = { _, _ in }
-  ) throws -> JSONChatCompletion<Output> {
-    try self.jsonStreamableChatCompletion(
+  ) throws -> JSONCompletedChatTurn<Output> {
+    try self.jsonStreamableComplete(
       messages: messages,
       as: outputType,
       configuration: configuration,
@@ -627,7 +656,7 @@ extension CactusLanguageModel {
     }
   }
 
-  /// Generates a streamable ``JSONChatCompletion`` with incremental partial output updates.
+  /// Generates a streamable ``JSONCompletedChatTurn`` for any ``JSONStreamGenerable`` output type.
   ///
   /// The final output may fail to parse when the model emits function calls instead of final
   /// content, or when the final response does not contain valid JSON matching the target schema.
@@ -645,7 +674,7 @@ extension CactusLanguageModel {
   ///
   /// extension Recipe.Partial: Encodable {}
   ///
-  /// let completion = try model.jsonStreamableChatCompletion(
+  /// let completion = try model.jsonStreamableComplete(
   ///   messages: [
   ///     .system("You are a helpful cooking assistant."),
   ///     .user("Create a recipe with a title and servings.")
@@ -655,7 +684,7 @@ extension CactusLanguageModel {
   ///     chatCompletionOptions: .init(modelType: model.configurationFile.modelType ?? .qwen)
   ///   )
   /// ) { _, _, partial in
-  ///   // 🔵 If this is nil, then either the model is thinking, generating a function call, or misbehaving.
+  ///   // If nil, the model may be thinking, generating a function call, or misbehaving.
   ///   if let partial {
   ///     print("\nPartial: \(partial)")
   ///   }
@@ -671,17 +700,17 @@ extension CactusLanguageModel {
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
-  /// - Returns: A ``JSONChatCompletion``.
-  public func jsonStreamableChatCompletion<Output: JSONStreamGenerable>(
+  /// - Returns: A ``JSONCompletedChatTurn``.
+  public func jsonStreamableComplete<Output: JSONStreamGenerable>(
     messages: [ChatMessage],
     as outputType: Output.Type = Output.self,
     configuration: JSONStreamParserConfiguration = JSONStreamParserConfiguration(),
-    options: JSONChatCompletionOptions<Output>? = nil,
+    options: JSONChatCompletionOptions = JSONChatCompletionOptions(),
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String, UInt32, Output.Partial?) -> Void
-  ) throws -> JSONChatCompletion<Output> {
-    try self.jsonStreamableChatCompletion(
+  ) throws -> JSONCompletedChatTurn<Output> {
+    try self.jsonStreamableComplete(
       messages: messages,
       as: outputType,
       schema: Output.jsonSchema,
@@ -694,24 +723,23 @@ extension CactusLanguageModel {
   }
 }
 
-extension CactusLanguageModel.JSONChatCompletion: Sendable where Output: Sendable {}
+extension CactusLanguageModel.JSONCompletedChatTurn: Sendable where Output: Sendable {}
 
 extension CactusLanguageModel {
-  private func messagesWithJSONSchemaPrompt<Output>(
+  private func messagesWithJSONSchemaPrompt(
     messages: [ChatMessage],
-    jsonSchema: JSONSchema,
-    jsonSystemPrompt: (@Sendable (Output.Type, JSONSchema) throws -> String)?
+    jsonSchema: JSONSchema
   ) throws -> [ChatMessage] {
-    let prompt =
-      try jsonSystemPrompt?(Output.self, jsonSchema) ?? self.jsonSchemaPrompt(for: jsonSchema)
-    if let firstSystemIndex = messages.firstIndex(where: { $0.role == .system }) {
+    let prompt = try self.jsonSchemaPrompt(for: jsonSchema)
+
+    if let lastUserIndex = messages.lastIndex(where: { $0.role == .user }) {
       var messages = messages
-      messages[firstSystemIndex].content += "\n\n\(prompt)"
+      messages[lastUserIndex].content += "\n\n\(prompt)"
       return messages
     }
 
     var messages = messages
-    messages.insert(.system(prompt), at: 0)
+    messages.append(.user(prompt))
     return messages
   }
 

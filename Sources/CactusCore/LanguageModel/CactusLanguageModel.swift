@@ -595,6 +595,15 @@ extension CactusLanguageModel {
     }
   }
 
+  /// A completed chat turn with canonical continuation messages.
+  public struct CompletedChatTurn: Hashable, Sendable {
+    /// The raw completion returned by the model.
+    public let completion: ChatCompletion
+
+    /// Canonical conversation messages that include the generated assistant turn.
+    public let messages: [ChatMessage]
+  }
+
   /// An error thrown when trying to generate a ``ChatCompletion``.
   public enum ChatCompletionError: Error, Hashable {
     /// The buffer size for the completion was too small.
@@ -604,7 +613,24 @@ extension CactusLanguageModel {
     case generation(message: String?)
   }
 
-  /// Generates a ``ChatCompletion``.
+  /// Generates a completed chat turn with reusable continuation messages.
+  ///
+  /// This API returns both the completion payload and a canonical `messages` array that includes
+  /// the generated assistant response, making it suitable for direct reuse in subsequent calls.
+  ///
+  /// ```swift
+  /// let first = try model.complete(
+  ///   messages: [
+  ///     .system("You are a concise assistant."),
+  ///     .user("Summarize Swift actors in one sentence.")
+  ///   ]
+  /// )
+  ///
+  /// let second = try model.complete(
+  ///   messages: first.messages + [.user("Now make it even shorter.")]
+  /// )
+  /// print(second.completion.response)
+  /// ```
   ///
   /// - Parameters:
   ///   - messages: The list of ``ChatMessage`` instances.
@@ -612,15 +638,15 @@ extension CactusLanguageModel {
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
-  /// - Returns: A ``ChatCompletion``.
-  public func chatCompletion(
+  /// - Returns: A ``CompletedChatTurn``.
+  public func complete(
     messages: [ChatMessage],
     options: ChatCompletion.Options? = nil,
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String) -> Void = { _ in }
-  ) throws -> ChatCompletion {
-    try self.chatCompletion(
+  ) throws -> CompletedChatTurn {
+    try self.complete(
       messages: messages,
       options: options,
       maxBufferSize: maxBufferSize,
@@ -630,7 +656,19 @@ extension CactusLanguageModel {
     }
   }
 
-  /// Generates a ``ChatCompletion``.
+  /// Generates a completed chat turn with reusable continuation messages.
+  ///
+  /// ```swift
+  /// let turn = try model.complete(
+  ///   messages: [
+  ///     .system("You are a concise assistant."),
+  ///     .user("List three Swift concurrency features.")
+  ///   ]
+  /// ) { token, tokenID in
+  ///   print(tokenID, token)
+  /// }
+  /// print(turn.messages.last?.content ?? "")
+  /// ```
   ///
   /// - Parameters:
   ///   - messages: The list of ``ChatMessage`` instances.
@@ -638,14 +676,14 @@ extension CactusLanguageModel {
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
-  /// - Returns: A ``ChatCompletion``.
-  public func chatCompletion(
+  /// - Returns: A ``CompletedChatTurn``.
+  public func complete(
     messages: [ChatMessage],
     options: ChatCompletion.Options? = nil,
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String, UInt32) -> Void
-  ) throws -> ChatCompletion {
+  ) throws -> CompletedChatTurn {
     let options =
       options ?? ChatCompletion.Options(modelType: self.configurationFile.modelType ?? .qwen)
     let maxBufferSize = maxBufferSize ?? 8192
@@ -662,12 +700,16 @@ extension CactusLanguageModel {
       ? nil
       : String(decoding: try ffiEncoder.encode(functions), as: UTF8.self)
 
-    let messages = messages.map { FFIMessage(message: $0) }
+    let ffiMessages = messages.map { FFIMessage(message: $0) }
+    var streamedResponse = ""
 
-    let result = try withTokenCallback(onToken) { userData, onToken in
+    let result = try withTokenCallback { token, tokenID in
+      streamedResponse += token
+      onToken(token, tokenID)
+    } perform: { userData, onToken in
       cactus_complete(
         self.model,
-        String(decoding: try ffiEncoder.encode(messages), as: UTF8.self),
+        String(decoding: try ffiEncoder.encode(ffiMessages), as: UTF8.self),
         buffer,
         maxBufferSize * MemoryLayout<CChar>.stride,
         String(decoding: try ffiEncoder.encode(options), as: UTF8.self),
@@ -693,7 +735,77 @@ extension CactusLanguageModel {
       throw ChatCompletionError.generation(message: response?.error)
     }
     let completion = try ffiDecoder.decode(ChatCompletion.self, from: responseData)
-    return completion
+    var completedMessages = messages
+    completedMessages.append(
+      .assistant(
+        completion.response.count > streamedResponse.count ? completion.response : streamedResponse
+      )
+    )
+    return CompletedChatTurn(completion: completion, messages: completedMessages)
+  }
+
+  /// Generates a ``ChatCompletion``.
+  ///
+  /// - Parameters:
+  ///   - messages: The list of ``ChatMessage`` instances.
+  ///   - options: The ``ChatCompletion/Options``.
+  ///   - maxBufferSize: The maximum buffer size to store the completion.
+  ///   - functions: A list of ``FunctionDefinition`` instances.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Returns: A ``ChatCompletion``.
+  @available(
+    *,
+    deprecated,
+    message:
+      "Prefer complete(...) to receive canonical continuation messages for better cache reuse."
+  )
+  public func chatCompletion(
+    messages: [ChatMessage],
+    options: ChatCompletion.Options? = nil,
+    maxBufferSize: Int? = nil,
+    functions: [FunctionDefinition] = [],
+    onToken: (String) -> Void = { _ in }
+  ) throws -> ChatCompletion {
+    try self.complete(
+      messages: messages,
+      options: options,
+      maxBufferSize: maxBufferSize,
+      functions: functions,
+      onToken: onToken
+    )
+    .completion
+  }
+
+  /// Generates a ``ChatCompletion``.
+  ///
+  /// - Parameters:
+  ///   - messages: The list of ``ChatMessage`` instances.
+  ///   - options: The ``ChatCompletion/Options``.
+  ///   - maxBufferSize: The maximum buffer size to store the completion.
+  ///   - functions: A list of ``FunctionDefinition`` instances.
+  ///   - onToken: A callback invoked whenever a token is generated.
+  /// - Returns: A ``ChatCompletion``.
+  @available(
+    *,
+    deprecated,
+    message:
+      "Prefer complete(...) to receive canonical continuation messages for better cache reuse."
+  )
+  public func chatCompletion(
+    messages: [ChatMessage],
+    options: ChatCompletion.Options? = nil,
+    maxBufferSize: Int? = nil,
+    functions: [FunctionDefinition] = [],
+    onToken: (String, UInt32) -> Void
+  ) throws -> ChatCompletion {
+    try self.complete(
+      messages: messages,
+      options: options,
+      maxBufferSize: maxBufferSize,
+      functions: functions,
+      onToken: onToken
+    )
+    .completion
   }
 
   private struct FFIFunctionDefinition: Codable {
