@@ -218,7 +218,7 @@ struct `CactusLanguageModel tests` {
     let model = try CactusLanguageModel(from: modelURL)
 
     var stream = ""
-    let completion = try model.chatCompletion(
+    let completion = try model.complete(
       messages: [
         .system("You are a philosopher, philosophize about any questions you are asked."),
         .user("What is the meaning of life?")
@@ -226,11 +226,12 @@ struct `CactusLanguageModel tests` {
       options: CactusLanguageModel.ChatCompletion.Options(
         maxTokens: 1024,
         modelType: model.configurationFile.modelType ?? .qwen
-      )
-    ) { token in
-      stream.append(token)
-    }
-    expectNoDifference(stream, completion.cleanedResponse)
+      ),
+      onToken: { token, _ in
+        stream.append(token)
+      }
+    )
+    expectNoDifference(stream, completion.completion.cleanedResponse)
   }
 
   @Test
@@ -331,7 +332,7 @@ struct `CactusLanguageModel tests` {
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.ChatCompletionError.bufferSizeTooSmall) {
-      try model.chatCompletion(
+      try model.complete(
         messages: [
           CactusLanguageModel.ChatMessage(
             role: .system,
@@ -363,7 +364,7 @@ struct `CactusLanguageModel tests` {
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.ChatCompletionError.bufferSizeTooSmall) {
-      try model.chatCompletion(
+      try model.complete(
         messages: [
           .system("You are a philosopher, philosophize about any questions you are asked."),
           .user("What is the meaning of life?")
@@ -543,13 +544,13 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     for request in modelRequests {
       let modelURL = try await CactusLanguageModel.testModelURL(request: request)
       let model = try CactusLanguageModel(from: modelURL)
-      let completion = try model.chatCompletion(
+      let completed = try model.complete(
         messages: [
           .system("You are a philosopher, philosophize about any questions you are asked."),
           .user("What is the meaning of life?")
         ]
       )
-      completions.append(Completion(slug: request.slug, completion: completion))
+      completions.append(Completion(slug: request.slug, completion: completed.completion))
     }
     withExpectedIssue {
       assertSnapshot(of: completions, as: .json, record: true)
@@ -562,7 +563,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     )
     let model = try CactusLanguageModel(from: modelURL)
 
-    let completion = try model.chatCompletion(
+    let completed = try model.complete(
       messages: [
         .system("You are a helpful weather assistant that can use tools."),
         .user("What is the weather in Santa Cruz?")
@@ -590,7 +591,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     )
 
     withExpectedIssue {
-      assertSnapshot(of: completion, as: .json, record: true)
+      assertSnapshot(of: completed.completion, as: .json, record: true)
     }
   }
 
@@ -600,7 +601,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     )
     let model = try CactusLanguageModel(from: modelURL)
 
-    let completion = try model.chatCompletion(
+    let completed = try model.complete(
       messages: [
         .system("You are a helpful weather assistant that can use tools."),
         .user("What is the weather and population in Berkeley?")
@@ -639,7 +640,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     )
 
     withExpectedIssue {
-      assertSnapshot(of: completion, as: .json, record: true)
+      assertSnapshot(of: completed.completion, as: .json, record: true)
     }
   }
 
@@ -649,7 +650,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     )
     let model = try CactusLanguageModel(from: url)
 
-    let completion = try model.chatCompletion(
+    let completed = try model.complete(
       messages: [
         .system(
           """
@@ -662,7 +663,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     )
 
     withExpectedIssue {
-      assertSnapshot(of: completion, as: .json, record: true)
+      assertSnapshot(of: completed.completion, as: .json, record: true)
     }
   }
 

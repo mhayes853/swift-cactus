@@ -1,15 +1,15 @@
 {
-  "confidence" : 0.8793,
-  "decode_tokens" : 75,
-  "decode_tps" : 91.99,
+  "confidence" : 0.8643,
+  "decode_tokens" : 51,
+  "decode_tps" : 98.87,
   "function_calls" : [
 
   ],
   "prefill_tokens" : 314,
-  "prefill_tps" : 117.53,
-  "ram_usage_mb" : 1065.74,
-  "response" : "The guy in the first image is smiling and holding a book, which suggests he might be excited or enthusiastic about what he's about to read. He also has a backpack on his shoulder, indicating that he might be on his way to school or another form of education. The presence of the book could imply that he is preparing for an exam or studying for an upcoming test.",
-  "time_to_first_token_ms" : 2671.55,
-  "total_time_ms" : 3475.98,
-  "total_tokens" : 389
+  "prefill_tps" : 121.39,
+  "ram_usage_mb" : 982.66,
+  "response" : "The guy in the first image is smiling and holding a book, which suggests he might be excited or happy about something. It's possible that he is preparing for an exam or a significant event, as the presence of books often symbolizes learning and preparation.",
+  "time_to_first_token_ms" : 2586.6,
+  "total_time_ms" : 3092.34,
+  "total_tokens" : 365
 }
