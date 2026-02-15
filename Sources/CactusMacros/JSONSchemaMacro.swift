@@ -271,14 +271,14 @@ extension JSONSchemaMacro {
     let schemaExpression: String?
   }
 
-  private enum SchemaSpecifier {
+  private indirect enum SchemaSpecifier {
     case inferred
     case string(String?)
     case number(String?)
     case integer(String?)
     case boolean
-    case array(String?)
-    case object(String?)
+    case array(arguments: String?, itemSchema: SchemaSpecifier?)
+    case object(arguments: String?, additionalPropertiesSchema: SchemaSpecifier?)
     case custom(String)
   }
 
@@ -490,7 +490,7 @@ extension JSONSchemaMacro {
         return nil
       }
       return Self.semanticSchemaExpression(for: .boolean, arguments: nil, isOptional: parsedType.isOptional)
-    case .array(let arguments):
+    case .array(let arguments, let itemSchema):
       guard parsedType.isArray, let elementTypeName = parsedType.arrayElementTypeName else {
         Self.diagnoseInvalidContainerSchemaType(
           in: propertySelection.attribute,
@@ -502,6 +502,19 @@ extension JSONSchemaMacro {
         )
         return nil
       }
+      if let itemSchema {
+        guard
+          Self.validateSchemaSpecifier(
+            itemSchema,
+            against: elementTypeName,
+            propertyName: propertyName,
+            attribute: propertySelection.attribute,
+            context: context
+          )
+        else {
+          return nil
+        }
+      }
       let arrayArguments = Self.arraySchemaArguments(
         rawArguments: arguments,
         inferredElementTypeName: elementTypeName
@@ -509,7 +522,7 @@ extension JSONSchemaMacro {
       return parsedType.isOptional
         ? ".union(array: .array(\(arrayArguments)), null: true)"
         : ".array(\(arrayArguments))"
-    case .object(let arguments):
+    case .object(let arguments, let additionalPropertiesSchema):
       guard parsedType.isDictionary else {
         Self.diagnoseInvalidContainerSchemaType(
           in: propertySelection.attribute,
@@ -530,6 +543,19 @@ extension JSONSchemaMacro {
         )
         return nil
       }
+      if let additionalPropertiesSchema, let valueTypeName = parsedType.dictionaryValueTypeName {
+        guard
+          Self.validateSchemaSpecifier(
+            additionalPropertiesSchema,
+            against: valueTypeName,
+            propertyName: propertyName,
+            attribute: propertySelection.attribute,
+            context: context
+          )
+        else {
+          return nil
+        }
+      }
       let objectArguments = Self.objectSchemaArguments(
         rawArguments: arguments,
         inferredValueTypeName: parsedType.dictionaryValueTypeName
@@ -539,6 +565,128 @@ extension JSONSchemaMacro {
         : ".object(\(objectArguments))"
     case .custom(let expression):
       return expression
+    }
+  }
+
+  private static func validateSchemaSpecifier(
+    _ schemaSpecifier: SchemaSpecifier,
+    against typeName: String,
+    propertyName: String,
+    attribute: AttributeSyntax,
+    context: some MacroExpansionContext
+  ) -> Bool {
+    let parsedType = Self.parseTypeName(typeName)
+
+    switch schemaSpecifier {
+    case .inferred, .custom:
+      return true
+    case .string:
+      guard Self.isValid(type: parsedType.base, for: .string), !parsedType.isArray, !parsedType.isDictionary
+      else {
+        Self.diagnoseInvalidSemanticSchemaType(
+          in: attribute,
+          propertyName: propertyName,
+          typeName: typeName,
+          expected: "String",
+          kind: ".string",
+          context: context
+        )
+        return false
+      }
+      return true
+    case .number:
+      guard Self.isValid(type: parsedType.base, for: .number), !parsedType.isArray, !parsedType.isDictionary
+      else {
+        Self.diagnoseInvalidSemanticSchemaType(
+          in: attribute,
+          propertyName: propertyName,
+          typeName: typeName,
+          expected: "number (Double, Float, CGFloat, Decimal)",
+          kind: ".number",
+          context: context
+        )
+        return false
+      }
+      return true
+    case .integer:
+      guard Self.isValid(type: parsedType.base, for: .integer), !parsedType.isArray, !parsedType.isDictionary
+      else {
+        Self.diagnoseInvalidSemanticSchemaType(
+          in: attribute,
+          propertyName: propertyName,
+          typeName: typeName,
+          expected: "integer (Int, Int8, Int16, Int32, Int64, UInt, UInt8, UInt16, UInt32, UInt64, Int128, UInt128)",
+          kind: ".integer",
+          context: context
+        )
+        return false
+      }
+      return true
+    case .boolean:
+      guard Self.isValid(type: parsedType.base, for: .boolean), !parsedType.isArray, !parsedType.isDictionary
+      else {
+        Self.diagnoseInvalidSemanticSchemaType(
+          in: attribute,
+          propertyName: propertyName,
+          typeName: typeName,
+          expected: "Bool",
+          kind: ".boolean",
+          context: context
+        )
+        return false
+      }
+      return true
+    case .array(_, let itemSchema):
+      guard parsedType.isArray, let elementTypeName = parsedType.arrayElementTypeName else {
+        Self.diagnoseInvalidContainerSchemaType(
+          in: attribute,
+          propertyName: propertyName,
+          typeName: typeName,
+          expected: "array",
+          kind: ".array",
+          context: context
+        )
+        return false
+      }
+      guard let itemSchema else { return true }
+      return Self.validateSchemaSpecifier(
+        itemSchema,
+        against: elementTypeName,
+        propertyName: propertyName,
+        attribute: attribute,
+        context: context
+      )
+    case .object(_, let additionalPropertiesSchema):
+      guard parsedType.isDictionary else {
+        Self.diagnoseInvalidContainerSchemaType(
+          in: attribute,
+          propertyName: propertyName,
+          typeName: typeName,
+          expected: "dictionary",
+          kind: ".object",
+          context: context
+        )
+        return false
+      }
+      guard parsedType.dictionaryKeyBaseType == "String" else {
+        Self.diagnoseDictionarySchemaRequiresStringKeys(
+          in: attribute,
+          propertyName: propertyName,
+          typeName: typeName,
+          context: context
+        )
+        return false
+      }
+      guard let additionalPropertiesSchema, let valueTypeName = parsedType.dictionaryValueTypeName else {
+        return true
+      }
+      return Self.validateSchemaSpecifier(
+        additionalPropertiesSchema,
+        against: valueTypeName,
+        propertyName: propertyName,
+        attribute: attribute,
+        context: context
+      )
     }
   }
 
@@ -832,9 +980,27 @@ extension JSONSchemaMacro {
     case "integer":
       return .integer(arguments.isEmpty ? nil : arguments)
     case "array":
-      return .array(arguments.isEmpty ? nil : arguments)
+      if let functionCall = expression.as(FunctionCallExprSyntax.self) {
+        let serializedArguments = Self.serializedSchemaArguments(
+          from: functionCall.arguments,
+          convertRegexPatternLiteralToString: false
+        )
+        let itemSchema = Self.arrayItemSchemaSpecifier(from: functionCall.arguments)
+        return .array(arguments: serializedArguments, itemSchema: itemSchema)
+      }
+      return .array(arguments: arguments.isEmpty ? nil : arguments, itemSchema: nil)
     case "object":
-      return .object(arguments.isEmpty ? nil : arguments)
+      if let functionCall = expression.as(FunctionCallExprSyntax.self) {
+        let serializedArguments = Self.serializedSchemaArguments(
+          from: functionCall.arguments,
+          convertRegexPatternLiteralToString: false
+        )
+        let additionalPropertiesSchema = Self.objectAdditionalPropertiesSchemaSpecifier(
+          from: functionCall.arguments
+        )
+        return .object(arguments: serializedArguments, additionalPropertiesSchema: additionalPropertiesSchema)
+      }
+      return .object(arguments: arguments.isEmpty ? nil : arguments, additionalPropertiesSchema: nil)
     case "custom":
       guard !arguments.isEmpty else { return nil }
       return .custom(arguments)
@@ -845,6 +1011,30 @@ extension JSONSchemaMacro {
     default:
       return nil
     }
+  }
+
+  private static func arrayItemSchemaSpecifier(
+    from arguments: LabeledExprListSyntax
+  ) -> SchemaSpecifier? {
+    guard let itemsArgument = arguments.first(where: { $0.label?.text == "items" }) else {
+      return nil
+    }
+    guard let functionCall = itemsArgument.expression.as(FunctionCallExprSyntax.self) else {
+      return nil
+    }
+    let calledName = functionCall.calledExpression.trimmedDescription.split(separator: ".").last.map(String.init)
+    guard calledName == "schemaForAll", let first = functionCall.arguments.first else { return nil }
+    return Self.parseSchemaSpecifier(from: first.expression)
+  }
+
+  private static func objectAdditionalPropertiesSchemaSpecifier(
+    from arguments: LabeledExprListSyntax
+  ) -> SchemaSpecifier? {
+    guard let additionalPropertiesArgument = arguments.first(where: { $0.label?.text == "additionalProperties" })
+    else {
+      return nil
+    }
+    return Self.parseSchemaSpecifier(from: additionalPropertiesArgument.expression)
   }
 
   private static func serializedSchemaArguments(

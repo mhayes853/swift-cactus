@@ -455,5 +455,209 @@ extension BaseTestSuite {
         """
       }
     }
+
+    @Test
+    func `Rejects Array String Schema For Int Elements`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.array(items: .schemaForAll(.string(minLength: 1))))
+          var values: [Int]
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.array(items: .schemaForAll(.string(minLength: 1))))
+          ┬───────────────────────────────────────────────────────────────────────
+          ╰─ 🛑 @JSONSchemaProperty(.string) can only be applied to properties of type String. Found 'values: Int'.
+          var values: [Int]
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Rejects Object Integer Schema For String Values`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.object(additionalProperties: .integer(minimum: 0)))
+          var map: [String: String]
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.object(additionalProperties: .integer(minimum: 0)))
+          ┬───────────────────────────────────────────────────────────────────────
+          ╰─ 🛑 @JSONSchemaProperty(.integer) can only be applied to properties of type integer (Int, Int8, Int16, Int32, Int64, UInt, UInt8, UInt16, UInt32, UInt64, Int128, UInt128). Found 'map: String'.
+          var map: [String: String]
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Allows Nested Array Schema At Second Level`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.array(items: .schemaForAll(.array(items: .schemaForAll(.string(minLength: 1))))))
+          var values: [[String]]
+        }
+        """
+      } expansion: {
+        """
+        struct Payload {
+          var values: [[String]]
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "values": .array(items: .schemaForAll(.array(items: .schemaForAll(.string(minLength: 1)))))
+                ],
+                required: ["values"]
+              )
+            )
+          }
+        }
+
+        extension Payload: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Rejects Nested Array Schema At Second Level`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.array(items: .schemaForAll(.array(items: .schemaForAll(.string(minLength: 1))))))
+          var values: [[Int]]
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.array(items: .schemaForAll(.array(items: .schemaForAll(.string(minLength: 1))))))
+          ┬─────────────────────────────────────────────────────────────────────────────────────────────────────
+          ╰─ 🛑 @JSONSchemaProperty(.string) can only be applied to properties of type String. Found 'values: Int'.
+          var values: [[Int]]
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Allows Deep DictionaryArrayDictionary`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.object(additionalProperties: .object(additionalProperties: .object(additionalProperties: .integer(minimum: 0)))))
+          var payload: [String: [String: [String: Int]]]
+        }
+        """
+      } expansion: {
+        """
+        struct Payload {
+          var payload: [String: [String: [String: Int]]]
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "payload": .object(additionalProperties: .object(additionalProperties: .object(additionalProperties: .integer(minimum: 0))))
+                ],
+                required: ["payload"]
+              )
+            )
+          }
+        }
+
+        extension Payload: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Rejects Deep DictionaryArrayDictionary Mismatch`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.object(additionalProperties: .object(additionalProperties: .object(additionalProperties: .string(minLength: 1)))))
+          var payload: [String: [String: [String: Int]]]
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.object(additionalProperties: .object(additionalProperties: .object(additionalProperties: .string(minLength: 1)))))
+          ┬──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+          ╰─ 🛑 @JSONSchemaProperty(.string) can only be applied to properties of type String. Found 'payload: Int'.
+          var payload: [String: [String: [String: Int]]]
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Rejects Nested Dictionary With Non String Inner Keys`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.object(additionalProperties: .object(additionalProperties: .integer(minimum: 0))))
+          var payload: [String: [Int: Int]]
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.object(additionalProperties: .object(additionalProperties: .integer(minimum: 0))))
+          ┬──────────────────────────────────────────────────────────────────────────────────────────────────────
+          ╰─ 🛑 @JSONSchemaProperty(.object) can only be applied to dictionary properties with String keys. Found 'payload: [Int:Int]'.
+          var payload: [String: [Int: Int]]
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Rejects Deep TripleArray Primitive Mismatch`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.array(items: .schemaForAll(.array(items: .schemaForAll(.array(items: .schemaForAll(.string(minLength: 1))))))))
+          var values: [[[Int]]]
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.array(items: .schemaForAll(.array(items: .schemaForAll(.array(items: .schemaForAll(.string(minLength: 1))))))))
+          ┬───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+          ╰─ 🛑 @JSONSchemaProperty(.string) can only be applied to properties of type String. Found 'values: Int'.
+          var values: [[[Int]]]
+        }
+        """
+      }
+    }
   }
 }
