@@ -258,5 +258,202 @@ extension BaseTestSuite {
         """
       }
     }
+
+    @Test
+    func `Rejects String Schema On Non String Property`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.string(minLength: 1))
+          var age: Int
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.string(minLength: 1))
+          ┬─────────────────────────────────────────
+          ╰─ 🛑 @JSONSchemaProperty(.string) can only be applied to properties of type String. Found 'age: Int'.
+          var age: Int
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Rejects Number Schema On Non Number Property`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.number(minimum: 0))
+          var slug: String
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.number(minimum: 0))
+          ┬───────────────────────────────────────
+          ╰─ 🛑 @JSONSchemaProperty(.number) can only be applied to properties of type number (Double, Float, CGFloat, Decimal). Found 'slug: String'.
+          var slug: String
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Rejects Integer Schema On Non Integer Property`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.integer(minimum: 1))
+          var price: Double
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.integer(minimum: 1))
+          ┬────────────────────────────────────────
+          ╰─ 🛑 @JSONSchemaProperty(.integer) can only be applied to properties of type integer (Int, Int8, Int16, Int32, Int64, UInt, UInt8, UInt16, UInt32, UInt64, Int128, UInt128). Found 'price: Double'.
+          var price: Double
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Rejects Boolean Schema On Non Boolean Property`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.boolean)
+          var title: String
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.boolean)
+          ┬────────────────────────────
+          ╰─ 🛑 @JSONSchemaProperty(.boolean) can only be applied to properties of type Bool. Found 'title: String'.
+          var title: String
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Rejects Array Schema On Non Array Property`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.array(minItems: 1))
+          var name: String
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.array(minItems: 1))
+          ┬───────────────────────────────────────
+          ╰─ 🛑 @JSONSchemaProperty(.array) can only be applied to array properties. Found 'name: String'.
+          var name: String
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Rejects Object Schema On Non Dictionary Property`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.object(minProperties: 1))
+          var name: String
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.object(minProperties: 1))
+          ┬─────────────────────────────────────────────
+          ╰─ 🛑 @JSONSchemaProperty(.object) can only be applied to dictionary properties. Found 'name: String'.
+          var name: String
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Rejects Object Schema On Non String Key Dictionary`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.object(minProperties: 1))
+          var byID: [Int: String]
+        }
+        """
+      } diagnostics: {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.object(minProperties: 1))
+          ┬─────────────────────────────────────────────
+          ╰─ 🛑 @JSONSchemaProperty(.object) can only be applied to dictionary properties with String keys. Found 'byID: [Int: String]'.
+          var byID: [Int: String]
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Allows Primitive Schemas On Optional Counterparts`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(.string(minLength: 1))
+          var title: String?
+          @JSONSchemaProperty(.integer(minimum: 1))
+          var count: Int?
+        }
+        """
+      } expansion: {
+        """
+        struct Payload {
+          var title: String?
+          var count: Int?
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "title": .union(string: .string(minLength: 1), null: true),
+                    "count": .union(integer: .integer(minimum: 1), null: true)
+                ]
+              )
+            )
+          }
+        }
+
+        extension Payload: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
   }
 }
