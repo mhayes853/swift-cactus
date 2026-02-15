@@ -137,17 +137,46 @@ extension CactusLanguageModel {
     case missingJSONPayload
   }
 
-  // MARK: - Dynamic JSON Chat Completion (any Decodable with required jsonSchema)
-
-  /// Generates a ``JSONChatCompletion`` with a required JSON schema parameter.
+  /// Generates a ``JSONChatCompletion`` with a required schema parameter.
+  ///
+  /// Use this method when you want to generate structured JSON output for any `Decodable` type,
+  /// but need to provide the JSON schema explicitly at the callsite.
   ///
   /// The output may fail to parse when the model emits function calls instead of final content, or
   /// when the final response does not contain valid JSON matching the target schema.
   ///
+  /// ```swift
+  /// struct Recipe: Codable {
+  ///   var title: String
+  ///   var servings: Int
+  /// }
+  ///
+  /// let schema = JSONSchema.object(
+  ///   properties: [
+  ///     "title": .string(),
+  ///     "servings": .integer(minimum: 1)
+  ///   ],
+  ///   required: ["title", "servings"]
+  /// )
+  ///
+  /// let completion = try model.jsonChatCompletion(
+  ///   messages: [
+  ///     .system("You are a helpful cooking assistant."),
+  ///     .user("Create a recipe with a title and servings.")
+  ///   ],
+  ///   as: Recipe.self,
+  ///   schema: schema,
+  ///   options: CactusLanguageModel.JSONChatCompletionOptions(
+  ///     chatCompletionOptions: .init(modelType: model.configurationFile.modelType ?? .qwen)
+  ///   )
+  /// )
+  /// print(try completion.output.get())
+  /// ```
+  ///
   /// - Parameters:
   ///   - messages: The list of ``ChatMessage`` instances.
   ///   - as: The output type to decode from the JSON payload.
-  ///   - jsonSchema: The JSON schema to validate against and use for the system prompt.
+  ///   - schema: The JSON schema to validate against and use for the system prompt.
   ///   - options: The ``JSONChatCompletionOptions``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
@@ -156,7 +185,7 @@ extension CactusLanguageModel {
   public func jsonChatCompletion<Output: Decodable>(
     messages: [ChatMessage],
     as outputType: Output.Type,
-    jsonSchema: JSONSchema,
+    schema: JSONSchema,
     options: JSONChatCompletionOptions<Output>? = nil,
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
@@ -165,7 +194,7 @@ extension CactusLanguageModel {
     try self.jsonChatCompletion(
       messages: messages,
       as: outputType,
-      jsonSchema: jsonSchema,
+      schema: schema,
       options: options,
       maxBufferSize: maxBufferSize,
       functions: functions
@@ -174,15 +203,46 @@ extension CactusLanguageModel {
     }
   }
 
-  /// Generates a ``JSONChatCompletion`` with a required JSON schema parameter.
+  /// Generates a ``JSONChatCompletion`` with a required schema parameter.
+  ///
+  /// Use this method when you want to generate structured JSON output for any `Decodable` type,
+  /// but need to provide the JSON schema explicitly at the callsite.
   ///
   /// The output may fail to parse when the model emits function calls instead of final content, or
   /// when the final response does not contain valid JSON matching the target schema.
   ///
+  /// ```swift
+  /// struct Recipe: Codable {
+  ///   var title: String
+  ///   var servings: Int
+  /// }
+  ///
+  /// let schema = JSONSchema.object(
+  ///   properties: [
+  ///     "title": .string(),
+  ///     "servings": .integer(minimum: 1)
+  ///   ],
+  ///   required: ["title", "servings"]
+  /// )
+  ///
+  /// let completion = try model.jsonChatCompletion(
+  ///   messages: [
+  ///     .system("You are a helpful cooking assistant."),
+  ///     .user("Create a recipe with a title and servings.")
+  ///   ],
+  ///   as: Recipe.self,
+  ///   schema: schema,
+  ///   options: CactusLanguageModel.JSONChatCompletionOptions(
+  ///     chatCompletionOptions: .init(modelType: model.configurationFile.modelType ?? .qwen)
+  ///   )
+  /// )
+  /// print(try completion.output.get())
+  /// ```
+  ///
   /// - Parameters:
   ///   - messages: The list of ``ChatMessage`` instances.
   ///   - as: The output type to decode from the JSON payload.
-  ///   - jsonSchema: The JSON schema to validate against and use for the system prompt.
+  ///   - schema: The JSON schema to validate against and use for the system prompt.
   ///   - options: The ``JSONChatCompletionOptions``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
@@ -191,7 +251,7 @@ extension CactusLanguageModel {
   public func jsonChatCompletion<Output: Decodable>(
     messages: [ChatMessage],
     as outputType: Output.Type,
-    jsonSchema: JSONSchema,
+    schema: JSONSchema,
     options: JSONChatCompletionOptions<Output>? = nil,
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
@@ -202,7 +262,7 @@ extension CactusLanguageModel {
     let completion = try self.chatCompletion(
       messages: self.messagesWithJSONSchemaPrompt(
         messages: messages,
-        jsonSchema: jsonSchema,
+        jsonSchema: schema,
         jsonSystemPrompt: jsonOutputOptions.jsonSystemPrompt
       ),
       options: jsonOutputOptions.chatCompletionOptions,
@@ -218,7 +278,7 @@ extension CactusLanguageModel {
         try self.resolveJSONOutput(
           from: completion,
           filteredResponse: accumulator.response,
-          jsonSchema: jsonSchema,
+          jsonSchema: schema,
           validator: jsonOutputOptions.validator,
           decoder: jsonOutputOptions.decoder
         )
@@ -227,12 +287,51 @@ extension CactusLanguageModel {
     )
   }
 
-  /// Generates a streamable ``JSONChatCompletion`` with a required JSON schema parameter.
+  /// Generates a streamable ``JSONChatCompletion`` with a required schema parameter.
+  ///
+  /// Use this method when you want to generate streaming structured JSON output for any
+  /// `Decodable & StreamParseable` type, but need to provide the JSON schema explicitly
+  /// at the callsite.
+  ///
+  /// ```swift
+  /// @StreamParseable
+  /// struct Recipe: Codable {
+  ///   var title: String
+  ///   var servings: Int
+  /// }
+  ///
+  /// extension Recipe.Partial: Encodable {}
+  ///
+  /// let schema = JSONSchema.object(
+  ///   properties: [
+  ///     "title": .string(),
+  ///     "servings": .integer(minimum: 1)
+  ///   ],
+  ///   required: ["title", "servings"]
+  /// )
+  ///
+  /// let completion = try model.jsonStreamableChatCompletion(
+  ///   messages: [
+  ///     .system("You are a helpful cooking assistant."),
+  ///     .user("Create a recipe with a title and servings.")
+  ///   ],
+  ///   as: Recipe.self,
+  ///   schema: schema,
+  ///   options: CactusLanguageModel.JSONChatCompletionOptions(
+  ///     chatCompletionOptions: .init(modelType: model.configurationFile.modelType ?? .qwen)
+  ///   )
+  /// ) { _, _, partial in
+  ///   if let partial {
+  ///     print("\nPartial: \(partial)")
+  ///   }
+  /// }
+  /// print(try completion.output.get())
+  /// ```
   ///
   /// - Parameters:
   ///   - messages: The list of ``ChatMessage`` instances.
   ///   - as: The output type to decode from the JSON payload.
-  ///   - jsonSchema: The JSON schema to validate against and use for the system prompt.
+  ///   - schema: The JSON schema to validate against and use for the system prompt.
   ///   - configuration: The ``JSONStreamParserConfiguration``.
   ///   - options: The ``JSONChatCompletionOptions``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
@@ -242,7 +341,7 @@ extension CactusLanguageModel {
   public func jsonStreamableChatCompletion<Output: Decodable & StreamParseable>(
     messages: [ChatMessage],
     as outputType: Output.Type,
-    jsonSchema: JSONSchema,
+    schema: JSONSchema,
     configuration: JSONStreamParserConfiguration = JSONStreamParserConfiguration(),
     options: JSONChatCompletionOptions<Output>? = nil,
     maxBufferSize: Int? = nil,
@@ -252,7 +351,7 @@ extension CactusLanguageModel {
     try self.jsonStreamableChatCompletion(
       messages: messages,
       as: outputType,
-      jsonSchema: jsonSchema,
+      schema: schema,
       configuration: configuration,
       options: options,
       maxBufferSize: maxBufferSize,
@@ -262,12 +361,51 @@ extension CactusLanguageModel {
     }
   }
 
-  /// Generates a streamable ``JSONChatCompletion`` with a required JSON schema parameter.
+  /// Generates a streamable ``JSONChatCompletion`` with a required schema parameter.
+  ///
+  /// Use this method when you want to generate streaming structured JSON output for any
+  /// `Decodable & StreamParseable` type, but need to provide the JSON schema explicitly
+  /// at the callsite.
+  ///
+  /// ```swift
+  /// @StreamParseable
+  /// struct Recipe: Codable {
+  ///   var title: String
+  ///   var servings: Int
+  /// }
+  ///
+  /// extension Recipe.Partial: Encodable {}
+  ///
+  /// let schema = JSONSchema.object(
+  ///   properties: [
+  ///     "title": .string(),
+  ///     "servings": .integer(minimum: 1)
+  ///   ],
+  ///   required: ["title", "servings"]
+  /// )
+  ///
+  /// let completion = try model.jsonStreamableChatCompletion(
+  ///   messages: [
+  ///     .system("You are a helpful cooking assistant."),
+  ///     .user("Create a recipe with a title and servings.")
+  ///   ],
+  ///   as: Recipe.self,
+  ///   schema: schema,
+  ///   options: CactusLanguageModel.JSONChatCompletionOptions(
+  ///     chatCompletionOptions: .init(modelType: model.configurationFile.modelType ?? .qwen)
+  ///   )
+  /// ) { _, _, partial in
+  ///   if let partial {
+  ///     print("\nPartial: \(partial)")
+  ///   }
+  /// }
+  /// print(try completion.output.get())
+  /// ```
   ///
   /// - Parameters:
   ///   - messages: The list of ``ChatMessage`` instances.
   ///   - as: The output type to decode from the JSON payload.
-  ///   - jsonSchema: The JSON schema to validate against and use for the system prompt.
+  ///   - schema: The JSON schema to validate against and use for the system prompt.
   ///   - configuration: The ``JSONStreamParserConfiguration``.
   ///   - options: The ``JSONChatCompletionOptions``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
@@ -277,7 +415,7 @@ extension CactusLanguageModel {
   public func jsonStreamableChatCompletion<Output: Decodable & StreamParseable>(
     messages: [ChatMessage],
     as outputType: Output.Type,
-    jsonSchema: JSONSchema,
+    schema: JSONSchema,
     configuration: JSONStreamParserConfiguration = JSONStreamParserConfiguration(),
     options: JSONChatCompletionOptions<Output>? = nil,
     maxBufferSize: Int? = nil,
@@ -293,7 +431,7 @@ extension CactusLanguageModel {
     let completion = try self.streamChatCompletion(
       messages: self.messagesWithJSONSchemaPrompt(
         messages: messages,
-        jsonSchema: jsonSchema,
+        jsonSchema: schema,
         jsonSystemPrompt: jsonOutputOptions.jsonSystemPrompt
       ),
       parser: parser,
@@ -310,7 +448,7 @@ extension CactusLanguageModel {
         try self.resolveJSONOutput(
           from: completion,
           filteredResponse: accumulator.response,
-          jsonSchema: jsonSchema,
+          jsonSchema: schema,
           validator: jsonOutputOptions.validator,
           decoder: jsonOutputOptions.decoder
         )
@@ -415,7 +553,7 @@ extension CactusLanguageModel {
     try self.jsonChatCompletion(
       messages: messages,
       as: outputType,
-      jsonSchema: Output.jsonSchema,
+      schema: Output.jsonSchema,
       options: options,
       maxBufferSize: maxBufferSize,
       functions: functions,
@@ -546,7 +684,7 @@ extension CactusLanguageModel {
     try self.jsonStreamableChatCompletion(
       messages: messages,
       as: outputType,
-      jsonSchema: Output.jsonSchema,
+      schema: Output.jsonSchema,
       configuration: configuration,
       options: options,
       maxBufferSize: maxBufferSize,
@@ -564,7 +702,8 @@ extension CactusLanguageModel {
     jsonSchema: JSONSchema,
     jsonSystemPrompt: (@Sendable (Output.Type, JSONSchema) throws -> String)?
   ) throws -> [ChatMessage] {
-    let prompt = try jsonSystemPrompt?(Output.self, jsonSchema) ?? self.jsonSchemaPrompt(for: jsonSchema)
+    let prompt =
+      try jsonSystemPrompt?(Output.self, jsonSchema) ?? self.jsonSchemaPrompt(for: jsonSchema)
     if let firstSystemIndex = messages.firstIndex(where: { $0.role == .system }) {
       var messages = messages
       messages[firstSystemIndex].content += "\n\n\(prompt)"
