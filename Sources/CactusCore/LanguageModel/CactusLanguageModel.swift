@@ -736,7 +736,11 @@ extension CactusLanguageModel {
     }
     let completion = try ffiDecoder.decode(ChatCompletion.self, from: responseData)
     var completedMessages = messages
-    completedMessages.append(.assistant(streamedResponse))
+    completedMessages.append(
+      .assistant(
+        completion.response.count > streamedResponse.count ? completion.response : streamedResponse
+      )
+    )
     return CompletedChatTurn(completion: completion, messages: completedMessages)
   }
 
