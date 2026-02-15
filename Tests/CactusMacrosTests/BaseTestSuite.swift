@@ -10,13 +10,7 @@ import Testing
     [
       "JSONSchema": JSONSchemaMacro.self,
       "JSONSchemaIgnored": JSONSchemaIgnoredMacro.self,
-      "JSONSchemaKey": JSONSchemaKeyMacro.self,
-      "JSONStringSchema": JSONStringSchemaMacro.self,
-      "JSONNumberSchema": JSONNumberSchemaMacro.self,
-      "JSONIntegerSchema": JSONIntegerSchemaMacro.self,
-      "JSONBooleanSchema": JSONBooleanSchemaMacro.self,
-      "JSONArraySchema": JSONArraySchemaMacro.self,
-      "JSONObjectSchema": JSONObjectSchemaMacro.self
+      "JSONSchemaProperty": JSONSchemaPropertyMacro.self
     ],
     record: .failed
   )
