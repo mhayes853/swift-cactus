@@ -142,6 +142,7 @@ struct `CactusLanguageModelStructuredOutput tests` {
             .user("Provide a recipe object with title and servings.")
           ],
           as: RecipeStreamOutput.self,
+          configuration: configuration,
           options: CactusLanguageModel.JSONChatCompletionOptions(
             chatCompletionOptions: self.chatOptions(for: model)
           )
@@ -190,6 +191,7 @@ struct `CactusLanguageModelStructuredOutput tests` {
             .user("Return a JSON object with title and servings.")
           ],
           as: RecipeStreamOutput.self,
+          configuration: configuration,
           options: CactusLanguageModel.JSONChatCompletionOptions(
             chatCompletionOptions: self.chatOptions(for: model)
           )
@@ -227,6 +229,7 @@ struct `CactusLanguageModelStructuredOutput tests` {
           .user("What is the weather in Santa Cruz?")
         ],
         as: RecipeStreamOutput.self,
+        configuration: configuration,
         options: CactusLanguageModel.JSONChatCompletionOptions(
           chatCompletionOptions: self.chatOptions(for: model, forceFunctions: true)
         ),
@@ -256,6 +259,7 @@ struct `CactusLanguageModelStructuredOutput tests` {
           .user("Generate a recipe JSON object with title and servings.")
         ],
         as: RecipeStreamOutput.self,
+        configuration: configuration,
         options: CactusLanguageModel.JSONChatCompletionOptions(
           chatCompletionOptions: self.chatOptions(for: model)
         )
@@ -317,6 +321,13 @@ struct `CactusLanguageModelStructuredOutput tests` {
     }
   }
 }
+
+private let configuration = JSONStreamParserConfiguration(
+  syntaxOptions: [
+    .comments, .controlCharactersInStrings, .hexNumbers, .leadingDecimalPoint, .leadingPlus,
+    .leadingZeros, .nonFiniteNumbers, .singleQuotedStrings, .trailingCommas, .unquotedKeys
+  ]
+)
 
 @JSONSchema
 private struct RecipeOutput: Codable {
