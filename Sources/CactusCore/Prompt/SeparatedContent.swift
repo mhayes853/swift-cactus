@@ -29,9 +29,15 @@ public struct _SeparatedContent<Content: CactusPromptRepresentable>: CactusPromp
 
   public var promptContent: CactusPromptContent {
     get throws {
-      try _CactusPromptContext.$separator.withValue(self.separator) {
-        try self.content.promptContent
+      let components = try _CactusPromptContext.$separator.withValue(self.separator) {
+        try self.content.promptContent.messageComponents()
       }
+
+      var content = CactusPromptContent(text: components.text)
+      if !components.images.isEmpty {
+        content.join(with: CactusPromptContent(images: components.images), separator: "")
+      }
+      return content
     }
   }
 }

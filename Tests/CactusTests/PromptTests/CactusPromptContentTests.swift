@@ -232,6 +232,21 @@ struct `CactusPromptContent tests` {
     expectNoDifference(components.text, "/no_think\nHello world")
     expectNoDifference(components.images, [])
   }
+
+  @Test
+  func `Separated Content Handles Text Around Image`() throws {
+    let imageURL = temporaryModelDirectory().appendingPathComponent("image.png")
+    let content = CactusPromptContent {
+      "Hello"
+      CactusPromptContent(images: [imageURL])
+      "World"
+    }
+    .separated(by: ", ")
+
+    let components = try content.defaultMessageComponents()
+    expectNoDifference(components.text, "Hello, World")
+    expectNoDifference(components.images, [imageURL])
+  }
 }
 
 extension CactusPromptRepresentable {
