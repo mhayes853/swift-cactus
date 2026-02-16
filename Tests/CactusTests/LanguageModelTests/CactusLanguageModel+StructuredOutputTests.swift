@@ -356,7 +356,7 @@ private let configuration = JSONStreamParserConfiguration(
 private struct RecipeOutput: Codable {
   var title: String
 
-  @JSONIntegerSchema(minimum: 1)
+  @JSONSchemaProperty(.integer(minimum: 1))
   var servings: Int
 }
 
@@ -365,7 +365,7 @@ private struct RecipeOutput: Codable {
 private struct RecipeStreamOutput: Codable {
   var title: String
 
-  @JSONIntegerSchema(minimum: 1)
+  @JSONSchemaProperty(.integer(minimum: 1))
   var servings: Int
 }
 

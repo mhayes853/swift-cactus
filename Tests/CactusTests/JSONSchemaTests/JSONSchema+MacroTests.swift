@@ -162,42 +162,47 @@ struct `JSONSchemaMacro tests` {
 
 @JSONSchema
 private struct SemanticPayload: Codable {
-  @JSONStringSchema(minLength: 3, maxLength: 10, pattern: "^[a-z]+$")
+  @JSONSchemaProperty(.string(minLength: 3, maxLength: 10, pattern: "^[a-z]+$"))
   var name: String
 
-  @JSONIntegerSchema(minimum: 18, maximum: 99)
+  @JSONSchemaProperty(.integer(minimum: 18, maximum: 99))
   var age: Int
 
-  @JSONNumberSchema(minimum: 0, exclusiveMaximum: 1)
+  @JSONSchemaProperty(.number(minimum: 0, exclusiveMaximum: 1))
   var confidence: Double?
 }
 
 @JSONSchema
 private struct ArraySemanticPayload: Codable {
-  @JSONArraySchema(minItems: 1)
+  @JSONSchemaProperty(.array(minItems: 1))
   var tags: [String]
 
-  @JSONArraySchema(minItems: 1, uniqueItems: true)
-  @JSONIntegerSchema(minimum: 0)
+  @JSONSchemaProperty(
+    .array(items: .schemaForAll(.integer(minimum: 0)), minItems: 1, uniqueItems: true)
+  )
   var counts: [Int]
 
-  @JSONNumberSchema(minimum: 0, exclusiveMaximum: 1)
+  @JSONSchemaProperty(
+    .array(items: .schemaForAll(.number(minimum: 0, exclusiveMaximum: 1)))
+  )
   var confidences: [Double]?
 }
 
 @JSONSchema
 private struct JSONObjectSemanticPayload: Codable {
-  @JSONObjectSchema(minProperties: 1, maxProperties: 3)
+  @JSONSchemaProperty(.object(minProperties: 1, maxProperties: 3))
   var metadata: [String: String]
 
-  @JSONObjectSchema(minProperties: 1)
-  @JSONStringSchema(minLength: 3)
+  @JSONSchemaProperty(
+    .object(minProperties: 1, additionalProperties: .string(minLength: 3))
+  )
   var tags: [String: String]
 
-  @JSONObjectSchema(minProperties: 1)
-  @JSONIntegerSchema(minimum: 0)
+  @JSONSchemaProperty(
+    .object(minProperties: 1, additionalProperties: .integer(minimum: 0))
+  )
   var counts: [String: Int]?
 
-  @JSONObjectSchema(additionalProperties: .string(minLength: 3))
+  @JSONSchemaProperty(.object(additionalProperties: .string(minLength: 3)))
   var validatedMetadata: [String: String]
 }
