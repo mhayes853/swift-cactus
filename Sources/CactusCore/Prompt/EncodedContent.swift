@@ -38,9 +38,15 @@ public struct _EncodedContent<
 
   public var promptContent: CactusPromptContent {
     get throws {
-      try _CactusPromptContext.$encoder.withValue(AnyTopLevelEncoder(self.encoder)) {
-        try self.content.promptContent
+      let components = try _CactusPromptContext.$encoder.withValue(AnyTopLevelEncoder(self.encoder)) {
+        try self.content.promptContent.messageComponents()
       }
+
+      var content = CactusPromptContent(text: components.text)
+      if !components.images.isEmpty {
+        content.join(with: CactusPromptContent(images: components.images), separator: "")
+      }
+      return content
     }
   }
 }

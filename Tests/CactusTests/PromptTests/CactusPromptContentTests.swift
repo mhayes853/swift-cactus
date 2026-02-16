@@ -247,6 +247,30 @@ struct `CactusPromptContent tests` {
     expectNoDifference(components.text, "Hello, World")
     expectNoDifference(components.images, [imageURL])
   }
+
+  @Test
+  func `Encoded Content Applied To Prompt Content Uses Custom Encoder`() throws {
+    struct CustomEncoder: TopLevelEncoder {
+      func encode(_ value: some Encodable) throws -> Data {
+        Data("Hello blob!".utf8)
+      }
+    }
+
+    struct MyType: Codable, CactusPromptRepresentable {
+      let a: Int
+      let b: String
+    }
+
+    let content = CactusPromptContent {
+      MyType(a: 1, b: "hello")
+      MyType(a: 1, b: "hello")
+    }
+    .encoded(with: CustomEncoder())
+
+    let components = try content.defaultMessageComponents()
+    expectNoDifference(components.text, "Hello blob!\nHello blob!")
+    expectNoDifference(components.images, [])
+  }
 }
 
 extension CactusPromptRepresentable {
