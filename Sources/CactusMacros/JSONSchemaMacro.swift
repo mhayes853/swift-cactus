@@ -1049,7 +1049,11 @@ extension JSONSchemaMacro {
         argument.label?.text == "pattern",
         let regexPattern = Self.regexPatternLiteralBody(from: argument.expression)
       {
-        value = Self.quotedStringLiteral(regexPattern)
+        if regexPattern.hashCount > 0 {
+          value = Self.rawStringLiteral(regexPattern.body, hashCount: regexPattern.hashCount)
+        } else {
+          value = Self.quotedStringLiteral(regexPattern.body)
+        }
       } else {
         value = argument.expression.trimmedDescription
       }
@@ -1063,10 +1067,33 @@ extension JSONSchemaMacro {
     return serialized.joined(separator: ", ")
   }
 
-  private static func regexPatternLiteralBody(from expression: ExprSyntax) -> String? {
+  private struct RegexPatternLiteral {
+    let body: String
+    let hashCount: Int
+  }
+
+  private static func regexPatternLiteralBody(from expression: ExprSyntax) -> RegexPatternLiteral? {
     let raw = expression.trimmedDescription
-    guard raw.count >= 2, raw.first == "/", raw.last == "/" else { return nil }
-    return String(raw.dropFirst().dropLast())
+    guard !raw.isEmpty else { return nil }
+
+    var hashCount = 0
+    var index = raw.startIndex
+    while index < raw.endIndex, raw[index] == "#" {
+      hashCount += 1
+      index = raw.index(after: index)
+    }
+
+    guard index < raw.endIndex, raw[index] == "/" else { return nil }
+
+    let prefixEnd = raw.index(after: index)
+    let suffix = "/" + String(repeating: "#", count: hashCount)
+    guard raw.hasSuffix(suffix) else { return nil }
+
+    let suffixStart = raw.index(raw.endIndex, offsetBy: -suffix.count)
+    guard prefixEnd <= suffixStart else { return nil }
+
+    let body = String(raw[prefixEnd..<suffixStart])
+    return RegexPatternLiteral(body: body, hashCount: hashCount)
   }
 
   private static func quotedStringLiteral(_ value: String) -> String {
@@ -1075,6 +1102,14 @@ extension JSONSchemaMacro {
       .replacingOccurrences(of: "\"", with: "\\\"")
       .replacingOccurrences(of: "\n", with: "\\n")
     return "\"\(escaped)\""
+  }
+
+  private static func rawStringLiteral(_ value: String, hashCount: Int) -> String {
+    let hashes = String(repeating: "#", count: hashCount)
+    let escaped = value
+      .replacingOccurrences(of: "\"", with: "\\\(hashes)\"")
+      .replacingOccurrences(of: "\n", with: "\\\(hashes)n")
+    return "\(hashes)\"\(escaped)\"\(hashes)"
   }
 
   private static func stringLiteralValue(from expression: ExprSyntax) -> String? {

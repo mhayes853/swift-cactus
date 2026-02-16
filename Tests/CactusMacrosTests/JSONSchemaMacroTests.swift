@@ -170,6 +170,39 @@ extension BaseTestSuite {
     }
 
     @Test
+    func `Accepts Hash Regex Literal Pattern In String Schema`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Person {
+          @JSONSchemaProperty(.string(pattern: #/[a-z]+/#))
+          var name: String
+        }
+        """
+      } expansion: {
+        """
+        struct Person {
+          var name: String
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "name": .string(pattern: #"[a-z]+"#)
+                ],
+                required: ["name"]
+              )
+            )
+          }
+        }
+
+        extension Person: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
     func `Applies Boolean And Number Schema For Optional Properties`() {
       assertMacro {
         """
