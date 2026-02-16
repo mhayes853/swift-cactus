@@ -206,6 +206,32 @@ struct `CactusPromptContent tests` {
     expectNoDifference(components.text, "Hello World")
     expectNoDifference(components.images, [])
   }
+
+  @Test
+  func `Think Mode Modifier Prepends Think Command`() throws {
+    let content = try CactusPromptContent {
+      "Hello world"
+    }
+    .thinkMode(.think)
+    .promptContent
+
+    let components = try content.defaultMessageComponents()
+    expectNoDifference(components.text, "/think\nHello world")
+    expectNoDifference(components.images, [])
+  }
+
+  @Test
+  func `Think Mode Modifier Prepends No Think Command`() throws {
+    let content = try CactusPromptContent {
+      "Hello world"
+    }
+    .thinkMode(.noThink)
+    .promptContent
+
+    let components = try content.defaultMessageComponents()
+    expectNoDifference(components.text, "/no_think\nHello world")
+    expectNoDifference(components.images, [])
+  }
 }
 
 extension CactusPromptRepresentable {
