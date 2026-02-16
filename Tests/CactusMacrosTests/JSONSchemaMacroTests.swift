@@ -56,7 +56,40 @@ extension BaseTestSuite {
             .object(
               valueSchema: .object(
                 properties: [
-                  "name": .object(description: "Given name", anyOf: [String.jsonSchema])
+                  "name": _cactusMergeJSONSchema(String.jsonSchema, description: "Given name")
+                ],
+                required: ["name"]
+              )
+            )
+          }
+        }
+
+        extension Person: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Uses Merge Helper For Property Description`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Person {
+          @JSONSchemaProperty(description: "Display name")
+          var name: String
+        }
+        """
+      } expansion: {
+        """
+        struct Person {
+          var name: String
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "name": _cactusMergeJSONSchema(String.jsonSchema, description: "Display name")
                 ],
                 required: ["name"]
               )
@@ -89,7 +122,7 @@ extension BaseTestSuite {
             .object(
               valueSchema: .object(
                 properties: [
-                  "first_name": .object(description: "Given name", anyOf: [.string(minLength: 1, maxLength: 10)])
+                  "first_name": _cactusMergeJSONSchema(.string(minLength: 1, maxLength: 10), description: "Given name")
                 ],
                 required: ["first_name"]
               )

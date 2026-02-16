@@ -110,3 +110,18 @@ public struct _JSONSchemaPropertySchema {
 
   public static func custom(_ schema: JSONSchema) -> Self { Self() }
 }
+
+public func _cactusMergeJSONSchema(
+  _ schema: JSONSchema,
+  title: String? = nil,
+  description: String? = nil
+) -> JSONSchema {
+  guard case .object(var object) = schema else { return schema }
+  if let title {
+    object.title = title
+  }
+  if let description {
+    object.description = description
+  }
+  return .object(object)
+}

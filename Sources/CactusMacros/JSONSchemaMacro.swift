@@ -749,7 +749,7 @@ extension JSONSchemaMacro {
   ) -> String? {
     guard let description else { return schemaExpression }
     let expression = schemaExpression ?? "\(typeName).jsonSchema"
-    return ".object(description: \(Self.quotedStringLiteral(description)), anyOf: [\(expression)])"
+    return "_cactusMergeJSONSchema(\(expression), description: \(Self.quotedStringLiteral(description)))"
   }
 
   private static func parseTypeName(_ typeName: String) -> ParsedTypeName {

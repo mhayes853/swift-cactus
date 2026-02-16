@@ -266,6 +266,24 @@ struct `JSONSchema tests` {
     )
   }
 
+  @Test
+  func `Merge JSONSchema Helper Merges Metadata For Object Schemas`() {
+    let base = JSONSchema.string(minLength: 1)
+    let merged = _cactusMergeJSONSchema(base, title: "Title", description: "Description")
+
+    expectNoDifference(
+      merged,
+      JSONSchema.string(title: "Title", description: "Description", minLength: 1)
+    )
+  }
+
+  @Test
+  func `Merge JSONSchema Helper Leaves Boolean Schemas Unchanged`() {
+    let base = JSONSchema.boolean(true)
+    let merged = _cactusMergeJSONSchema(base, title: "Ignored", description: "Ignored")
+    expectNoDifference(merged, base)
+  }
+
   private static let jsonEncoder = {
     let encoder = JSONEncoder()
     encoder.outputFormatting = .sortedKeys
