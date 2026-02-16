@@ -249,6 +249,20 @@ struct `CactusPromptContent tests` {
   }
 
   @Test
+  func `Prompt Content Handles Text Around Image`() throws {
+    let imageURL = temporaryModelDirectory().appendingPathComponent("image.png")
+    let content = CactusPromptContent {
+      "Hello"
+      CactusPromptContent(images: [imageURL])
+      "World"
+    }
+
+    let components = try content.defaultMessageComponents()
+    expectNoDifference(components.text, "Hello\nWorld")
+    expectNoDifference(components.images, [imageURL])
+  }
+
+  @Test
   func `Encoded Content Applied To Prompt Content Uses Custom Encoder`() throws {
     struct CustomEncoder: TopLevelEncoder {
       func encode(_ value: some Encodable) throws -> Data {
