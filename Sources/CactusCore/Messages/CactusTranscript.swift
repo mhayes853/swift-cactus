@@ -202,6 +202,7 @@ extension CactusTranscript: MutableCollection {
   /// - Parameter position: The position of the element to access.
   /// - Complexity: O(1) for reading, O(1) for writing when the identifier is unchanged,
   ///   O(*n*) when the identifier changes where *n* is the number of elements after `position`.
+  /// - Precondition: The new element's identifier must not already exist at a different position.
   public subscript(position: Int) -> Element {
     _read { yield self.elements[position] }
     _modify {
@@ -209,6 +210,9 @@ extension CactusTranscript: MutableCollection {
       yield &self.elements[position]
       let newID = self.elements[position].id
       if oldID != newID {
+        if let existingIndex = self.messageIndicies[newID], existingIndex != position {
+          preconditionFailure("Duplicate message ID: \(newID) already exists at index \(existingIndex)")
+        }
         self.messageIndicies.removeValue(forKey: oldID)
         self.messageIndicies[newID] = position
       }

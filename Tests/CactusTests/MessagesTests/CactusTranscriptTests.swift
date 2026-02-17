@@ -233,4 +233,17 @@ struct `CactusTranscript tests` {
 
     expectNoDifference(transcript.count, 50)
   }
+
+  #if os(macOS)
+    @Test
+    func `Duplicate ID Precondition Failure`() async {
+      await #expect(processExitsWith: .failure) {
+        let existingID = CactusMessageID()
+        var transcript = CactusTranscript()
+        transcript.append(CactusTranscript.Element(id: existingID, message: .user("First")))
+        transcript.append(CactusTranscript.Element(message: .user("Second")))
+        transcript[1] = CactusTranscript.Element(id: existingID, message: .user("Duplicate"))
+      }
+    }
+  #endif
 }
