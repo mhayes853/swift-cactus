@@ -100,7 +100,7 @@ extension CactusTranscriptionSession {
   /// - Returns: A stream that yields transcription tokens and final output.
   public func stream(
     request: CactusTranscription.Request,
-    options: CactusLanguageModel.InferenceOptions = CactusLanguageModel.InferenceOptions()
+    options: CactusLanguageModel.InferenceOptions? = nil
   ) throws -> CactusInferenceStream<CactusTranscription> {
     let streamID = try self.beginTranscribing()
 
@@ -115,7 +115,7 @@ extension CactusTranscriptionSession {
       let modelTranscription = try await withTaskCancellationHandler {
         try await modelActor.transcribe(
           request: request,
-          options: options,
+          options: options ?? CactusLanguageModel.InferenceOptions(),
           onToken: { stringValue, tokenId in
             continuation.yield(
               token: CactusStreamedToken(
@@ -160,7 +160,7 @@ extension CactusTranscriptionSession {
   /// - Returns: The final parsed transcription.
   public func transcribe(
     request: CactusTranscription.Request,
-    options: CactusLanguageModel.InferenceOptions = CactusLanguageModel.InferenceOptions()
+    options: CactusLanguageModel.InferenceOptions? = nil
   ) async throws -> CactusTranscription {
     try await self.stream(request: request, options: options).collectResponse()
   }
