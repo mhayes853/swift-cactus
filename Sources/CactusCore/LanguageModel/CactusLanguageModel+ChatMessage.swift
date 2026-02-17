@@ -4,7 +4,7 @@ import Foundation
 
 extension CactusLanguageModel {
   /// A chat message.
-  public struct ChatMessage: Hashable, Sendable, Encodable {
+  public struct ChatMessage: Hashable, Sendable, Codable {
     /// Creates a system message.
     ///
     /// Use this initializer when providing instructions to the model
