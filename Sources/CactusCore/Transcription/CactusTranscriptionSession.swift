@@ -162,7 +162,12 @@ extension CactusTranscriptionSession {
     request: CactusTranscription.Request,
     options: CactusLanguageModel.InferenceOptions? = nil
   ) async throws -> CactusTranscription {
-    try await self.stream(request: request, options: options).collectResponse()
+    let stream = try self.stream(request: request, options: options)
+    return try await withTaskCancellationHandler {
+      try await stream.collectResponse()
+    } onCancel: {
+      stream.stop()
+    }
   }
 
   /// Provides temporary access to the underlying language model.

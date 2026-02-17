@@ -139,6 +139,33 @@ struct `CactusTranscriptionSession tests` {
     expectNoDifference(session.isTranscribing, false)
   }
 
+  @Test
+  func `Canceling Transcribe Cancels Stream And Ends Session`() async throws {
+    let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
+    let session = try CactusTranscriptionSession(from: modelURL)
+    let request = CactusTranscription.Request(
+      prompt: audioPrompt,
+      content: .pcm(longSilencePCMBytes)
+    )
+
+    let transcriptionTask = Task {
+      try await session.transcribe(
+        request: request,
+        options: CactusLanguageModel.InferenceOptions(modelType: .whisper)
+      )
+    }
+
+    try await Task.sleep(for: .milliseconds(50))
+    transcriptionTask.cancel()
+
+    await #expect(throws: CancellationError.self) {
+      try await transcriptionTask.value
+    }
+
+    try await Task.sleep(for: .milliseconds(50))
+    expectNoDifference(session.isTranscribing, false)
+  }
+
   #if canImport(Observation)
     @Test
     @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
@@ -204,3 +231,7 @@ private let testAudioURL = Bundle.module.url(forResource: "test", withExtension:
 private let missingAudioURL = FileManager.default.temporaryDirectory
   .appendingPathComponent("missing-audio-\(UUID().uuidString)")
 private let longSilencePCMBytes = [UInt8](repeating: 0, count: 3_200_000)
+
+private enum TranscriptionSessionTestError: Error {
+  case timedOutWaitingForCancellation
+}
