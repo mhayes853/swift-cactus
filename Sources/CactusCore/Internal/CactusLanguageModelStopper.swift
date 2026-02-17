@@ -3,13 +3,13 @@ import CXXCactusShims
 // MARK: - CactusLanguageModelStopper
 
 struct CactusLanguageModelStopper: @unchecked Sendable {
-  private let model: cactus_model_t
+  private let model: CactusLanguageModel
 
-  init(model: cactus_model_t) {
+  init(model: CactusLanguageModel) {
     self.model = model
   }
 
   func stop() {
-    cactus_stop(self.model)
+    self.model.stop()
   }
 }
