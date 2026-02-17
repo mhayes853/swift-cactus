@@ -2,13 +2,11 @@ import Foundation
 
 // MARK: - CactusTranscript
 
-/// An ordered collection of transcript elements that provides O(1) lookup by identifier.
+/// An ordered collection of transcript elements.
 ///
 /// `CactusTranscript` maintains the order of elements while also providing efficient
-/// access by ``CactusMessageID``. It conforms to ``MutableCollection`` and
-/// ``RandomAccessCollection`` for standard collection operations.
-///
-/// ## Example
+/// access by ``CactusMessageID``. It conforms to `MutableCollection` and
+/// `RandomAccessCollection` for standard collection operations.
 ///
 /// ```swift
 /// var transcript = CactusTranscript()
