@@ -469,10 +469,7 @@ extension CactusLanguageModel {
     /// Whether or not the download has been cancelled.
     public var isCancelled: Bool {
       self.delegate.state.withLock {
-        switch $0.observable.finalResult {
-        case .failure(let error): error is CancellationError
-        default: false
-        }
+        $0.observable.finalResult?.failure is CancellationError
       }
     }
 
@@ -493,12 +490,7 @@ extension CactusLanguageModel {
 
     /// The error of this task if the download failed.
     public var error: (any Error)? {
-      self.delegate.state.withLock {
-        switch $0.observable.finalResult {
-        case .failure(let error): error
-        default: nil
-        }
-      }
+      self.delegate.state.withLock { $0.observable.finalResult?.failure }
     }
 
     init(
