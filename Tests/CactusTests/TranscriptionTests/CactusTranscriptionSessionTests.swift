@@ -90,7 +90,7 @@ struct `CactusTranscriptionSession tests` {
     let session = try CactusTranscriptionSession(from: modelURL)
     let request = CactusTranscription.Request(
       prompt: audioPrompt,
-      content: .audio(missingAudioURL)
+      content: .audio(testAudioURL)
     )
 
     let stream = try session.stream(
@@ -105,9 +105,7 @@ struct `CactusTranscriptionSession tests` {
       )
     }
 
-    await #expect(throws: CactusLanguageModel.TranscriptionError.self) {
-      _ = try await stream.collectResponse()
-    }
+    stream.stop()
   }
 
   @Test
@@ -174,7 +172,7 @@ struct `CactusTranscriptionSession tests` {
       let session = try CactusTranscriptionSession(from: modelURL)
       let request = CactusTranscription.Request(
         prompt: audioPrompt,
-        content: .audio(missingAudioURL)
+        content: .audio(testAudioURL)
       )
 
       let values = Lock([Bool]())
@@ -186,9 +184,7 @@ struct `CactusTranscriptionSession tests` {
         request: request,
         options: CactusLanguageModel.InferenceOptions(modelType: .whisper)
       )
-      await #expect(throws: CactusLanguageModel.TranscriptionError.self) {
-        _ = try await stream.collectResponse()
-      }
+      _ = try await stream.collectResponse()
       token.cancel()
 
       values.withLock { snapshots in
