@@ -92,8 +92,6 @@ extension CactusTranscriptionSession {
   ///
   /// let response = try await stream.streamResponse()
   /// let transcription = response.output
-  /// _ = tokenText
-  /// _ = transcription
   /// ```
   ///
   /// - Parameters:
@@ -118,11 +116,12 @@ extension CactusTranscriptionSession {
         try await modelActor.transcribe(
           request: request,
           options: options,
-          onToken: { token in
+          onToken: { stringValue, tokenId in
             continuation.yield(
               token: CactusStreamedToken(
                 messageStreamId: messageStreamID,
-                stringValue: token
+                stringValue: stringValue,
+                tokenId: tokenId
               )
             )
           }
@@ -172,7 +171,6 @@ extension CactusTranscriptionSession {
   /// let slug = await session.withModel { model in
   ///   model.configuration.modelSlug
   /// }
-  /// _ = slug
   /// ```
   ///
   /// - Parameter operation: An operation to run with the model.
@@ -242,7 +240,7 @@ extension CactusTranscriptionSession {
     func transcribe(
       request: CactusTranscription.Request,
       options: CactusLanguageModel.InferenceOptions,
-      onToken: @escaping @Sendable (String) -> Void
+      onToken: @escaping @Sendable (String, UInt32) -> Void
     ) throws -> CactusLanguageModel.Transcription {
       if let audioURL = request.content.audioURL {
         return try self.model.transcribe(

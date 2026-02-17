@@ -9,7 +9,7 @@ struct `CactusInferenceStream tests` {
   func `Token AsyncSequence Propagates Errors`() async {
     let stream = CactusInferenceStream<String> { continuation in
       continuation.yield(
-        token: CactusStreamedToken(messageStreamId: CactusMessageID(), stringValue: "a")
+        token: CactusStreamedToken(messageStreamId: CactusMessageID(), stringValue: "a", tokenId: 0)
       )
       throw StreamTestError.boom
     }
@@ -31,7 +31,7 @@ struct `CactusInferenceStream tests` {
   func `OnToken onFinished Receives Error`() async {
     let stream = CactusInferenceStream<String> { continuation in
       continuation.yield(
-        token: CactusStreamedToken(messageStreamId: CactusMessageID(), stringValue: "a")
+        token: CactusStreamedToken(messageStreamId: CactusMessageID(), stringValue: "a", tokenId: 0)
       )
       throw StreamTestError.boom
     }
@@ -146,7 +146,7 @@ struct `CactusInferenceStream tests` {
       let messageID = CactusMessageID()
       for _ in 0..<streamedTokenCount {
         continuation.yield(
-          token: CactusStreamedToken(messageStreamId: messageID, stringValue: "a")
+          token: CactusStreamedToken(messageStreamId: messageID, stringValue: "a", tokenId: 0)
         )
       }
       return CactusInferenceStream<String>.Response(output: expectedOutput)

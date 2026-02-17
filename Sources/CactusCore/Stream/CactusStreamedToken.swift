@@ -8,13 +8,18 @@ public struct CactusStreamedToken: Hashable, Sendable {
   /// The textual value of the streamed token.
   public let stringValue: String
 
+  /// The token identifier from the tokenizer.
+  public let tokenId: UInt32
+
   /// Creates a streamed token.
   ///
   /// - Parameters:
   ///   - messageStreamId: The message identifier for this token.
   ///   - stringValue: The token text.
-  public init(messageStreamId: CactusMessageID, stringValue: String) {
+  ///   - tokenId: The token identifier from the tokenizer.
+  public init(messageStreamId: CactusMessageID, stringValue: String, tokenId: UInt32) {
     self.messageStreamId = messageStreamId
     self.stringValue = stringValue
+    self.tokenId = tokenId
   }
 }
