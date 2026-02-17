@@ -20,7 +20,7 @@ import Foundation
 ///
 /// let transcription = try await session.transcribe(request: request)
 /// ```
-public final class CactusTranscriptionSession: @unchecked Sendable {
+public final class CactusTranscriptionSession: Sendable {
   private let observationRegistrar = _ObservationRegistrar()
   private let state = Lock(State())
   private let modelActor: ModelActor
@@ -41,7 +41,7 @@ public final class CactusTranscriptionSession: @unchecked Sendable {
   ///
   /// - Parameter model: The underlying language model.
   public init(model: sending CactusLanguageModel) {
-    self.modelStopper = CactusLanguageModelStopper(model: model.model)
+    self.modelStopper = CactusLanguageModelStopper(model: model)
     self.modelActor = ModelActor(model: model)
   }
 

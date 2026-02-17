@@ -2,12 +2,12 @@
   "metrics" : {
     "confidence" : 0.9214,
     "decodeTokens" : 59,
-    "decodeTps" : 43.68,
+    "decodeTps" : 46.34,
     "prefillTokens" : 4,
-    "prefillTps" : 0.27,
-    "ramUsageMb" : 410.24,
-    "timeIntervalToFirstToken" : 14.74994,
-    "totalTimeInterval" : 16.07786,
+    "prefillTps" : 0.32,
+    "ramUsageMb" : 374.13,
+    "timeIntervalToFirstToken" : 12.44795,
+    "totalTimeInterval" : 13.699639999999999,
     "totalTokens" : 63
   },
   "parsedContent" : "How? The power of a god cannot be overcome! Zanzer, this is the providence of the world. Even gods are merely beings restricted to the limited power determined by prophets. That power, although great, is not unlimited. That voice! Abyss! How dare you!",
