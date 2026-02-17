@@ -137,160 +137,63 @@ extension CactusIndex {
     if let bufferSizes, bufferSizes.count != ids.count {
       throw CactusIndexError(message: "Buffer sizes must match the number of document IDs.")
     }
-    let buffers = DocumentOutputBuffers(
-      count: ids.count,
-      documentBufferSizes: bufferSizes?.map(\.content),
-      metadataBufferSizes: bufferSizes?.map(\.metadata),
-      embeddingDimensions: self.embeddingDimensions
-    )
+    var contentBufferSizes = (bufferSizes?.map(\.content) ?? Array(
+      repeating: CactusIndex.maxBufferSize,
+      count: ids.count
+    )).map { max(1, $0) }
+    var metadataBufferSizes = (bufferSizes?.map(\.metadata) ?? Array(
+      repeating: CactusIndex.maxBufferSize,
+      count: ids.count
+    )).map { max(1, $0) }
+    var embeddingBufferSizes = Array(repeating: max(1, self.embeddingDimensions), count: ids.count)
+
+    var contentBuffers = contentBufferSizes.map { Array<CChar>(repeating: 0, count: $0) }
+    var metadataBuffers = metadataBufferSizes.map { Array<CChar>(repeating: 0, count: $0) }
+    var embeddingBuffers = embeddingBufferSizes.map { Array<Float>(repeating: .zero, count: $0) }
+
     let result = ids.withUnsafeBufferPointer { idsPtr in
-      cactus_index_get(
-        self.index,
-        idsPtr.baseAddress,
-        ids.count,
-        buffers.documentBuffers,
-        buffers.documentBufferSizes,
-        buffers.metadataBuffers,
-        buffers.metadataBufferSizes,
-        buffers.embeddingBuffers,
-        buffers.embeddingBufferSizes
-      )
+      self.withMutableBufferPointers(&contentBuffers) { contentPointers in
+        self.withMutableBufferPointers(&metadataBuffers) { metadataPointers in
+          self.withMutableBufferPointers(&embeddingBuffers) { embeddingPointers in
+            return contentBufferSizes.withUnsafeMutableBufferPointer { contentSizePtr in
+              metadataBufferSizes.withUnsafeMutableBufferPointer { metadataSizePtr in
+                embeddingBufferSizes.withUnsafeMutableBufferPointer { embeddingSizePtr in
+                  cactus_index_get(
+                    self.index,
+                    idsPtr.baseAddress,
+                    ids.count,
+                    contentPointers,
+                    contentSizePtr.baseAddress,
+                    metadataPointers,
+                    metadataSizePtr.baseAddress,
+                    embeddingPointers,
+                    embeddingSizePtr.baseAddress
+                  )
+                }
+              }
+            }
+          }
+        }
+      }
     }
     guard result == 0 else { throw CactusIndexError.lastErrorMessage() }
-    return try buffers.documents(for: ids, embeddingDimensions: self.embeddingDimensions)
-  }
-
-  private struct DocumentOutputBuffers: ~Copyable {
-    static let defaultBufferSize = CactusIndex.maxBufferSize
-
-    let count: Int
-    let documentBuffers: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>
-    let documentBufferSizes: UnsafeMutablePointer<Int>
-    let metadataBuffers: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>
-    let metadataBufferSizes: UnsafeMutablePointer<Int>
-    let embeddingBuffers: UnsafeMutablePointer<UnsafeMutablePointer<Float>?>
-    let embeddingBufferSizes: UnsafeMutablePointer<Int>
-
-    init(
-      count: Int,
-      documentBufferSizes: [Int]?,
-      metadataBufferSizes: [Int]?,
-      embeddingDimensions: Int
-    ) {
-      if let documentBufferSizes {
-        precondition(documentBufferSizes.count == count)
-      }
-      if let metadataBufferSizes {
-        precondition(metadataBufferSizes.count == count)
-      }
-
-      self.count = count
-      self.documentBuffers = .allocate(capacity: count)
-      self.documentBufferSizes = .allocate(capacity: count)
-      self.metadataBuffers = .allocate(capacity: count)
-      self.metadataBufferSizes = .allocate(capacity: count)
-      self.embeddingBuffers = .allocate(capacity: count)
-      self.embeddingBufferSizes = .allocate(capacity: count)
-
-      self.documentBuffers.initialize(repeating: nil, count: count)
-      self.metadataBuffers.initialize(repeating: nil, count: count)
-      self.embeddingBuffers.initialize(repeating: nil, count: count)
-      self.documentBufferSizes.initialize(repeating: 0, count: count)
-      self.metadataBufferSizes.initialize(repeating: 0, count: count)
-      self.embeddingBufferSizes.initialize(repeating: 0, count: count)
-
-      for index in 0..<count {
-        let documentSize = max(
-          1,
-          documentBufferSizes?[index] ?? Self.defaultBufferSize
+    var documents = [Document]()
+    documents.reserveCapacity(ids.count)
+    for index in ids.indices {
+      let embeddingCount = Self.embeddingElementCount(
+        from: embeddingBufferSizes[index],
+        embeddingDimensions: self.embeddingDimensions
+      )
+      documents.append(
+        Document(
+          id: ids[index],
+          embedding: Array(embeddingBuffers[index].prefix(embeddingCount)),
+          metadata: Self.stringFromCStringBuffer(metadataBuffers[index]),
+          content: Self.stringFromCStringBuffer(contentBuffers[index])
         )
-        let metadataSize = max(
-          1,
-          metadataBufferSizes?[index] ?? Self.defaultBufferSize
-        )
-        let embeddingSize = max(1, embeddingDimensions)
-
-        self.documentBuffers[index] = .allocate(capacity: documentSize)
-        self.metadataBuffers[index] = .allocate(capacity: metadataSize)
-        self.embeddingBuffers[index] = .allocate(capacity: embeddingSize)
-        self.documentBufferSizes[index] = documentSize
-        self.metadataBufferSizes[index] = metadataSize
-        self.embeddingBufferSizes[index] = embeddingSize
-      }
-    }
-
-    deinit {
-      for index in 0..<self.count {
-        self.documentBuffers[index]?.deallocate()
-        self.metadataBuffers[index]?.deallocate()
-        self.embeddingBuffers[index]?.deallocate()
-      }
-      self.documentBuffers.deinitialize(count: self.count)
-      self.documentBufferSizes.deinitialize(count: self.count)
-      self.metadataBuffers.deinitialize(count: self.count)
-      self.metadataBufferSizes.deinitialize(count: self.count)
-      self.embeddingBuffers.deinitialize(count: self.count)
-      self.embeddingBufferSizes.deinitialize(count: self.count)
-      self.documentBuffers.deallocate()
-      self.documentBufferSizes.deallocate()
-      self.metadataBuffers.deallocate()
-      self.metadataBufferSizes.deallocate()
-      self.embeddingBuffers.deallocate()
-      self.embeddingBufferSizes.deallocate()
-    }
-
-    func documents(
-      for ids: [CactusIndex.Document.ID],
-      embeddingDimensions: Int
-    ) throws -> [CactusIndex.Document] {
-      var documents = [CactusIndex.Document]()
-      documents.reserveCapacity(self.count)
-      for index in 0..<self.count {
-        documents.append(
-          try self.document(
-            for: index,
-            ids: ids,
-            embeddingDimensions: embeddingDimensions
-          )
-        )
-      }
-      return documents
-    }
-
-    private func document(
-      for index: Int,
-      ids: [CactusIndex.Document.ID],
-      embeddingDimensions: Int
-    ) throws -> CactusIndex.Document {
-      let documentSize = self.documentBufferSizes[index]
-      guard let documentBuffer = self.documentBuffers[index], documentSize > 0 else {
-        throw CactusIndexError(message: "Document buffer was empty.")
-      }
-      let metadataSize = self.metadataBufferSizes[index]
-      guard let metadataBuffer = self.metadataBuffers[index], metadataSize > 0 else {
-        throw CactusIndexError(message: "Metadata buffer was empty.")
-      }
-
-      let content = String(cString: documentBuffer)
-      let metadata = String(cString: metadataBuffer)
-      let embedding = self.embeddings(for: index, embeddingDimensions: embeddingDimensions)
-      return CactusIndex.Document(
-        id: ids[index],
-        embedding: embedding,
-        metadata: metadata,
-        content: content
       )
     }
-
-    private func embeddings(for index: Int, embeddingDimensions: Int) -> [Float] {
-      let size = self.embeddingBufferSizes[index]
-      guard let embeddingBuffer = self.embeddingBuffers[index], size > 0 else { return [] }
-      let count =
-        size > embeddingDimensions && size % MemoryLayout<Float>.stride == 0
-        ? size / MemoryLayout<Float>.stride
-        : size
-      return Array(UnsafeBufferPointer(start: embeddingBuffer, count: count))
-    }
+    return documents
   }
 }
 
@@ -302,65 +205,19 @@ extension CactusIndex {
 
   /// Adds multiple ``Document`` instances to this index.
   public func add(documents: [Document]) throws {
-    let fields = try DocumentFieldPointers(documents, embeddingDimensions: self.embeddingDimensions)
-    let result = cactus_index_add(
-      self.index,
-      fields.ids,
-      fields.documentPointers,
-      fields.metadataPointers,
-      fields.embeddingPointers,
-      fields.count,
-      self.embeddingDimensions
-    )
+    try self.validateEmbeddingDimensions(documents.map(\.embedding))
+    let result = self.withDocumentFieldPointers(documents) { ids, contentPointers, metadataPointers, embeddingPointers in
+      cactus_index_add(
+        self.index,
+        ids,
+        contentPointers,
+        metadataPointers,
+        embeddingPointers,
+        documents.count,
+        self.embeddingDimensions
+      )
+    }
     guard result == 0 else { throw CactusIndexError.lastErrorMessage() }
-  }
-
-  private struct DocumentFieldPointers: ~Copyable {
-    let count: Int
-    let ids: UnsafeMutablePointer<CactusIndex.Document.ID>
-    let documentPointers: UnsafeMutablePointer<UnsafePointer<CChar>?>
-    let metadataPointers: UnsafeMutablePointer<UnsafePointer<CChar>?>
-    let embeddingPointers: UnsafeMutablePointer<UnsafePointer<Float>?>
-
-    init(_ documents: [CactusIndex.Document], embeddingDimensions: Int) throws {
-      self.count = documents.count
-      self.ids = .allocate(capacity: documents.count)
-      self.documentPointers = .allocate(capacity: documents.count)
-      self.metadataPointers = .allocate(capacity: documents.count)
-      self.embeddingPointers = .allocate(capacity: documents.count)
-
-      self.ids.initialize(repeating: 0, count: documents.count)
-      self.documentPointers.initialize(repeating: nil, count: documents.count)
-      self.metadataPointers.initialize(repeating: nil, count: documents.count)
-      self.embeddingPointers.initialize(repeating: nil, count: documents.count)
-
-      for (index, document) in documents.enumerated() {
-        self.ids[index] = document.id
-        self.documentPointers[index] = document.content.withCString { UnsafePointer(strdup($0)) }
-        self.metadataPointers[index] = document.metadata.withCString { UnsafePointer(strdup($0)) }
-
-        document.embedding.withUnsafeBufferPointer {
-          let ptr = UnsafeMutableBufferPointer<Float>.allocate(capacity: embeddingDimensions)
-          memcpy(
-            ptr.baseAddress!,
-            $0.baseAddress!,
-            embeddingDimensions * MemoryLayout<Float>.stride
-          )
-          self.embeddingPointers[index] = UnsafePointer(ptr.baseAddress)
-        }
-      }
-    }
-
-    deinit {
-      self.ids.deinitialize(count: self.count)
-      self.documentPointers.deinitialize(count: self.count)
-      self.metadataPointers.deinitialize(count: self.count)
-      self.embeddingPointers.deinitialize(count: self.count)
-      self.ids.deallocate()
-      self.documentPointers.deallocate()
-      self.metadataPointers.deallocate()
-      self.embeddingPointers.deallocate()
-    }
   }
 }
 
@@ -423,25 +280,47 @@ extension CactusIndex {
     var results = Array(repeating: [Query.Result](), count: queries.count)
     for (option, batch) in indexedBatches {
       let optionsJSON = String(decoding: try ffiEncoder.encode(option), as: UTF8.self)
-      let embeddingPointers = try EmbeddingBatchPointers(
-        embeddings: batch.map(\.query.embeddings),
-        embeddingDimensions: self.embeddingDimensions
-      )
-      let buffers = QueryResultBuffers(count: batch.count, topK: option.topK)
-      let result = cactus_index_query(
-        self.index,
-        embeddingPointers.pointers,
-        batch.count,
-        self.embeddingDimensions,
-        optionsJSON,
-        buffers.idBuffers,
-        buffers.idBufferSizes,
-        buffers.scoreBuffers,
-        buffers.scoreBufferSizes
-      )
+      let embeddings = batch.map(\.query.embeddings)
+      try self.validateEmbeddingDimensions(embeddings)
+
+      var idBufferSizes = Array(repeating: option.topK, count: batch.count)
+      var scoreBufferSizes = Array(repeating: option.topK, count: batch.count)
+      let resultCapacity = max(1, option.topK)
+      var idBuffers = Array(repeating: Array<Int32>(repeating: 0, count: resultCapacity), count: batch.count)
+      var scoreBuffers = Array(repeating: Array<Float>(repeating: .zero, count: resultCapacity), count: batch.count)
+
+      let result = self.withEmbeddingPointers(embeddings) { embeddingPointers in
+        self.withMutableBufferPointers(&idBuffers) { idPointers in
+          self.withMutableBufferPointers(&scoreBuffers) { scorePointers in
+            return idBufferSizes.withUnsafeMutableBufferPointer { idSizePtr in
+              scoreBufferSizes.withUnsafeMutableBufferPointer { scoreSizePtr in
+                cactus_index_query(
+                  self.index,
+                  embeddingPointers,
+                  batch.count,
+                  self.embeddingDimensions,
+                  optionsJSON,
+                  idPointers,
+                  idSizePtr.baseAddress,
+                  scorePointers,
+                  scoreSizePtr.baseAddress
+                )
+              }
+            }
+          }
+        }
+      }
       guard result == 0 else { throw CactusIndexError.lastErrorMessage() }
       for (offset, entry) in batch.enumerated() {
-        results[entry.index] = buffers.results(at: offset)
+        let count = min(idBufferSizes[offset], scoreBufferSizes[offset], resultCapacity)
+        guard count > 0 else {
+          results[entry.index] = []
+          continue
+        }
+
+        let ids = idBuffers[offset].prefix(count)
+        let scores = scoreBuffers[offset].prefix(count)
+        results[entry.index] = zip(ids, scores).map { Query.Result(documentId: $0, score: $1) }
       }
     }
     return results
@@ -475,80 +354,128 @@ extension CactusIndex {
     }
   }
 
-  private struct EmbeddingBatchPointers: ~Copyable {
-    let count: Int
-    let pointers: UnsafeMutablePointer<UnsafePointer<Float>?>
-
-    init(embeddings: [[Float]], embeddingDimensions: Int) throws {
-      self.count = embeddings.count
-      self.pointers = .allocate(capacity: embeddings.count)
-      self.pointers.initialize(repeating: nil, count: embeddings.count)
-
-      for (index, embedding) in embeddings.enumerated() {
-        if embeddingDimensions > 0 {
-          embedding.withUnsafeBufferPointer { self.pointers[index] = $0.baseAddress }
-        }
-      }
+  private static func embeddingElementCount(from rawSize: Int, embeddingDimensions: Int) -> Int {
+    let normalizedSize = max(0, rawSize)
+    if normalizedSize > embeddingDimensions && normalizedSize % MemoryLayout<Float>.stride == 0 {
+      return normalizedSize / MemoryLayout<Float>.stride
     }
+    return normalizedSize
+  }
 
-    deinit {
-      self.cleanup()
-    }
-
-    private func cleanup() {
-      self.pointers.deinitialize(count: self.count)
-      self.pointers.deallocate()
+  private static func stringFromCStringBuffer(_ buffer: [CChar]) -> String {
+    buffer.withUnsafeBufferPointer { pointer in
+      guard let baseAddress = pointer.baseAddress else { return "" }
+      let nullTerminatorIndex = pointer.firstIndex(of: 0) ?? pointer.count
+      let rawBuffer = UnsafeRawBufferPointer(start: baseAddress, count: nullTerminatorIndex)
+      return String(decoding: rawBuffer, as: UTF8.self)
     }
   }
 
-  private struct QueryResultBuffers: ~Copyable {
-    let count: Int
-    let idBuffers: UnsafeMutablePointer<UnsafeMutablePointer<Int32>?>
-    let idBufferSizes: UnsafeMutablePointer<Int>
-    let scoreBuffers: UnsafeMutablePointer<UnsafeMutablePointer<Float>?>
-    let scoreBufferSizes: UnsafeMutablePointer<Int>
+  private func validateEmbeddingDimensions(_ embeddings: [[Float]]) throws {
+    guard let mismatch = embeddings.first(where: { $0.count != self.embeddingDimensions }) else { return }
+    throw CactusIndexError(
+      message: "Embedding dimension mismatch. Expected \(self.embeddingDimensions), got \(mismatch.count)."
+    )
+  }
 
-    init(count: Int, topK: Int) {
-      self.count = count
-      self.idBuffers = .allocate(capacity: count)
-      self.idBufferSizes = .allocate(capacity: count)
-      self.scoreBuffers = .allocate(capacity: count)
-      self.scoreBufferSizes = .allocate(capacity: count)
+  private func withDocumentFieldPointers<Result>(
+    _ documents: [Document],
+    _ body: (
+      UnsafePointer<Document.ID>?,
+      UnsafeMutablePointer<UnsafePointer<CChar>?>?,
+      UnsafeMutablePointer<UnsafePointer<CChar>?>?,
+      UnsafeMutablePointer<UnsafePointer<Float>?>?
+    ) throws -> Result
+  ) rethrows -> Result {
+    let ids = documents.map(\.id)
+    let contents = documents.map(\.content)
+    let metadata = documents.map(\.metadata)
+    let embeddings = documents.map(\.embedding)
 
-      for i in 0..<count {
-        self.idBuffers[i] = .allocate(capacity: topK)
-        self.scoreBuffers[i] = .allocate(capacity: topK)
+    return try ids.withUnsafeBufferPointer { idPtr in
+      try self.withCStringPointers(contents) { contentPointers in
+        try self.withCStringPointers(metadata) { metadataPointers in
+          try self.withEmbeddingPointers(embeddings) { embeddingPointers in
+            try body(
+              idPtr.baseAddress,
+              contentPointers,
+              metadataPointers,
+              embeddingPointers
+            )
+          }
+        }
       }
-      self.idBufferSizes.initialize(repeating: topK, count: count)
-      self.scoreBufferSizes.initialize(repeating: topK, count: count)
     }
+  }
 
-    deinit {
-      for index in 0..<self.count {
-        self.idBuffers[index]?.deallocate()
-        self.scoreBuffers[index]?.deallocate()
+  private func withCStringPointers<Result>(
+    _ strings: [String],
+    _ body: (UnsafeMutablePointer<UnsafePointer<CChar>?>?) throws -> Result
+  ) rethrows -> Result {
+    try withUnsafeTemporaryAllocation(of: UnsafePointer<CChar>?.self, capacity: strings.count) { pointers in
+      guard let base = pointers.baseAddress else { return try body(nil) }
+      return try self.withCStringPointers(strings, index: 0, pointers: base, body)
+    }
+  }
+
+  private func withCStringPointers<Result>(
+    _ strings: [String],
+    index: Int,
+    pointers: UnsafeMutablePointer<UnsafePointer<CChar>?>,
+    _ body: (UnsafeMutablePointer<UnsafePointer<CChar>?>?) throws -> Result
+  ) rethrows -> Result {
+    guard index < strings.count else { return try body(pointers) }
+    return try strings[index].withCString { cString in
+      pointers[index] = cString
+      return try self.withCStringPointers(strings, index: index + 1, pointers: pointers, body)
+    }
+  }
+
+  private func withEmbeddingPointers<Result>(
+    _ embeddings: [[Float]],
+    _ body: (UnsafeMutablePointer<UnsafePointer<Float>?>?) throws -> Result
+  ) rethrows -> Result {
+    try withUnsafeTemporaryAllocation(of: UnsafePointer<Float>?.self, capacity: embeddings.count) { pointers in
+      guard let base = pointers.baseAddress else { return try body(nil) }
+      return try self.withEmbeddingPointers(embeddings, index: 0, pointers: base, body)
+    }
+  }
+
+  private func withEmbeddingPointers<Result>(
+    _ embeddings: [[Float]],
+    index: Int,
+    pointers: UnsafeMutablePointer<UnsafePointer<Float>?>,
+    _ body: (UnsafeMutablePointer<UnsafePointer<Float>?>?) throws -> Result
+  ) rethrows -> Result {
+    guard index < embeddings.count else { return try body(pointers) }
+    return try embeddings[index].withUnsafeBufferPointer { embeddingBuffer in
+      pointers[index] = embeddingBuffer.baseAddress
+      return try self.withEmbeddingPointers(embeddings, index: index + 1, pointers: pointers, body)
+    }
+  }
+
+  private func withMutableBufferPointers<Element, Result>(
+    _ buffers: inout [[Element]],
+    _ body: (UnsafeMutablePointer<UnsafeMutablePointer<Element>?>?) throws -> Result
+  ) rethrows -> Result {
+    try buffers.withUnsafeMutableBufferPointer { storage in
+      try withUnsafeTemporaryAllocation(of: UnsafeMutablePointer<Element>?.self, capacity: storage.count) { pointers in
+        guard let base = pointers.baseAddress else { return try body(nil) }
+        return try self.withMutableBufferPointers(storage, index: 0, pointers: base, body)
       }
-      self.idBuffers.deinitialize(count: self.count)
-      self.idBufferSizes.deinitialize(count: self.count)
-      self.scoreBuffers.deinitialize(count: self.count)
-      self.scoreBufferSizes.deinitialize(count: self.count)
-      self.idBuffers.deallocate()
-      self.idBufferSizes.deallocate()
-      self.scoreBuffers.deallocate()
-      self.scoreBufferSizes.deallocate()
     }
+  }
 
-    func results(at index: Int) -> [CactusIndex.Query.Result] {
-      let idCount = self.idBufferSizes[index]
-      let scoreCount = self.scoreBufferSizes[index]
-      let count = min(idCount, scoreCount)
-      guard count > 0,
-        let idBuffer = self.idBuffers[index],
-        let scoreBuffer = self.scoreBuffers[index]
-      else { return [] }
-      let ids = Array(UnsafeBufferPointer(start: idBuffer, count: count))
-      let scores = Array(UnsafeBufferPointer(start: scoreBuffer, count: count))
-      return zip(ids, scores).map { CactusIndex.Query.Result(documentId: $0, score: $1) }
+  private func withMutableBufferPointers<Element, Result>(
+    _ buffers: UnsafeMutableBufferPointer<[Element]>,
+    index: Int,
+    pointers: UnsafeMutablePointer<UnsafeMutablePointer<Element>?>,
+    _ body: (UnsafeMutablePointer<UnsafeMutablePointer<Element>?>?) throws -> Result
+  ) rethrows -> Result {
+    guard index < buffers.count else { return try body(pointers) }
+    return try buffers[index].withUnsafeMutableBufferPointer { buffer in
+      pointers[index] = buffer.baseAddress
+      return try self.withMutableBufferPointers(buffers, index: index + 1, pointers: pointers, body)
     }
   }
 }
