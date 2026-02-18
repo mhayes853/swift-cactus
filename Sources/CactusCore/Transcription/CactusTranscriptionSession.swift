@@ -27,14 +27,14 @@ public final class CactusTranscriptionSession: Sendable {
   private let modelStopper: CactusLanguageModelStopper
 
   private struct State {
-    var activeStreamID: UUID?
+    var activeStream: CactusInferenceStream<CactusTranscription>?
     var activeStreamFinishedSubscription: CactusSubscription?
   }
 
   /// Whether a transcription is currently in progress.
   public var isTranscribing: Bool {
     self.observationRegistrar.access(self, keyPath: \.isTranscribing)
-    return self.state.withLock { $0.activeStreamID != nil }
+    return self.state.withLock { $0.activeStream?.isStreaming ?? false }
   }
 
   /// Creates a transcription session from an existing language model.
@@ -102,15 +102,12 @@ extension CactusTranscriptionSession {
     request: CactusTranscription.Request,
     options: CactusLanguageModel.InferenceOptions? = nil
   ) throws -> CactusInferenceStream<CactusTranscription> {
-    let streamID = try self.beginTranscribing()
-
     let messageStreamID = CactusMessageID()
     let modelActor = self.modelActor
     let modelStopper = self.modelStopper
 
     let stream = CactusInferenceStream<CactusTranscription> { [weak self] continuation in
-      guard let self else { throw CancellationError() }
-      defer { self.endTranscribing(streamID: streamID) }
+      guard self != nil else { throw CancellationError() }
 
       let modelTranscription = try await withTaskCancellationHandler {
         try await modelActor.transcribe(
@@ -137,10 +134,12 @@ extension CactusTranscriptionSession {
         )
     }
 
+    try self.beginTranscribing(stream: stream)
+
     let finishedSubscription = stream.onToken(perform: { _ in }) { [weak self] _ in
-      self?.endTranscribing(streamID: streamID)
+      self?.endTranscribing(stream: stream)
     }
-    self.setFinishedSubscription(finishedSubscription, for: streamID)
+    self.setFinishedSubscription(finishedSubscription, for: stream)
     return stream
   }
 
@@ -190,24 +189,25 @@ extension CactusTranscriptionSession {
 // MARK: - State
 
 extension CactusTranscriptionSession {
-  private func beginTranscribing() throws -> UUID {
-    let streamID = UUID()
+  private func beginTranscribing(stream: CactusInferenceStream<CactusTranscription>) throws {
     try self.observationRegistrar.withMutation(of: self, keyPath: \.isTranscribing) {
       try self.state.withLock { state in
-        guard state.activeStreamID == nil else {
+        guard state.activeStream == nil else {
           throw CactusTranscriptionStreamError.alreadyTranscribing
         }
-        state.activeStreamID = streamID
+        state.activeStream = stream
         state.activeStreamFinishedSubscription = nil
       }
     }
-    return streamID
   }
 
-  private func setFinishedSubscription(_ subscription: CactusSubscription, for streamID: UUID) {
+  private func setFinishedSubscription(
+    _ subscription: CactusSubscription,
+    for stream: CactusInferenceStream<CactusTranscription>
+  ) {
     var shouldCancel = false
     self.state.withLock { state in
-      if state.activeStreamID == streamID {
+      if state.activeStream === stream {
         state.activeStreamFinishedSubscription = subscription
       } else {
         shouldCancel = true
@@ -218,12 +218,12 @@ extension CactusTranscriptionSession {
     }
   }
 
-  private func endTranscribing(streamID: UUID) {
+  private func endTranscribing(stream: CactusInferenceStream<CactusTranscription>) {
     var subscription: CactusSubscription?
     self.observationRegistrar.withMutation(of: self, keyPath: \.isTranscribing) {
       self.state.withLock { state in
-        guard state.activeStreamID == streamID else { return }
-        state.activeStreamID = nil
+        guard state.activeStream === stream else { return }
+        state.activeStream = nil
         subscription = state.activeStreamFinishedSubscription
         state.activeStreamFinishedSubscription = nil
       }

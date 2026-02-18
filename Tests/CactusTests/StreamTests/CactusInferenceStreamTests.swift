@@ -139,6 +139,97 @@ struct `CactusInferenceStream tests` {
   }
 
   @Test
+  func `Is Streaming Is True While Stream Is Running`() async throws {
+    let stream = CactusInferenceStream<String> { _ in
+      try await Task.sleep(nanoseconds: cancellationLeadTimeNanoseconds * 10)
+      return CactusInferenceStream<String>.Response(output: "done")
+    }
+
+    expectNoDifference(stream.isStreaming, true)
+
+    stream.stop()
+    await #expect(throws: CancellationError.self) {
+      _ = try await stream.streamResponse()
+    }
+  }
+
+  @Test
+  func `Is Streaming Becomes False After StreamResponse Completes`() async throws {
+    let stream = CactusInferenceStream<String> { _ in
+      try await Task.sleep(nanoseconds: cancellationLeadTimeNanoseconds)
+      return CactusInferenceStream<String>.Response(output: "done")
+    }
+
+    expectNoDifference(stream.isStreaming, true)
+    _ = try await stream.streamResponse()
+    expectNoDifference(stream.isStreaming, false)
+  }
+
+  @Test
+  func `Is Streaming Becomes False When Stream Is Stopped`() async {
+    let stream = CactusInferenceStream<String> { _ in
+      try await Task.sleep(nanoseconds: producerSleepNanoseconds)
+      return CactusInferenceStream<String>.Response(output: "unreachable")
+    }
+
+    expectNoDifference(stream.isStreaming, true)
+    stream.stop()
+
+    await #expect(throws: CancellationError.self) {
+      _ = try await stream.streamResponse()
+    }
+    expectNoDifference(stream.isStreaming, false)
+  }
+
+  #if canImport(Observation)
+    @Test
+    @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
+    func `Is Streaming Emits Observation Updates On Completion`() async throws {
+      let stream = CactusInferenceStream<String> { _ in
+        try await Task.sleep(nanoseconds: cancellationLeadTimeNanoseconds)
+        return CactusInferenceStream<String>.Response(output: "done")
+      }
+
+      let values = Lock([Bool]())
+      let token = observe {
+        values.withLock { $0.append(stream.isStreaming) }
+      }
+
+      _ = try await stream.collectResponse()
+      try await Task.sleep(for: .milliseconds(50))
+      token.cancel()
+
+      values.withLock {
+        expectNoDifference($0, [true, false])
+      }
+    }
+
+    @Test
+    @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
+    func `Is Streaming Emits Observation Updates On Stop`() async {
+      let stream = CactusInferenceStream<String> { _ in
+        try await Task.sleep(nanoseconds: producerSleepNanoseconds)
+        return CactusInferenceStream<String>.Response(output: "unreachable")
+      }
+
+      let values = Lock([Bool]())
+      let token = observe {
+        values.withLock { $0.append(stream.isStreaming) }
+      }
+
+      stream.stop()
+      await #expect(throws: CancellationError.self) {
+        _ = try await stream.streamResponse()
+      }
+      token.cancel()
+
+      values.withLock {
+        expectNoDifference($0, [true, false])
+      }
+    }
+  #endif
+
+  @Test
   func `Token AsyncSequence Streams All Tokens`() async throws {
     let expectedOutput = String(repeating: "a", count: streamedTokenCount)
 
