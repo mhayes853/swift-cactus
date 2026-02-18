@@ -72,20 +72,20 @@ function artifactbundle_write_info_json() {
     local INFO_FILE="$ARTIFACT_BUNDLE_PATH/info.json"
     {
         echo "{"
-        echo "  \"schemaVersion\": \"1.0\"," 
+        echo "  \"schemaVersion\": \"1.0\","
         echo "  \"artifacts\": {"
         echo "    \"cxxcactus\": {"
-        echo "      \"type\": \"staticLibrary\"," 
-        echo "      \"version\": \"1.0.0\"," 
+        echo "      \"type\": \"staticLibrary\","
+        echo "      \"version\": \"1.0.0\","
         echo "      \"variants\": ["
         local i
         for i in "${!VARIANT_PATHS[@]}"; do
-            local COMMA="," 
+            local COMMA=","
             if [ "$i" -eq $((${#VARIANT_PATHS[@]} - 1)) ]; then
                 COMMA=""
             fi
             echo "        {"
-            echo "          \"path\": \"${VARIANT_PATHS[$i]}\"," 
+            echo "          \"path\": \"${VARIANT_PATHS[$i]}\","
             echo "          \"supportedTriples\": [\"${VARIANT_TRIPLES[$i]}\"],"
             echo "          \"staticLibraryMetadata\": {"
             echo "            \"headerPaths\": [\"include\"],"
