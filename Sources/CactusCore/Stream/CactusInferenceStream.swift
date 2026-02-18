@@ -3,9 +3,15 @@ import Foundation
 // MARK: - CactusInferenceStream
 
 /// A lightweight async stream for model inference output, token events, and optional partial events.
-public struct CactusInferenceStream<Output: Sendable>: Sendable {
+public final class CactusInferenceStream<Output: Sendable>: Sendable {
+  private let observationRegistrar = _ObservationRegistrar()
+  private let state = Lock(State())
   private let storage: Storage
   private let task: Task<Void, Never>
+
+  private struct State {
+    var isStreaming = true
+  }
 
   /// Creates an inference stream from an async producer closure.
   ///
@@ -22,6 +28,9 @@ public struct CactusInferenceStream<Output: Sendable>: Sendable {
       } catch {
         storage.acceptStreamResponse(.failure(error))
       }
+    }
+    self.storage.setOnStreamFinished { [weak self] in
+      self?.markStreamingFinished()
     }
   }
 }
@@ -52,6 +61,12 @@ extension CactusInferenceStream {
 // MARK: - Public API
 
 extension CactusInferenceStream {
+  /// Indicates whether this stream is still producing output.
+  public var isStreaming: Bool {
+    self.observationRegistrar.access(self, keyPath: \.isStreaming)
+    return self.state.withLock { $0.isStreaming }
+  }
+
   /// Waits for and returns the final stream response.
   ///
   /// - Returns: The final response.
@@ -72,6 +87,15 @@ extension CactusInferenceStream {
   public func stop() {
     self.task.cancel()
     self.storage.cancel(CancellationError())
+  }
+
+  private func markStreamingFinished() {
+    self.observationRegistrar.withMutation(of: self, keyPath: \.isStreaming) {
+      self.state.withLock { state in
+        guard state.isStreaming else { return }
+        state.isStreaming = false
+      }
+    }
   }
 }
 
@@ -234,9 +258,14 @@ extension CactusInferenceStream {
       var tokenSubscribers = [UUID: TokenSubscriber]()
       var streamedPartials = [any Sendable]()
       var partialSubscribers = [UUID: PartialSubscriber]()
+      var onStreamFinished: @Sendable () -> Void = {}
     }
 
     private let state = RecursiveLock(State())
+
+    func setOnStreamFinished(_ operation: @escaping @Sendable () -> Void) {
+      self.state.withLock { $0.onStreamFinished = operation }
+    }
 
     func addStreamResponseContinuation(_ continuation: UnsafeContinuation<Response, any Error>) {
       self.state.withLock { state in
@@ -267,9 +296,11 @@ extension CactusInferenceStream {
     }
 
     func acceptStreamResponse(_ result: Result<Response, any Error>) {
+      var onStreamFinished: (@Sendable () -> Void)?
       self.state.withLock { state in
         guard state.streamResponseResult == nil else { return }
         state.streamResponseResult = result
+        onStreamFinished = state.onStreamFinished
 
         let finishedResult = result.map(\.output)
         for subscriber in state.tokenSubscribers.values {
@@ -288,6 +319,7 @@ extension CactusInferenceStream {
         }
         state.streamResponseContinuations.removeAll()
       }
+      onStreamFinished?()
     }
 
     func cancel(_ error: any Error) {
@@ -360,3 +392,6 @@ extension CactusInferenceStream.Storage where Output: StreamParseable, Output.Pa
     }
   }
 }
+
+@available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
+extension CactusInferenceStream: _Observable {}
