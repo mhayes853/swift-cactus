@@ -24,6 +24,7 @@ extension CactusLanguageModel {
   static let testModelRequest = CactusLanguageModel.PlatformDownloadRequest.lfm2Vl_450m()
   static let testVLMRequest = CactusLanguageModel.PlatformDownloadRequest.lfm2Vl_450m()
   static let testTranscribeRequest = CactusLanguageModel.PlatformDownloadRequest.whisperSmall()
+  static let testVADModelURL = URL.swiftCactusTestsDirectory.appendingPathComponent("silero-vad")
 
   @QueryRequest
   private static func downloadQuery(

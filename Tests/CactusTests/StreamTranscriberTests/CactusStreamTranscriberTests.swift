@@ -25,7 +25,7 @@ struct `CactusStreamTranscriber tests` {
   @Test
   func `Stream Transcriber Does Not Deallocate Model Pointer`() async throws {
     let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
-    let modelPointer = try #require(cactus_init(modelURL.nativePath, nil))
+    let modelPointer = try #require(cactus_init(modelURL.nativePath, nil, false))
     defer { cactus_destroy(modelPointer) }
 
     do {
@@ -92,7 +92,7 @@ struct `CactusStreamTranscriber tests` {
     @Test
     func `Stream Transcriber Pointer Is Not Deallocated When Not Managed`() async throws {
       let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
-      let modelPointer = try #require(cactus_init(modelURL.nativePath, nil))
+      let modelPointer = try #require(cactus_init(modelURL.nativePath, nil, false))
       defer { cactus_destroy(modelPointer) }
 
       let streamPointer = try #require(cactus_stream_transcribe_start(modelPointer, nil))

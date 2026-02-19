@@ -38,7 +38,7 @@ public final class CactusStreamTranscriber {
   /// - Parameters:
   ///   - modelURL: The URL of the model.
   public convenience init(modelURL: URL) throws {
-    guard let model = cactus_init(modelURL.nativePath, nil) else {
+    guard let model = cactus_init(modelURL.nativePath, nil, false) else {
       throw CactusStreamTranscriberError()
     }
     try self.init(model: model, isModelPointerManaged: true)

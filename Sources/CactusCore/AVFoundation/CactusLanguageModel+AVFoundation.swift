@@ -51,5 +51,24 @@
         onToken: onToken
       )
     }
+
+    /// Runs voice activity detection on the specified PCM buffer.
+    ///
+    /// - Parameters:
+    ///   - buffer: The PCM buffer to analyze.
+    ///   - options: The ``VADOptions``.
+    ///   - maxBufferSize: The maximum buffer size to store the result.
+    /// - Returns: A ``VADResult``.
+    public func vad(
+      buffer: AVAudioPCMBuffer,
+      options: VADOptions? = nil,
+      maxBufferSize: Int? = nil
+    ) throws -> VADResult {
+      try self.vad(
+        pcmBuffer: try buffer.cactusPCMBytes(),
+        options: options,
+        maxBufferSize: maxBufferSize
+      )
+    }
   }
 #endif
