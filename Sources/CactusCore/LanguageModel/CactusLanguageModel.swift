@@ -976,6 +976,21 @@ extension CactusLanguageModel.ChatCompletion: Decodable {
 }
 
 extension CactusLanguageModel.ChatCompletion: Encodable {
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(self.response, forKey: .response)
+    try container.encode(self.prefillTokens, forKey: .prefillTokens)
+    try container.encode(self.decodeTokens, forKey: .decodeTokens)
+    try container.encode(self.totalTokens, forKey: .totalTokens)
+    try container.encode(self.functionCalls, forKey: .functionCalls)
+    try container.encode(self.confidence, forKey: .confidence)
+    try container.encode(self.prefillTps, forKey: .prefillTps)
+    try container.encode(self.decodeTps, forKey: .decodeTps)
+    try container.encode(self.ramUsageMb, forKey: .ramUsageMb)
+    try container.encode(self.timeToFirstTokenMs, forKey: .timeToFirstTokenMs)
+    try container.encode(self.totalTimeMs, forKey: .totalTimeMs)
+  }
+
   private enum CodingKeys: String, CodingKey {
     case response
     case prefillTokens = "prefill_tokens"
@@ -1032,17 +1047,27 @@ extension CactusLanguageModel {
     /// The current process RAM usage in MB.
     public let ramUsageMb: Double
 
-    private let timeToFirstTokenMs: Double
-    private let totalTimeMs: Double
+    private let timeToFirstToken: CactusDuration
+    private let totalTime: CactusDuration
+
+    /// The amount of time to generate the first token.
+    public var durationToFirstToken: CactusDuration {
+      self.timeToFirstToken
+    }
+
+    /// The total generation time.
+    public var totalDuration: CactusDuration {
+      self.totalTime
+    }
 
     /// The amount of time in seconds to generate the first token.
     public var timeIntervalToFirstToken: TimeInterval {
-      self.timeToFirstTokenMs / 1000
+      self.timeToFirstToken.secondsDouble
     }
 
     /// The total generation time in seconds.
     public var totalTimeInterval: TimeInterval {
-      self.totalTimeMs / 1000
+      self.totalTime.secondsDouble
     }
   }
 
@@ -1305,12 +1330,30 @@ extension CactusLanguageModel.Transcription: Decodable {
     self.prefillTps = try container.decode(Double.self, forKey: .prefillTps)
     self.decodeTps = try container.decode(Double.self, forKey: .decodeTps)
     self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
-    self.timeToFirstTokenMs = try container.decode(Double.self, forKey: .timeToFirstTokenMs)
-    self.totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
+    self.timeToFirstToken = .milliseconds(
+      try container.decode(Double.self, forKey: .timeToFirstTokenMs)
+    )
+    self.totalTime = .milliseconds(
+      try container.decode(Double.self, forKey: .totalTimeMs)
+    )
   }
 }
 
 extension CactusLanguageModel.Transcription: Encodable {
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(self.response, forKey: .response)
+    try container.encode(self.prefillTokens, forKey: .prefillTokens)
+    try container.encode(self.decodeTokens, forKey: .decodeTokens)
+    try container.encode(self.totalTokens, forKey: .totalTokens)
+    try container.encode(self.confidence, forKey: .confidence)
+    try container.encode(self.prefillTps, forKey: .prefillTps)
+    try container.encode(self.decodeTps, forKey: .decodeTps)
+    try container.encode(self.ramUsageMb, forKey: .ramUsageMb)
+    try container.encode(self.timeToFirstToken.secondsDouble * 1000, forKey: .timeToFirstTokenMs)
+    try container.encode(self.totalTime.secondsDouble * 1000, forKey: .totalTimeMs)
+  }
+
   private enum CodingKeys: String, CodingKey {
     case response
     case prefillTokens = "prefill_tokens"
@@ -1362,11 +1405,16 @@ extension CactusLanguageModel {
     /// The current process RAM usage in MB.
     public let ramUsageMb: Double
 
-    private let totalTimeMs: Double
+    private let totalDurationValue: CactusDuration
+
+    /// The total processing duration.
+    public var totalDuration: CactusDuration {
+      self.totalDurationValue
+    }
 
     /// The total processing time in seconds.
     public var totalTime: TimeInterval {
-      self.totalTimeMs / 1000
+      self.totalDurationValue.secondsDouble
     }
   }
 
@@ -1378,17 +1426,17 @@ extension CactusLanguageModel {
     /// Negative threshold.
     public var negThreshold: Float?
 
-    /// The minimum speech duration in seconds.
-    public var minSpeechDuration: TimeInterval?
+    /// The minimum speech duration.
+    public var minSpeechDuration: CactusDuration?
 
-    /// The maximum speech duration in seconds.
-    public var maxSpeechDuration: TimeInterval?
+    /// The maximum speech duration.
+    public var maxSpeechDuration: CactusDuration?
 
-    /// The minimum silence duration in seconds.
-    public var minSilenceDuration: TimeInterval?
+    /// The minimum silence duration.
+    public var minSilenceDuration: CactusDuration?
 
-    /// The amount of padding in milliseconds to add around speech segments.
-    public var speechPadMs: Int?
+    /// The amount of padding duration to add around speech segments.
+    public var speechPadDuration: CactusDuration?
 
     /// The VAD window size in samples.
     public var windowSizeSamples: Int?
@@ -1406,10 +1454,10 @@ extension CactusLanguageModel {
     public init(
       threshold: Float? = nil,
       negThreshold: Float? = nil,
-      minSpeechDuration: TimeInterval? = nil,
-      maxSpeechDuration: TimeInterval? = nil,
-      minSilenceDuration: TimeInterval? = nil,
-      speechPadMs: Int? = nil,
+      minSpeechDuration: CactusDuration? = nil,
+      maxSpeechDuration: CactusDuration? = nil,
+      minSilenceDuration: CactusDuration? = nil,
+      speechPadDuration: CactusDuration? = nil,
       windowSizeSamples: Int? = nil,
       minSilenceAtMaxSpeech: Int? = nil,
       useMaxPossSilAtMaxSpeech: Bool? = nil,
@@ -1420,7 +1468,7 @@ extension CactusLanguageModel {
       self.minSpeechDuration = minSpeechDuration
       self.maxSpeechDuration = maxSpeechDuration
       self.minSilenceDuration = minSilenceDuration
-      self.speechPadMs = speechPadMs
+      self.speechPadDuration = speechPadDuration
       self.windowSizeSamples = windowSizeSamples
       self.minSilenceAtMaxSpeech = minSilenceAtMaxSpeech
       self.useMaxPossSilAtMaxSpeech = useMaxPossSilAtMaxSpeech
@@ -1433,7 +1481,7 @@ extension CactusLanguageModel {
       case minSpeechDuration = "min_speech_duration_ms"
       case maxSpeechDuration = "max_speech_duration_s"
       case minSilenceDuration = "min_silence_duration_ms"
-      case speechPadMs = "speech_pad_ms"
+      case speechPadDuration = "speech_pad_ms"
       case windowSizeSamples = "window_size_samples"
       case minSilenceAtMaxSpeech = "min_silence_at_max_speech"
       case useMaxPossSilAtMaxSpeech = "use_max_poss_sil_at_max_speech"
@@ -1556,12 +1604,21 @@ extension CactusLanguageModel.VADResult: Decodable {
   public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.segments = try container.decode([CactusLanguageModel.VADSegment].self, forKey: .segments)
-    self.totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
+    self.totalDurationValue = .milliseconds(
+      try container.decode(Double.self, forKey: .totalTimeMs)
+    )
     self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
   }
 }
 
 extension CactusLanguageModel.VADResult: Encodable {
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(self.segments, forKey: .segments)
+    try container.encode(self.totalDurationValue.secondsDouble * 1000, forKey: .totalTimeMs)
+    try container.encode(self.ramUsageMb, forKey: .ramUsageMb)
+  }
+
   private enum CodingKeys: String, CodingKey {
     case segments
     case totalTimeMs = "total_time_ms"
@@ -1576,20 +1633,16 @@ extension CactusLanguageModel.VADOptions: Decodable {
     self.negThreshold = try container.decodeIfPresent(Float.self, forKey: .negThreshold)
     self.minSpeechDuration =
       try container.decodeIfPresent(Int.self, forKey: .minSpeechDuration)
-      .map {
-        TimeInterval($0) / 1000
-      }
+      .map(CactusDuration.milliseconds)
     self.maxSpeechDuration =
       try container.decodeIfPresent(Double.self, forKey: .maxSpeechDuration)
-      .map { seconds in
-        TimeInterval(seconds)
-      }
+      .map(CactusDuration.seconds)
     self.minSilenceDuration =
       try container.decodeIfPresent(Int.self, forKey: .minSilenceDuration)
-      .map {
-        TimeInterval($0) / 1000
-      }
-    self.speechPadMs = try container.decodeIfPresent(Int.self, forKey: .speechPadMs)
+      .map(CactusDuration.milliseconds)
+    self.speechPadDuration =
+      try container.decodeIfPresent(Int.self, forKey: .speechPadDuration)
+      .map(CactusDuration.milliseconds)
     self.windowSizeSamples = try container.decodeIfPresent(Int.self, forKey: .windowSizeSamples)
     self.minSilenceAtMaxSpeech =
       try container.decodeIfPresent(Int.self, forKey: .minSilenceAtMaxSpeech)
@@ -1605,15 +1658,21 @@ extension CactusLanguageModel.VADOptions: Encodable {
     try container.encodeIfPresent(self.threshold, forKey: .threshold)
     try container.encodeIfPresent(self.negThreshold, forKey: .negThreshold)
     try container.encodeIfPresent(
-      self.minSpeechDuration.map { Int(($0 * 1000).rounded()) },
+      self.minSpeechDuration.map { Int(($0.secondsDouble * 1000).rounded()) },
       forKey: .minSpeechDuration
     )
-    try container.encodeIfPresent(self.maxSpeechDuration, forKey: .maxSpeechDuration)
     try container.encodeIfPresent(
-      self.minSilenceDuration.map { Int(($0 * 1000).rounded()) },
+      self.maxSpeechDuration.map(\.secondsDouble),
+      forKey: .maxSpeechDuration
+    )
+    try container.encodeIfPresent(
+      self.minSilenceDuration.map { Int(($0.secondsDouble * 1000).rounded()) },
       forKey: .minSilenceDuration
     )
-    try container.encodeIfPresent(self.speechPadMs, forKey: .speechPadMs)
+    try container.encodeIfPresent(
+      self.speechPadDuration.map { Int(($0.secondsDouble * 1000).rounded()) },
+      forKey: .speechPadDuration
+    )
     try container.encodeIfPresent(self.windowSizeSamples, forKey: .windowSizeSamples)
     try container.encodeIfPresent(self.minSilenceAtMaxSpeech, forKey: .minSilenceAtMaxSpeech)
     try container.encodeIfPresent(

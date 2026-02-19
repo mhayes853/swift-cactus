@@ -1,15 +1,15 @@
 {
-  "confidence" : 0.8643,
-  "decode_tokens" : 51,
-  "decode_tps" : 98.87,
+  "confidence" : 0.8659,
+  "decode_tokens" : 53,
+  "decode_tps" : 89.33,
   "function_calls" : [
 
   ],
   "prefill_tokens" : 314,
-  "prefill_tps" : 121.39,
-  "ram_usage_mb" : 982.66,
-  "response" : "The guy in the first image is smiling and holding a book, which suggests he might be excited or happy about something. It's possible that he is preparing for an exam or a significant event, as the presence of books often symbolizes learning and preparation.",
-  "time_to_first_token_ms" : 2586.6,
-  "total_time_ms" : 3092.34,
-  "total_tokens" : 365
+  "prefill_tps" : 272.62,
+  "ram_usage_mb" : 1163.43,
+  "response" : "The guy in the first image is smiling and holding a book, which suggests he might be excited or happy about something. The presence of a red bull and a monster on the night before his final exam could indicate that he is preparing for an important test or competition.",
+  "time_to_first_token_ms" : 1151.78,
+  "total_time_ms" : 1733.91,
+  "total_tokens" : 367
 }
