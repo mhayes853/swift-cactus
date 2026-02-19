@@ -837,7 +837,123 @@ extension CactusLanguageModel {
 
 extension CactusLanguageModel.ChatCompletion {
   /// Options for generating a ``CactusLanguageModel/ChatCompletion``.
-  public typealias Options = CactusLanguageModel.InferenceOptions
+  public struct Options: Hashable, Sendable, Codable {
+    /// A default array of common stop sequences.
+    public static let defaultStopSequences = ["<|im_end|>", "<end_of_turn>"]
+
+    /// The maximum number of tokens for the completion.
+    public var maxTokens: Int
+
+    /// The temperature.
+    public var temperature: Float
+
+    /// The nucleus sampling.
+    public var topP: Float
+
+    /// The k most probable options to limit the next word to.
+    public var topK: Int
+
+    /// An array of stop sequence phrases.
+    public var stopSequences: [String]
+
+    /// Whether to force functions to be used by the model.
+    public var forceFunctions: Bool
+
+    /// The minimum confidence threshold for tool selection (0.0-1.0).
+    public var confidenceThreshold: Float
+
+    /// The number of top results for tool RAG retrieval.
+    public var toolRagTopK: Int
+
+    /// Whether to include stop sequences in the response.
+    public var includeStopSequences: Bool
+
+    /// Whether telemetry is enabled.
+    public var isTelemetryEnabled: Bool
+
+    /// Creates options for generating chat completions.
+    ///
+    /// - Parameters:
+    ///   - maxTokens: The maximum number of tokens for the completion.
+    ///   - temperature: Sampling temperature.
+    ///   - topP: Nucleus sampling probability.
+    ///   - topK: The k most probable options to limit the next token to.
+    ///   - stopSequences: Phrases that stop generation when emitted.
+    ///   - forceFunctions: Whether tool calls are forced when tools are provided.
+    ///   - confidenceThreshold: Confidence threshold used for cloud handoff.
+    ///   - toolRagTopK: Number of top tools to keep after tool-RAG selection.
+    ///   - includeStopSequences: Whether stop sequences are kept in final output.
+    ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
+    public init(
+      maxTokens: Int = 200,
+      temperature: Float = 0.6,
+      topP: Float = 0.95,
+      topK: Int = 20,
+      stopSequences: [String] = Self.defaultStopSequences,
+      forceFunctions: Bool = false,
+      confidenceThreshold: Float = 0.7,
+      toolRagTopK: Int = 2,
+      includeStopSequences: Bool = false,
+      isTelemetryEnabled: Bool = false
+    ) {
+      self.maxTokens = maxTokens
+      self.temperature = temperature
+      self.topP = topP
+      self.topK = topK
+      self.stopSequences = stopSequences
+      self.forceFunctions = forceFunctions
+      self.confidenceThreshold = confidenceThreshold
+      self.toolRagTopK = toolRagTopK
+      self.includeStopSequences = includeStopSequences
+      self.isTelemetryEnabled = isTelemetryEnabled
+    }
+
+    /// Creates options for generating chat completions.
+    ///
+    /// - Parameters:
+    ///   - maxTokens: The maximum number of tokens for the completion.
+    ///   - modelType: Model type used to derive default sampling values.
+    ///   - stopSequences: Phrases that stop generation when emitted.
+    ///   - forceFunctions: Whether tool calls are forced when tools are provided.
+    ///   - confidenceThreshold: Confidence threshold used for cloud handoff.
+    ///   - toolRagTopK: Number of top tools to keep after tool-RAG selection.
+    ///   - includeStopSequences: Whether stop sequences are kept in final output.
+    ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
+    public init(
+      maxTokens: Int = 200,
+      modelType: CactusLanguageModel.ModelType,
+      stopSequences: [String] = Self.defaultStopSequences,
+      forceFunctions: Bool = false,
+      confidenceThreshold: Float = 0.7,
+      toolRagTopK: Int = 2,
+      includeStopSequences: Bool = false,
+      isTelemetryEnabled: Bool = false
+    ) {
+      self.maxTokens = maxTokens
+      self.temperature = modelType.defaultTemperature
+      self.topP = modelType.defaultTopP
+      self.topK = modelType.defaultTopK
+      self.stopSequences = stopSequences
+      self.forceFunctions = forceFunctions
+      self.confidenceThreshold = confidenceThreshold
+      self.toolRagTopK = toolRagTopK
+      self.includeStopSequences = includeStopSequences
+      self.isTelemetryEnabled = isTelemetryEnabled
+    }
+
+    private enum CodingKeys: String, CodingKey {
+      case maxTokens = "max_tokens"
+      case temperature
+      case topP = "top_p"
+      case topK = "top_k"
+      case stopSequences = "stop_sequences"
+      case forceFunctions = "force_tools"
+      case confidenceThreshold = "confidence_threshold"
+      case toolRagTopK = "tool_rag_top_k"
+      case includeStopSequences = "include_stop_sequences"
+      case isTelemetryEnabled = "telemetry_enabled"
+    }
+  }
 }
 
 extension CactusLanguageModel.ChatCompletion: Decodable {
@@ -1046,11 +1162,9 @@ extension CactusLanguageModel {
     maxBufferSize: Int? = nil,
     onToken: (String, UInt32) -> Void
   ) throws -> Transcription {
-    guard self.configurationFile.modelType == .whisper else {
-      throw TranscriptionError.notSupported
-    }
+    guard self.isTranscriptionModel else { throw TranscriptionError.notSupported }
 
-    let options = options ?? Transcription.Options(modelType: .whisper)
+    let options = options ?? Transcription.Options()
     let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else {
       throw TranscriptionError.bufferSizeTooSmall
@@ -1110,11 +1224,74 @@ extension CactusLanguageModel {
     let transcription = try ffiDecoder.decode(Transcription.self, from: responseData)
     return transcription
   }
+
+  private var isTranscriptionModel: Bool {
+    self.configurationFile.modelType == .whisper || self.configurationFile.modelType == .moonshine
+  }
 }
 
 extension CactusLanguageModel.Transcription {
   /// Options for generating a ``CactusLanguageModel/Transcription``.
-  public typealias Options = CactusLanguageModel.InferenceOptions
+  public struct Options: Hashable, Sendable, Codable {
+    /// The maximum number of tokens for the completion.
+    public var maxTokens: Int
+
+    /// The temperature.
+    public var temperature: Float
+
+    /// The nucleus sampling.
+    public var topP: Float
+
+    /// The k most probable options to limit the next word to.
+    public var topK: Int
+
+    /// Whether telemetry is enabled.
+    public var isTelemetryEnabled: Bool
+
+    /// Whether to enable VAD weights on the transcription model.
+    public var useVad: Bool?
+
+    /// Threshold for triggering cloud handoff based on confidence.
+    public var cloudHandoffThreshold: Float?
+
+    /// Creates options for generating transcriptions.
+    ///
+    /// - Parameters:
+    ///   - maxTokens: The maximum number of tokens for the transcription.
+    ///   - temperature: Sampling temperature.
+    ///   - topP: Nucleus sampling probability.
+    ///   - topK: The k most probable options to limit the next token to.
+    ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
+    ///   - useVad: Whether to enable VAD weights for transcription. `nil` defers to higher-level defaults.
+    ///   - cloudHandoffThreshold: Optional confidence threshold for cloud handoff.
+    public init(
+      maxTokens: Int = 200,
+      temperature: Float = 0.6,
+      topP: Float = 0.95,
+      topK: Int = 20,
+      isTelemetryEnabled: Bool = false,
+      useVad: Bool? = nil,
+      cloudHandoffThreshold: Float? = nil
+    ) {
+      self.maxTokens = maxTokens
+      self.temperature = temperature
+      self.topP = topP
+      self.topK = topK
+      self.isTelemetryEnabled = isTelemetryEnabled
+      self.useVad = useVad
+      self.cloudHandoffThreshold = cloudHandoffThreshold
+    }
+
+    private enum CodingKeys: String, CodingKey {
+      case maxTokens = "max_tokens"
+      case temperature
+      case topP = "top_p"
+      case topK = "top_k"
+      case isTelemetryEnabled = "telemetry_enabled"
+      case useVad = "use_vad"
+      case cloudHandoffThreshold = "cloud_handoff_threshold"
+    }
+  }
 }
 
 extension CactusLanguageModel.Transcription: Decodable {
@@ -1451,113 +1628,13 @@ extension CactusLanguageModel.VADOptions: Encodable {
 
 extension CactusLanguageModel {
   /// Options for generating inferences.
-  public struct InferenceOptions: Hashable, Sendable, Codable {
-    /// A default array of common stop sequences.
-    public static let defaultStopSequences = ["<|im_end|>", "<end_of_turn>"]
-
-    /// The maximum number of tokens for the completion.
-    public var maxTokens: Int
-
-    /// The temperature.
-    public var temperature: Float
-
-    /// The nucleus sampling.
-    public var topP: Float
-
-    /// The k most probable options to limit the next word to.
-    public var topK: Int
-
-    /// An array of stop sequence phrases.
-    public var stopSequences: [String]
-
-    /// Whether to force functions to be used by the model.
-    public var forceFunctions: Bool
-
-    /// The minimum confidence threshold for tool selection (0.0-1.0).
-    public var confidenceThreshold: Float
-
-    /// The number of top results for tool RAG retrieval.
-    public var toolRagTopK: Int
-
-    /// Whether to include stop sequences in the response.
-    public var includeStopSequences: Bool
-
-    /// Creates options for generating inferences.
-    ///
-    /// - Parameters:
-    ///   - maxTokens: The maximum number of tokens for the completion.
-    ///   - temperature: The temperature.
-    ///   - topP: The nucleus sampling.
-    ///   - topK: The k most probable options to limit the next word to.
-    ///   - stopSequences: An array of stop sequence phrases.
-    ///   - forceFunctions: Whether to force functions to be used by the model.
-    ///   - confidenceThreshold: The minimum confidence threshold for tool selection (0.0-1.0).
-    ///   - toolRagTopK: The number of top results for tool RAG retrieval.
-    ///   - includeStopSequences: Whether to include stop sequences in the response.
-    public init(
-      maxTokens: Int = 200,
-      temperature: Float = 0.6,
-      topP: Float = 0.95,
-      topK: Int = 20,
-      stopSequences: [String] = Self.defaultStopSequences,
-      forceFunctions: Bool = false,
-      confidenceThreshold: Float = 0.7,
-      toolRagTopK: Int = 2,
-      includeStopSequences: Bool = false
-    ) {
-      self.maxTokens = maxTokens
-      self.temperature = temperature
-      self.topP = topP
-      self.topK = topK
-      self.stopSequences = stopSequences
-      self.forceFunctions = forceFunctions
-      self.confidenceThreshold = confidenceThreshold
-      self.toolRagTopK = toolRagTopK
-      self.includeStopSequences = includeStopSequences
-    }
-
-    /// Creates options for generating inferences.
-    ///
-    /// - Parameters:
-    ///   - maxTokens: The maximum number of tokens for the completion.
-    ///   - modelType: The model type.
-    ///   - stopSequences: An array of stop sequence phrases.
-    ///   - forceFunctions: Whether to force functions to be used by the model.
-    ///   - confidenceThreshold: The minimum confidence threshold for tool selection (0.0-1.0).
-    ///   - toolRagTopK: The number of top results for tool RAG retrieval.
-    ///   - includeStopSequences: Whether to include stop sequences in the response.
-    public init(
-      maxTokens: Int = 200,
-      modelType: CactusLanguageModel.ModelType,
-      stopSequences: [String] = Self.defaultStopSequences,
-      forceFunctions: Bool = false,
-      confidenceThreshold: Float = 0.7,
-      toolRagTopK: Int = 2,
-      includeStopSequences: Bool = false
-    ) {
-      self.maxTokens = maxTokens
-      self.temperature = modelType.defaultTemperature
-      self.topP = modelType.defaultTopP
-      self.topK = modelType.defaultTopK
-      self.stopSequences = stopSequences
-      self.forceFunctions = forceFunctions
-      self.confidenceThreshold = confidenceThreshold
-      self.toolRagTopK = toolRagTopK
-      self.includeStopSequences = includeStopSequences
-    }
-
-    private enum CodingKeys: String, CodingKey {
-      case maxTokens = "max_tokens"
-      case temperature
-      case topP = "top_p"
-      case topK = "top_k"
-      case stopSequences = "stop_sequences"
-      case forceFunctions = "force_tools"
-      case confidenceThreshold = "confidence_threshold"
-      case toolRagTopK = "tool_rag_top_k"
-      case includeStopSequences = "include_stop_sequences"
-    }
-  }
+  @available(
+    *,
+    deprecated,
+    message:
+      "Use CactusLanguageModel.ChatCompletion.Options for chat completions or CactusLanguageModel.Transcription.Options for transcriptions."
+  )
+  public typealias InferenceOptions = CactusLanguageModel.ChatCompletion.Options
 }
 
 // MARK: - Stop

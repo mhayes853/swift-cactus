@@ -96,15 +96,16 @@ extension CactusTranscriptionSession {
   ///
   /// - Parameters:
   ///   - request: The transcription request.
-  ///   - options: Inference options used by the model.
+  ///   - options: Transcription options used by the model.
   /// - Returns: A stream that yields transcription tokens and final output.
   public func stream(
     request: CactusTranscription.Request,
-    options: CactusLanguageModel.InferenceOptions? = nil
+    options: CactusLanguageModel.Transcription.Options? = nil
   ) throws -> CactusInferenceStream<CactusTranscription> {
     let messageStreamID = CactusMessageID()
     let modelActor = self.modelActor
     let modelStopper = self.modelStopper
+    let options = self.resolveTranscriptionOptions(request: request, options: options)
 
     let stream = CactusInferenceStream<CactusTranscription> { [weak self] continuation in
       guard self != nil else { throw CancellationError() }
@@ -112,17 +113,16 @@ extension CactusTranscriptionSession {
       let modelTranscription = try await withTaskCancellationHandler {
         try await modelActor.transcribe(
           request: request,
-          options: options ?? CactusLanguageModel.InferenceOptions(),
-          onToken: { stringValue, tokenId in
-            continuation.yield(
-              token: CactusStreamedToken(
-                messageStreamId: messageStreamID,
-                stringValue: stringValue,
-                tokenId: tokenId
-              )
+          options: options
+        ) { stringValue, tokenId in
+          continuation.yield(
+            token: CactusStreamedToken(
+              messageStreamId: messageStreamID,
+              stringValue: stringValue,
+              tokenId: tokenId
             )
-          }
-        )
+          )
+        }
       } onCancel: {
         modelStopper.stop()
       }
@@ -146,20 +146,16 @@ extension CactusTranscriptionSession {
   /// Performs a transcription and returns its final parsed output.
   ///
   /// ```swift
-  /// let transcription = try await session.transcribe(
-  ///   request: request,
-  ///   options: CactusLanguageModel.InferenceOptions(modelType: .whisper)
-  /// )
-  /// _ = transcription
+  /// let transcription = try await session.transcribe(request: request)
   /// ```
   ///
   /// - Parameters:
   ///   - request: The transcription request.
-  ///   - options: Inference options used by the model.
+  ///   - options: Transcription options used by the model.
   /// - Returns: The final parsed transcription.
   public func transcribe(
     request: CactusTranscription.Request,
-    options: CactusLanguageModel.InferenceOptions? = nil
+    options: CactusLanguageModel.Transcription.Options? = nil
   ) async throws -> CactusTranscription {
     let stream = try self.stream(request: request, options: options)
     return try await withTaskCancellationHandler {
@@ -189,6 +185,17 @@ extension CactusTranscriptionSession {
 // MARK: - State
 
 extension CactusTranscriptionSession {
+  private func resolveTranscriptionOptions(
+    request: CactusTranscription.Request,
+    options: CactusLanguageModel.Transcription.Options?
+  ) -> CactusLanguageModel.Transcription.Options {
+    var options = options ?? CactusLanguageModel.Transcription.Options()
+    if options.useVad == nil {
+      options.useVad = request.includesTimestamps
+    }
+    return options
+  }
+
   private func beginTranscribing(stream: CactusInferenceStream<CactusTranscription>) throws {
     try self.observationRegistrar.withMutation(of: self, keyPath: \.isTranscribing) {
       try self.state.withLock { state in
@@ -244,7 +251,7 @@ extension CactusTranscriptionSession {
 
     func transcribe(
       request: CactusTranscription.Request,
-      options: CactusLanguageModel.InferenceOptions,
+      options: CactusLanguageModel.Transcription.Options,
       onToken: @escaping @Sendable (String, UInt32) -> Void
     ) throws -> CactusLanguageModel.Transcription {
       if let audioURL = request.content.audioURL {
@@ -298,5 +305,15 @@ public struct CactusTranscriptionStreamError: Error, Hashable, Sendable {
   )
 }
 
+// MARK: - Observable
+
 @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
 extension CactusTranscriptionSession: _Observable {}
+
+// MARK: - Helpers
+
+extension CactusTranscription.Request {
+  fileprivate var includesTimestamps: Bool {
+    !self.prompt.contains("<|notimestamps|>")
+  }
+}
