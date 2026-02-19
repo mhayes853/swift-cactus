@@ -11,6 +11,7 @@ import Foundation
 public final class CactusStreamTranscriber {
   private let isStreamPointerManaged: Bool
   private static let responseBufferSize = 8192
+  private var isFinalized = false
 
   /// The underlying stream transcriber pointer.
   public let streamTranscribe: cactus_stream_transcribe_t
@@ -71,10 +72,8 @@ public final class CactusStreamTranscriber {
   }
 
   deinit {
-    if self.isStreamPointerManaged {
-      let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: Self.responseBufferSize)
-      defer { responseBuffer.deallocate() }
-      _ = cactus_stream_transcribe_stop(self.streamTranscribe, responseBuffer, Self.responseBufferSize)
+    if self.isStreamPointerManaged, !self.isFinalized {
+      _ = cactus_stream_transcribe_stop(self.streamTranscribe, nil, 0)
     }
     if let model {
       cactus_destroy(model)
@@ -85,6 +84,12 @@ public final class CactusStreamTranscriber {
 // MARK: - Process
 
 extension CactusStreamTranscriber {
+  private func ensureNotFinalized() throws {
+    guard !self.isFinalized else {
+      throw CactusStreamTranscriberError(message: "Stream transcriber is already finalized.")
+    }
+  }
+
   /// A result of processing audio in this transcriber.
   public struct ProcessedTranscription: Codable, Hashable, Sendable {
     /// The portion of the transcription that has been confirmed.
@@ -98,7 +103,8 @@ extension CactusStreamTranscriber {
   /// - Parameter buffer: The PCM audio buffer to process.
   /// - Returns: A ``ProcessedTranscription``.
   public func process(buffer: [UInt8]) throws -> ProcessedTranscription {
-    try buffer.withUnsafeBufferPointer { rawBuffer in
+    try self.ensureNotFinalized()
+    return try buffer.withUnsafeBufferPointer { rawBuffer in
       try self.process(buffer: rawBuffer)
     }
   }
@@ -108,6 +114,7 @@ extension CactusStreamTranscriber {
   /// - Parameter buffer: The PCM audio buffer to process.
   /// - Returns: A ``ProcessedTranscription``.
   public func process(buffer: UnsafeBufferPointer<UInt8>) throws -> ProcessedTranscription {
+    try self.ensureNotFinalized()
     let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: Self.responseBufferSize)
     defer { responseBuffer.deallocate() }
 
@@ -146,6 +153,8 @@ extension CactusStreamTranscriber {
   ///
   /// - Returns: A ``FinalizedTranscription``.
   public func stop() throws -> FinalizedTranscription {
+    try self.ensureNotFinalized()
+
     let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: Self.responseBufferSize)
     defer { responseBuffer.deallocate() }
 
@@ -165,7 +174,9 @@ extension CactusStreamTranscriber {
       throw CactusStreamTranscriberError(message: response.error)
     }
 
-    return try ffiDecoder.decode(FinalizedTranscription.self, from: responseData)
+    let finalized = try ffiDecoder.decode(FinalizedTranscription.self, from: responseData)
+    self.isFinalized = true
+    return finalized
   }
 }
 
