@@ -33,6 +33,7 @@ public final class CactusModelsDirectory: Sendable {
   private struct State {
     var downloadTasks = [CactusLanguageModel.PlatformDownloadRequest: DownloadTaskEntry]()
     var downloadTaskCreator: any DownloadTaskCreator
+    var delegate: (any Delegate)?
   }
 
   private struct DownloadTaskEntry {
@@ -43,7 +44,7 @@ public final class CactusModelsDirectory: Sendable {
   /// The base `URL` of this directory.
   public let baseURL: URL
 
-  private let state: Lock<State>
+  private let state: RecursiveLock<State>
 
   private let observationRegistrar = _ObservationRegistrar()
 
@@ -61,8 +62,87 @@ public final class CactusModelsDirectory: Sendable {
   ///   - downloadTaskCreator: The ``DownloadTaskCreator`` to use for downloading models.
   public init(baseURL: URL, downloadTaskCreator: sending any DownloadTaskCreator) {
     self.baseURL = baseURL
-    self.state = Lock(State(downloadTaskCreator: downloadTaskCreator))
+    self.state = RecursiveLock(State(downloadTaskCreator: downloadTaskCreator))
   }
+}
+
+// MARK: - Delegate
+
+extension CactusModelsDirectory {
+  /// A delegate that observes events for ``CactusModelsDirectory``.
+  ///
+  /// Set ``CactusModelsDirectory/delegate`` to receive events from model directory operations.
+  public protocol Delegate: Sendable {
+    /// Called right before
+    /// ``CactusModelsDirectory/migrateFromv1_5Tov1_7Structure()`` begins.
+    ///
+    /// - Parameter directory: The models directory performing the migration.
+    func modelsDirectoryWillStartMigrationFromv1_5Tov1_7Structure(
+      _ directory: CactusModelsDirectory
+    )
+
+    /// Called when
+    /// ``CactusModelsDirectory/migrateFromv1_5Tov1_7Structure()`` finishes,
+    /// either successfully or with an error.
+    ///
+    /// - Parameters:
+    ///   - directory: The models directory that performed the migration.
+    ///   - result: The migration result or the failure error.
+    func modelsDirectoryDidFinishMigrationFromv1_5Tov1_7Structure(
+      _ directory: CactusModelsDirectory,
+      result: Result<Migrationv1_5Tov1_7StructureResult, any Error>
+    )
+
+    /// Called right before a model removal begins.
+    ///
+    /// - Parameters:
+    ///   - directory: The models directory removing the model.
+    ///   - request: The request identifying the model to remove.
+    func modelsDirectoryWillRemoveModel(
+      _ directory: CactusModelsDirectory,
+      request: CactusLanguageModel.PlatformDownloadRequest
+    )
+
+    /// Called when a model removal finishes, either successfully or with an
+    /// error.
+    ///
+    /// - Parameters:
+    ///   - directory: The models directory that attempted the removal.
+    ///   - request: The request identifying the model that was removed.
+    ///   - result: `success(())` on success, or the failure error.
+    func modelsDirectoryDidRemoveModel(
+      _ directory: CactusModelsDirectory,
+      request: CactusLanguageModel.PlatformDownloadRequest,
+      result: Result<Void, any Error>
+    )
+  }
+
+  public var delegate: (any Delegate)? {
+    get { self.state.withLock { $0.delegate } }
+    set { self.state.withLock { $0.delegate = newValue } }
+  }
+}
+
+extension CactusModelsDirectory.Delegate {
+  public func modelsDirectoryWillStartMigrationFromv1_5Tov1_7Structure(
+    _ directory: CactusModelsDirectory
+  ) {}
+
+  public func modelsDirectoryDidFinishMigrationFromv1_5Tov1_7Structure(
+    _ directory: CactusModelsDirectory,
+    result: Result<CactusModelsDirectory.Migrationv1_5Tov1_7StructureResult, any Error>
+  ) {}
+
+  public func modelsDirectoryWillRemoveModel(
+    _ directory: CactusModelsDirectory,
+    request: CactusLanguageModel.PlatformDownloadRequest
+  ) {}
+
+  public func modelsDirectoryDidRemoveModel(
+    _ directory: CactusModelsDirectory,
+    request: CactusLanguageModel.PlatformDownloadRequest,
+    result: Result<Void, any Error>
+  ) {}
 }
 
 // MARK: - Shared Directory
@@ -447,106 +527,120 @@ extension CactusModelsDirectory {
   public func storedModelURL(
     for request: CactusLanguageModel.PlatformDownloadRequest
   ) -> URL? {
-    let destinationURL = self.destinationURL(for: request)
-    var isDirectory = ObjCBool(false)
-    let doesExist = FileManager.default.fileExists(
-      atPath: destinationURL.relativePath,
-      isDirectory: &isDirectory
-    )
-    return doesExist && isDirectory.boolValue ? destinationURL : nil
+    self.state.withLock { _ in
+      let destinationURL = self.destinationURL(for: request)
+      var isDirectory = ObjCBool(false)
+      let doesExist = FileManager.default.fileExists(
+        atPath: destinationURL.relativePath,
+        isDirectory: &isDirectory
+      )
+      return doesExist && isDirectory.boolValue ? destinationURL : nil
+    }
   }
 
   /// Returns an array of all ``StoredModel`` instances in this directory.
   public func storedModels() -> [StoredModel] {
-    guard
-      let versionDirectories = try? FileManager.default.contentsOfDirectory(
-        at: self.baseURL,
-        includingPropertiesForKeys: [.isDirectoryKey],
-        options: [.skipsHiddenFiles]
-      )
-    else {
-      return []
-    }
-
-    var models = [StoredModel]()
-    for versionDirectory in versionDirectories {
+    self.state.withLock { _ in
       guard
-        let isVersionDirectory = try? versionDirectory.resourceValues(forKeys: [.isDirectoryKey])
-          .isDirectory,
-        isVersionDirectory == true
+        let versionDirectories = try? FileManager.default.contentsOfDirectory(
+          at: self.baseURL,
+          includingPropertiesForKeys: [.isDirectoryKey],
+          options: [.skipsHiddenFiles]
+        )
       else {
-        continue
+        return []
       }
-      let version = CactusLanguageModel.PlatformDownloadRequest.Version(
-        rawValue: versionDirectory.lastPathComponent
-      )
-      guard let quantizationDirectories = try? FileManager.default.contentsOfDirectory(
-        at: versionDirectory,
-        includingPropertiesForKeys: [.isDirectoryKey],
-        options: [.skipsHiddenFiles]
-      ) else {
-        continue
-      }
-      for quantizationDirectory in quantizationDirectories {
+
+      var models = [StoredModel]()
+      for versionDirectory in versionDirectories {
         guard
-          let isQuantizationDirectory = try? quantizationDirectory.resourceValues(forKeys: [
-            .isDirectoryKey
-          ]).isDirectory,
-          isQuantizationDirectory == true
+          let isVersionDirectory = try? versionDirectory.resourceValues(forKeys: [.isDirectoryKey])
+            .isDirectory,
+          isVersionDirectory == true
         else {
           continue
         }
-        let quantization = CactusLanguageModel.PlatformDownloadRequest.Quantization(
-          rawValue: quantizationDirectory.lastPathComponent
+        let version = CactusLanguageModel.PlatformDownloadRequest.Version(
+          rawValue: versionDirectory.lastPathComponent
         )
-        guard let channelDirectories = try? FileManager.default.contentsOfDirectory(
-          at: quantizationDirectory,
-          includingPropertiesForKeys: [.isDirectoryKey],
-          options: [.skipsHiddenFiles]
-        ) else {
+        guard
+          let quantizationDirectories = try? FileManager.default.contentsOfDirectory(
+            at: versionDirectory,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+          )
+        else {
           continue
         }
-        for channelDirectory in channelDirectories {
+        for quantizationDirectory in quantizationDirectories {
           guard
-            let isChannelDirectory = try? channelDirectory.resourceValues(forKeys: [.isDirectoryKey])
+            let isQuantizationDirectory =
+              try? quantizationDirectory.resourceValues(forKeys: [
+                .isDirectoryKey
+              ])
               .isDirectory,
-            isChannelDirectory == true
+            isQuantizationDirectory == true
           else {
             continue
           }
-          let pro: CactusLanguageModel.PlatformDownloadRequest.Pro? =
-            channelDirectory.lastPathComponent == Self.ordinaryDirectoryName
-            ? nil
-            : CactusLanguageModel.PlatformDownloadRequest.Pro(
-              rawValue: channelDirectory.lastPathComponent
+          let quantization = CactusLanguageModel.PlatformDownloadRequest.Quantization(
+            rawValue: quantizationDirectory.lastPathComponent
+          )
+          guard
+            let channelDirectories = try? FileManager.default.contentsOfDirectory(
+              at: quantizationDirectory,
+              includingPropertiesForKeys: [.isDirectoryKey],
+              options: [.skipsHiddenFiles]
             )
-          guard let modelDirectories = try? FileManager.default.contentsOfDirectory(
-            at: channelDirectory,
-            includingPropertiesForKeys: [.isDirectoryKey],
-            options: [.skipsHiddenFiles]
-          ) else {
+          else {
             continue
           }
-          for modelDirectory in modelDirectories {
+          for channelDirectory in channelDirectories {
             guard
-              let isModelDirectory = try? modelDirectory.resourceValues(forKeys: [.isDirectoryKey])
+              let isChannelDirectory =
+                try? channelDirectory.resourceValues(forKeys: [.isDirectoryKey])
                 .isDirectory,
-              isModelDirectory == true
+              isChannelDirectory == true
             else {
               continue
             }
-            let request = CactusLanguageModel.PlatformDownloadRequest(
-              slug: modelDirectory.lastPathComponent,
-              quantization: quantization,
-              version: version,
-              pro: pro
-            )
-            models.append(StoredModel(request: request, url: modelDirectory))
+            let pro: CactusLanguageModel.PlatformDownloadRequest.Pro? =
+              channelDirectory.lastPathComponent == Self.ordinaryDirectoryName
+              ? nil
+              : CactusLanguageModel.PlatformDownloadRequest.Pro(
+                rawValue: channelDirectory.lastPathComponent
+              )
+            guard
+              let modelDirectories = try? FileManager.default.contentsOfDirectory(
+                at: channelDirectory,
+                includingPropertiesForKeys: [.isDirectoryKey],
+                options: [.skipsHiddenFiles]
+              )
+            else {
+              continue
+            }
+            for modelDirectory in modelDirectories {
+              guard
+                let isModelDirectory =
+                  try? modelDirectory.resourceValues(forKeys: [.isDirectoryKey])
+                  .isDirectory,
+                isModelDirectory == true
+              else {
+                continue
+              }
+              let request = CactusLanguageModel.PlatformDownloadRequest(
+                slug: modelDirectory.lastPathComponent,
+                quantization: quantization,
+                version: version,
+                pro: pro
+              )
+              models.append(StoredModel(request: request, url: modelDirectory))
+            }
           }
         }
       }
+      return models
     }
-    return models
   }
 }
 
@@ -571,7 +665,135 @@ extension CactusModelsDirectory {
   public func removeModel(
     with request: CactusLanguageModel.PlatformDownloadRequest
   ) throws {
-    try FileManager.default.removeItem(at: self.destinationURL(for: request))
+    let delegate = self.state.withLock { state in state.delegate }
+
+    delegate?.modelsDirectoryWillRemoveModel(self, request: request)
+    do {
+      try FileManager.default.removeItem(at: self.destinationURL(for: request))
+      delegate?
+        .modelsDirectoryDidRemoveModel(
+          self,
+          request: request,
+          result: Result<Void, any Error>.success(())
+        )
+    } catch {
+      delegate?
+        .modelsDirectoryDidRemoveModel(
+          self,
+          request: request,
+          result: Result<Void, any Error>.failure(error)
+        )
+      throw error
+    }
+  }
+}
+
+// MARK: - Migrations
+
+extension CactusModelsDirectory {
+  public struct Migrationv1_5Tov1_7StructureResult: Hashable, Sendable {
+    public let migrated: [StoredModel]
+    public let removed: [StoredModel]
+
+    public init(migrated: [StoredModel], removed: [StoredModel]) {
+      self.migrated = migrated
+      self.removed = removed
+    }
+  }
+
+  @discardableResult
+  public func migrateFromv1_5Tov1_7Structure() throws -> Migrationv1_5Tov1_7StructureResult {
+    let delegate = self.state.withLock { state in state.delegate }
+
+    delegate?.modelsDirectoryWillStartMigrationFromv1_5Tov1_7Structure(self)
+    do {
+      let result = try self.performMigrationFromv1_5Tov1_7Structure(delegate: delegate)
+      delegate?
+        .modelsDirectoryDidFinishMigrationFromv1_5Tov1_7Structure(
+          self,
+          result: Result<Migrationv1_5Tov1_7StructureResult, any Error>.success(result)
+        )
+      return result
+    } catch {
+      delegate?
+        .modelsDirectoryDidFinishMigrationFromv1_5Tov1_7Structure(
+          self,
+          result: Result<Migrationv1_5Tov1_7StructureResult, any Error>.failure(error)
+        )
+      throw error
+    }
+  }
+
+  private func performMigrationFromv1_5Tov1_7Structure(
+    delegate: (any Delegate)?
+  ) throws -> Migrationv1_5Tov1_7StructureResult {
+    guard
+      let legacyDirectories = try? FileManager.default.contentsOfDirectory(
+        at: self.baseURL,
+        includingPropertiesForKeys: [.isDirectoryKey],
+        options: [.skipsHiddenFiles]
+      )
+    else {
+      return Migrationv1_5Tov1_7StructureResult(migrated: [], removed: [])
+    }
+
+    var migrated = [StoredModel]()
+    var removed = [StoredModel]()
+
+    for legacyDirectory in legacyDirectories {
+      guard
+        let isDirectory = try? legacyDirectory.resourceValues(forKeys: [.isDirectoryKey])
+          .isDirectory,
+        isDirectory == true,
+        let request = self.request(fromLegacyDirectoryName: legacyDirectory.lastPathComponent)
+      else {
+        continue
+      }
+
+      let legacyStoredModel = StoredModel(request: request, url: legacyDirectory)
+      if request.isOlderThanv1_7 {
+        delegate?.modelsDirectoryWillRemoveModel(self, request: request)
+        do {
+          try FileManager.default.removeItem(at: legacyDirectory)
+          delegate?
+            .modelsDirectoryDidRemoveModel(
+              self,
+              request: request,
+              result: Result<Void, any Error>.success(())
+            )
+        } catch {
+          delegate?
+            .modelsDirectoryDidRemoveModel(
+              self,
+              request: request,
+              result: Result<Void, any Error>.failure(error)
+            )
+          throw error
+        }
+        removed.append(legacyStoredModel)
+        continue
+      }
+
+      let destinationURL = self.migratedDestinationURL(for: request)
+      try FileManager.default.createDirectory(
+        at: destinationURL.deletingLastPathComponent(),
+        withIntermediateDirectories: true
+      )
+
+      let destinationExists = FileManager.default.fileExists(atPath: destinationURL.path)
+      if destinationExists {
+        try FileManager.default.removeItem(at: legacyDirectory)
+      } else {
+        try FileManager.default.moveItem(at: legacyDirectory, to: destinationURL)
+      }
+
+      migrated.append(StoredModel(request: request, url: destinationURL))
+    }
+
+    return Migrationv1_5Tov1_7StructureResult(
+      migrated: migrated.sorted { $0.url.path < $1.url.path },
+      removed: removed.sorted { $0.url.path < $1.url.path }
+    )
   }
 }
 
@@ -585,6 +807,37 @@ extension CactusModelsDirectory: _Observable {
 
 extension CactusModelsDirectory {
   static let ordinaryDirectoryName = "__ordinary__"
+
+  private func migratedDestinationURL(
+    for request: CactusLanguageModel.PlatformDownloadRequest
+  ) -> URL {
+    let proDirectoryName = request.pro?.rawValue ?? Self.ordinaryDirectoryName
+    return self.baseURL
+      .appendingPathComponent(request.version.rawValue, isDirectory: true)
+      .appendingPathComponent(request.quantization.rawValue, isDirectory: true)
+      .appendingPathComponent(proDirectoryName, isDirectory: true)
+      .appendingPathComponent(request.slug, isDirectory: true)
+  }
+
+  private func request(
+    fromLegacyDirectoryName name: String
+  ) -> CactusLanguageModel.PlatformDownloadRequest? {
+    let parts = name.components(separatedBy: "--")
+    guard parts.count >= 3 else { return nil }
+    let slug = parts[0]
+    let quantization = CactusLanguageModel.PlatformDownloadRequest.Quantization(rawValue: parts[1])
+    let version = CactusLanguageModel.PlatformDownloadRequest.Version(rawValue: parts[2])
+    let pro =
+      parts.count > 3
+      ? CactusLanguageModel.PlatformDownloadRequest.Pro(rawValue: parts[3])
+      : nil
+    return CactusLanguageModel.PlatformDownloadRequest(
+      slug: slug,
+      quantization: quantization,
+      version: version,
+      pro: pro
+    )
+  }
 
   private func destinationURL(
     for request: CactusLanguageModel.PlatformDownloadRequest
@@ -606,5 +859,30 @@ extension CactusModelsDirectory {
 
   private func ensureDirectory() throws {
     try FileManager.default.createDirectory(at: self.baseURL, withIntermediateDirectories: true)
+  }
+}
+
+extension CactusLanguageModel.PlatformDownloadRequest {
+  fileprivate var isOlderThanv1_7: Bool {
+    guard
+      let numbers = self.versionNumbers(from: version.rawValue),
+      let v1_7Numbers = self.versionNumbers(
+        from: CactusLanguageModel.PlatformDownloadRequest.Version.v1_7.rawValue
+      )
+    else {
+      return false
+    }
+    if numbers.0 != v1_7Numbers.0 {
+      return numbers.0 < v1_7Numbers.0
+    }
+    return numbers.1 < v1_7Numbers.1
+  }
+
+  private func versionNumbers(from rawValue: String) -> (Int, Int)? {
+    guard rawValue.first == "v" else { return nil }
+    let components = rawValue.dropFirst().split(separator: ".", omittingEmptySubsequences: false)
+    guard components.count == 2 else { return nil }
+    guard let major = Int(components[0]), let minor = Int(components[1]) else { return nil }
+    return (major, minor)
   }
 }
