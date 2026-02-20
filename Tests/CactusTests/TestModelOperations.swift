@@ -13,12 +13,6 @@ extension CactusLanguageModel {
     try await client.store(for: $downloadQuery(for: request)).fetch()
   }
 
-  static func testAudioModelURL(
-    request: CactusLanguageModel.PlatformDownloadRequest
-  ) async throws -> URL {
-    try await client.store(for: $audioDownloadQuery(for: request)).fetch()
-  }
-
   @QueryRequest
   private static func downloadQuery(
     for request: CactusLanguageModel.PlatformDownloadRequest
@@ -29,19 +23,6 @@ extension CactusLanguageModel {
     print("=== Downloading Test Model (\(request.slug)) ===")
     let url = try await CactusModelsDirectory.testModels.modelURL(for: request)
     print("=== Finished Downloading Test Model (\(request.slug)) ===")
-    return url
-  }
-
-  @QueryRequest
-  private static func audioDownloadQuery(
-    for request: CactusLanguageModel.PlatformDownloadRequest
-  ) async throws -> URL {
-    if let url = CactusModelsDirectory.testModels.storedModelURL(for: request) {
-      return url
-    }
-    print("=== Downloading Test Audio Model (\(request.slug)) ===")
-    let url = try await CactusModelsDirectory.testModels.modelURL(for: request)
-    print("=== Finished Downloading Test Audio Model (\(request.slug)) ===")
     return url
   }
 }

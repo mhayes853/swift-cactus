@@ -10,7 +10,7 @@ import Foundation
 /// import AVFoundation
 ///
 /// let modelURL = try await CactusModelsDirectory.shared
-///   .audioModelURL(for: "whisper-small")
+///   .modelURL(for: .whisperSmall())
 /// let stream = try CactusTranscriptionStream(modelURL: modelURL)
 ///
 /// let task = Task {

@@ -24,7 +24,7 @@ struct `CactusStreamTranscriber tests` {
 
   @Test
   func `Stream Transcriber Does Not Deallocate Model Pointer`() async throws {
-    let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
     let modelPointer = try #require(cactus_init(modelURL.nativePath, nil, false))
     defer { cactus_destroy(modelPointer) }
 
@@ -46,7 +46,7 @@ struct `CactusStreamTranscriber tests` {
   #if canImport(AVFoundation)
     @Test
     func `Process Snapshot From Audio Slice`() async throws {
-      let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
       let transcriber = try CactusStreamTranscriber(modelURL: modelURL)
 
       let fullBuffer = try testAudioPCMBuffer()
@@ -63,7 +63,7 @@ struct `CactusStreamTranscriber tests` {
 
     @Test
     func `Finalize Snapshot After Chunked Inserts`() async throws {
-      let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
       let transcriber = try CactusStreamTranscriber(modelURL: modelURL)
 
       let fullBuffer = try testAudioPCMBuffer()
@@ -91,7 +91,7 @@ struct `CactusStreamTranscriber tests` {
 
     @Test
     func `Disallow Operations After Finalize`() async throws {
-      let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
       let transcriber = try CactusStreamTranscriber(modelURL: modelURL)
 
       let fullBuffer = try testAudioPCMBuffer()
@@ -112,7 +112,7 @@ struct `CactusStreamTranscriber tests` {
 
     @Test
     func `Stream Transcriber Pointer Is Not Deallocated When Not Managed`() async throws {
-      let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
       let modelPointer = try #require(cactus_init(modelURL.nativePath, nil, false))
       defer { cactus_destroy(modelPointer) }
 

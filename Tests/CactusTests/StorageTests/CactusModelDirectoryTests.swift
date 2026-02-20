@@ -180,6 +180,91 @@
       creator.count.withLock { expectNoDifference($0, 1) }
     }
 
+    @Test
+    func `Successful Migration Migrates Compatible Models To The New Format`() throws {
+      let baseURL = temporaryModelDirectory()
+      try FileManager.default.createDirectory(at: baseURL, withIntermediateDirectories: true)
+      let directory = CactusModelsDirectory(baseURL: baseURL)
+
+      let request = CactusLanguageModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
+      let proRequest = CactusLanguageModel.PlatformDownloadRequest.whisperSmall(pro: .apple)
+      let legacyURL = try self.createLegacyStoredModel(request: request, in: baseURL)
+      let legacyProURL = try self.createLegacyStoredModel(request: proRequest, in: baseURL)
+
+      let result = try directory.migrateFromv1_5Tov1_7Structure()
+
+      let migratedRequests = result.migrated.map(\.request)
+      expectNoDifference(Set(migratedRequests), Set([request, proRequest]))
+      expectNoDifference(result.removed, [])
+
+      expectNoDifference(FileManager.default.fileExists(atPath: legacyURL.path), false)
+      expectNoDifference(FileManager.default.fileExists(atPath: legacyProURL.path), false)
+
+      let expectedURL = baseURL
+        .appendingPathComponent("v1.7", isDirectory: true)
+        .appendingPathComponent("int4", isDirectory: true)
+        .appendingPathComponent("__ordinary__", isDirectory: true)
+        .appendingPathComponent(request.slug, isDirectory: true)
+      let expectedProURL = baseURL
+        .appendingPathComponent("v1.7", isDirectory: true)
+        .appendingPathComponent("int4", isDirectory: true)
+        .appendingPathComponent("apple", isDirectory: true)
+        .appendingPathComponent(proRequest.slug, isDirectory: true)
+
+      expectSameLocation(directory.storedModelURL(for: request), expectedURL)
+      expectSameLocation(directory.storedModelURL(for: proRequest), expectedProURL)
+    }
+
+    @Test
+    func `Successful Migration Removes Outdated Models`() throws {
+      let baseURL = temporaryModelDirectory()
+      try FileManager.default.createDirectory(at: baseURL, withIntermediateDirectories: true)
+      let directory = CactusModelsDirectory(baseURL: baseURL)
+
+      let outdatedRequest = CactusLanguageModel.PlatformDownloadRequest(
+        slug: "whisper-small",
+        quantization: .int4,
+        version: .init(rawValue: "v1.5")
+      )
+      let supportedRequest = CactusLanguageModel.PlatformDownloadRequest.whisperSmall()
+      let outdatedLegacyURL = try self.createLegacyStoredModel(request: outdatedRequest, in: baseURL)
+      _ = try self.createLegacyStoredModel(request: supportedRequest, in: baseURL)
+
+      let result = try directory.migrateFromv1_5Tov1_7Structure()
+
+      expectNoDifference(
+        Set(result.removed.map(\.request)),
+        Set([outdatedRequest])
+      )
+      expectNoDifference(
+        Set(result.migrated.map(\.request)),
+        Set([supportedRequest])
+      )
+
+      expectNoDifference(FileManager.default.fileExists(atPath: outdatedLegacyURL.path), false)
+      expectNoDifference(directory.storedModelURL(for: outdatedRequest), nil)
+      #expect(directory.storedModelURL(for: supportedRequest) != nil)
+    }
+
+    private func createLegacyStoredModel(
+      request: CactusLanguageModel.PlatformDownloadRequest,
+      in baseURL: URL
+    ) throws -> URL {
+      let legacyDirectoryName = [
+        request.slug,
+        request.quantization.rawValue,
+        request.version.rawValue,
+        request.pro?.rawValue,
+      ]
+      .compactMap { $0 }
+      .joined(separator: "--")
+      let legacyURL = baseURL.appendingPathComponent(legacyDirectoryName, isDirectory: true)
+      try FileManager.default.createDirectory(at: legacyURL, withIntermediateDirectories: true)
+      let markerURL = legacyURL.appendingPathComponent("weights.bin")
+      FileManager.default.createFile(atPath: markerURL.path, contents: Data([0x01]))
+      return legacyURL
+    }
+
     private var configuration: URLSessionConfiguration {
       let configuration = URLSessionConfiguration.default
       configuration.protocolClasses = [TestURLProtocol.self]
