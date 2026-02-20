@@ -1,46 +1,58 @@
 [
   {
     "completion" : {
-      "decode_tokens" : 200,
+      "cloud_handoff" : false,
+      "confidence" : 0.9321,
+      "decode_tokens" : 45,
+      "decode_tps" : 86.98,
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 16,
-      "response" : "The meaning of life is a deeply personal and philosophical question that has been debated by philosophers, theologians, scientists, and individuals for centuries. There's no definitive answer as it varies greatly from person to person based on individual beliefs, values, and experiences. Some people find meaning in love and relationships (biology), purpose in helping others (humanistic), pursuing knowledge or learning (personal growth), seeking adventure or excitement (explorationism), living a simple life with purposeful goals (minimalism\/authenticity-seeking) or finding joy in the present moment through mindfulness.\n\nSome popular interpretations include:\n\n- **Seeking happiness**: Living a fulfilling life with loved ones.\n- **Pursuing passions**: Engaging in activities that bring joy and fulfillment.\n- **Contributing to something larger**: Working towards making a positive impact on the world, whether through science, art, spirituality, etc.\n- **Finding meaning through relationships and connections**\n- **Experien",
-      "time_to_first_token_ms" : 52.05,
-      "tokens_per_second" : 80.15,
-      "total_time_ms" : 2534.91,
-      "total_tokens" : 216
+      "prefill_tokens" : 9,
+      "prefill_tps" : 288.27,
+      "ram_usage_mb" : 581.19,
+      "response" : "Hello! It's a pleasure to assist you. Could you please provide more details about what you need help with? For example, are you looking for advice on a specific topic, or perhaps guidance on navigating certain situations?",
+      "time_to_first_token_ms" : 31.22,
+      "total_time_ms" : 537.06,
+      "total_tokens" : 54
     },
     "slug" : "lfm2-350m"
   },
   {
     "completion" : {
-      "decode_tokens" : 200,
+      "cloud_handoff" : false,
+      "confidence" : 0.8988,
+      "decode_tokens" : 107,
+      "decode_tps" : 46.99,
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 20,
-      "response" : "<think>\nOkay, the user is asking about the meaning of life. Let me think on this topic. The user probably wants to know or share something personal, maybe from a story or a book? I should make sure to consider different angles and provide an answer that's both helpful and engaging.\n\nFirst, I remember there was a story where someone finds out their true identity by searching for others' stories. That made them feel in love with life.\n<\/think>\n\nThe question \"What is the meaning of life?\" can be approached in various ways: one might seek personal answers through philosophical reflections, like discovering inner truths or purpose through experiences. Alternatively, it could involve creative expressions such as writing about these themes.\n\nTo help you better understand this topic from an imaginative perspective: when you find out your true identity by searching for others' stories, then perhaps finding a deeper connection to yourself. Both are profound human experiences that enrich our lives and connect us to the greater whole.\n\nIf you're looking for a more",
-      "time_to_first_token_ms" : 96.38,
-      "tokens_per_second" : 42.07,
-      "total_time_ms" : 4826.95,
-      "total_tokens" : 220
+      "prefill_tokens" : 13,
+      "prefill_tps" : 209.38,
+      "ram_usage_mb" : 788.65,
+      "response" : "<think>\nOkay, the user is asking about some kind of data or information. I need to help them understand what they're dealing with.\n\nFirst, I should ask for more details. Are they talking about data in general? Or something specific?\n\nI also need to make sure that my response is helpful and answers their question as best as possible.\n<\/think>\n\nTo assist you better, could you clarify what type of \"data\" or \"information\" you are referring to? This will help me provide the most accurate support for your situation.",
+      "time_to_first_token_ms" : 62.09,
+      "total_time_ms" : 2317.68,
+      "total_tokens" : 120
     },
     "slug" : "qwen3-0.6b"
   },
   {
     "completion" : {
-      "decode_tokens" : 85,
+      "cloud_handoff" : true,
+      "confidence" : 0.6986,
+      "decode_tokens" : 2,
+      "decode_tps" : 100.94,
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 35,
-      "response" : "The concept of \"meaning,\" as we grapple with it is not merely an abstract concept, but a lived experience intrinsically intertwined with humanity. While acknowledging the current context, I argue that our intent on finding meaning in life persists despite philosophical statements and existential principles. It isn's our core practice to strive for this specific meaning. Ultimately, what is the theory of life? With awareness of its pervasive influence beyond individual interpretation.<end_of_turn>",
-      "time_to_first_token_ms" : 53.39,
-      "tokens_per_second" : 73.62,
-      "total_time_ms" : 1194.34,
-      "total_tokens" : 120
+      "prefill_tokens" : 9,
+      "prefill_tps" : 370.08,
+      "ram_usage_mb" : 836.96,
+      "response" : "pickente",
+      "time_to_first_token_ms" : 24.32,
+      "total_time_ms" : 34.23,
+      "total_tokens" : 11
     },
     "slug" : "gemma-3-270m-it"
   }

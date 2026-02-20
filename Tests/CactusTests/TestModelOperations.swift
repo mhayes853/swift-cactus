@@ -8,23 +8,16 @@ let nanosecondsPerSecond = UInt64(1_000_000_000)
 
 extension CactusLanguageModel {
   static func testModelURL(
-    request: CactusLanguageModel.PlatformDownloadRequest = testModelRequest
+    request: CactusLanguageModel.PlatformDownloadRequest
   ) async throws -> URL {
     try await client.store(for: $downloadQuery(for: request)).fetch()
   }
 
   static func testAudioModelURL(
-    request: CactusLanguageModel.PlatformDownloadRequest = testTranscribeRequest
+    request: CactusLanguageModel.PlatformDownloadRequest
   ) async throws -> URL {
     try await client.store(for: $audioDownloadQuery(for: request)).fetch()
   }
-
-  static let testFunctionCallingModelRequest = CactusLanguageModel.PlatformDownloadRequest
-    .qwen3_0_6b()
-  static let testModelRequest = CactusLanguageModel.PlatformDownloadRequest.lfm2Vl_450m()
-  static let testVLMRequest = CactusLanguageModel.PlatformDownloadRequest.lfm2Vl_450m()
-  static let testTranscribeRequest = CactusLanguageModel.PlatformDownloadRequest.whisperSmall()
-  static let testVADModelURL = URL.swiftCactusTestsDirectory.appendingPathComponent("silero-vad")
 
   @QueryRequest
   private static func downloadQuery(
@@ -60,11 +53,11 @@ extension CactusModelsDirectory {
 extension URL {
   static let swiftCactusTestsDirectory = {
     #if os(macOS)
-    URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-      .appendingPathComponent(".swift-cactus-tests")
+      URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        .appendingPathComponent(".swift-cactus-tests")
     #else
-    FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-      .appendingPathComponent(".swift-cactus-tests")
+      FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent(".swift-cactus-tests")
     #endif
   }()
 }

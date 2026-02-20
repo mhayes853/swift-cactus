@@ -6,6 +6,48 @@ import Testing
 @Suite
 struct `CactusLanguageModelDownloading tests` {
   @Test
+  func `Builds Hugging Face URL`() {
+    let request = CactusLanguageModel.PlatformDownloadRequest.lfm2_700m()
+    expectNoDifference(
+      request.url.absoluteString,
+      "https://huggingface.co/Cactus-Compute/LFM2-700M/resolve/v1.7/weights/lfm2-700m-int4.zip"
+    )
+  }
+
+  @Test
+  func `Builds Pro Hugging Face URL`() {
+    let request = CactusLanguageModel.PlatformDownloadRequest.lfm2_5Vl_1_6b(pro: .apple)
+    expectNoDifference(
+      request.url.absoluteString,
+      "https://huggingface.co/Cactus-Compute/LFM2.5-VL-1.6B/resolve/v1.7/weights/lfm2.5-vl-1.6b-int4-apple.zip"
+    )
+  }
+
+  @Test
+  func `Uses v1 7 By Default`() {
+    let request = CactusLanguageModel.PlatformDownloadRequest(slug: "lfm2-700m")
+    expectNoDifference(request.version, .v1_7)
+  }
+
+  @Test
+  func `Builds Moonshine URL`() {
+    let request = CactusLanguageModel.PlatformDownloadRequest.moonshineBase(pro: .apple)
+    expectNoDifference(
+      request.url.absoluteString,
+      "https://huggingface.co/Cactus-Compute/moonshine-base/resolve/v1.7/weights/moonshine-base-int4-apple.zip"
+    )
+  }
+
+  @Test
+  func `Builds Silero VAD URL`() {
+    let request = CactusLanguageModel.PlatformDownloadRequest.sileroVad(quantization: .int8)
+    expectNoDifference(
+      request.url.absoluteString,
+      "https://huggingface.co/Cactus-Compute/silero-vad/resolve/v1.7/weights/silero-vad-int8.zip"
+    )
+  }
+
+  @Test
   func `Task Not Finished By Default`() async throws {
     let task = CactusLanguageModel.downloadModelTask(
       request: .whisperSmall(),

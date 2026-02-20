@@ -40,6 +40,8 @@ import Foundation
 /// }
 /// ```
 public final class CactusLanguageModel {
+  private static let bufferNotBigEnoughErrorMessage = "buffer to small"
+
   /// The ``Configuration`` for this model.
   public let configuration: Configuration
 
@@ -742,7 +744,7 @@ extension CactusLanguageModel {
         FFIErrorResponse.self,
         from: responseData
       )
-      if response?.error.contains("Buffer not big enough") == true {
+      if response?.error.contains(Self.bufferNotBigEnoughErrorMessage) == true {
         throw ChatCompletionError.bufferSizeTooSmall
       }
       throw ChatCompletionError.generation(message: response?.error)
@@ -1250,7 +1252,7 @@ extension CactusLanguageModel {
         FFIErrorResponse.self,
         from: responseData
       )
-      if response?.error.contains("Buffer not big enough") == true {
+      if response?.error.contains(Self.bufferNotBigEnoughErrorMessage) == true {
         throw TranscriptionError.bufferSizeTooSmall
       }
       throw TranscriptionError.generation(message: response?.error)
@@ -1599,7 +1601,7 @@ extension CactusLanguageModel {
 
     guard result != -1 else {
       let response = try? ffiDecoder.decode(FFIErrorResponse.self, from: responseData)
-      if response?.error.contains("Buffer not big enough") == true {
+      if response?.error.contains(Self.bufferNotBigEnoughErrorMessage) == true {
         throw VADError.bufferSizeTooSmall
       }
       if response?.error.localizedCaseInsensitiveContains("not supported") == true {
