@@ -56,7 +56,7 @@ struct `CactusStreamTranscriber tests` {
 
       let response = try transcriber.process(buffer: slice)
 
-      withExpectedIssue {
+      withKnownIssue {
         assertSnapshot(of: response, as: .json, record: true)
       }
     }
@@ -84,7 +84,7 @@ struct `CactusStreamTranscriber tests` {
 
       let response = try transcriber.stop()
 
-      withExpectedIssue {
+      withKnownIssue {
         assertSnapshot(of: response, as: .json, record: true)
       }
     }
