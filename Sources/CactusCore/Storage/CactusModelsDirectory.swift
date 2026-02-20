@@ -115,6 +115,33 @@ extension CactusModelsDirectory {
       request: CactusLanguageModel.PlatformDownloadRequest,
       result: Result<Void, any Error>
     )
+
+    /// Called right before a new download task is created.
+    ///
+    /// - Parameters:
+    ///   - directory: The models directory creating the download task.
+    ///   - request: The request identifying the model to download.
+    ///   - task: The download task that was created.
+    func modelsDirectoryWillCreateDownloadTask(
+      _ directory: CactusModelsDirectory,
+      request: CactusLanguageModel.PlatformDownloadRequest,
+      task: CactusLanguageModel.DownloadTask
+    )
+
+    /// Called when a download task finishes, either successfully or with an
+    /// error.
+    ///
+    /// - Parameters:
+    ///   - directory: The models directory that managed the download task.
+    ///   - request: The request identifying the model download.
+    ///   - task: The completed download task.
+    ///   - result: `success(URL)` on success, or the failure error.
+    func modelsDirectoryDidCompleteDownloadTask(
+      _ directory: CactusModelsDirectory,
+      request: CactusLanguageModel.PlatformDownloadRequest,
+      task: CactusLanguageModel.DownloadTask,
+      result: Result<URL, any Error>
+    )
   }
 
   public var delegate: (any Delegate)? {
@@ -142,6 +169,19 @@ extension CactusModelsDirectory.Delegate {
     _ directory: CactusModelsDirectory,
     request: CactusLanguageModel.PlatformDownloadRequest,
     result: Result<Void, any Error>
+  ) {}
+
+  public func modelsDirectoryWillCreateDownloadTask(
+    _ directory: CactusModelsDirectory,
+    request: CactusLanguageModel.PlatformDownloadRequest,
+    task: CactusLanguageModel.DownloadTask
+  ) {}
+
+  public func modelsDirectoryDidCompleteDownloadTask(
+    _ directory: CactusModelsDirectory,
+    request: CactusLanguageModel.PlatformDownloadRequest,
+    task: CactusLanguageModel.DownloadTask,
+    result: Result<URL, any Error>
   ) {}
 }
 
@@ -447,16 +487,29 @@ extension CactusModelsDirectory {
         configuration,
         state.downloadTaskCreator
       )
+      state.delegate?.modelsDirectoryWillCreateDownloadTask(self, request: request, task: task)
       let subscription = task.onProgress { [weak self] progress in
         switch progress {
-        case .failure, .success(.finished):
+        case .failure(let error):
           guard let self else { return }
-          self.state
-            .withLock { state in
-              self.observationRegistrar.withMutation(of: self, keyPath: \.activeDownloadTasks) {
-                _ = state.downloadTasks.removeValue(forKey: request)
-              }
-            }
+          let completion = self.completeDownloadTaskEntry(for: request)
+          guard completion.didRemoveTask else { return }
+          completion.delegate?.modelsDirectoryDidCompleteDownloadTask(
+            self,
+            request: request,
+            task: task,
+            result: .failure(error)
+          )
+        case .success(.finished(let url)):
+          guard let self else { return }
+          let completion = self.completeDownloadTaskEntry(for: request)
+          guard completion.didRemoveTask else { return }
+          completion.delegate?.modelsDirectoryDidCompleteDownloadTask(
+            self,
+            request: request,
+            task: task,
+            result: .success(url)
+          )
         default:
           break
         }
@@ -925,6 +978,18 @@ extension CactusModelsDirectory {
 
   private func ensureDirectory() throws {
     try FileManager.default.createDirectory(at: self.baseURL, withIntermediateDirectories: true)
+  }
+
+  private func completeDownloadTaskEntry(
+    for request: CactusLanguageModel.PlatformDownloadRequest
+  ) -> (delegate: (any Delegate)?, didRemoveTask: Bool) {
+    self.state.withLock { state in
+      var didRemoveTask = false
+      self.observationRegistrar.withMutation(of: self, keyPath: \.activeDownloadTasks) {
+        didRemoveTask = state.downloadTasks.removeValue(forKey: request) != nil
+      }
+      return (state.delegate, didRemoveTask)
+    }
   }
 }
 

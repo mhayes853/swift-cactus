@@ -143,6 +143,49 @@
     }
 
     @Test
+    func `Invokes Download Delegate Before Creation And After Completion`() async throws {
+      let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
+      let request = CactusLanguageModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
+
+      let didCallWill = Lock(false)
+      let didCallDid = Lock(false)
+      let willRequest = Lock<CactusLanguageModel.PlatformDownloadRequest?>(nil)
+      let didRequest = Lock<CactusLanguageModel.PlatformDownloadRequest?>(nil)
+      let didSucceed = Lock(false)
+      let didFinishURL = Lock<URL?>(nil)
+      let willTask = Lock<CactusLanguageModel.DownloadTask?>(nil)
+      let didTask = Lock<CactusLanguageModel.DownloadTask?>(nil)
+
+      let delegate = CallbackDelegate()
+      delegate.onWillCreateDownloadTask = { _, request, task in
+        didCallWill.withLock { $0 = true }
+        willRequest.withLock { $0 = request }
+        willTask.withLock { $0 = task }
+      }
+      delegate.onDidCompleteDownloadTask = { _, request, task, result in
+        didCallDid.withLock { $0 = true }
+        didRequest.withLock { $0 = request }
+        didSucceed.withLock { $0 = (try? result.get()) != nil }
+        didFinishURL.withLock { $0 = try? result.get() }
+        didTask.withLock { $0 = task }
+      }
+      directory.delegate = delegate
+
+      let task = try directory.modelDownloadTask(for: request, configuration: self.configuration)
+      task.resume()
+      let completedURL = try await task.waitForCompletion()
+
+      didCallWill.withLock { expectNoDifference($0, true) }
+      didCallDid.withLock { expectNoDifference($0, true) }
+      willRequest.withLock { expectNoDifference($0, request) }
+      didRequest.withLock { expectNoDifference($0, request) }
+      didSucceed.withLock { expectNoDifference($0, true) }
+      didFinishURL.withLock { expectSameLocation($0, completedURL) }
+      willTask.withLock { expectNoDifference($0 === task, true) }
+      didTask.withLock { expectNoDifference($0 === task, true) }
+    }
+
+    @Test
     func `Returns Local URL When Loading Model For The Second Time`() async throws {
       final class CountingCreator: CactusModelsDirectory.DownloadTaskCreator, Sendable {
         let count = Lock(0)
@@ -441,6 +484,21 @@
           Result<Void, any Error>
         ) -> Void
       )?
+    var onWillCreateDownloadTask:
+      (
+        @Sendable (
+          CactusModelsDirectory, CactusLanguageModel.PlatformDownloadRequest,
+          CactusLanguageModel.DownloadTask
+        ) -> Void
+      )?
+    var onDidCompleteDownloadTask:
+      (
+        @Sendable (
+          CactusModelsDirectory, CactusLanguageModel.PlatformDownloadRequest,
+          CactusLanguageModel.DownloadTask,
+          Result<URL, any Error>
+        ) -> Void
+      )?
 
     func modelsDirectoryWillStartMigrationFromv1_5Tov1_7Structure(
       _ directory: CactusModelsDirectory
@@ -468,6 +526,23 @@
       result: Result<Void, any Error>
     ) {
       self.onDidRemoveModel?(directory, request, result)
+    }
+
+    func modelsDirectoryWillCreateDownloadTask(
+      _ directory: CactusModelsDirectory,
+      request: CactusLanguageModel.PlatformDownloadRequest,
+      task: CactusLanguageModel.DownloadTask
+    ) {
+      self.onWillCreateDownloadTask?(directory, request, task)
+    }
+
+    func modelsDirectoryDidCompleteDownloadTask(
+      _ directory: CactusModelsDirectory,
+      request: CactusLanguageModel.PlatformDownloadRequest,
+      task: CactusLanguageModel.DownloadTask,
+      result: Result<URL, any Error>
+    ) {
+      self.onDidCompleteDownloadTask?(directory, request, task, result)
     }
   }
 #endif
