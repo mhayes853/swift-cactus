@@ -1,12 +1,21 @@
 {
-  "decode_tokens" : 21,
+  "cloud_handoff" : false,
+  "confidence" : 0.9731,
+  "decode_tokens" : 19,
+  "decode_tps" : 44.46,
   "function_calls" : [
-
+    {
+      "arguments" : {
+        "location" : ""
+      },
+      "name" : "get_weather"
+    }
   ],
-  "prefill_tokens" : 160,
-  "response" : "I don't have access to real-time weather data. Please specify the location you're interested in.<|im_end|>",
-  "time_to_first_token_ms" : 566.98,
-  "tokens_per_second" : 42.82,
-  "total_time_ms" : 1034.07,
-  "total_tokens" : 181
+  "prefill_tokens" : 142,
+  "prefill_tps" : 392.97,
+  "ram_usage_mb" : 803.49,
+  "response" : "",
+  "time_to_first_token_ms" : 361.35,
+  "total_time_ms" : 766.19,
+  "total_tokens" : 161
 }

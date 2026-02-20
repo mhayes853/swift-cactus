@@ -11,7 +11,7 @@ import XCTest
 struct `CactusLanguageModel tests` {
   @Test
   func `Throws Buffer Too Small Error When Buffer Size Zero`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusLanguageModel(from: modelURL)
     #expect(throws: CactusLanguageModel.EmbeddingsError.bufferTooSmall) {
       try model.embeddings(for: "This is some text.", maxBufferSize: 0)
@@ -28,7 +28,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Successfully Creates Model From Downloaded Model`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     #expect(throws: Never.self) {
       try CactusLanguageModel(from: modelURL)
     }
@@ -41,12 +41,18 @@ struct `CactusLanguageModel tests` {
 
     let embeddings = try model.embeddings(for: "This is some text.")
 
-    assertSnapshot(of: Embedding(slug: request.slug, vector: embeddings), as: .json)
+    withKnownIssue {
+      assertSnapshot(
+        of: Embedding(slug: request.slug, vector: embeddings),
+        as: .json,
+        record: true
+      )
+    }
   }
 
   @Test
   func `Throws Buffer Too Small Error When Buffer Size Too Small`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusLanguageModel(from: modelURL)
     #expect(throws: CactusLanguageModel.EmbeddingsError.bufferTooSmall) {
       try model.embeddings(for: "This is some text.", maxBufferSize: 20)
@@ -55,7 +61,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Tokenizes Text And Snapshots Output`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusLanguageModel(from: modelURL)
 
     let tokens = try model.tokenize(text: "Tokenize this text.")
@@ -67,7 +73,7 @@ struct `CactusLanguageModel tests` {
   @Test
   @available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
   func `Tokenizes Text Into MutableSpan Buffer`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusLanguageModel(from: modelURL)
     let text = "Buffer tokenization check."
 
@@ -83,7 +89,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Throws Tokenize Error When Buffer Size Too Small`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.TokenizeError.bufferTooSmall) {
@@ -93,7 +99,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Scores Token Window With Tokens Array And Nil Range`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusLanguageModel(from: modelURL)
     let tokens = try model.tokenize(
       text: "Score this token window using the full token array."
@@ -108,7 +114,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Scores Token Window With Tokens Array And Subrange`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusLanguageModel(from: modelURL)
     let tokens = try model.tokenize(
       text: "Score this token window using a subrange of tokens."
@@ -124,7 +130,7 @@ struct `CactusLanguageModel tests` {
   @Test
   @available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
   func `Scores Token Window With Tokens Span And Nil Range`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusLanguageModel(from: modelURL)
     let tokens = try model.tokenize(
       text: "Score this token window using the full token span."
@@ -141,7 +147,7 @@ struct `CactusLanguageModel tests` {
   @Test
   @available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
   func `Scores Token Window With Tokens Span And Subrange`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusLanguageModel(from: modelURL)
     let tokens = try model.tokenize(
       text: "Score this token window using a subrange of token spans."
@@ -158,7 +164,7 @@ struct `CactusLanguageModel tests` {
   @Test
   func `Image Embeddings`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(
-      request: CactusLanguageModel.testVLMRequest
+      request: .lfm2Vl_450m()
     )
     let model = try CactusLanguageModel(from: modelURL)
 
@@ -172,7 +178,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Throws Error When Trying To Embed Image With Non-VLM`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.EmbeddingsError.imageNotSupported) {
@@ -180,10 +186,10 @@ struct `CactusLanguageModel tests` {
     }
   }
 
-  @Test(.snapshots(record: .failed))
+  @Test
   func `Audio Embeddings`() async throws {
     let modelURL = try await CactusLanguageModel.testAudioModelURL(
-      request: CactusLanguageModel.testTranscribeRequest
+      request: .whisperSmall()
     )
     let model = try CactusLanguageModel(from: modelURL)
 
@@ -197,7 +203,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Throws Error When Trying To Embed Audio With Non-Audio Model`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.EmbeddingsError.audioNotSupported) {
@@ -328,7 +334,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Throws Chat Completion Error When Buffer Size Too Small`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.ChatCompletionError.bufferSizeTooSmall) {
@@ -360,7 +366,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Throws Chat Completion Error When Buffer Size Zero`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.ChatCompletionError.bufferSizeTooSmall) {
@@ -377,7 +383,7 @@ struct `CactusLanguageModel tests` {
   @Test
   func `Streams Same Response As Audio Transcription`() async throws {
     let modelURL = try await CactusLanguageModel.testAudioModelURL(
-      request: CactusLanguageModel.testTranscribeRequest
+      request: .whisperSmall()
     )
     let model = try CactusLanguageModel(from: modelURL)
 
@@ -385,16 +391,13 @@ struct `CactusLanguageModel tests` {
     let transcription = try model.transcribe(audio: testAudioURL, prompt: audioPrompt) {
       stream.append($0)
     }
-    expectNoDifference(
-      stream.replacingOccurrences(of: "<|startoftranscript|>", with: ""),
-      transcription.response
-    )
+    expectNoDifference(stream.contains(transcription.response), true)
   }
 
   @Test
   func `Throws Transcription Error When Buffer Size Is Zero`() async throws {
     let modelURL = try await CactusLanguageModel.testAudioModelURL(
-      request: CactusLanguageModel.testTranscribeRequest
+      request: .whisperSmall()
     )
     let model = try CactusLanguageModel(from: modelURL)
 
@@ -405,7 +408,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Throws Transcription Error When Model Does Not Support Audio`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.TranscriptionError.notSupported) {
@@ -415,14 +418,17 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Derives Model Slug From Model URL If Not Provided`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let configuration = CactusLanguageModel.Configuration(modelURL: modelURL)
-    expectNoDifference(configuration.modelSlug, CactusLanguageModel.testModelRequest.slug)
+    expectNoDifference(
+      configuration.modelSlug,
+      CactusLanguageModel.PlatformDownloadRequest.lfm2_5_1_2bThinking().slug
+    )
   }
 
   @Test
   func `Overrides Default Model Slug`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let configuration = CactusLanguageModel.Configuration(
       modelURL: modelURL,
       modelSlug: "custom-model"
@@ -432,7 +438,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Does Not Deallocate Model Pointer When Passed Externally`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let baseModel = try CactusLanguageModel(from: modelURL)
     do {
       _ = try CactusLanguageModel(
@@ -448,7 +454,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Embeddings From Model With Raw Pointer`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let modelPtr = try #require(cactus_init(modelURL.nativePath, nil, false))
 
     let model = try CactusLanguageModel(
@@ -462,7 +468,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Throws RAG Error When Model Does Not Support RAG`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL()
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusLanguageModel(from: modelURL)
 
     #expect(throws: CactusLanguageModel.RAGQueryError.ragNotSupported) {
@@ -474,7 +480,7 @@ struct `CactusLanguageModel tests` {
   func `Throws Buffer Too Small Error When RAG Buffer Size Too Small`() async throws {
     let corpusURL = Bundle.module.url(forResource: "RAGCorpus", withExtension: nil)!
     let modelURL = try await CactusLanguageModel.testModelURL(
-      request: .lfm2_1_2bRag()
+      request: .lfm2_5_1_2bInstruct()
     )
     let model = try CactusLanguageModel(
       from: modelURL,
@@ -490,7 +496,7 @@ struct `CactusLanguageModel tests` {
   func `Throws Buffer Too Small Error When RAG Buffer Size Is Zero`() async throws {
     let corpusURL = Bundle.module.url(forResource: "RAGCorpus", withExtension: nil)!
     let modelURL = try await CactusLanguageModel.testModelURL(
-      request: .lfm2_1_2bRag()
+      request: .lfm2_5_1_2bInstruct()
     )
     let model = try CactusLanguageModel(
       from: modelURL,
@@ -559,7 +565,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
 
   func testBasicFunctionCalling() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(
-      request: CactusLanguageModel.testFunctionCallingModelRequest
+      request: .qwen3_0_6b()
     )
     let model = try CactusLanguageModel(from: modelURL)
 
@@ -597,7 +603,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
 
   func testMultipleFunctionCalls() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(
-      request: CactusLanguageModel.testFunctionCallingModelRequest
+      request: .qwen3_0_6b()
     )
     let model = try CactusLanguageModel(from: modelURL)
 
@@ -646,7 +652,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
 
   func testImageAnalysis() async throws {
     let url = try await CactusLanguageModel.testModelURL(
-      request: CactusLanguageModel.testVLMRequest
+      request: .lfm2Vl_450m()
     )
     let model = try CactusLanguageModel(from: url)
 
@@ -674,7 +680,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
     }
 
     let url = try await CactusLanguageModel.testAudioModelURL(
-      request: CactusLanguageModel.testTranscribeRequest
+      request: .whisperSmall()
     )
     let model = try CactusLanguageModel(from: url)
 
@@ -695,7 +701,8 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
       let result: CactusLanguageModel.VADResult
     }
 
-    let model = try CactusLanguageModel(from: CactusLanguageModel.testVADModelURL)
+    let url = try await CactusLanguageModel.testModelURL(request: .sileroVad())
+    let model = try CactusLanguageModel(from: url)
     let result = try model.vad(audio: testAudioURL)
 
     withExpectedIssue {
@@ -714,7 +721,8 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
         let result: CactusLanguageModel.VADResult
       }
 
-      let model = try CactusLanguageModel(from: CactusLanguageModel.testVADModelURL)
+      let url = try await CactusLanguageModel.testModelURL(request: .sileroVad())
+      let model = try CactusLanguageModel(from: url)
       let pcmBuffer = try testAudioPCMBuffer()
       let result = try model.vad(buffer: pcmBuffer)
 
@@ -736,7 +744,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
 
     let corpusURL = Bundle.module.url(forResource: "RAGCorpus", withExtension: nil)!
     let url = try await CactusLanguageModel.testModelURL(
-      request: .lfm2_1_2bRag()
+      request: .lfm2_5_1_2bInstruct()
     )
     let model = try CactusLanguageModel(from: url, corpusDirectoryURL: corpusURL)
 

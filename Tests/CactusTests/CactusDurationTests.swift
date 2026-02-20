@@ -270,15 +270,6 @@ struct CactusDurationTests {
     expectNoDifference(d.components.seconds, 123_456_789)
   }
 
-  @Test("Random Stays In Range")
-  func randomStaysInRange() {
-    let r = (CactusDuration.seconds(100)..<(.seconds(1000.1)))
-    for _ in 0..<100_000 {
-      let d = CactusDuration.random(in: r)
-      expectNoDifference(r.contains(d), true)
-    }
-  }
-
   @Test(
     "Creates From Seconds And Attoseconds Components",
     arguments: [

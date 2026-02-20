@@ -40,6 +40,8 @@ import Foundation
 /// }
 /// ```
 public final class CactusLanguageModel {
+  private static let bufferNotBigEnoughErrorMessage = "buffer too small"
+
   /// The ``Configuration`` for this model.
   public let configuration: Configuration
 
@@ -742,7 +744,7 @@ extension CactusLanguageModel {
         FFIErrorResponse.self,
         from: responseData
       )
-      if response?.error.contains("Buffer not big enough") == true {
+      if response?.error.contains(Self.bufferNotBigEnoughErrorMessage) == true {
         throw ChatCompletionError.bufferSizeTooSmall
       }
       throw ChatCompletionError.generation(message: response?.error)
@@ -973,7 +975,8 @@ extension CactusLanguageModel.ChatCompletion: Decodable {
     self.prefillTps = try container.decode(Double.self, forKey: .prefillTps)
     self.decodeTps = try container.decode(Double.self, forKey: .decodeTps)
     self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
-    self.didHandoffToCloud = try container.decodeIfPresent(Bool.self, forKey: .didHandoffToCloud) ?? false
+    self.didHandoffToCloud =
+      try container.decodeIfPresent(Bool.self, forKey: .didHandoffToCloud) ?? false
     self.timeToFirstTokenMs = try container.decode(Double.self, forKey: .timeToFirstTokenMs)
     self.totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
   }
@@ -1250,7 +1253,7 @@ extension CactusLanguageModel {
         FFIErrorResponse.self,
         from: responseData
       )
-      if response?.error.contains("Buffer not big enough") == true {
+      if response?.error.contains(Self.bufferNotBigEnoughErrorMessage) == true {
         throw TranscriptionError.bufferSizeTooSmall
       }
       throw TranscriptionError.generation(message: response?.error)
@@ -1339,7 +1342,8 @@ extension CactusLanguageModel.Transcription: Decodable {
     self.prefillTps = try container.decode(Double.self, forKey: .prefillTps)
     self.decodeTps = try container.decode(Double.self, forKey: .decodeTps)
     self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
-    self.didHandoffToCloud = try container.decodeIfPresent(Bool.self, forKey: .didHandoffToCloud) ?? false
+    self.didHandoffToCloud =
+      try container.decodeIfPresent(Bool.self, forKey: .didHandoffToCloud) ?? false
     self.timeToFirstToken = .milliseconds(
       try container.decode(Double.self, forKey: .timeToFirstTokenMs)
     )
@@ -1599,7 +1603,7 @@ extension CactusLanguageModel {
 
     guard result != -1 else {
       let response = try? ffiDecoder.decode(FFIErrorResponse.self, from: responseData)
-      if response?.error.contains("Buffer not big enough") == true {
+      if response?.error.contains(Self.bufferNotBigEnoughErrorMessage) == true {
         throw VADError.bufferSizeTooSmall
       }
       if response?.error.localizedCaseInsensitiveContains("not supported") == true {
