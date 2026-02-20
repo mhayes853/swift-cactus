@@ -476,6 +476,7 @@ struct `CactusLanguageModel tests` {
     }
   }
 
+  @Test
   func `Throws Buffer Too Small Error When RAG Buffer Size Too Small`() async throws {
     let corpusURL = Bundle.module.url(forResource: "RAGCorpus", withExtension: nil)!
     let modelURL = try await CactusLanguageModel.testModelURL(
@@ -491,6 +492,7 @@ struct `CactusLanguageModel tests` {
     }
   }
 
+  @Test
   func `Throws Buffer Too Small Error When RAG Buffer Size Is Zero`() async throws {
     let corpusURL = Bundle.module.url(forResource: "RAGCorpus", withExtension: nil)!
     let modelURL = try await CactusLanguageModel.testModelURL(
