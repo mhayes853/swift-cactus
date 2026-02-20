@@ -591,6 +591,9 @@ extension CactusLanguageModel {
     /// The current process RAM usage in MB.
     public let ramUsageMb: Double
 
+    /// Whether this completion was handed off to cloud inference.
+    public let didHandoffToCloud: Bool
+
     private let timeToFirstTokenMs: Double
     private let totalTimeMs: Double
 
@@ -970,6 +973,7 @@ extension CactusLanguageModel.ChatCompletion: Decodable {
     self.prefillTps = try container.decode(Double.self, forKey: .prefillTps)
     self.decodeTps = try container.decode(Double.self, forKey: .decodeTps)
     self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
+    self.didHandoffToCloud = try container.decodeIfPresent(Bool.self, forKey: .didHandoffToCloud) ?? false
     self.timeToFirstTokenMs = try container.decode(Double.self, forKey: .timeToFirstTokenMs)
     self.totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
   }
@@ -987,6 +991,7 @@ extension CactusLanguageModel.ChatCompletion: Encodable {
     try container.encode(self.prefillTps, forKey: .prefillTps)
     try container.encode(self.decodeTps, forKey: .decodeTps)
     try container.encode(self.ramUsageMb, forKey: .ramUsageMb)
+    try container.encode(self.didHandoffToCloud, forKey: .didHandoffToCloud)
     try container.encode(self.timeToFirstTokenMs, forKey: .timeToFirstTokenMs)
     try container.encode(self.totalTimeMs, forKey: .totalTimeMs)
   }
@@ -1001,6 +1006,7 @@ extension CactusLanguageModel.ChatCompletion: Encodable {
     case prefillTps = "prefill_tps"
     case decodeTps = "decode_tps"
     case ramUsageMb = "ram_usage_mb"
+    case didHandoffToCloud = "cloud_handoff"
     case timeToFirstTokenMs = "time_to_first_token_ms"
     case totalTimeMs = "total_time_ms"
   }
@@ -1046,6 +1052,9 @@ extension CactusLanguageModel {
 
     /// The current process RAM usage in MB.
     public let ramUsageMb: Double
+
+    /// Whether this transcription was handed off to cloud inference.
+    public let didHandoffToCloud: Bool
 
     private let timeToFirstToken: CactusDuration
     private let totalTime: CactusDuration
@@ -1330,6 +1339,7 @@ extension CactusLanguageModel.Transcription: Decodable {
     self.prefillTps = try container.decode(Double.self, forKey: .prefillTps)
     self.decodeTps = try container.decode(Double.self, forKey: .decodeTps)
     self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
+    self.didHandoffToCloud = try container.decodeIfPresent(Bool.self, forKey: .didHandoffToCloud) ?? false
     self.timeToFirstToken = .milliseconds(
       try container.decode(Double.self, forKey: .timeToFirstTokenMs)
     )
@@ -1350,6 +1360,7 @@ extension CactusLanguageModel.Transcription: Encodable {
     try container.encode(self.prefillTps, forKey: .prefillTps)
     try container.encode(self.decodeTps, forKey: .decodeTps)
     try container.encode(self.ramUsageMb, forKey: .ramUsageMb)
+    try container.encode(self.didHandoffToCloud, forKey: .didHandoffToCloud)
     try container.encode(self.timeToFirstToken.secondsDouble * 1000, forKey: .timeToFirstTokenMs)
     try container.encode(self.totalTime.secondsDouble * 1000, forKey: .totalTimeMs)
   }
@@ -1363,6 +1374,7 @@ extension CactusLanguageModel.Transcription: Encodable {
     case prefillTps = "prefill_tps"
     case decodeTps = "decode_tps"
     case ramUsageMb = "ram_usage_mb"
+    case didHandoffToCloud = "cloud_handoff"
     case timeToFirstTokenMs = "time_to_first_token_ms"
     case totalTimeMs = "total_time_ms"
   }
