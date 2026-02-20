@@ -62,7 +62,10 @@ public struct CactusTranscription: Hashable, Sendable {
             else {
               return nil
             }
-            let transcript = String(matchGroups[i + 1])
+            var transcript = String(matchGroups[i + 1])
+            if transcript.first == " " {
+              transcript.removeFirst()
+            }
             return Timestamp(seconds: seconds, transcript: transcript)
           }
       )

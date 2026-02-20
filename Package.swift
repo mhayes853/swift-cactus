@@ -32,6 +32,7 @@ let package = Package(
       dependencies: [
         "CXXCactusShims",
         .product(name: "Zip", package: "Zip"),
+        .product(name: "IssueReporting", package: "xctest-dynamic-overlay"),
         .product(name: "StreamParsingCore", package: "swift-stream-parsing")
       ],
       swiftSettings: [.enableExperimentalFeature(StreamParsing128BitIntegers)]

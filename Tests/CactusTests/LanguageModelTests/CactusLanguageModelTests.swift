@@ -449,7 +449,7 @@ struct `CactusLanguageModel tests` {
   @Test
   func `Embeddings From Model With Raw Pointer`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL()
-    let modelPtr = try #require(cactus_init(modelURL.nativePath, nil))
+    let modelPtr = try #require(cactus_init(modelURL.nativePath, nil, false))
 
     let model = try CactusLanguageModel(
       model: modelPtr,
@@ -688,6 +688,45 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
       )
     }
   }
+
+  func testVAD() async throws {
+    struct VADSnapshot: Codable {
+      let slug: String
+      let result: CactusLanguageModel.VADResult
+    }
+
+    let model = try CactusLanguageModel(from: CactusLanguageModel.testVADModelURL)
+    let result = try model.vad(audio: testAudioURL)
+
+    withExpectedIssue {
+      assertSnapshot(
+        of: VADSnapshot(slug: model.configuration.modelSlug, result: result),
+        as: .json,
+        record: true
+      )
+    }
+  }
+
+  #if canImport(AVFoundation)
+    func testVADFromAVAudioPCMBuffer() async throws {
+      struct VADSnapshot: Codable {
+        let slug: String
+        let result: CactusLanguageModel.VADResult
+      }
+
+      let model = try CactusLanguageModel(from: CactusLanguageModel.testVADModelURL)
+      let pcmBuffer = try testAudioPCMBuffer()
+      let result = try model.vad(buffer: pcmBuffer)
+
+      withExpectedIssue {
+        assertSnapshot(
+          of: VADSnapshot(slug: model.configuration.modelSlug, result: result),
+          as: .json,
+          record: true
+        )
+      }
+    }
+  #endif
 
   func testRAGQuery() async throws {
     struct RAGResult: Codable {

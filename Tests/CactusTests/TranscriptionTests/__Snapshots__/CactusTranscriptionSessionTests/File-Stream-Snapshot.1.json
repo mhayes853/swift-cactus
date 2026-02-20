@@ -1,15 +1,15 @@
 {
   "metrics" : {
-    "confidence" : 0.9214,
-    "decodeTokens" : 59,
-    "decodeTps" : 27.25,
+    "confidence" : 0.908,
+    "decodeTokens" : 12,
+    "decodeTps" : 20.97,
     "prefillTokens" : 4,
-    "prefillTps" : 0.2,
-    "ramUsageMb" : 518.1,
-    "timeIntervalToFirstToken" : 19.965130000000002,
-    "totalTimeInterval" : 22.09336,
-    "totalTokens" : 63
+    "prefillTps" : 0.27,
+    "ramUsageMb" : 619.89,
+    "timeIntervalToFirstToken" : 14.79301,
+    "totalTimeInterval" : 15.317639999999999,
+    "totalTokens" : 16
   },
-  "parsedContent" : "How? The power of a god cannot be overcome! Zanzer, this is the providence of the world. Even gods are merely beings restricted to the limited power determined by prophets. That power, although great, is not unlimited. That voice! Abyss! How dare you!",
-  "streamedText" : " How? The power of a god cannot be overcome! Zanzer, this is the providence of the world. Even gods are merely beings restricted to the limited power determined by prophets. That power, although great, is not unlimited. That voice! Abyss! How dare you!<|startoftranscript|>"
+  "parsedContent" : "How? The power of a god cannot be overcome!",
+  "streamedText" : " How? The power of a god cannot be overcome!<|startoftranscript|>"
 }

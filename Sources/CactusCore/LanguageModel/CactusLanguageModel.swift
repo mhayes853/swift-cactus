@@ -57,15 +57,18 @@ public final class CactusLanguageModel {
   ///   - url: The local `URL` of the model.
   ///   - modelSlug: The model slug.
   ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
+  ///   - cacheIndex: Whether to load a cached RAG index if available.
   public convenience init(
     from url: URL,
     modelSlug: String? = nil,
-    corpusDirectoryURL: URL? = nil
+    corpusDirectoryURL: URL? = nil,
+    cacheIndex: Bool = false
   ) throws {
     let configuration = Configuration(
       modelURL: url,
       modelSlug: modelSlug,
-      corpusDirectoryURL: corpusDirectoryURL
+      corpusDirectoryURL: corpusDirectoryURL,
+      cacheIndex: cacheIndex
     )
     try self.init(configuration: configuration)
   }
@@ -77,7 +80,8 @@ public final class CactusLanguageModel {
     self.configuration = configuration
     let model = cactus_init(
       configuration.modelURL.nativePath,
-      configuration.corpusDirectoryURL?.nativePath
+      configuration.corpusDirectoryURL?.nativePath,
+      configuration.cacheIndex
     )
     guard let model else { throw ModelCreationError(configuration: configuration) }
     self.model = model
@@ -131,16 +135,21 @@ extension CactusLanguageModel {
     /// A `URL` to a corpus directory of documents for RAG models.
     public var corpusDirectoryURL: URL?
 
+    /// Whether to load a cached RAG index if available.
+    public var cacheIndex: Bool
+
     /// Creates a configuration.
     ///
     /// - Parameters:
     ///   - modelURL: The local `URL` of the model.
     ///   - modelSlug: The model slug.
     ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
+    ///   - cacheIndex: Whether to load a cached RAG index if available.
     public init(
       modelURL: URL,
       modelSlug: String? = nil,
-      corpusDirectoryURL: URL? = nil
+      corpusDirectoryURL: URL? = nil,
+      cacheIndex: Bool = false
     ) {
       self.modelURL = modelURL
       if let modelSlug {
@@ -150,6 +159,7 @@ extension CactusLanguageModel {
         self.modelSlug = splits.isEmpty ? modelURL.lastPathComponent : splits[0]
       }
       self.corpusDirectoryURL = corpusDirectoryURL
+      self.cacheIndex = cacheIndex
     }
   }
 }
@@ -581,6 +591,9 @@ extension CactusLanguageModel {
     /// The current process RAM usage in MB.
     public let ramUsageMb: Double
 
+    /// Whether this completion was handed off to cloud inference.
+    public let didHandoffToCloud: Bool
+
     private let timeToFirstTokenMs: Double
     private let totalTimeMs: Double
 
@@ -827,7 +840,123 @@ extension CactusLanguageModel {
 
 extension CactusLanguageModel.ChatCompletion {
   /// Options for generating a ``CactusLanguageModel/ChatCompletion``.
-  public typealias Options = CactusLanguageModel.InferenceOptions
+  public struct Options: Hashable, Sendable, Codable {
+    /// A default array of common stop sequences.
+    public static let defaultStopSequences = ["<|im_end|>", "<end_of_turn>"]
+
+    /// The maximum number of tokens for the completion.
+    public var maxTokens: Int
+
+    /// The temperature.
+    public var temperature: Float
+
+    /// The nucleus sampling.
+    public var topP: Float
+
+    /// The k most probable options to limit the next word to.
+    public var topK: Int
+
+    /// An array of stop sequence phrases.
+    public var stopSequences: [String]
+
+    /// Whether to force functions to be used by the model.
+    public var forceFunctions: Bool
+
+    /// The minimum confidence threshold for tool selection (0.0-1.0).
+    public var confidenceThreshold: Float
+
+    /// The number of top results for tool RAG retrieval.
+    public var toolRagTopK: Int
+
+    /// Whether to include stop sequences in the response.
+    public var includeStopSequences: Bool
+
+    /// Whether telemetry is enabled.
+    public var isTelemetryEnabled: Bool
+
+    /// Creates options for generating chat completions.
+    ///
+    /// - Parameters:
+    ///   - maxTokens: The maximum number of tokens for the completion.
+    ///   - temperature: Sampling temperature.
+    ///   - topP: Nucleus sampling probability.
+    ///   - topK: The k most probable options to limit the next token to.
+    ///   - stopSequences: Phrases that stop generation when emitted.
+    ///   - forceFunctions: Whether tool calls are forced when tools are provided.
+    ///   - confidenceThreshold: Confidence threshold used for cloud handoff.
+    ///   - toolRagTopK: Number of top tools to keep after tool-RAG selection.
+    ///   - includeStopSequences: Whether stop sequences are kept in final output.
+    ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
+    public init(
+      maxTokens: Int = 200,
+      temperature: Float = 0.6,
+      topP: Float = 0.95,
+      topK: Int = 20,
+      stopSequences: [String] = Self.defaultStopSequences,
+      forceFunctions: Bool = false,
+      confidenceThreshold: Float = 0.7,
+      toolRagTopK: Int = 2,
+      includeStopSequences: Bool = false,
+      isTelemetryEnabled: Bool = false
+    ) {
+      self.maxTokens = maxTokens
+      self.temperature = temperature
+      self.topP = topP
+      self.topK = topK
+      self.stopSequences = stopSequences
+      self.forceFunctions = forceFunctions
+      self.confidenceThreshold = confidenceThreshold
+      self.toolRagTopK = toolRagTopK
+      self.includeStopSequences = includeStopSequences
+      self.isTelemetryEnabled = isTelemetryEnabled
+    }
+
+    /// Creates options for generating chat completions.
+    ///
+    /// - Parameters:
+    ///   - maxTokens: The maximum number of tokens for the completion.
+    ///   - modelType: Model type used to derive default sampling values.
+    ///   - stopSequences: Phrases that stop generation when emitted.
+    ///   - forceFunctions: Whether tool calls are forced when tools are provided.
+    ///   - confidenceThreshold: Confidence threshold used for cloud handoff.
+    ///   - toolRagTopK: Number of top tools to keep after tool-RAG selection.
+    ///   - includeStopSequences: Whether stop sequences are kept in final output.
+    ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
+    public init(
+      maxTokens: Int = 200,
+      modelType: CactusLanguageModel.ModelType,
+      stopSequences: [String] = Self.defaultStopSequences,
+      forceFunctions: Bool = false,
+      confidenceThreshold: Float = 0.7,
+      toolRagTopK: Int = 2,
+      includeStopSequences: Bool = false,
+      isTelemetryEnabled: Bool = false
+    ) {
+      self.maxTokens = maxTokens
+      self.temperature = modelType.defaultTemperature
+      self.topP = modelType.defaultTopP
+      self.topK = modelType.defaultTopK
+      self.stopSequences = stopSequences
+      self.forceFunctions = forceFunctions
+      self.confidenceThreshold = confidenceThreshold
+      self.toolRagTopK = toolRagTopK
+      self.includeStopSequences = includeStopSequences
+      self.isTelemetryEnabled = isTelemetryEnabled
+    }
+
+    private enum CodingKeys: String, CodingKey {
+      case maxTokens = "max_tokens"
+      case temperature
+      case topP = "top_p"
+      case topK = "top_k"
+      case stopSequences = "stop_sequences"
+      case forceFunctions = "force_tools"
+      case confidenceThreshold = "confidence_threshold"
+      case toolRagTopK = "tool_rag_top_k"
+      case includeStopSequences = "include_stop_sequences"
+      case isTelemetryEnabled = "telemetry_enabled"
+    }
+  }
 }
 
 extension CactusLanguageModel.ChatCompletion: Decodable {
@@ -844,12 +973,29 @@ extension CactusLanguageModel.ChatCompletion: Decodable {
     self.prefillTps = try container.decode(Double.self, forKey: .prefillTps)
     self.decodeTps = try container.decode(Double.self, forKey: .decodeTps)
     self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
+    self.didHandoffToCloud = try container.decodeIfPresent(Bool.self, forKey: .didHandoffToCloud) ?? false
     self.timeToFirstTokenMs = try container.decode(Double.self, forKey: .timeToFirstTokenMs)
     self.totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
   }
 }
 
 extension CactusLanguageModel.ChatCompletion: Encodable {
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(self.response, forKey: .response)
+    try container.encode(self.prefillTokens, forKey: .prefillTokens)
+    try container.encode(self.decodeTokens, forKey: .decodeTokens)
+    try container.encode(self.totalTokens, forKey: .totalTokens)
+    try container.encode(self.functionCalls, forKey: .functionCalls)
+    try container.encode(self.confidence, forKey: .confidence)
+    try container.encode(self.prefillTps, forKey: .prefillTps)
+    try container.encode(self.decodeTps, forKey: .decodeTps)
+    try container.encode(self.ramUsageMb, forKey: .ramUsageMb)
+    try container.encode(self.didHandoffToCloud, forKey: .didHandoffToCloud)
+    try container.encode(self.timeToFirstTokenMs, forKey: .timeToFirstTokenMs)
+    try container.encode(self.totalTimeMs, forKey: .totalTimeMs)
+  }
+
   private enum CodingKeys: String, CodingKey {
     case response
     case prefillTokens = "prefill_tokens"
@@ -860,6 +1006,7 @@ extension CactusLanguageModel.ChatCompletion: Encodable {
     case prefillTps = "prefill_tps"
     case decodeTps = "decode_tps"
     case ramUsageMb = "ram_usage_mb"
+    case didHandoffToCloud = "cloud_handoff"
     case timeToFirstTokenMs = "time_to_first_token_ms"
     case totalTimeMs = "total_time_ms"
   }
@@ -906,17 +1053,30 @@ extension CactusLanguageModel {
     /// The current process RAM usage in MB.
     public let ramUsageMb: Double
 
-    private let timeToFirstTokenMs: Double
-    private let totalTimeMs: Double
+    /// Whether this transcription was handed off to cloud inference.
+    public let didHandoffToCloud: Bool
+
+    private let timeToFirstToken: CactusDuration
+    private let totalTime: CactusDuration
+
+    /// The amount of time to generate the first token.
+    public var durationToFirstToken: CactusDuration {
+      self.timeToFirstToken
+    }
+
+    /// The total generation time.
+    public var totalDuration: CactusDuration {
+      self.totalTime
+    }
 
     /// The amount of time in seconds to generate the first token.
     public var timeIntervalToFirstToken: TimeInterval {
-      self.timeToFirstTokenMs / 1000
+      self.timeToFirstToken.secondsDouble
     }
 
     /// The total generation time in seconds.
     public var totalTimeInterval: TimeInterval {
-      self.totalTimeMs / 1000
+      self.totalTime.secondsDouble
     }
   }
 
@@ -1036,11 +1196,9 @@ extension CactusLanguageModel {
     maxBufferSize: Int? = nil,
     onToken: (String, UInt32) -> Void
   ) throws -> Transcription {
-    guard self.configurationFile.modelType == .whisper else {
-      throw TranscriptionError.notSupported
-    }
+    guard self.isTranscriptionModel else { throw TranscriptionError.notSupported }
 
-    let options = options ?? Transcription.Options(modelType: .whisper)
+    let options = options ?? Transcription.Options()
     let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else {
       throw TranscriptionError.bufferSizeTooSmall
@@ -1100,11 +1258,74 @@ extension CactusLanguageModel {
     let transcription = try ffiDecoder.decode(Transcription.self, from: responseData)
     return transcription
   }
+
+  private var isTranscriptionModel: Bool {
+    self.configurationFile.modelType == .whisper || self.configurationFile.modelType == .moonshine
+  }
 }
 
 extension CactusLanguageModel.Transcription {
   /// Options for generating a ``CactusLanguageModel/Transcription``.
-  public typealias Options = CactusLanguageModel.InferenceOptions
+  public struct Options: Hashable, Sendable, Codable {
+    /// The maximum number of tokens for the completion.
+    public var maxTokens: Int
+
+    /// The temperature.
+    public var temperature: Float
+
+    /// The nucleus sampling.
+    public var topP: Float
+
+    /// The k most probable options to limit the next word to.
+    public var topK: Int
+
+    /// Whether telemetry is enabled.
+    public var isTelemetryEnabled: Bool
+
+    /// Whether to enable VAD weights on the transcription model.
+    public var useVad: Bool?
+
+    /// Threshold for triggering cloud handoff based on confidence.
+    public var cloudHandoffThreshold: Float?
+
+    /// Creates options for generating transcriptions.
+    ///
+    /// - Parameters:
+    ///   - maxTokens: The maximum number of tokens for the transcription.
+    ///   - temperature: Sampling temperature.
+    ///   - topP: Nucleus sampling probability.
+    ///   - topK: The k most probable options to limit the next token to.
+    ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
+    ///   - useVad: Whether to enable VAD weights for transcription. `nil` defers to higher-level defaults.
+    ///   - cloudHandoffThreshold: Optional confidence threshold for cloud handoff.
+    public init(
+      maxTokens: Int = 200,
+      temperature: Float = 0.6,
+      topP: Float = 0.95,
+      topK: Int = 20,
+      isTelemetryEnabled: Bool = false,
+      useVad: Bool? = nil,
+      cloudHandoffThreshold: Float? = nil
+    ) {
+      self.maxTokens = maxTokens
+      self.temperature = temperature
+      self.topP = topP
+      self.topK = topK
+      self.isTelemetryEnabled = isTelemetryEnabled
+      self.useVad = useVad
+      self.cloudHandoffThreshold = cloudHandoffThreshold
+    }
+
+    private enum CodingKeys: String, CodingKey {
+      case maxTokens = "max_tokens"
+      case temperature
+      case topP = "top_p"
+      case topK = "top_k"
+      case isTelemetryEnabled = "telemetry_enabled"
+      case useVad = "use_vad"
+      case cloudHandoffThreshold = "cloud_handoff_threshold"
+    }
+  }
 }
 
 extension CactusLanguageModel.Transcription: Decodable {
@@ -1118,12 +1339,32 @@ extension CactusLanguageModel.Transcription: Decodable {
     self.prefillTps = try container.decode(Double.self, forKey: .prefillTps)
     self.decodeTps = try container.decode(Double.self, forKey: .decodeTps)
     self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
-    self.timeToFirstTokenMs = try container.decode(Double.self, forKey: .timeToFirstTokenMs)
-    self.totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
+    self.didHandoffToCloud = try container.decodeIfPresent(Bool.self, forKey: .didHandoffToCloud) ?? false
+    self.timeToFirstToken = .milliseconds(
+      try container.decode(Double.self, forKey: .timeToFirstTokenMs)
+    )
+    self.totalTime = .milliseconds(
+      try container.decode(Double.self, forKey: .totalTimeMs)
+    )
   }
 }
 
 extension CactusLanguageModel.Transcription: Encodable {
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(self.response, forKey: .response)
+    try container.encode(self.prefillTokens, forKey: .prefillTokens)
+    try container.encode(self.decodeTokens, forKey: .decodeTokens)
+    try container.encode(self.totalTokens, forKey: .totalTokens)
+    try container.encode(self.confidence, forKey: .confidence)
+    try container.encode(self.prefillTps, forKey: .prefillTps)
+    try container.encode(self.decodeTps, forKey: .decodeTps)
+    try container.encode(self.ramUsageMb, forKey: .ramUsageMb)
+    try container.encode(self.didHandoffToCloud, forKey: .didHandoffToCloud)
+    try container.encode(self.timeToFirstToken.secondsDouble * 1000, forKey: .timeToFirstTokenMs)
+    try container.encode(self.totalTime.secondsDouble * 1000, forKey: .totalTimeMs)
+  }
+
   private enum CodingKeys: String, CodingKey {
     case response
     case prefillTokens = "prefill_tokens"
@@ -1133,8 +1374,324 @@ extension CactusLanguageModel.Transcription: Encodable {
     case prefillTps = "prefill_tps"
     case decodeTps = "decode_tps"
     case ramUsageMb = "ram_usage_mb"
+    case didHandoffToCloud = "cloud_handoff"
     case timeToFirstTokenMs = "time_to_first_token_ms"
     case totalTimeMs = "total_time_ms"
+  }
+}
+
+// MARK: - VAD
+
+extension CactusLanguageModel {
+  /// An error thrown when trying to run voice activity detection.
+  public enum VADError: Error, Hashable {
+    /// The buffer size for the response was too small.
+    case bufferSizeTooSmall
+
+    /// The model does not support voice activity detection.
+    case notSupported
+
+    /// A generation error.
+    case generation(message: String?)
+  }
+
+  /// A detected speech segment.
+  public struct VADSegment: Hashable, Sendable, Codable {
+    /// Segment start frame.
+    public let startFrame: Int
+
+    /// Segment end frame.
+    public let endFrame: Int
+
+    private enum CodingKeys: String, CodingKey {
+      case startFrame = "start"
+      case endFrame = "end"
+    }
+  }
+
+  /// A voice activity detection result.
+  public struct VADResult: Hashable, Sendable {
+    /// The detected speech segments.
+    public let segments: [VADSegment]
+
+    /// The current process RAM usage in MB.
+    public let ramUsageMb: Double
+
+    private let totalDurationValue: CactusDuration
+
+    /// The total processing duration.
+    public var totalDuration: CactusDuration {
+      self.totalDurationValue
+    }
+
+    /// The total processing time in seconds.
+    public var totalTime: TimeInterval {
+      self.totalDurationValue.secondsDouble
+    }
+  }
+
+  /// Options for voice activity detection.
+  public struct VADOptions: Hashable, Sendable {
+    /// Detection threshold.
+    public var threshold: Float?
+
+    /// Negative threshold.
+    public var negThreshold: Float?
+
+    /// The minimum speech duration.
+    public var minSpeechDuration: CactusDuration?
+
+    /// The maximum speech duration.
+    public var maxSpeechDuration: CactusDuration?
+
+    /// The minimum silence duration.
+    public var minSilenceDuration: CactusDuration?
+
+    /// The amount of padding duration to add around speech segments.
+    public var speechPadDuration: CactusDuration?
+
+    /// The VAD window size in samples.
+    public var windowSizeSamples: Int?
+
+    /// Minimum silence at max speech in milliseconds.
+    public var minSilenceAtMaxSpeech: Int?
+
+    /// Whether to use max possible silence at max speech.
+    public var useMaxPossSilAtMaxSpeech: Bool?
+
+    /// Sampling rate in Hz.
+    public var samplingRate: Int?
+
+    /// Creates options for voice activity detection.
+    public init(
+      threshold: Float? = nil,
+      negThreshold: Float? = nil,
+      minSpeechDuration: CactusDuration? = nil,
+      maxSpeechDuration: CactusDuration? = nil,
+      minSilenceDuration: CactusDuration? = nil,
+      speechPadDuration: CactusDuration? = nil,
+      windowSizeSamples: Int? = nil,
+      minSilenceAtMaxSpeech: Int? = nil,
+      useMaxPossSilAtMaxSpeech: Bool? = nil,
+      samplingRate: Int? = nil
+    ) {
+      self.threshold = threshold
+      self.negThreshold = negThreshold
+      self.minSpeechDuration = minSpeechDuration
+      self.maxSpeechDuration = maxSpeechDuration
+      self.minSilenceDuration = minSilenceDuration
+      self.speechPadDuration = speechPadDuration
+      self.windowSizeSamples = windowSizeSamples
+      self.minSilenceAtMaxSpeech = minSilenceAtMaxSpeech
+      self.useMaxPossSilAtMaxSpeech = useMaxPossSilAtMaxSpeech
+      self.samplingRate = samplingRate
+    }
+
+    private enum CodingKeys: String, CodingKey {
+      case threshold
+      case negThreshold = "neg_threshold"
+      case minSpeechDuration = "min_speech_duration_ms"
+      case maxSpeechDuration = "max_speech_duration_s"
+      case minSilenceDuration = "min_silence_duration_ms"
+      case speechPadDuration = "speech_pad_ms"
+      case windowSizeSamples = "window_size_samples"
+      case minSilenceAtMaxSpeech = "min_silence_at_max_speech"
+      case useMaxPossSilAtMaxSpeech = "use_max_poss_sil_at_max_speech"
+      case samplingRate = "sampling_rate"
+    }
+  }
+
+  private enum VADRequest {
+    case audio(URL)
+    case buffer([UInt8])
+  }
+
+  /// Runs voice activity detection on an audio file.
+  ///
+  /// - Parameters:
+  ///   - audio: The audio file to analyze.
+  ///   - options: The ``VADOptions``.
+  ///   - maxBufferSize: The maximum buffer size to store the result.
+  /// - Returns: A ``VADResult``.
+  public func vad(
+    audio: URL,
+    options: VADOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) throws -> VADResult {
+    try self.vad(for: .audio(audio), options: options, maxBufferSize: maxBufferSize)
+  }
+
+  /// Runs voice activity detection on a PCM byte buffer.
+  ///
+  /// - Parameters:
+  ///   - pcmBuffer: The PCM byte buffer to analyze.
+  ///   - options: The ``VADOptions``.
+  ///   - maxBufferSize: The maximum buffer size to store the result.
+  /// - Returns: A ``VADResult``.
+  public func vad(
+    pcmBuffer: [UInt8],
+    options: VADOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) throws -> VADResult {
+    try self.vad(for: .buffer(pcmBuffer), options: options, maxBufferSize: maxBufferSize)
+  }
+
+  /// Runs voice activity detection on a PCM byte buffer.
+  ///
+  /// - Parameters:
+  ///   - pcmBuffer: The PCM byte buffer to analyze.
+  ///   - options: The ``VADOptions``.
+  ///   - maxBufferSize: The maximum buffer size to store the result.
+  /// - Returns: A ``VADResult``.
+  public func vad(
+    pcmBuffer: UnsafeBufferPointer<UInt8>,
+    options: VADOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) throws -> VADResult {
+    try self.vad(for: .buffer(Array(pcmBuffer)), options: options, maxBufferSize: maxBufferSize)
+  }
+
+  private func vad(
+    for request: VADRequest,
+    options: VADOptions?,
+    maxBufferSize: Int?
+  ) throws -> VADResult {
+    let maxBufferSize = maxBufferSize ?? 8192
+    guard maxBufferSize > 0 else {
+      throw VADError.bufferSizeTooSmall
+    }
+
+    let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: maxBufferSize)
+    defer { responseBuffer.deallocate() }
+
+    let optionsJSON = try options.map { try String(decoding: ffiEncoder.encode($0), as: UTF8.self) }
+
+    let result =
+      switch request {
+      case .audio(let audio):
+        cactus_vad(
+          self.model,
+          audio.nativePath,
+          responseBuffer,
+          maxBufferSize * MemoryLayout<CChar>.stride,
+          optionsJSON,
+          nil,
+          0
+        )
+      case .buffer(let pcmBuffer):
+        pcmBuffer.withUnsafeBufferPointer { rawBuffer in
+          cactus_vad(
+            self.model,
+            nil,
+            responseBuffer,
+            maxBufferSize * MemoryLayout<CChar>.stride,
+            optionsJSON,
+            rawBuffer.baseAddress,
+            rawBuffer.count
+          )
+        }
+      }
+
+    var responseData = Data()
+    for i in 0..<strnlen(responseBuffer, maxBufferSize) {
+      responseData.append(UInt8(bitPattern: responseBuffer[i]))
+    }
+
+    guard result != -1 else {
+      let response = try? ffiDecoder.decode(FFIErrorResponse.self, from: responseData)
+      if response?.error.contains("Buffer not big enough") == true {
+        throw VADError.bufferSizeTooSmall
+      }
+      if response?.error.localizedCaseInsensitiveContains("not supported") == true {
+        throw VADError.notSupported
+      }
+      throw VADError.generation(message: response?.error)
+    }
+
+    return try ffiDecoder.decode(VADResult.self, from: responseData)
+  }
+}
+
+extension CactusLanguageModel.VADResult: Decodable {
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.segments = try container.decode([CactusLanguageModel.VADSegment].self, forKey: .segments)
+    self.totalDurationValue = .milliseconds(
+      try container.decode(Double.self, forKey: .totalTimeMs)
+    )
+    self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
+  }
+}
+
+extension CactusLanguageModel.VADResult: Encodable {
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(self.segments, forKey: .segments)
+    try container.encode(self.totalDurationValue.secondsDouble * 1000, forKey: .totalTimeMs)
+    try container.encode(self.ramUsageMb, forKey: .ramUsageMb)
+  }
+
+  private enum CodingKeys: String, CodingKey {
+    case segments
+    case totalTimeMs = "total_time_ms"
+    case ramUsageMb = "ram_usage_mb"
+  }
+}
+
+extension CactusLanguageModel.VADOptions: Decodable {
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.threshold = try container.decodeIfPresent(Float.self, forKey: .threshold)
+    self.negThreshold = try container.decodeIfPresent(Float.self, forKey: .negThreshold)
+    self.minSpeechDuration =
+      try container.decodeIfPresent(Int.self, forKey: .minSpeechDuration)
+      .map(CactusDuration.milliseconds)
+    self.maxSpeechDuration =
+      try container.decodeIfPresent(Double.self, forKey: .maxSpeechDuration)
+      .map(CactusDuration.seconds)
+    self.minSilenceDuration =
+      try container.decodeIfPresent(Int.self, forKey: .minSilenceDuration)
+      .map(CactusDuration.milliseconds)
+    self.speechPadDuration =
+      try container.decodeIfPresent(Int.self, forKey: .speechPadDuration)
+      .map(CactusDuration.milliseconds)
+    self.windowSizeSamples = try container.decodeIfPresent(Int.self, forKey: .windowSizeSamples)
+    self.minSilenceAtMaxSpeech =
+      try container.decodeIfPresent(Int.self, forKey: .minSilenceAtMaxSpeech)
+    self.useMaxPossSilAtMaxSpeech =
+      try container.decodeIfPresent(Bool.self, forKey: .useMaxPossSilAtMaxSpeech)
+    self.samplingRate = try container.decodeIfPresent(Int.self, forKey: .samplingRate)
+  }
+}
+
+extension CactusLanguageModel.VADOptions: Encodable {
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encodeIfPresent(self.threshold, forKey: .threshold)
+    try container.encodeIfPresent(self.negThreshold, forKey: .negThreshold)
+    try container.encodeIfPresent(
+      self.minSpeechDuration.map { Int(($0.secondsDouble * 1000).rounded()) },
+      forKey: .minSpeechDuration
+    )
+    try container.encodeIfPresent(
+      self.maxSpeechDuration.map(\.secondsDouble),
+      forKey: .maxSpeechDuration
+    )
+    try container.encodeIfPresent(
+      self.minSilenceDuration.map { Int(($0.secondsDouble * 1000).rounded()) },
+      forKey: .minSilenceDuration
+    )
+    try container.encodeIfPresent(
+      self.speechPadDuration.map { Int(($0.secondsDouble * 1000).rounded()) },
+      forKey: .speechPadDuration
+    )
+    try container.encodeIfPresent(self.windowSizeSamples, forKey: .windowSizeSamples)
+    try container.encodeIfPresent(self.minSilenceAtMaxSpeech, forKey: .minSilenceAtMaxSpeech)
+    try container.encodeIfPresent(
+      self.useMaxPossSilAtMaxSpeech,
+      forKey: .useMaxPossSilAtMaxSpeech
+    )
+    try container.encodeIfPresent(self.samplingRate, forKey: .samplingRate)
   }
 }
 
@@ -1142,113 +1699,13 @@ extension CactusLanguageModel.Transcription: Encodable {
 
 extension CactusLanguageModel {
   /// Options for generating inferences.
-  public struct InferenceOptions: Hashable, Sendable, Codable {
-    /// A default array of common stop sequences.
-    public static let defaultStopSequences = ["<|im_end|>", "<end_of_turn>"]
-
-    /// The maximum number of tokens for the completion.
-    public var maxTokens: Int
-
-    /// The temperature.
-    public var temperature: Float
-
-    /// The nucleus sampling.
-    public var topP: Float
-
-    /// The k most probable options to limit the next word to.
-    public var topK: Int
-
-    /// An array of stop sequence phrases.
-    public var stopSequences: [String]
-
-    /// Whether to force functions to be used by the model.
-    public var forceFunctions: Bool
-
-    /// The minimum confidence threshold for tool selection (0.0-1.0).
-    public var confidenceThreshold: Float
-
-    /// The number of top results for tool RAG retrieval.
-    public var toolRagTopK: Int
-
-    /// Whether to include stop sequences in the response.
-    public var includeStopSequences: Bool
-
-    /// Creates options for generating inferences.
-    ///
-    /// - Parameters:
-    ///   - maxTokens: The maximum number of tokens for the completion.
-    ///   - temperature: The temperature.
-    ///   - topP: The nucleus sampling.
-    ///   - topK: The k most probable options to limit the next word to.
-    ///   - stopSequences: An array of stop sequence phrases.
-    ///   - forceFunctions: Whether to force functions to be used by the model.
-    ///   - confidenceThreshold: The minimum confidence threshold for tool selection (0.0-1.0).
-    ///   - toolRagTopK: The number of top results for tool RAG retrieval.
-    ///   - includeStopSequences: Whether to include stop sequences in the response.
-    public init(
-      maxTokens: Int = 200,
-      temperature: Float = 0.6,
-      topP: Float = 0.95,
-      topK: Int = 20,
-      stopSequences: [String] = Self.defaultStopSequences,
-      forceFunctions: Bool = false,
-      confidenceThreshold: Float = 0.7,
-      toolRagTopK: Int = 2,
-      includeStopSequences: Bool = false
-    ) {
-      self.maxTokens = maxTokens
-      self.temperature = temperature
-      self.topP = topP
-      self.topK = topK
-      self.stopSequences = stopSequences
-      self.forceFunctions = forceFunctions
-      self.confidenceThreshold = confidenceThreshold
-      self.toolRagTopK = toolRagTopK
-      self.includeStopSequences = includeStopSequences
-    }
-
-    /// Creates options for generating inferences.
-    ///
-    /// - Parameters:
-    ///   - maxTokens: The maximum number of tokens for the completion.
-    ///   - modelType: The model type.
-    ///   - stopSequences: An array of stop sequence phrases.
-    ///   - forceFunctions: Whether to force functions to be used by the model.
-    ///   - confidenceThreshold: The minimum confidence threshold for tool selection (0.0-1.0).
-    ///   - toolRagTopK: The number of top results for tool RAG retrieval.
-    ///   - includeStopSequences: Whether to include stop sequences in the response.
-    public init(
-      maxTokens: Int = 200,
-      modelType: CactusLanguageModel.ModelType,
-      stopSequences: [String] = Self.defaultStopSequences,
-      forceFunctions: Bool = false,
-      confidenceThreshold: Float = 0.7,
-      toolRagTopK: Int = 2,
-      includeStopSequences: Bool = false
-    ) {
-      self.maxTokens = maxTokens
-      self.temperature = modelType.defaultTemperature
-      self.topP = modelType.defaultTopP
-      self.topK = modelType.defaultTopK
-      self.stopSequences = stopSequences
-      self.forceFunctions = forceFunctions
-      self.confidenceThreshold = confidenceThreshold
-      self.toolRagTopK = toolRagTopK
-      self.includeStopSequences = includeStopSequences
-    }
-
-    private enum CodingKeys: String, CodingKey {
-      case maxTokens = "max_tokens"
-      case temperature
-      case topP = "top_p"
-      case topK = "top_k"
-      case stopSequences = "stop_sequences"
-      case forceFunctions = "force_tools"
-      case confidenceThreshold = "confidence_threshold"
-      case toolRagTopK = "tool_rag_top_k"
-      case includeStopSequences = "include_stop_sequences"
-    }
-  }
+  @available(
+    *,
+    deprecated,
+    message:
+      "Use CactusLanguageModel.ChatCompletion.Options for chat completions or CactusLanguageModel.Transcription.Options for transcriptions."
+  )
+  public typealias InferenceOptions = CactusLanguageModel.ChatCompletion.Options
 }
 
 // MARK: - Stop

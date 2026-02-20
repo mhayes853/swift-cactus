@@ -13,10 +13,7 @@ struct `CactusTranscriptionSession tests` {
     let session = try CactusTranscriptionSession(from: modelURL)
     let request = CactusTranscription.Request(prompt: audioPrompt, content: .audio(testAudioURL))
 
-    let transcription = try await session.transcribe(
-      request: request,
-      options: CactusLanguageModel.InferenceOptions(modelType: .whisper)
-    )
+    let transcription = try await session.transcribe(request: request)
 
     withKnownIssue {
       assertSnapshot(
@@ -33,10 +30,7 @@ struct `CactusTranscriptionSession tests` {
     let session = try CactusTranscriptionSession(from: modelURL)
     let request = CactusTranscription.Request(prompt: audioPrompt, content: .audio(testAudioURL))
 
-    let stream = try session.stream(
-      request: request,
-      options: CactusLanguageModel.InferenceOptions(modelType: .whisper)
-    )
+    let stream = try session.stream(request: request)
 
     var streamedText = ""
     for try await token in stream.tokens {
@@ -69,10 +63,32 @@ struct `CactusTranscriptionSession tests` {
         content: content
       )
 
-      let transcription = try await session.transcribe(
-        request: request,
-        options: CactusLanguageModel.InferenceOptions(modelType: .whisper)
+      let transcription = try await session.transcribe(request: request)
+
+      withKnownIssue {
+        assertSnapshot(
+          of: TranscriptionSnapshot(transcription: transcription),
+          as: .json,
+          record: true
+        )
+      }
+    #endif
+  }
+
+  @Test
+  func `File Transcription With Timestamps Snapshot`() async throws {
+    #if canImport(AVFoundation)
+      let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
+      let session = try CactusTranscriptionSession(from: modelURL)
+      let pcmBuffer = try testAudioPCMBuffer()
+      let content = try CactusTranscription.Request.Content.pcm(pcmBuffer)
+      let request = CactusTranscription.Request(
+        language: .english,
+        includeTimestamps: true,
+        content: content
       )
+
+      let transcription = try await session.transcribe(request: request)
 
       withKnownIssue {
         assertSnapshot(
@@ -93,16 +109,10 @@ struct `CactusTranscriptionSession tests` {
       content: .audio(testAudioURL)
     )
 
-    let stream = try session.stream(
-      request: request,
-      options: CactusLanguageModel.InferenceOptions(modelType: .whisper)
-    )
+    let stream = try session.stream(request: request)
 
     #expect(throws: CactusTranscriptionStreamError.alreadyTranscribing) {
-      try session.stream(
-        request: request,
-        options: CactusLanguageModel.InferenceOptions(modelType: .whisper)
-      )
+      try session.stream(request: request)
     }
 
     stream.stop()
@@ -117,10 +127,7 @@ struct `CactusTranscriptionSession tests` {
       content: .pcm(longSilencePCMBytes)
     )
 
-    let stream = try session.stream(
-      request: request,
-      options: CactusLanguageModel.InferenceOptions(modelType: .whisper)
-    )
+    let stream = try session.stream(request: request)
 
     let responseTask = Task {
       try await stream.collectResponse()
@@ -147,10 +154,7 @@ struct `CactusTranscriptionSession tests` {
     )
 
     let transcriptionTask = Task {
-      try await session.transcribe(
-        request: request,
-        options: CactusLanguageModel.InferenceOptions(modelType: .whisper)
-      )
+      try await session.transcribe(request: request)
     }
 
     try await Task.sleep(for: .milliseconds(50))
@@ -180,10 +184,7 @@ struct `CactusTranscriptionSession tests` {
         values.withLock { $0.append(session.isTranscribing) }
       }
 
-      let stream = try session.stream(
-        request: request,
-        options: CactusLanguageModel.InferenceOptions(modelType: .whisper)
-      )
+      let stream = try session.stream(request: request)
       _ = try await stream.collectResponse()
       token.cancel()
 

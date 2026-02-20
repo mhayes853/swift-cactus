@@ -1,4 +1,17 @@
 {
+  "cloud_handoff" : false,
+  "confidence" : 0.9452,
   "confirmed" : "",
-  "pending" : " The power of the God cannot be overcome."
+  "decode_tokens" : 44,
+  "decode_tps" : 51.21,
+  "function_calls" : [
+
+  ],
+  "pending" : "The power of a god cannot be overcome! Zanza, this is the providence of the world. Even gods are merely beings restricted to the limited power determined by promise that power, although great is not unlimited.",
+  "prefill_tokens" : 4,
+  "prefill_tps" : 0.68,
+  "ram_usage_mb" : 725.26,
+  "time_to_first_token_ms" : 5908.14,
+  "total_time_ms" : 6747.74,
+  "total_tokens" : 48
 }

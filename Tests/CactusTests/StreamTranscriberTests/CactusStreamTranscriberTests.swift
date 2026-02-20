@@ -25,7 +25,7 @@ struct `CactusStreamTranscriber tests` {
   @Test
   func `Stream Transcriber Does Not Deallocate Model Pointer`() async throws {
     let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
-    let modelPointer = try #require(cactus_init(modelURL.nativePath, nil))
+    let modelPointer = try #require(cactus_init(modelURL.nativePath, nil, false))
     defer { cactus_destroy(modelPointer) }
 
     do {
@@ -56,7 +56,7 @@ struct `CactusStreamTranscriber tests` {
 
       let response = try transcriber.process(buffer: slice)
 
-      withExpectedIssue {
+      withKnownIssue {
         assertSnapshot(of: response, as: .json, record: true)
       }
     }
@@ -84,15 +84,36 @@ struct `CactusStreamTranscriber tests` {
 
       let response = try transcriber.stop()
 
-      withExpectedIssue {
+      withKnownIssue {
         assertSnapshot(of: response, as: .json, record: true)
+      }
+    }
+
+    @Test
+    func `Disallow Operations After Finalize`() async throws {
+      let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
+      let transcriber = try CactusStreamTranscriber(modelURL: modelURL)
+
+      let fullBuffer = try testAudioPCMBuffer()
+      let totalFrames = AVAudioFramePosition(fullBuffer.frameLength)
+      let sliceLength = max(AVAudioFramePosition(1), totalFrames / 4)
+      let slice = try testAudioPCMBuffer(frameLength: AVAudioFrameCount(sliceLength))
+
+      _ = try transcriber.process(buffer: slice)
+      _ = try transcriber.stop()
+
+      #expect(throws: CactusStreamTranscriberError.self) {
+        try transcriber.process(buffer: slice)
+      }
+      #expect(throws: CactusStreamTranscriberError.self) {
+        _ = try transcriber.stop()
       }
     }
 
     @Test
     func `Stream Transcriber Pointer Is Not Deallocated When Not Managed`() async throws {
       let modelURL = try await CactusLanguageModel.testAudioModelURL(request: .whisperSmall())
-      let modelPointer = try #require(cactus_init(modelURL.nativePath, nil))
+      let modelPointer = try #require(cactus_init(modelURL.nativePath, nil, false))
       defer { cactus_destroy(modelPointer) }
 
       let streamPointer = try #require(cactus_stream_transcribe_start(modelPointer, nil))
