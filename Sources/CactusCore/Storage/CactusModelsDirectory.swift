@@ -691,16 +691,33 @@ extension CactusModelsDirectory {
 // MARK: - Migrations
 
 extension CactusModelsDirectory {
+  /// The result produced by ``migrateFromv1_5Tov1_7Structure()``.
+  ///
+  /// Models from earlier versions than v1.7 are removed due to incompatibility with the engine.
   public struct Migrationv1_5Tov1_7StructureResult: Hashable, Sendable {
+    /// Models that were moved from legacy directory names into the v1.7 directory structure.
     public let migrated: [StoredModel]
+
+    /// Models that were removed because they target versions older than v1.7.
     public let removed: [StoredModel]
 
+    /// Creates a migration result.
+    ///
+    /// - Parameters:
+    ///   - migrated: Models that were migrated into the new structure.
+    ///   - removed: Models that were removed during migration.
     public init(migrated: [StoredModel], removed: [StoredModel]) {
       self.migrated = migrated
       self.removed = removed
     }
   }
 
+  /// Migrates legacy model directories from the v1.5 naming scheme to the v1.7 directory
+  /// structure.
+  ///
+  /// Models from earlier versions than v1.7 are removed due to incompatibility with the engine.
+  ///
+  /// - Returns: A ``Migrationv1_5Tov1_7StructureResult`` describing migrated and removed models.
   @discardableResult
   public func migrateFromv1_5Tov1_7Structure() throws -> Migrationv1_5Tov1_7StructureResult {
     let delegate = self.state.withLock { state in state.delegate }
@@ -727,13 +744,8 @@ extension CactusModelsDirectory {
   private func performMigrationFromv1_5Tov1_7Structure(
     delegate: (any Delegate)?
   ) throws -> Migrationv1_5Tov1_7StructureResult {
-    guard
-      let legacyDirectories = try? FileManager.default.contentsOfDirectory(
-        at: self.baseURL,
-        includingPropertiesForKeys: [.isDirectoryKey],
-        options: [.skipsHiddenFiles]
-      )
-    else {
+    let legacyDirectories = self.legacyDirectoriesForMigration()
+    guard !legacyDirectories.isEmpty else {
       return Migrationv1_5Tov1_7StructureResult(migrated: [], removed: [])
     }
 
@@ -741,59 +753,113 @@ extension CactusModelsDirectory {
     var removed = [StoredModel]()
 
     for legacyDirectory in legacyDirectories {
-      guard
-        let isDirectory = try? legacyDirectory.resourceValues(forKeys: [.isDirectoryKey])
-          .isDirectory,
-        isDirectory == true,
-        let request = self.request(fromLegacyDirectoryName: legacyDirectory.lastPathComponent)
-      else {
+      guard let request = self.requestForMigration(from: legacyDirectory) else {
         continue
       }
 
-      let legacyStoredModel = StoredModel(request: request, url: legacyDirectory)
-      if request.isOlderThanv1_7 {
-        delegate?.modelsDirectoryWillRemoveModel(self, request: request)
-        do {
-          try FileManager.default.removeItem(at: legacyDirectory)
-          delegate?
-            .modelsDirectoryDidRemoveModel(
-              self,
-              request: request,
-              result: Result<Void, any Error>.success(())
-            )
-        } catch {
-          delegate?
-            .modelsDirectoryDidRemoveModel(
-              self,
-              request: request,
-              result: Result<Void, any Error>.failure(error)
-            )
-          throw error
-        }
-        removed.append(legacyStoredModel)
-        continue
-      }
-
-      let destinationURL = self.migratedDestinationURL(for: request)
-      try FileManager.default.createDirectory(
-        at: destinationURL.deletingLastPathComponent(),
-        withIntermediateDirectories: true
+      let migrationResult = try self.migrateLegacyDirectory(
+        legacyDirectory,
+        request: request,
+        delegate: delegate
       )
-
-      let destinationExists = FileManager.default.fileExists(atPath: destinationURL.path)
-      if destinationExists {
-        try FileManager.default.removeItem(at: legacyDirectory)
-      } else {
-        try FileManager.default.moveItem(at: legacyDirectory, to: destinationURL)
+      switch migrationResult {
+      case .migrated(let storedModel):
+        migrated.append(storedModel)
+      case .removed(let storedModel):
+        removed.append(storedModel)
       }
-
-      migrated.append(StoredModel(request: request, url: destinationURL))
     }
 
     return Migrationv1_5Tov1_7StructureResult(
       migrated: migrated.sorted { $0.url.path < $1.url.path },
       removed: removed.sorted { $0.url.path < $1.url.path }
     )
+  }
+
+  private enum MigrationActionResult {
+    case migrated(StoredModel)
+    case removed(StoredModel)
+  }
+
+  private func legacyDirectoriesForMigration() -> [URL] {
+    (try? FileManager.default.contentsOfDirectory(
+      at: self.baseURL,
+      includingPropertiesForKeys: [.isDirectoryKey]
+    )) ?? []
+  }
+
+  private func requestForMigration(
+    from legacyDirectory: URL
+  ) -> CactusLanguageModel.PlatformDownloadRequest? {
+    guard
+      let isDirectory = try? legacyDirectory.resourceValues(forKeys: [.isDirectoryKey])
+        .isDirectory,
+      isDirectory == true
+    else {
+      return nil
+    }
+    return self.request(fromLegacyDirectoryName: legacyDirectory.lastPathComponent)
+  }
+
+  private func migrateLegacyDirectory(
+    _ legacyDirectory: URL,
+    request: CactusLanguageModel.PlatformDownloadRequest,
+    delegate: (any Delegate)?
+  ) throws -> MigrationActionResult {
+    let legacyStoredModel = StoredModel(request: request, url: legacyDirectory)
+
+    if request.isOlderThanv1_7 {
+      try self.removeLegacyModelDirectory(legacyDirectory, request: request, delegate: delegate)
+      return .removed(legacyStoredModel)
+    }
+
+    let migratedModel = try self.moveLegacyModelDirectory(legacyDirectory, request: request)
+    return .migrated(migratedModel)
+  }
+
+  private func removeLegacyModelDirectory(
+    _ legacyDirectory: URL,
+    request: CactusLanguageModel.PlatformDownloadRequest,
+    delegate: (any Delegate)?
+  ) throws {
+    delegate?.modelsDirectoryWillRemoveModel(self, request: request)
+    do {
+      try FileManager.default.removeItem(at: legacyDirectory)
+      delegate?
+        .modelsDirectoryDidRemoveModel(
+          self,
+          request: request,
+          result: Result<Void, any Error>.success(())
+        )
+    } catch {
+      delegate?
+        .modelsDirectoryDidRemoveModel(
+          self,
+          request: request,
+          result: Result<Void, any Error>.failure(error)
+        )
+      throw error
+    }
+  }
+
+  private func moveLegacyModelDirectory(
+    _ legacyDirectory: URL,
+    request: CactusLanguageModel.PlatformDownloadRequest
+  ) throws -> StoredModel {
+    let destinationURL = self.migratedDestinationURL(for: request)
+    try FileManager.default.createDirectory(
+      at: destinationURL.deletingLastPathComponent(),
+      withIntermediateDirectories: true
+    )
+
+    let destinationExists = FileManager.default.fileExists(atPath: destinationURL.path)
+    if destinationExists {
+      try FileManager.default.removeItem(at: legacyDirectory)
+    } else {
+      try FileManager.default.moveItem(at: legacyDirectory, to: destinationURL)
+    }
+
+    return StoredModel(request: request, url: destinationURL)
   }
 }
 
