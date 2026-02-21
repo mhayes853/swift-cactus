@@ -188,7 +188,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Audio Embeddings`() async throws {
-    let modelURL = try await CactusLanguageModel.testAudioModelURL(
+    let modelURL = try await CactusLanguageModel.testModelURL(
       request: .whisperSmall()
     )
     let model = try CactusLanguageModel(from: modelURL)
@@ -382,7 +382,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Streams Same Response As Audio Transcription`() async throws {
-    let modelURL = try await CactusLanguageModel.testAudioModelURL(
+    let modelURL = try await CactusLanguageModel.testModelURL(
       request: .whisperSmall()
     )
     let model = try CactusLanguageModel(from: modelURL)
@@ -396,7 +396,7 @@ struct `CactusLanguageModel tests` {
 
   @Test
   func `Throws Transcription Error When Buffer Size Is Zero`() async throws {
-    let modelURL = try await CactusLanguageModel.testAudioModelURL(
+    let modelURL = try await CactusLanguageModel.testModelURL(
       request: .whisperSmall()
     )
     let model = try CactusLanguageModel(from: modelURL)
@@ -679,7 +679,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
       let transcription: CactusLanguageModel.Transcription
     }
 
-    let url = try await CactusLanguageModel.testAudioModelURL(
+    let url = try await CactusLanguageModel.testModelURL(
       request: .whisperSmall()
     )
     let model = try CactusLanguageModel(from: url)

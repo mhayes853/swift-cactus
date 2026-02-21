@@ -28,6 +28,25 @@ let completion = try model.chatCompletion(
 )
 ```
 
+### Migration Guide (v1.5 -> v1.7 Model Layout)
+
+`CactusModelsDirectory` now stores models in a nested structure:
+
+- `<models-root>/<version>/<quantization>/__ordinary__/<slug>`
+- `<models-root>/<version>/<quantization>/<pro>/<slug>`
+
+The previous flat structure (`<slug>--<quantization>--<version>[--<pro>]`) is no longer used.
+
+You can migrate existing directories with:
+
+```swift
+let result = try CactusModelsDirectory.shared.migrateFromv1_5Tov1_7Structure()
+print("Migrated: \(result.migrated.map(\.request.slug))")
+print("Removed: \(result.removed.map(\.request.slug))")
+```
+
+During migration, models with versions older than `v1.7` are removed.
+
 > [!NOTE]
 > The methods of `CactusLanguageModel` are synchronous and blocking, and the `CactusLanguageModel` class is also not Sendable. This gives you the flexibility to use the model in non-isolated and synchronous contexts, but you should almost certainly avoid using it directly on the main thread. If you need concurrent access to the model, you may want to consider wrapping it in an actor.
 > ```swift

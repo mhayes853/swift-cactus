@@ -33,6 +33,7 @@ public final class CactusModelsDirectory: Sendable {
   private struct State {
     var downloadTasks = [CactusLanguageModel.PlatformDownloadRequest: DownloadTaskEntry]()
     var downloadTaskCreator: any DownloadTaskCreator
+    var delegate: (any Delegate)?
   }
 
   private struct DownloadTaskEntry {
@@ -43,7 +44,7 @@ public final class CactusModelsDirectory: Sendable {
   /// The base `URL` of this directory.
   public let baseURL: URL
 
-  private let state: Lock<State>
+  private let state: RecursiveLock<State>
 
   private let observationRegistrar = _ObservationRegistrar()
 
@@ -61,8 +62,98 @@ public final class CactusModelsDirectory: Sendable {
   ///   - downloadTaskCreator: The ``DownloadTaskCreator`` to use for downloading models.
   public init(baseURL: URL, downloadTaskCreator: sending any DownloadTaskCreator) {
     self.baseURL = baseURL
-    self.state = Lock(State(downloadTaskCreator: downloadTaskCreator))
+    self.state = RecursiveLock(State(downloadTaskCreator: downloadTaskCreator))
   }
+}
+
+// MARK: - Delegate
+
+extension CactusModelsDirectory {
+  /// A delegate that observes events for ``CactusModelsDirectory``.
+  ///
+  /// Set ``CactusModelsDirectory/delegate`` to receive events from model directory operations.
+  public protocol Delegate: Sendable {
+    /// Called right before a model removal begins.
+    ///
+    /// - Parameters:
+    ///   - directory: The models directory removing the model.
+    ///   - request: The request identifying the model to remove.
+    func modelsDirectoryWillRemoveModel(
+      _ directory: CactusModelsDirectory,
+      request: CactusLanguageModel.PlatformDownloadRequest
+    )
+
+    /// Called when a model removal finishes, either successfully or with an
+    /// error.
+    ///
+    /// - Parameters:
+    ///   - directory: The models directory that attempted the removal.
+    ///   - request: The request identifying the model that was removed.
+    ///   - result: `success(())` on success, or the failure error.
+    func modelsDirectoryDidRemoveModel(
+      _ directory: CactusModelsDirectory,
+      request: CactusLanguageModel.PlatformDownloadRequest,
+      result: Result<Void, any Error>
+    )
+
+    /// Called right before a new download task is created.
+    ///
+    /// - Parameters:
+    ///   - directory: The models directory creating the download task.
+    ///   - request: The request identifying the model to download.
+    ///   - task: The download task that was created.
+    func modelsDirectoryDidCreateDownloadTask(
+      _ directory: CactusModelsDirectory,
+      request: CactusLanguageModel.PlatformDownloadRequest,
+      task: CactusLanguageModel.DownloadTask
+    )
+
+    /// Called when a download task finishes, either successfully or with an
+    /// error.
+    ///
+    /// - Parameters:
+    ///   - directory: The models directory that managed the download task.
+    ///   - request: The request identifying the model download.
+    ///   - task: The completed download task.
+    ///   - result: `success(URL)` on success, or the failure error.
+    func modelsDirectoryDidCompleteDownloadTask(
+      _ directory: CactusModelsDirectory,
+      request: CactusLanguageModel.PlatformDownloadRequest,
+      task: CactusLanguageModel.DownloadTask,
+      result: Result<URL, any Error>
+    )
+  }
+
+  public var delegate: (any Delegate)? {
+    get { self.state.withLock { $0.delegate } }
+    set { self.state.withLock { $0.delegate = newValue } }
+  }
+}
+
+extension CactusModelsDirectory.Delegate {
+  public func modelsDirectoryWillRemoveModel(
+    _ directory: CactusModelsDirectory,
+    request: CactusLanguageModel.PlatformDownloadRequest
+  ) {}
+
+  public func modelsDirectoryDidRemoveModel(
+    _ directory: CactusModelsDirectory,
+    request: CactusLanguageModel.PlatformDownloadRequest,
+    result: Result<Void, any Error>
+  ) {}
+
+  public func modelsDirectoryDidCreateDownloadTask(
+    _ directory: CactusModelsDirectory,
+    request: CactusLanguageModel.PlatformDownloadRequest,
+    task: CactusLanguageModel.DownloadTask
+  ) {}
+
+  public func modelsDirectoryDidCompleteDownloadTask(
+    _ directory: CactusModelsDirectory,
+    request: CactusLanguageModel.PlatformDownloadRequest,
+    task: CactusLanguageModel.DownloadTask,
+    result: Result<URL, any Error>
+  ) {}
 }
 
 // MARK: - Shared Directory
@@ -179,42 +270,6 @@ extension CactusModelsDirectory {
     /// Creates a ``CactusLanguageModel/DownloadTask``.
     ///
     /// - Parameters:
-    ///   - slug: The slug of the model to download.
-    ///   - destination: The destination `URL` of the download.
-    ///   - configuration: A `URLSessionConfiguration` for the download.
-    /// - Returns: A ``CactusLanguageModel/DownloadTask``.
-    @available(
-      *,
-      deprecated,
-      message: "Use `downloadModelTask(request:to:configuration:)` instead."
-    )
-    func downloadModelTask(
-      slug: String,
-      to destination: URL,
-      configuration: URLSessionConfiguration
-    ) -> CactusLanguageModel.DownloadTask
-
-    /// Creates a ``CactusLanguageModel/DownloadTask`` for an audio model.
-    ///
-    /// - Parameters:
-    ///   - slug: The slug of the model to download.
-    ///   - destination: The destination `URL` of the download.
-    ///   - configuration: A `URLSessionConfiguration` for the download.
-    /// - Returns: A ``CactusLanguageModel/DownloadTask``.
-    @available(
-      *,
-      deprecated,
-      message: "Use `downloadModelTask(request:to:configuration:)` instead."
-    )
-    func downloadAudioModelTask(
-      slug: String,
-      to destination: URL,
-      configuration: URLSessionConfiguration
-    ) -> CactusLanguageModel.DownloadTask
-
-    /// Creates a ``CactusLanguageModel/DownloadTask``.
-    ///
-    /// - Parameters:
     ///   - request: The platform download request to use.
     ///   - destination: The destination `URL` of the download.
     ///   - configuration: A `URLSessionConfiguration` for the download.
@@ -248,32 +303,6 @@ extension CactusModelsDirectory.DownloadTaskCreator {
       configuration: configuration
     )
   }
-
-  @available(*, deprecated, message: "Use `downloadModelTask(request:to:configuration:)` instead.")
-  public func downloadModelTask(
-    slug: String,
-    to destination: URL,
-    configuration: URLSessionConfiguration
-  ) -> CactusLanguageModel.DownloadTask {
-    downloadModelTask(
-      request: CactusLanguageModel.PlatformDownloadRequest(slug: slug),
-      to: destination,
-      configuration: configuration
-    )
-  }
-
-  @available(*, deprecated, message: "Use `downloadModelTask(request:to:configuration:)` instead.")
-  public func downloadAudioModelTask(
-    slug: String,
-    to destination: URL,
-    configuration: URLSessionConfiguration
-  ) -> CactusLanguageModel.DownloadTask {
-    downloadModelTask(
-      request: CactusLanguageModel.PlatformDownloadRequest(slug: slug),
-      to: destination,
-      configuration: configuration
-    )
-  }
 }
 
 extension CactusModelsDirectory.DownloadTaskCreator
@@ -290,35 +319,6 @@ where Self == CactusModelsDirectory.DefaultDownloadTaskCreator {
 // MARK: - Model Loading
 
 extension CactusModelsDirectory {
-  /// Returns a model `URL` for the specified `slug`.
-  ///
-  /// If this directory doesn't have a model stored with the specified `slug`, then the model is
-  /// downloaded and stored in this directory.
-  ///
-  /// - Parameters:
-  ///   - slug: The model slug.
-  ///   - configuration: A `URLSessionConfiguration` to use for downloading.
-  ///   - onDownloadProgress: A callback for download progress.
-  @available(
-    *,
-    deprecated,
-    message:
-      "Use `modelURL(for:configuration:onDownloadProgress:)` with a `PlatformDownloadRequest` instead."
-  )
-  public func modelURL(
-    for slug: String,
-    configuration: URLSessionConfiguration = .default,
-    onDownloadProgress:
-      @escaping @Sendable (Result<CactusLanguageModel.DownloadProgress, any Error>) -> Void = { _ in
-      }
-  ) async throws -> URL {
-    try await self.modelURL(
-      for: CactusLanguageModel.PlatformDownloadRequest(slug: slug),
-      configuration: configuration,
-      onDownloadProgress: onDownloadProgress
-    )
-  }
-
   /// Returns a model `URL` for the specified download request.
   ///
   /// If this directory doesn't have a model stored with the specified request, then the model is
@@ -339,35 +339,6 @@ extension CactusModelsDirectory {
       for: request,
       configuration: configuration,
       createTask: self.modelDownloadTask(for:configuration:),
-      onDownloadProgress: onDownloadProgress
-    )
-  }
-
-  /// Returns an audio model `URL` for the specified `slug`.
-  ///
-  /// If this directory doesn't have a model stored with the specified `slug`, then the model is
-  /// downloaded and stored in this directory.
-  ///
-  /// - Parameters:
-  ///   - slug: The model slug.
-  ///   - configuration: A `URLSessionConfiguration` to use for downloading.
-  ///   - onDownloadProgress: A callback for download progress.
-  @available(
-    *,
-    deprecated,
-    message:
-      "Use `modelURL(for:configuration:onDownloadProgress:)` with a `PlatformDownloadRequest` instead."
-  )
-  public func audioModelURL(
-    for slug: String,
-    configuration: URLSessionConfiguration = .default,
-    onDownloadProgress:
-      @escaping @Sendable (Result<CactusLanguageModel.DownloadProgress, any Error>) -> Void = { _ in
-      }
-  ) async throws -> URL {
-    try await self.modelURL(
-      for: CactusLanguageModel.PlatformDownloadRequest(slug: slug),
-      configuration: configuration,
       onDownloadProgress: onDownloadProgress
     )
   }
@@ -397,28 +368,6 @@ extension CactusModelsDirectory {
     }
   }
 
-  /// Returns a ``CactusLanguageModel/DownloadTask`` for the model with the specified `slug`.
-  ///
-  /// If another download task is in progress, then this method will return the in-progress download task.
-  ///
-  /// - Parameters:
-  ///   - slug: The model slug.
-  ///   - configuration: A `URLSessionConfiguration` to use for downloading.
-  @available(
-    *,
-    deprecated,
-    message: "Use `modelDownloadTask(for:configuration:)` with a `PlatformDownloadRequest` instead."
-  )
-  public func modelDownloadTask(
-    for slug: String,
-    configuration: URLSessionConfiguration = .default
-  ) throws -> CactusLanguageModel.DownloadTask {
-    try self.modelDownloadTask(
-      for: CactusLanguageModel.PlatformDownloadRequest(slug: slug),
-      configuration: configuration
-    )
-  }
-
   /// Returns a ``CactusLanguageModel/DownloadTask`` for the model with the specified request.
   ///
   /// If another download task is in progress, then this method will return the in-progress download task.
@@ -433,28 +382,6 @@ extension CactusModelsDirectory {
     try self.modelDownloadTask(for: request, configuration: configuration) {
       $3.downloadModelTask(request: $0, to: $1, configuration: $2)
     }
-  }
-
-  /// Returns a ``CactusLanguageModel/DownloadTask`` for an audio model with the specified `slug`.
-  ///
-  /// If another download task is in progress, then this method will return the in-progress download task.
-  ///
-  /// - Parameters:
-  ///   - slug: The model slug.
-  ///   - configuration: A `URLSessionConfiguration` to use for downloading.
-  @available(
-    *,
-    deprecated,
-    message: "Use `modelDownloadTask(for:configuration:)` with a `PlatformDownloadRequest` instead."
-  )
-  public func audioModelDownloadTask(
-    for slug: String,
-    configuration: URLSessionConfiguration = .default
-  ) throws -> CactusLanguageModel.DownloadTask {
-    try self.modelDownloadTask(
-      for: CactusLanguageModel.PlatformDownloadRequest(slug: slug),
-      configuration: configuration
-    )
   }
 
   private func modelDownloadTask(
@@ -472,22 +399,21 @@ extension CactusModelsDirectory {
         return entry.task
       }
       try self.ensureDirectory()
+      let destinationURL = self.destinationURL(for: request)
+      try self.ensureParentDirectory(for: destinationURL)
       let task = try createTask(
         request,
-        self.destinationURL(for: request),
+        destinationURL,
         configuration,
         state.downloadTaskCreator
       )
       let subscription = task.onProgress { [weak self] progress in
+        guard let self else { return }
         switch progress {
-        case .failure, .success(.finished):
-          guard let self else { return }
-          self.state
-            .withLock { state in
-              self.observationRegistrar.withMutation(of: self, keyPath: \.activeDownloadTasks) {
-                _ = state.downloadTasks.removeValue(forKey: request)
-              }
-            }
+        case .failure(let error):
+          self.handleDownloadTaskCompletion(for: request, task: task, result: .failure(error))
+        case .success(.finished(let url)):
+          self.handleDownloadTaskCompletion(for: request, task: task, result: .success(url))
         default:
           break
         }
@@ -495,8 +421,25 @@ extension CactusModelsDirectory {
       self.observationRegistrar.withMutation(of: self, keyPath: \.activeDownloadTasks) {
         state.downloadTasks[request] = DownloadTaskEntry(task: task, subscription: subscription)
       }
+      state.delegate?.modelsDirectoryDidCreateDownloadTask(self, request: request, task: task)
       return task
     }
+  }
+
+  private func handleDownloadTaskCompletion(
+    for request: CactusLanguageModel.PlatformDownloadRequest,
+    task: CactusLanguageModel.DownloadTask,
+    result: Result<URL, any Error>
+  ) {
+    let completion = self.completeDownloadTaskEntry(for: request)
+    guard completion.didRemoveTask else { return }
+    completion.delegate?
+      .modelsDirectoryDidCompleteDownloadTask(
+        self,
+        request: request,
+        task: task,
+        result: result
+      )
   }
 
   /// All active ``CactusLanguageModel/DownloadTask`` instances currently managed by this
@@ -508,18 +451,6 @@ extension CactusModelsDirectory {
     return self.state.withLock { state in state.downloadTasks.mapValues(\.task) }
   }
 
-  /// All active ``CactusLanguageModel/DownloadTask`` instances currently managed by this
-  /// directory, keyed by model slug.
-  @available(
-    *,
-    deprecated,
-    message: "Use `activeDownloadTasks` keyed by `PlatformDownloadRequest` instead."
-  )
-  public var activeDownloadTasksBySlug: [String: CactusLanguageModel.DownloadTask] {
-    Dictionary(
-      uniqueKeysWithValues: self.activeDownloadTasks.map { ($0.key.slug, $0.value) }
-    )
-  }
 }
 
 // MARK: - Stored Models
@@ -532,24 +463,6 @@ extension CactusModelsDirectory {
 
     /// The `URL` of the model inside the directory.
     public let url: URL
-
-    /// The slug of the model.
-    @available(*, deprecated, message: "Use `request.slug` instead.")
-    public var slug: String {
-      self.request.slug
-    }
-  }
-
-  /// Returns the stored `URL` for the model with the specified `slug` if one exists.
-  ///
-  /// - Parameter slug: The model slug.
-  @available(
-    *,
-    deprecated,
-    message: "Use `storedModelURL(for:)` with a `PlatformDownloadRequest` instead."
-  )
-  public func storedModelURL(for slug: String) -> URL? {
-    self.storedModelURL(for: CactusLanguageModel.PlatformDownloadRequest(slug: slug))
   }
 
   /// Returns the stored `URL` for the model with the specified request if one exists.
@@ -558,51 +471,197 @@ extension CactusModelsDirectory {
   public func storedModelURL(
     for request: CactusLanguageModel.PlatformDownloadRequest
   ) -> URL? {
-    let destinationURL = self.destinationURL(for: request)
-    var isDirectory = ObjCBool(false)
-    let doesExist = FileManager.default.fileExists(
-      atPath: destinationURL.relativePath,
-      isDirectory: &isDirectory
-    )
-    return doesExist && isDirectory.boolValue ? destinationURL : nil
+    self.state.withLock { _ in
+      let destinationURL = self.destinationURL(for: request)
+      var isDirectory = ObjCBool(false)
+      let doesExist = FileManager.default.fileExists(
+        atPath: destinationURL.relativePath,
+        isDirectory: &isDirectory
+      )
+      return doesExist && isDirectory.boolValue ? destinationURL : nil
+    }
   }
 
   /// Returns an array of all ``StoredModel`` instances in this directory.
   public func storedModels() -> [StoredModel] {
-    let models = try? FileManager.default
-      .contentsOfDirectory(at: self.baseURL, includingPropertiesForKeys: [.isDirectoryKey])
-      .map {
-        let request =
-          self.request(fromDirectoryName: $0.lastPathComponent)
-          ?? CactusLanguageModel.PlatformDownloadRequest(slug: $0.lastPathComponent)
-        return StoredModel(request: request, url: $0)
+    self.state.withLock { _ in
+      guard
+        let versionDirectories = try? FileManager.default.contentsOfDirectory(
+          at: self.baseURL,
+          includingPropertiesForKeys: [.isDirectoryKey],
+          options: [.skipsHiddenFiles]
+        )
+      else {
+        return []
       }
-    return models ?? []
+
+      return versionDirectories.flatMap { versionDirectory in
+        self.storedModels(inVersionDirectory: versionDirectory)
+      }
+    }
+  }
+
+  private func storedModels(inVersionDirectory versionDirectory: URL) -> [StoredModel] {
+    guard
+      let isVersionDirectory = try? versionDirectory.resourceValues(forKeys: [.isDirectoryKey])
+        .isDirectory,
+      isVersionDirectory == true
+    else {
+      return []
+    }
+    let version = CactusLanguageModel.PlatformDownloadRequest.Version(
+      rawValue: versionDirectory.lastPathComponent
+    )
+    guard
+      let quantizationDirectories = try? FileManager.default.contentsOfDirectory(
+        at: versionDirectory,
+        includingPropertiesForKeys: [.isDirectoryKey],
+        options: [.skipsHiddenFiles]
+      )
+    else {
+      return []
+    }
+    return quantizationDirectories.flatMap { quantizationDirectory in
+      self.storedModels(inQuantizationDirectory: quantizationDirectory, version: version)
+    }
+  }
+
+  private func storedModels(
+    inQuantizationDirectory quantizationDirectory: URL,
+    version: CactusLanguageModel.PlatformDownloadRequest.Version
+  ) -> [StoredModel] {
+    guard
+      let isQuantizationDirectory =
+        try? quantizationDirectory.resourceValues(forKeys: [.isDirectoryKey])
+        .isDirectory,
+      isQuantizationDirectory == true
+    else {
+      return []
+    }
+    let quantization = CactusLanguageModel.PlatformDownloadRequest.Quantization(
+      rawValue: quantizationDirectory.lastPathComponent
+    )
+    guard
+      let channelDirectories = try? FileManager.default.contentsOfDirectory(
+        at: quantizationDirectory,
+        includingPropertiesForKeys: [.isDirectoryKey],
+        options: [.skipsHiddenFiles]
+      )
+    else {
+      return []
+    }
+    return channelDirectories.flatMap { channelDirectory in
+      self.storedModels(
+        inChannelDirectory: channelDirectory,
+        version: version,
+        quantization: quantization
+      )
+    }
+  }
+
+  private func storedModels(
+    inChannelDirectory channelDirectory: URL,
+    version: CactusLanguageModel.PlatformDownloadRequest.Version,
+    quantization: CactusLanguageModel.PlatformDownloadRequest.Quantization
+  ) -> [StoredModel] {
+    guard
+      let isChannelDirectory =
+        try? channelDirectory.resourceValues(forKeys: [.isDirectoryKey])
+        .isDirectory,
+      isChannelDirectory == true
+    else {
+      return []
+    }
+    let pro: CactusLanguageModel.PlatformDownloadRequest.Pro? =
+      channelDirectory.lastPathComponent == Self.ordinaryDirectoryName
+      ? nil
+      : CactusLanguageModel.PlatformDownloadRequest.Pro(
+        rawValue: channelDirectory.lastPathComponent
+      )
+    guard
+      let modelDirectories = try? FileManager.default.contentsOfDirectory(
+        at: channelDirectory,
+        includingPropertiesForKeys: [.isDirectoryKey],
+        options: [.skipsHiddenFiles]
+      )
+    else {
+      return []
+    }
+    return modelDirectories.compactMap { modelDirectory in
+      self.storedModel(
+        inModelDirectory: modelDirectory,
+        version: version,
+        quantization: quantization,
+        pro: pro
+      )
+    }
+  }
+
+  private func storedModel(
+    inModelDirectory modelDirectory: URL,
+    version: CactusLanguageModel.PlatformDownloadRequest.Version,
+    quantization: CactusLanguageModel.PlatformDownloadRequest.Quantization,
+    pro: CactusLanguageModel.PlatformDownloadRequest.Pro?
+  ) -> StoredModel? {
+    guard
+      let isModelDirectory =
+        try? modelDirectory.resourceValues(forKeys: [.isDirectoryKey])
+        .isDirectory,
+      isModelDirectory == true
+    else {
+      return nil
+    }
+    let request = CactusLanguageModel.PlatformDownloadRequest(
+      slug: modelDirectory.lastPathComponent,
+      quantization: quantization,
+      version: version,
+      pro: pro
+    )
+    return StoredModel(request: request, url: modelDirectory)
   }
 }
 
 // MARK: - Model Removing
 
 extension CactusModelsDirectory {
-  /// Removes the locally stored model with the specified `slug`.
-  ///
-  /// - Parameter slug: The model slug.
-  @available(
-    *,
-    deprecated,
-    message: "Use `removeModel(with:)` with a `PlatformDownloadRequest` instead."
-  )
-  public func removeModel(with slug: String) throws {
-    try removeModel(with: CactusLanguageModel.PlatformDownloadRequest(slug: slug))
-  }
-
   /// Removes the locally stored model with the specified request.
   ///
   /// - Parameter request: The platform download request for the model.
   public func removeModel(
     with request: CactusLanguageModel.PlatformDownloadRequest
   ) throws {
-    try FileManager.default.removeItem(at: self.destinationURL(for: request))
+    let delegate = self.state.withLock { state in state.delegate }
+
+    delegate?.modelsDirectoryWillRemoveModel(self, request: request)
+    do {
+      try FileManager.default.removeItem(at: self.destinationURL(for: request))
+      delegate?
+        .modelsDirectoryDidRemoveModel(
+          self,
+          request: request,
+          result: Result<Void, any Error>.success(())
+        )
+    } catch {
+      delegate?
+        .modelsDirectoryDidRemoveModel(
+          self,
+          request: request,
+          result: Result<Void, any Error>.failure(error)
+        )
+      throw error
+    }
+  }
+}
+
+extension CactusModelsDirectory {
+  /// Provides isolated access to the models directory for the duration of the specified closure.
+  //
+  /// - Parameter body: A closure to perform isolated work.
+  /// - Returns: Whatever `body` returns.
+  public func withIsolatedAccess<T>(
+    _ body: @Sendable (CactusModelsDirectory) throws -> sending T
+  ) rethrows -> sending T {
+    try self.state.withLock { _ in try body(self) }
   }
 }
 
@@ -615,51 +674,39 @@ extension CactusModelsDirectory: _Observable {
 // MARK: - Helpers
 
 extension CactusModelsDirectory {
-  private func destinationURL(for slug: String) -> URL {
-    self.baseURL.appendingPathComponent(slug, isDirectory: true)
-  }
+  static let ordinaryDirectoryName = "__ordinary__"
 
   private func destinationURL(
     for request: CactusLanguageModel.PlatformDownloadRequest
   ) -> URL {
-    self.baseURL.appendingPathComponent(self.directoryName(for: request), isDirectory: true)
+    let proDirectoryName = request.pro?.rawValue ?? Self.ordinaryDirectoryName
+    return self.baseURL
+      .appendingPathComponent(request.version.rawValue, isDirectory: true)
+      .appendingPathComponent(request.quantization.rawValue, isDirectory: true)
+      .appendingPathComponent(proDirectoryName, isDirectory: true)
+      .appendingPathComponent(request.slug, isDirectory: true)
   }
 
-  private func directoryName(
-    for request: CactusLanguageModel.PlatformDownloadRequest
-  ) -> String {
-    [
-      request.slug,
-      request.quantization.rawValue,
-      request.version.rawValue,
-      request.pro?.rawValue
-    ]
-    .compactMap { $0?.lowercased() }
-    .joined(separator: "--")
-  }
-
-  private func request(fromDirectoryName name: String) -> CactusLanguageModel
-    .PlatformDownloadRequest?
-  {
-    let parts = name.components(separatedBy: "--")
-    guard parts.count >= 3 else { return nil }
-    let slug = parts[0]
-    let quantization = CactusLanguageModel.PlatformDownloadRequest.Quantization(rawValue: parts[1])
-    let versionRaw = parts[2]
-    let version = CactusLanguageModel.PlatformDownloadRequest.Version(rawValue: versionRaw)
-    let pro =
-      parts.count > 3
-      ? CactusLanguageModel.PlatformDownloadRequest.Pro(rawValue: parts[3])
-      : nil
-    return CactusLanguageModel.PlatformDownloadRequest(
-      slug: slug,
-      quantization: quantization,
-      version: version,
-      pro: pro
+  private func ensureParentDirectory(for url: URL) throws {
+    try FileManager.default.createDirectory(
+      at: url.deletingLastPathComponent(),
+      withIntermediateDirectories: true
     )
   }
 
   private func ensureDirectory() throws {
     try FileManager.default.createDirectory(at: self.baseURL, withIntermediateDirectories: true)
+  }
+
+  private func completeDownloadTaskEntry(
+    for request: CactusLanguageModel.PlatformDownloadRequest
+  ) -> (delegate: (any Delegate)?, didRemoveTask: Bool) {
+    self.state.withLock { state in
+      var didRemoveTask = false
+      self.observationRegistrar.withMutation(of: self, keyPath: \.activeDownloadTasks) {
+        didRemoveTask = state.downloadTasks.removeValue(forKey: request) != nil
+      }
+      return (state.delegate, didRemoveTask)
+    }
   }
 }
