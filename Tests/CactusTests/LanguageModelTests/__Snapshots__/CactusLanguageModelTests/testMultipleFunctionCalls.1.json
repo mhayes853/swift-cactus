@@ -1,16 +1,21 @@
 {
   "cloud_handoff" : false,
-  "confidence" : 0.8917,
-  "decode_tokens" : 34,
-  "decode_tps" : 44.76,
+  "confidence" : 0.9846,
+  "decode_tokens" : 21,
+  "decode_tps" : 38.61,
   "function_calls" : [
-
+    {
+      "arguments" : {
+        "location" : "Berkeley"
+      },
+      "name" : "get_weather"
+    }
   ],
-  "prefill_tokens" : 205,
-  "prefill_tps" : 411.03,
-  "ram_usage_mb" : 1625.96,
-  "response" : "None of the provided functions are relevant when interacting with a real-time weather application. If you have a different query related to weather or other applications... please let me know!",
-  "time_to_first_token_ms" : 498.74,
-  "total_time_ms" : 1236.05,
-  "total_tokens" : 239
+  "prefill_tokens" : 236,
+  "prefill_tps" : 358.52,
+  "ram_usage_mb" : 1589.26,
+  "response" : "",
+  "time_to_first_token_ms" : 658.26,
+  "total_time_ms" : 1176.27,
+  "total_tokens" : 257
 }

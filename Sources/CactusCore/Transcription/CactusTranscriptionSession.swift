@@ -23,7 +23,10 @@ import Foundation
 public final class CactusTranscriptionSession: Sendable {
   private let observationRegistrar = _ObservationRegistrar()
   private let state = Lock(State())
-  private let modelActor: ModelActor
+
+  /// The underlying language model actor.
+  public let languageModelActor: CactusLanguageModelActor
+
   private let modelStopper: CactusLanguageModelStopper
 
   private struct State {
@@ -42,7 +45,7 @@ public final class CactusTranscriptionSession: Sendable {
   /// - Parameter model: The underlying language model.
   public init(model: sending CactusLanguageModel) {
     self.modelStopper = CactusLanguageModelStopper(model: model)
-    self.modelActor = ModelActor(model: model)
+    self.languageModelActor = CactusLanguageModelActor(model: model)
   }
 
   /// Creates a transcription session from a model URL.
@@ -103,7 +106,7 @@ extension CactusTranscriptionSession {
     options: CactusLanguageModel.Transcription.Options? = nil
   ) throws -> CactusInferenceStream<CactusTranscription> {
     let messageStreamID = CactusMessageID()
-    let modelActor = self.modelActor
+    let languageModelActor = self.languageModelActor
     let modelStopper = self.modelStopper
     let options = self.resolveTranscriptionOptions(request: request, options: options)
 
@@ -111,8 +114,41 @@ extension CactusTranscriptionSession {
       guard self != nil else { throw CancellationError() }
 
       let modelTranscription = try await withTaskCancellationHandler {
-        try await modelActor.transcribe(
-          request: request,
+        if let audioURL = request.content.audioURL {
+          return try await languageModelActor.transcribe(
+            audio: audioURL,
+            prompt: request.prompt,
+            options: options
+          ) { stringValue, tokenId in
+            continuation.yield(
+              token: CactusStreamedToken(
+                messageStreamId: messageStreamID,
+                stringValue: stringValue,
+                tokenId: tokenId
+              )
+            )
+          }
+        }
+
+        if let pcmBytes = request.content.pcmBytes {
+          return try await languageModelActor.transcribe(
+            buffer: pcmBytes,
+            prompt: request.prompt,
+            options: options
+          ) { stringValue, tokenId in
+            continuation.yield(
+              token: CactusStreamedToken(
+                messageStreamId: messageStreamID,
+                stringValue: stringValue,
+                tokenId: tokenId
+              )
+            )
+          }
+        }
+
+        return try await languageModelActor.transcribe(
+          buffer: [],
+          prompt: request.prompt,
           options: options
         ) { stringValue, tokenId in
           continuation.yield(
@@ -163,22 +199,6 @@ extension CactusTranscriptionSession {
     } onCancel: {
       stream.stop()
     }
-  }
-
-  /// Provides temporary access to the underlying language model.
-  ///
-  /// ```swift
-  /// let slug = await session.withModel { model in
-  ///   model.configuration.modelSlug
-  /// }
-  /// ```
-  ///
-  /// - Parameter operation: An operation to run with the model.
-  /// - Returns: The operation return value.
-  public func withModel<T: Sendable, E: Error>(
-    _ operation: @Sendable (CactusLanguageModel) throws(E) -> sending T
-  ) async throws(E) -> sending T {
-    try await self.modelActor.withModel(operation)
   }
 }
 
@@ -236,55 +256,6 @@ extension CactusTranscriptionSession {
       }
     }
     subscription?.cancel()
-  }
-}
-
-// MARK: - Model Actor
-
-extension CactusTranscriptionSession {
-  private actor ModelActor {
-    private let model: CactusLanguageModel
-
-    init(model: sending CactusLanguageModel) {
-      self.model = model
-    }
-
-    func transcribe(
-      request: CactusTranscription.Request,
-      options: CactusLanguageModel.Transcription.Options,
-      onToken: @escaping @Sendable (String, UInt32) -> Void
-    ) throws -> CactusLanguageModel.Transcription {
-      if let audioURL = request.content.audioURL {
-        return try self.model.transcribe(
-          audio: audioURL,
-          prompt: request.prompt,
-          options: options,
-          onToken: onToken
-        )
-      }
-
-      if let pcmBytes = request.content.pcmBytes {
-        return try self.model.transcribe(
-          buffer: pcmBytes,
-          prompt: request.prompt,
-          options: options,
-          onToken: onToken
-        )
-      }
-
-      return try self.model.transcribe(
-        buffer: [],
-        prompt: request.prompt,
-        options: options,
-        onToken: onToken
-      )
-    }
-
-    func withModel<T: Sendable, E: Error>(
-      _ operation: @Sendable (CactusLanguageModel) throws(E) -> sending T
-    ) throws(E) -> sending T {
-      try operation(self.model)
-    }
   }
 }
 

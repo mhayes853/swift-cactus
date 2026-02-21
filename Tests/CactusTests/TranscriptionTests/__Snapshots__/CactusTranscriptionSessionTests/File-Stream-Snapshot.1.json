@@ -1,15 +1,15 @@
 {
   "metrics" : {
-    "confidence" : 0.908,
-    "decodeTokens" : 12,
-    "decodeTps" : 20.97,
+    "confidence" : 0.9058,
+    "decodeTokens" : 9,
+    "decodeTps" : 16.17,
     "prefillTokens" : 4,
-    "prefillTps" : 0.27,
-    "ramUsageMb" : 619.89,
-    "timeIntervalToFirstToken" : 14.79301,
-    "totalTimeInterval" : 15.317639999999999,
-    "totalTokens" : 16
+    "prefillTps" : 0.15,
+    "ramUsageMb" : 3702.45,
+    "timeIntervalToFirstToken" : 26.00909,
+    "totalTimeInterval" : 26.50391,
+    "totalTokens" : 13
   },
-  "parsedContent" : "How? The power of a god cannot be overcome!",
-  "streamedText" : " How? The power of a god cannot be overcome!<|startoftranscript|>"
+  "parsedContent" : "The power of God cannot be overcome!",
+  "streamedText" : " The power of God cannot be overcome!<|startoftranscript|>"
 }
