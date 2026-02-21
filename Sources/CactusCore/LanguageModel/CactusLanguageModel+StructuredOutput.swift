@@ -188,10 +188,7 @@ extension CactusLanguageModel {
   ///     .user("Create a recipe with a title and servings.")
   ///   ],
   ///   as: Recipe.self,
-  ///   schema: schema,
-  ///   options: CactusLanguageModel.JSONChatCompletionOptions(
-  ///     chatCompletionOptions: .init(modelType: model.configurationFile.modelType ?? .qwen)
-  ///   )
+  ///   schema: schema
   /// )
   /// print(try completion.output.get())
   /// ```
@@ -254,10 +251,7 @@ extension CactusLanguageModel {
   ///     .user("Create a recipe with a title and servings.")
   ///   ],
   ///   as: Recipe.self,
-  ///   schema: schema,
-  ///   options: CactusLanguageModel.JSONChatCompletionOptions(
-  ///     chatCompletionOptions: .init(modelType: model.configurationFile.modelType ?? .qwen)
-  ///   )
+  ///   schema: schema
   /// )
   /// print(try completion.output.get())
   /// ```
@@ -341,10 +335,7 @@ extension CactusLanguageModel {
   ///     .user("Create a recipe with a title and servings.")
   ///   ],
   ///   as: Recipe.self,
-  ///   schema: schema,
-  ///   options: CactusLanguageModel.JSONChatCompletionOptions(
-  ///     chatCompletionOptions: .init(modelType: model.configurationFile.modelType ?? .qwen)
-  ///   )
+  ///   schema: schema
   /// ) { _, _, partial in
   ///   if let partial {
   ///     print("\nPartial: \(partial)")
@@ -418,10 +409,7 @@ extension CactusLanguageModel {
   ///     .user("Create a recipe with a title and servings.")
   ///   ],
   ///   as: Recipe.self,
-  ///   schema: schema,
-  ///   options: CactusLanguageModel.JSONChatCompletionOptions(
-  ///     chatCompletionOptions: .init(modelType: model.configurationFile.modelType ?? .qwen)
-  ///   )
+  ///   schema: schema
   /// ) { _, _, partial in
   ///   if let partial {
   ///     print("\nPartial: \(partial)")
@@ -503,10 +491,7 @@ extension CactusLanguageModel {
   ///     .system("You are a helpful cooking assistant."),
   ///     .user("Create a recipe with a title and servings.")
   ///   ],
-  ///   as: Recipe.self,
-  ///   options: CactusLanguageModel.JSONChatCompletionOptions(
-  ///     chatCompletionOptions: .init(modelType: model.configurationFile.modelType ?? .qwen)
-  ///   )
+  ///   as: Recipe.self
   /// )
   /// print(try completion.output.get())
   /// ```
@@ -555,10 +540,7 @@ extension CactusLanguageModel {
   ///     .system("You are a helpful cooking assistant."),
   ///     .user("Create a recipe with a title and servings.")
   ///   ],
-  ///   as: Recipe.self,
-  ///   options: CactusLanguageModel.JSONChatCompletionOptions(
-  ///     chatCompletionOptions: .init(modelType: model.configurationFile.modelType ?? .qwen)
-  ///   )
+  ///   as: Recipe.self
   /// )
   /// print(try completion.output.get())
   /// ```
@@ -613,10 +595,7 @@ extension CactusLanguageModel {
   ///     .system("You are a helpful cooking assistant."),
   ///     .user("Create a recipe with a title and servings.")
   ///   ],
-  ///   as: Recipe.self,
-  ///   options: CactusLanguageModel.JSONChatCompletionOptions(
-  ///     chatCompletionOptions: .init(modelType: model.configurationFile.modelType ?? .qwen)
-  ///   )
+  ///   as: Recipe.self
   /// ) { _, _, partial in
   ///   // If nil, the model may be thinking, generating a function call, or misbehaving.
   ///   if let partial {
@@ -679,10 +658,7 @@ extension CactusLanguageModel {
   ///     .system("You are a helpful cooking assistant."),
   ///     .user("Create a recipe with a title and servings.")
   ///   ],
-  ///   as: Recipe.self,
-  ///   options: CactusLanguageModel.JSONChatCompletionOptions(
-  ///     chatCompletionOptions: .init(modelType: model.configurationFile.modelType ?? .qwen)
-  ///   )
+  ///   as: Recipe.self
   /// ) { _, _, partial in
   ///   // If nil, the model may be thinking, generating a function call, or misbehaving.
   ///   if let partial {

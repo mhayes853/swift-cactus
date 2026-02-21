@@ -2,15 +2,15 @@
   "slug" : "whisper-small",
   "transcription" : {
     "cloud_handoff" : false,
-    "confidence" : 0.8958,
-    "decode_tokens" : 57,
-    "decode_tps" : 70.93,
+    "confidence" : 0.8913,
+    "decode_tokens" : 29,
+    "decode_tps" : 66.58,
     "prefill_tokens" : 4,
-    "prefill_tps" : 1.46,
-    "ram_usage_mb" : 540.47,
-    "response" : "The power on the God cannot be overcome! That voice! Alvix ! How dare you diso baby ! I am Manada.. I was here at the beginning and i will proclaim the end But that... that's impossible... Shulk It is time for your to choose",
-    "time_to_first_token_ms" : 2739.86,
-    "total_time_ms" : 3529.41,
-    "total_tokens" : 61
+    "prefill_tps" : 1.44,
+    "ram_usage_mb" : 478.75,
+    "response" : "The power of the God cannot be overcome. That voice, Abyss... How dare you disobey me?! But that is impossible.",
+    "time_to_first_token_ms" : 2778.9,
+    "total_time_ms" : 3199.47,
+    "total_tokens" : 33
   }
 }

@@ -1,16 +1,16 @@
 {
   "slug" : "whisper-small",
   "transcription" : {
-    "cloud_handoff" : true,
-    "confidence" : 0.8356,
-    "decode_tokens" : 24,
-    "decode_tps" : 74.25,
+    "cloud_handoff" : false,
+    "confidence" : 0.8649,
+    "decode_tokens" : 22,
+    "decode_tps" : 68.83,
     "prefill_tokens" : 4,
-    "prefill_tps" : 1.98,
-    "ram_usage_mb" : 623.79,
-    "response" : "The power of a god cannot be overcome. The voice of its own, how dare you disobey me?",
-    "time_to_first_token_ms" : 2025.28,
-    "total_time_ms" : 2335.03,
-    "total_tokens" : 28
+    "prefill_tps" : 1.91,
+    "ram_usage_mb" : 609.63,
+    "response" : "The power of a god cannot be overcome! That voice, Abbot how dare you diso baby?",
+    "time_to_first_token_ms" : 2089.8,
+    "total_time_ms" : 2394.87,
+    "total_tokens" : 26
   }
 }
