@@ -13,16 +13,6 @@ extension CactusModelsDirectory {
 
     /// Models that were removed because they target versions older than v1.7.
     public let removed: [StoredModel]
-
-    /// Creates a migration result.
-    ///
-    /// - Parameters:
-    ///   - migrated: Models that were migrated into the new structure.
-    ///   - removed: Models that were removed during migration.
-    public init(migrated: [StoredModel], removed: [StoredModel]) {
-      self.migrated = migrated
-      self.removed = removed
-    }
   }
 
   /// Migrates legacy model directories from the v1.5 naming scheme to the v1.7 directory
