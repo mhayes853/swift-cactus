@@ -3,11 +3,10 @@ import Foundation
 
 // MARK: - CactusLanguageModelActor
 
-/// A thread-safe actor that provides async access to a ``CactusLanguageModel``.
+/// An actor that isolates a ``CactusLanguageModel``.
 ///
 /// This actor wraps a ``CactusLanguageModel`` and provides thread-safe access through Swift's
-/// actor isolation model. All methods are async to ensure they are dispatched to a background
-/// thread, preventing blocking on the main thread.
+/// actor isolation model.
 ///
 /// ```swift
 /// let actor = try await CactusLanguageModelActor(from: modelURL)

@@ -9,36 +9,7 @@ import Foundation
 /// the model is in the process of generating a response.
 ///
 /// All methods of this class are synchronous and blocking, and should not be called on the main
-/// actor due to the long runtimes. To access the model safely in the background, you can create a
-/// background actor to protect the model from data races.
-/// ```swift
-/// final actor LanguageModelActor {
-///   let model: CactusLanguageModel
-///
-///   init(model: sending CactusLanguageModel) {
-///     self.model = model
-///   }
-///
-///   func withIsolation<T, E: Error>(
-///     perform operation: (isolated LanguageModelActor) throws(E) -> sending T
-///   ) throws(E) -> sending T {
-///     try operation(self)
-///   }
-/// }
-///
-/// @concurrent
-/// func chatInBackground(
-///   with modelActor: LanguageModelActor
-/// ) async throws {
-///   try await modelActor.withIsolation { @Sendable modelActor in
-///     // You can access the model directly because the closure
-///     // is isolated to modelActor.
-///     let model = modelActor.model
-///
-///     // ...
-///   }
-/// }
-/// ```
+/// actor due to the long runtimes. To access the model safely in the background, use ``CactusLanguageModelActor``.
 public final class CactusLanguageModel {
   private static let bufferNotBigEnoughErrorMessage = "buffer too small"
 
