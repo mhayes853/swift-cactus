@@ -122,7 +122,7 @@ extension CactusModelsDirectory {
     ///   - directory: The models directory creating the download task.
     ///   - request: The request identifying the model to download.
     ///   - task: The download task that was created.
-    func modelsDirectoryWillCreateDownloadTask(
+    func modelsDirectoryDidCreateDownloadTask(
       _ directory: CactusModelsDirectory,
       request: CactusLanguageModel.PlatformDownloadRequest,
       task: CactusLanguageModel.DownloadTask
@@ -171,7 +171,7 @@ extension CactusModelsDirectory.Delegate {
     result: Result<Void, any Error>
   ) {}
 
-  public func modelsDirectoryWillCreateDownloadTask(
+  public func modelsDirectoryDidCreateDownloadTask(
     _ directory: CactusModelsDirectory,
     request: CactusLanguageModel.PlatformDownloadRequest,
     task: CactusLanguageModel.DownloadTask
@@ -436,7 +436,6 @@ extension CactusModelsDirectory {
         configuration,
         state.downloadTaskCreator
       )
-      state.delegate?.modelsDirectoryWillCreateDownloadTask(self, request: request, task: task)
       let subscription = task.onProgress { [weak self] progress in
         guard let self else { return }
         switch progress {
@@ -451,6 +450,7 @@ extension CactusModelsDirectory {
       self.observationRegistrar.withMutation(of: self, keyPath: \.activeDownloadTasks) {
         state.downloadTasks[request] = DownloadTaskEntry(task: task, subscription: subscription)
       }
+      state.delegate?.modelsDirectoryDidCreateDownloadTask(self, request: request, task: task)
       return task
     }
   }

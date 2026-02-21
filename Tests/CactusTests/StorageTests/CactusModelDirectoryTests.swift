@@ -528,7 +528,7 @@
       self.onDidRemoveModel?(directory, request, result)
     }
 
-    func modelsDirectoryWillCreateDownloadTask(
+    func modelsDirectoryDidCreateDownloadTask(
       _ directory: CactusModelsDirectory,
       request: CactusLanguageModel.PlatformDownloadRequest,
       task: CactusLanguageModel.DownloadTask
