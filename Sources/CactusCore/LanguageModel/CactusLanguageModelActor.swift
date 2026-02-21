@@ -5,8 +5,8 @@ import Foundation
 
 /// An actor that isolates a ``CactusLanguageModel``.
 ///
-/// This actor wraps a ``CactusLanguageModel`` and provides thread-safe access through Swift's
-/// actor isolation model.
+/// This actor wraps a ``CactusLanguageModel`` to provide thread-safe and background access to a
+/// language model.
 ///
 /// ```swift
 /// let actor = try await CactusLanguageModelActor(from: modelURL)
@@ -20,23 +20,22 @@ import Foundation
 /// print(completion.completion.response)
 /// ```
 public actor CactusLanguageModelActor {
-  private let model: CactusLanguageModel
+  /// The underlying language model.
+  public let model: CactusLanguageModel
 
   /// The ``CactusLanguageModel/Configuration`` for this model.
-  public var configuration: CactusLanguageModel.Configuration {
-    self.model.configuration
-  }
+  public let configuration: CactusLanguageModel.Configuration
 
   /// The ``CactusLanguageModel/ConfigurationFile`` for this model.
-  public var configurationFile: CactusLanguageModel.ConfigurationFile {
-    self.model.configurationFile
-  }
+  public let configurationFile: CactusLanguageModel.ConfigurationFile
 
   /// Creates an actor from an existing language model.
   ///
   /// - Parameter model: The underlying language model.
   public init(model: sending CactusLanguageModel) {
     self.model = model
+    self.configuration = model.configuration
+    self.configurationFile = model.configurationFile
   }
 
   /// Loads a model from the specified `URL`.
@@ -51,20 +50,22 @@ public actor CactusLanguageModelActor {
     modelSlug: String? = nil,
     corpusDirectoryURL: URL? = nil,
     cacheIndex: Bool = false
-  ) throws {
-    self.model = try CactusLanguageModel(
-      from: url,
-      modelSlug: modelSlug,
-      corpusDirectoryURL: corpusDirectoryURL,
-      cacheIndex: cacheIndex
+  ) async throws {
+    try self.init(
+      model: CactusLanguageModel(
+        from: url,
+        modelSlug: modelSlug,
+        corpusDirectoryURL: corpusDirectoryURL,
+        cacheIndex: cacheIndex
+      )
     )
   }
 
   /// Loads a model from the specified ``CactusLanguageModel/Configuration``.
   ///
   /// - Parameter configuration: The ``Configuration``.
-  public init(configuration: CactusLanguageModel.Configuration) throws {
-    self.model = try CactusLanguageModel(configuration: configuration)
+  public init(configuration: CactusLanguageModel.Configuration) async throws {
+    try self.init(model: CactusLanguageModel(configuration: configuration))
   }
 
   /// Creates a language model from the specified model pointer and configuration.
@@ -79,11 +80,13 @@ public actor CactusLanguageModelActor {
   public init(
     model: sending cactus_model_t,
     configuration: CactusLanguageModel.Configuration
-  ) throws {
-    self.model = try CactusLanguageModel(
-      model: model,
-      configuration: configuration,
-      isModelPointerManaged: true
+  ) async throws {
+    try self.init(
+      model: CactusLanguageModel(
+        model: model,
+        configuration: configuration,
+        isModelPointerManaged: true
+      )
     )
   }
 }
@@ -1119,7 +1122,7 @@ extension CactusLanguageModelActor {
   ///
   /// - Parameter operation: An operation to run with the model.
   /// - Returns: The operation return value.
-  public func withLanguageModelAccess<T: Sendable, E: Error>(
+  public func withLanguageModel<T: Sendable, E: Error>(
     _ operation: @Sendable (CactusLanguageModel) throws(E) -> sending T
   ) async throws(E) -> sending T {
     try operation(self.model)
