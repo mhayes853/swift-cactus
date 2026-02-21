@@ -1,15 +1,15 @@
 {
   "metrics" : {
-    "confidence" : 0.9058,
-    "decodeTokens" : 9,
-    "decodeTps" : 16.17,
+    "confidence" : 0.7077,
+    "decodeTokens" : 90,
+    "decodeTps" : 45.9,
     "prefillTokens" : 4,
-    "prefillTps" : 0.15,
-    "ramUsageMb" : 3702.45,
-    "timeIntervalToFirstToken" : 26.00909,
-    "totalTimeInterval" : 26.50391,
-    "totalTokens" : 13
+    "prefillTps" : 0.3,
+    "ramUsageMb" : 1519.92,
+    "timeIntervalToFirstToken" : 13.546940000000001,
+    "totalTimeInterval" : 15.48606,
+    "totalTokens" : 94
   },
-  "parsedContent" : "The power of God cannot be overcome!",
-  "streamedText" : " The power of God cannot be overcome!<|startoftranscript|>"
+  "parsedContent" : "Zanzah, this is the providence ofthe world even Gods are merely beings restricted to th e limited powers determined by prophets that powers although great i s not unlimited That voice Albus how dare you? I'll do it for my own sake I will try and prove it myself to me but if the power is over with a piece of paper, then we can't solve the problem for ourselves. But no one can solve this problem",
+  "streamedText" : " Zanzah, this is the providence ofthe world even Gods are merely beings restricted to th e limited powers determined by prophets that powers although great i s not unlimited That voice Albus how dare you? I'll do it for my own sake I will try and prove it myself to me but if the power is over with a piece of paper, then we can't solve the problem for ourselves. But no one can solve this problem<|startoftranscript|>"
 }
