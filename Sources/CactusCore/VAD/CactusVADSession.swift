@@ -73,6 +73,10 @@ extension CactusVADSession {
 
     return try await withTaskCancellationHandler {
       try await withUnsafeThrowingContinuation { continuation in
+        if Task.isCancelled {
+          continuation.resume(throwing: CancellationError())
+          return
+        }
         state.setContinuation(continuation)
         let task = Task {
           let result: Result<CactusVAD, any Error>
