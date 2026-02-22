@@ -1,10 +1,10 @@
-// MARK: - CactusTranscriptionLanguage
+// MARK: - CactusSTTLanguage
 
 /// A language code used to configure transcription prompts.
 ///
 /// This type stores the raw short code expected by Whisper-style prompt tokens
 /// (for example, `"en"` for English).
-public struct CactusTranscriptionLanguage: RawRepresentable, Hashable, Sendable, Codable {
+public struct CactusSTTLanguage: RawRepresentable, Hashable, Sendable, Codable {
   /// The raw language code (for example, `"en"`).
   public var rawValue: String
 
@@ -18,7 +18,7 @@ public struct CactusTranscriptionLanguage: RawRepresentable, Hashable, Sendable,
 
 // MARK: - Supported Languages
 
-extension CactusTranscriptionLanguage {
+extension CactusSTTLanguage {
   /// Afrikaans language code.
   public static let afrikaans = Self(rawValue: "af")
   /// Albanian language code.

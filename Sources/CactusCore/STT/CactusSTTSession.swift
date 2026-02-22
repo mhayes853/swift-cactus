@@ -1,7 +1,7 @@
 import CXXCactusShims
 import Foundation
 
-// MARK: - CactusTranscriptionSession
+// MARK: - CactusSTTSession
 
 /// A concurrency-safe session for speech-to-text transcription.
 ///
@@ -10,7 +10,7 @@ import Foundation
 ///
 /// ```swift
 /// let modelURL = try await CactusModelsDirectory.shared.modelURL(for: .whisperSmall())
-/// let session = try CactusTranscriptionSession(from: modelURL)
+/// let session = try CactusSTTSession(from: modelURL)
 ///
 /// let request = CactusTranscription.Request(
 ///   language: .english,
@@ -20,14 +20,12 @@ import Foundation
 ///
 /// let transcription = try await session.transcribe(request: request)
 /// ```
-public final class CactusTranscriptionSession: Sendable {
+public final class CactusSTTSession: Sendable {
   private let observationRegistrar = _ObservationRegistrar()
   private let state = Lock(State())
 
   /// The underlying language model actor.
   public let languageModelActor: CactusLanguageModelActor
-
-  private let modelStopper: CactusLanguageModelStopper
 
   private struct State {
     var activeStream: CactusInferenceStream<CactusTranscription>?
@@ -44,8 +42,14 @@ public final class CactusTranscriptionSession: Sendable {
   ///
   /// - Parameter model: The underlying language model.
   public init(model: sending CactusLanguageModel) {
-    self.modelStopper = CactusLanguageModelStopper(model: model)
     self.languageModelActor = CactusLanguageModelActor(model: model)
+  }
+
+  /// Creates a transcription session from an existing language model actor.
+  ///
+  /// - Parameter actor: The underlying language model actor.
+  public init(model: CactusLanguageModelActor) {
+    self.languageModelActor = model
   }
 
   /// Creates a transcription session from a model URL.
@@ -82,7 +86,7 @@ public final class CactusTranscriptionSession: Sendable {
 
 // MARK: - Public API
 
-extension CactusTranscriptionSession {
+extension CactusSTTSession {
   /// Creates a transcription stream for the provided request.
   ///
   /// ```swift
@@ -97,28 +101,30 @@ extension CactusTranscriptionSession {
   /// let transcription = response.output
   /// ```
   ///
-  /// - Parameters:
-  ///   - request: The transcription request.
-  ///   - options: Transcription options used by the model.
+  /// - Parameter request: The transcription request.
   /// - Returns: A stream that yields transcription tokens and final output.
   public func stream(
-    request: CactusTranscription.Request,
-    options: CactusLanguageModel.Transcription.Options? = nil
+    request: CactusTranscription.Request
   ) throws -> CactusInferenceStream<CactusTranscription> {
     let messageStreamID = CactusMessageID()
     let languageModelActor = self.languageModelActor
-    let modelStopper = self.modelStopper
-    let options = self.resolveTranscriptionOptions(request: request, options: options)
+    let options = CactusLanguageModel.Transcription.Options(request: request)
+    let maxBufferSize = request.maxBufferSize
 
     let stream = CactusInferenceStream<CactusTranscription> { [weak self] continuation in
       guard self != nil else { throw CancellationError() }
+
+      let modelStopper = await languageModelActor.withLanguageModel {
+        CactusLanguageModelStopper(model: $0)
+      }
 
       let modelTranscription = try await withTaskCancellationHandler {
         if let audioURL = request.content.audioURL {
           return try await languageModelActor.transcribe(
             audio: audioURL,
             prompt: request.prompt,
-            options: options
+            options: options,
+            maxBufferSize: maxBufferSize
           ) { stringValue, tokenId in
             continuation.yield(
               token: CactusStreamedToken(
@@ -134,7 +140,8 @@ extension CactusTranscriptionSession {
           return try await languageModelActor.transcribe(
             buffer: pcmBytes,
             prompt: request.prompt,
-            options: options
+            options: options,
+            transcriptionMaxBufferSize: maxBufferSize
           ) { stringValue, tokenId in
             continuation.yield(
               token: CactusStreamedToken(
@@ -149,7 +156,8 @@ extension CactusTranscriptionSession {
         return try await languageModelActor.transcribe(
           buffer: [],
           prompt: request.prompt,
-          options: options
+          options: options,
+          transcriptionMaxBufferSize: maxBufferSize
         ) { stringValue, tokenId in
           continuation.yield(
             token: CactusStreamedToken(
@@ -165,7 +173,7 @@ extension CactusTranscriptionSession {
 
       return CactusInferenceStream<CactusTranscription>
         .Response(
-          output: CactusTranscription(rawResponse: modelTranscription.response),
+          output: CactusTranscription(transcription: modelTranscription),
           metrics: CactusMessageMetric(transcription: modelTranscription)
         )
     }
@@ -185,15 +193,12 @@ extension CactusTranscriptionSession {
   /// let transcription = try await session.transcribe(request: request)
   /// ```
   ///
-  /// - Parameters:
-  ///   - request: The transcription request.
-  ///   - options: Transcription options used by the model.
+  /// - Parameter request: The transcription request.
   /// - Returns: The final parsed transcription.
   public func transcribe(
-    request: CactusTranscription.Request,
-    options: CactusLanguageModel.Transcription.Options? = nil
+    request: CactusTranscription.Request
   ) async throws -> CactusTranscription {
-    let stream = try self.stream(request: request, options: options)
+    let stream = try self.stream(request: request)
     return try await withTaskCancellationHandler {
       try await stream.collectResponse()
     } onCancel: {
@@ -204,18 +209,7 @@ extension CactusTranscriptionSession {
 
 // MARK: - State
 
-extension CactusTranscriptionSession {
-  private func resolveTranscriptionOptions(
-    request: CactusTranscription.Request,
-    options: CactusLanguageModel.Transcription.Options?
-  ) -> CactusLanguageModel.Transcription.Options {
-    var options = options ?? CactusLanguageModel.Transcription.Options()
-    if options.useVad == nil {
-      options.useVad = request.includesTimestamps
-    }
-    return options
-  }
-
+extension CactusSTTSession {
   private func beginTranscribing(stream: CactusInferenceStream<CactusTranscription>) throws {
     try self.observationRegistrar.withMutation(of: self, keyPath: \.isTranscribing) {
       try self.state.withLock { state in
@@ -261,7 +255,7 @@ extension CactusTranscriptionSession {
 
 // MARK: - Error
 
-/// An error thrown by ``CactusTranscriptionSession`` stream APIs.
+/// An error thrown by ``CactusSTTSession`` stream APIs.
 public struct CactusTranscriptionStreamError: Error, Hashable, Sendable {
   /// A human-readable description of the failure.
   public let message: String
@@ -279,12 +273,4 @@ public struct CactusTranscriptionStreamError: Error, Hashable, Sendable {
 // MARK: - Observable
 
 @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
-extension CactusTranscriptionSession: _Observable {}
-
-// MARK: - Helpers
-
-extension CactusTranscription.Request {
-  fileprivate var includesTimestamps: Bool {
-    !self.prompt.contains("<|notimestamps|>")
-  }
-}
+extension CactusSTTSession: _Observable {}

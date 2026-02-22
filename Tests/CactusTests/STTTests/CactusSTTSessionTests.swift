@@ -6,11 +6,11 @@ import SnapshotTesting
 import Testing
 
 @Suite
-struct `CactusTranscriptionSession tests` {
+struct `CactusSTTSession tests` {
   @Test
   func `File Transcription Snapshot`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-    let session = try CactusTranscriptionSession(from: modelURL)
+    let session = try CactusSTTSession(from: modelURL)
     let request = CactusTranscription.Request(prompt: audioPrompt, content: .audio(testAudioURL))
 
     let transcription = try await session.transcribe(request: request)
@@ -27,7 +27,7 @@ struct `CactusTranscriptionSession tests` {
   @Test
   func `File Stream Snapshot`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-    let session = try CactusTranscriptionSession(from: modelURL)
+    let session = try CactusSTTSession(from: modelURL)
     let request = CactusTranscription.Request(prompt: audioPrompt, content: .audio(testAudioURL))
 
     let stream = try session.stream(request: request)
@@ -55,7 +55,7 @@ struct `CactusTranscriptionSession tests` {
   func `PCM Buffer Transcription Snapshot`() async throws {
     #if canImport(AVFoundation)
       let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-      let session = try CactusTranscriptionSession(from: modelURL)
+      let session = try CactusSTTSession(from: modelURL)
       let pcmBuffer = try testAudioPCMBuffer()
       let content = try CactusTranscription.Request.Content.pcm(pcmBuffer)
       let request = CactusTranscription.Request(
@@ -79,7 +79,7 @@ struct `CactusTranscriptionSession tests` {
   func `File Transcription With Timestamps Snapshot`() async throws {
     #if canImport(AVFoundation)
       let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-      let session = try CactusTranscriptionSession(from: modelURL)
+      let session = try CactusSTTSession(from: modelURL)
       let pcmBuffer = try testAudioPCMBuffer()
       let content = try CactusTranscription.Request.Content.pcm(pcmBuffer)
       let request = CactusTranscription.Request(
@@ -103,7 +103,7 @@ struct `CactusTranscriptionSession tests` {
   @Test
   func `Duplicate Transcriptions Throw Already Transcribing`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-    let session = try CactusTranscriptionSession(from: modelURL)
+    let session = try CactusSTTSession(from: modelURL)
     let request = CactusTranscription.Request(
       prompt: audioPrompt,
       content: .audio(testAudioURL)
@@ -121,7 +121,7 @@ struct `CactusTranscriptionSession tests` {
   @Test
   func `Stop Mid Stream Cancels And Calls Through To Model Stop`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-    let session = try CactusTranscriptionSession(from: modelURL)
+    let session = try CactusSTTSession(from: modelURL)
     let request = CactusTranscription.Request(
       prompt: audioPrompt,
       content: .pcm(longSilencePCMBytes)
@@ -147,7 +147,7 @@ struct `CactusTranscriptionSession tests` {
   @Test
   func `Canceling Transcribe Cancels Stream And Ends Session`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-    let session = try CactusTranscriptionSession(from: modelURL)
+    let session = try CactusSTTSession(from: modelURL)
     let request = CactusTranscription.Request(
       prompt: audioPrompt,
       content: .pcm(longSilencePCMBytes)
@@ -173,7 +173,7 @@ struct `CactusTranscriptionSession tests` {
     @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
     func `isTranscribing Emits Observation Updates`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-      let session = try CactusTranscriptionSession(from: modelURL)
+      let session = try CactusSTTSession(from: modelURL)
       let request = CactusTranscription.Request(
         prompt: audioPrompt,
         content: .audio(testAudioURL)
