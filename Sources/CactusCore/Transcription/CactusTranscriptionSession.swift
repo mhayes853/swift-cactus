@@ -27,8 +27,6 @@ public final class CactusTranscriptionSession: Sendable {
   /// The underlying language model actor.
   public let languageModelActor: CactusLanguageModelActor
 
-  private let modelStopper: CactusLanguageModelStopper
-
   private struct State {
     var activeStream: CactusInferenceStream<CactusTranscription>?
     var activeStreamFinishedSubscription: CactusSubscription?
@@ -44,8 +42,14 @@ public final class CactusTranscriptionSession: Sendable {
   ///
   /// - Parameter model: The underlying language model.
   public init(model: sending CactusLanguageModel) {
-    self.modelStopper = CactusLanguageModelStopper(model: model)
     self.languageModelActor = CactusLanguageModelActor(model: model)
+  }
+
+  /// Creates a transcription session from an existing language model actor.
+  ///
+  /// - Parameter actor: The underlying language model actor.
+  public init(model: CactusLanguageModelActor) {
+    self.languageModelActor = model
   }
 
   /// Creates a transcription session from a model URL.
@@ -107,11 +111,14 @@ extension CactusTranscriptionSession {
   ) throws -> CactusInferenceStream<CactusTranscription> {
     let messageStreamID = CactusMessageID()
     let languageModelActor = self.languageModelActor
-    let modelStopper = self.modelStopper
     let options = self.resolveTranscriptionOptions(request: request, options: options)
 
     let stream = CactusInferenceStream<CactusTranscription> { [weak self] continuation in
       guard self != nil else { throw CancellationError() }
+
+      let modelStopper = await languageModelActor.withLanguageModel {
+        CactusLanguageModelStopper(model: $0)
+      }
 
       let modelTranscription = try await withTaskCancellationHandler {
         if let audioURL = request.content.audioURL {
