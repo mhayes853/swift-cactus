@@ -15,7 +15,7 @@
       let inputFormat = self.format
       let interleavedFormat = AVAudioFormat(
         commonFormat: .pcmFormatInt16,
-        sampleRate: cactusSampleRate,
+        sampleRate: cactusAudioSampleRate,
         channels: inputFormat.channelCount,
         interleaved: true
       )
@@ -93,6 +93,4 @@
       return monoBytes
     }
   }
-
-  private let cactusSampleRate = Double(16_000)
 #endif
