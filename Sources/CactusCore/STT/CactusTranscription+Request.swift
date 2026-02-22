@@ -34,6 +34,9 @@ extension CactusTranscription {
     /// - `nil`: Use engine default behavior.
     /// - `true`: Explicitly enable VAD.
     /// - `false`: Explicitly disable VAD.
+    ///
+    /// When ``includeTimestamps`` is set to `true` and this property is `nil`,
+    /// it will automatically be set to `true` to ensure timestamps work correctly.
     public var useVad: Bool?
 
     /// Threshold for triggering cloud handoff based on confidence.
@@ -75,6 +78,9 @@ extension CactusTranscription {
     }
 
     /// Whether the prompt includes timestamp tokens.
+    ///
+    /// When setting to `true`, if ``useVad`` is `nil`, it will automatically be set
+    /// to `true` to ensure timestamps work correctly.
     public var includeTimestamps: Bool {
       get {
         !prompt.contains("<|notimestamps|>")
@@ -82,6 +88,9 @@ extension CactusTranscription {
       set {
         if newValue {
           prompt = prompt.replacingOccurrences(of: "<|notimestamps|>", with: "")
+          if useVad == nil {
+            useVad = true
+          }
         } else {
           if !prompt.contains("<|notimestamps|>") {
             prompt += "<|notimestamps|>"
@@ -91,6 +100,9 @@ extension CactusTranscription {
     }
 
     /// Creates a transcription request from a raw prompt and content.
+    ///
+    /// If the prompt does not contain `<|notimestamps|>` and `useVad` is `nil`,
+    /// ``useVad`` will automatically be set to `true` to ensure timestamps work correctly.
     ///
     /// - Parameters:
     ///   - prompt: The exact prompt string to send to the model.
@@ -138,6 +150,9 @@ extension CactusTranscription {
     ///
     /// The generated prompt follows Whisper token formatting:
     /// `<|startoftranscript|><|{language}|><|transcribe|>[<|notimestamps|>]`.
+    ///
+    /// If `includeTimestamps` is `true` and `useVad` is `nil`, ``useVad`` will
+    /// automatically be set to `true` to ensure timestamps work correctly.
     ///
     /// - Parameters:
     ///   - language: The language code token to include in the prompt.

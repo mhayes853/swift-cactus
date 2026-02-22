@@ -111,6 +111,31 @@ struct `CactusTranscriptionRequest tests` {
   }
 
   @Test
+  func `useVad nil changes to true when includeTimestamps set to true`() {
+    var request = CactusTranscription.Request(
+      language: .english,
+      includeTimestamps: false,
+      content: .audio(testAudioURL)
+    )
+    expectNoDifference(request.useVad, nil)
+    request.includeTimestamps = true
+    expectNoDifference(request.useVad, true)
+  }
+
+  @Test
+  func `useVad explicit false preserved when includeTimestamps set to true`() {
+    var request = CactusTranscription.Request(
+      language: .english,
+      includeTimestamps: false,
+      content: .audio(testAudioURL),
+      useVad: false
+    )
+    expectNoDifference(request.useVad, false)
+    request.includeTimestamps = true
+    expectNoDifference(request.useVad, false)
+  }
+
+  @Test
   func `language getter extracts correct code`() {
     let languages: [CactusSTTLanguage] = [
       .english, .french, .german, .spanish, .chinese, .japanese, .arabic
