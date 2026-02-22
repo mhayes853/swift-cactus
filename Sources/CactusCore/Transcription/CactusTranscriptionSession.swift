@@ -181,7 +181,7 @@ extension CactusTranscriptionSession {
 
       return CactusInferenceStream<CactusTranscription>
         .Response(
-          output: CactusTranscription(rawResponse: modelTranscription.response),
+          output: CactusTranscription(transcription: modelTranscription),
           metrics: CactusMessageMetric(transcription: modelTranscription)
         )
     }

@@ -102,4 +102,21 @@ extension CactusMessageMetric {
       totalTimeInterval: transcription.totalTimeInterval
     )
   }
+
+  /// Creates metrics from a parsed transcription.
+  ///
+  /// - Parameter transcription: The parsed transcription whose metrics should be copied.
+  public init(transcription: CactusTranscription) {
+    self.init(
+      prefillTokens: transcription.prefillTokens,
+      decodeTokens: transcription.decodeTokens,
+      totalTokens: transcription.totalTokens,
+      confidence: transcription.confidence,
+      prefillTps: transcription.prefillTps,
+      decodeTps: transcription.decodeTps,
+      ramUsageMb: transcription.ramUsageMb,
+      timeIntervalToFirstToken: transcription.durationToFirstToken.secondsDouble,
+      totalTimeInterval: transcription.totalDuration.secondsDouble
+    )
+  }
 }

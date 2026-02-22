@@ -1,15 +1,15 @@
 {
   "metrics" : {
-    "confidence" : 0.8593,
-    "decodeTokens" : 106,
-    "decodeTps" : 61.77,
+    "confidence" : 0.827,
+    "decodeTokens" : 73,
+    "decodeTps" : 49.95,
     "prefillTokens" : 4,
-    "prefillTps" : 0.61,
-    "ramUsageMb" : 1469.82,
-    "timeIntervalToFirstToken" : 6.52609,
-    "totalTimeInterval" : 8.22598,
-    "totalTokens" : 110
+    "prefillTps" : 0.39,
+    "ramUsageMb" : 1422.47,
+    "timeIntervalToFirstToken" : 10.25736,
+    "totalTimeInterval" : 11.698690000000001,
+    "totalTokens" : 77
   },
-  "parsedContent" : "The Power Of A God Can Not Be Overcome! Xanzer This is providence Of 'The World' Even Gods Are Nearly Being Restricted To 'Limited Power' Determined By 'Property' That Power Although Great, Is Not Unlimited The Voice! Alvast How Dare You Disappay Me? I Am Monadah. Was Here At The Beginning And Will Proclaim It But That's Impossible Shook It is Time For You To Choose Does This World?",
-  "streamedText" : " The Power Of A God Can Not Be Overcome! Xanzer This is providence Of 'The World' Even Gods Are Nearly Being Restricted To 'Limited Power' Determined By 'Property' That Power Although Great, Is Not Unlimited The Voice! Alvast How Dare You Disappay Me? I Am Monadah. Was Here At The Beginning And Will Proclaim It But That's Impossible Shook It is Time For You To Choose Does This World?<|startoftranscript|>"
+  "parsedContent" : "The power of our gods can not to the over come Zanzan This is providence ofth world Even gods are merely beings restricted tthe limited powe Determined by proper back power Although great I was here at th begginning And will proclaim the end but thats imossible shook it's time you to choose does thiw well",
+  "streamedText" : " The power of our gods can not to the over come Zanzan This is providence ofth world Even gods are merely beings restricted tthe limited powe Determined by proper back power Although great I was here at th begginning And will proclaim the end but thats imossible shook it's time you to choose does thiw well<|startoftranscript|>"
 }

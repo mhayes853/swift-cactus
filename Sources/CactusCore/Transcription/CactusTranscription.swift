@@ -2,11 +2,121 @@ import Foundation
 
 // MARK: - CactusTranscription
 
-/// A parsed transcription output.
-///
-/// This type parses raw transcription text into either a full transcript string
-/// or timestamped segments when timestamp tags are present.
+/// A transcription output with metrics from an transcription model.
 public struct CactusTranscription: Hashable, Sendable {
+  /// The number of prefilled tokens.
+  public let prefillTokens: Int
+
+  /// The number of tokens decoded.
+  public let decodeTokens: Int
+
+  /// The total amount of tokens that make up the response.
+  public let totalTokens: Int
+
+  /// The model's confidence in its response.
+  public let confidence: Double
+
+  /// The prefill tokens per second.
+  public let prefillTps: Double
+
+  /// The decode tokens per second.
+  public let decodeTps: Double
+
+  /// The current process RAM usage in MB.
+  public let ramUsageMb: Double
+
+  /// Whether this transcription was handed off to cloud inference.
+  public let didHandoffToCloud: Bool
+
+  /// The amount of time to generate the first token.
+  public let durationToFirstToken: CactusDuration
+
+  /// The total generation time.
+  public let totalDuration: CactusDuration
+
+  /// The parsed transcription content.
+  public let content: Content
+
+  /// Creates a parsed transcription with explicit content and metrics.
+  ///
+  /// - Parameters:
+  ///   - prefillTokens: The number of prefilled tokens.
+  ///   - decodeTokens: The number of tokens decoded.
+  ///   - totalTokens: The total amount of tokens.
+  ///   - confidence: The model's confidence in its response.
+  ///   - prefillTps: The prefill tokens per second.
+  ///   - decodeTps: The decode tokens per second.
+  ///   - ramUsageMb: The current process RAM usage in MB.
+  ///   - didHandoffToCloud: Whether this transcription was handed off to cloud inference.
+  ///   - durationToFirstToken: The amount of time to generate the first token.
+  ///   - totalDuration: The total generation time.
+  ///   - content: The parsed transcription content.
+  public init(
+    prefillTokens: Int,
+    decodeTokens: Int,
+    totalTokens: Int,
+    confidence: Double,
+    prefillTps: Double,
+    decodeTps: Double,
+    ramUsageMb: Double,
+    didHandoffToCloud: Bool,
+    durationToFirstToken: CactusDuration,
+    totalDuration: CactusDuration,
+    content: Content
+  ) {
+    self.prefillTokens = prefillTokens
+    self.decodeTokens = decodeTokens
+    self.totalTokens = totalTokens
+    self.confidence = confidence
+    self.prefillTps = prefillTps
+    self.decodeTps = decodeTps
+    self.ramUsageMb = ramUsageMb
+    self.didHandoffToCloud = didHandoffToCloud
+    self.durationToFirstToken = durationToFirstToken
+    self.totalDuration = totalDuration
+    self.content = content
+  }
+
+  /// Creates a parsed transcription from a raw model response string with explicit metrics.
+  ///
+  /// - Parameters:
+  ///   - response: The raw transcription response string.
+  ///   - prefillTokens: The number of prefilled tokens.
+  ///   - decodeTokens: The number of tokens decoded.
+  ///   - totalTokens: The total amount of tokens.
+  ///   - confidence: The model's confidence in its response.
+  ///   - prefillTps: The prefill tokens per second.
+  ///   - decodeTps: The decode tokens per second.
+  ///   - ramUsageMb: The current process RAM usage in MB.
+  ///   - didHandoffToCloud: Whether this transcription was handed off to cloud inference.
+  ///   - durationToFirstToken: The amount of time to generate the first token.
+  ///   - totalDuration: The total generation time.
+  public init(
+    response: String,
+    prefillTokens: Int,
+    decodeTokens: Int,
+    totalTokens: Int,
+    confidence: Double,
+    prefillTps: Double,
+    decodeTps: Double,
+    ramUsageMb: Double,
+    didHandoffToCloud: Bool,
+    durationToFirstToken: CactusDuration,
+    totalDuration: CactusDuration
+  ) {
+    self.prefillTokens = prefillTokens
+    self.decodeTokens = decodeTokens
+    self.totalTokens = totalTokens
+    self.confidence = confidence
+    self.prefillTps = prefillTps
+    self.decodeTps = decodeTps
+    self.ramUsageMb = ramUsageMb
+    self.didHandoffToCloud = didHandoffToCloud
+    self.durationToFirstToken = durationToFirstToken
+    self.totalDuration = totalDuration
+    self.content = Content(response: response)
+  }
+
   /// A single timestamped transcription segment.
   public struct Timestamp: Hashable, Sendable {
     /// The start time in seconds for this segment.
@@ -33,42 +143,54 @@ public struct CactusTranscription: Hashable, Sendable {
 
     /// A transcript split into timestamped segments.
     case timestamps([Timestamp])
-  }
 
-  /// The parsed transcription content.
-  public let content: Content
-
-  /// Creates a parsed transcription from a raw model response string.
-  ///
-  /// This removes `<|startoftranscript|>` markers and parses timestamp groups
-  /// matching the `<|seconds|>text` format.
-  ///
-  /// - Parameter rawResponse: The raw transcription response string.
-  public init(rawResponse: String) {
-    let fullTranscript = rawResponse.replacingOccurrences(
-      of: "<|startoftranscript|>",
-      with: ""
-    )
-    let matchGroups = responseRegex.matchGroups(from: fullTranscript)
-
-    if matchGroups.isEmpty {
-      self.content = .fullTranscript(fullTranscript)
-    } else {
-      self.content = .timestamps(
-        stride(from: 0, to: matchGroups.count, by: 2)
-          .compactMap { i in
-            guard i + 1 < matchGroups.count,
-              let seconds = TimeInterval(matchGroups[i])
-            else {
-              return nil
-            }
-            var transcript = String(matchGroups[i + 1])
-            if transcript.first == " " {
-              transcript.removeFirst()
-            }
-            return Timestamp(seconds: seconds, transcript: transcript)
-          }
+    /// Creates parsed content from a raw model response string.
+    ///
+    /// - Parameter response: The raw transcription response string.
+    public init(response: String) {
+      let fullTranscript = response.replacingOccurrences(
+        of: "<|startoftranscript|>",
+        with: ""
       )
+      let matchGroups = responseRegex.matchGroups(from: fullTranscript)
+
+      if matchGroups.isEmpty {
+        self = .fullTranscript(fullTranscript)
+      } else {
+        self = .timestamps(
+          stride(from: 0, to: matchGroups.count, by: 2)
+            .compactMap { i in
+              guard i + 1 < matchGroups.count,
+                let seconds = TimeInterval(matchGroups[i])
+              else {
+                return nil
+              }
+              var transcript = String(matchGroups[i + 1])
+              if transcript.first == " " {
+                transcript.removeFirst()
+              }
+              return Timestamp(seconds: seconds, transcript: transcript)
+            }
+        )
+      }
+    }
+
+    /// The raw response string reconstructed from the content.
+    public var response: String {
+      switch self {
+      case .fullTranscript(let transcript):
+        return transcript
+      case .timestamps(let timestamps):
+        return
+          timestamps.map { timestamp in
+            let secondsString =
+              timestamp.seconds.truncatingRemainder(dividingBy: 1) == 0
+              ? String(Int(timestamp.seconds))
+              : String(timestamp.seconds)
+            return "<\(secondsString)>\(timestamp.transcript)"
+          }
+          .joined()
+      }
     }
   }
 }
