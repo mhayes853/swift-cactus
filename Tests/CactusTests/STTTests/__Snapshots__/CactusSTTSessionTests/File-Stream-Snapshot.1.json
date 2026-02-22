@@ -1,0 +1,15 @@
+{
+  "metrics" : {
+    "confidence" : 0.9014,
+    "decodeTokens" : 15,
+    "decodeTps" : 33.98,
+    "prefillTokens" : 4,
+    "prefillTps" : 0.46,
+    "ramUsageMb" : 2100.77,
+    "timeIntervalToFirstToken" : 8.766440000000001,
+    "totalTimeInterval" : 9.17848,
+    "totalTokens" : 19
+  },
+  "parsedContent" : "The power of a god cannot be overcome. But that is impossible.",
+  "streamedText" : " The power of a god cannot be overcome. But that is impossible.<|startoftranscript|>"
+}

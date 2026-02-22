@@ -112,7 +112,7 @@ struct `CactusTranscriptionRequest tests` {
 
   @Test
   func `language getter extracts correct code`() {
-    let languages: [CactusTranscriptionLanguage] = [
+    let languages: [CactusSTTLanguage] = [
       .english, .french, .german, .spanish, .chinese, .japanese, .arabic
     ]
     for language in languages {

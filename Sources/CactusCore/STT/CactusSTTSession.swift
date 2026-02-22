@@ -1,7 +1,7 @@
 import CXXCactusShims
 import Foundation
 
-// MARK: - CactusTranscriptionSession
+// MARK: - CactusSTTSession
 
 /// A concurrency-safe session for speech-to-text transcription.
 ///
@@ -10,7 +10,7 @@ import Foundation
 ///
 /// ```swift
 /// let modelURL = try await CactusModelsDirectory.shared.modelURL(for: .whisperSmall())
-/// let session = try CactusTranscriptionSession(from: modelURL)
+/// let session = try CactusSTTSession(from: modelURL)
 ///
 /// let request = CactusTranscription.Request(
 ///   language: .english,
@@ -20,7 +20,7 @@ import Foundation
 ///
 /// let transcription = try await session.transcribe(request: request)
 /// ```
-public final class CactusTranscriptionSession: Sendable {
+public final class CactusSTTSession: Sendable {
   private let observationRegistrar = _ObservationRegistrar()
   private let state = Lock(State())
 
@@ -86,7 +86,7 @@ public final class CactusTranscriptionSession: Sendable {
 
 // MARK: - Public API
 
-extension CactusTranscriptionSession {
+extension CactusSTTSession {
   /// Creates a transcription stream for the provided request.
   ///
   /// ```swift
@@ -217,7 +217,7 @@ extension CactusTranscriptionSession {
 
 // MARK: - State
 
-extension CactusTranscriptionSession {
+extension CactusSTTSession {
   private func beginTranscribing(stream: CactusInferenceStream<CactusTranscription>) throws {
     try self.observationRegistrar.withMutation(of: self, keyPath: \.isTranscribing) {
       try self.state.withLock { state in
@@ -263,7 +263,7 @@ extension CactusTranscriptionSession {
 
 // MARK: - Error
 
-/// An error thrown by ``CactusTranscriptionSession`` stream APIs.
+/// An error thrown by ``CactusSTTSession`` stream APIs.
 public struct CactusTranscriptionStreamError: Error, Hashable, Sendable {
   /// A human-readable description of the failure.
   public let message: String
@@ -281,4 +281,4 @@ public struct CactusTranscriptionStreamError: Error, Hashable, Sendable {
 // MARK: - Observable
 
 @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
-extension CactusTranscriptionSession: _Observable {}
+extension CactusSTTSession: _Observable {}

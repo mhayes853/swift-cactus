@@ -45,7 +45,7 @@ extension CactusTranscription {
     public var maxBufferSize: Int?
 
     /// The language code extracted from the prompt.
-    public var language: CactusTranscriptionLanguage {
+    public var language: CactusSTTLanguage {
       get {
         let prompt = self.prompt
         guard let sotRange = prompt.range(of: "<|startoftranscript|>") else { return .english }
@@ -56,7 +56,7 @@ extension CactusTranscription {
           return .english
         }
         let languageCode = String(prompt[langStart.upperBound..<langEnd.lowerBound])
-        return CactusTranscriptionLanguage(rawValue: languageCode)
+        return CactusSTTLanguage(rawValue: languageCode)
       }
       set {
         let prompt = self.prompt
@@ -152,7 +152,7 @@ extension CactusTranscription {
     ///   - cloudHandoffThreshold: cloud handoff.
     ///   - maxBufferSize: The maximum buffer size Optional confidence threshold for for the transcription.
     public init(
-      language: CactusTranscriptionLanguage,
+      language: CactusSTTLanguage,
       includeTimestamps: Bool,
       content: Content,
       maxTokens: Int = 512,
@@ -179,7 +179,7 @@ extension CactusTranscription {
     }
 
     private static func prompt(
-      language: CactusTranscriptionLanguage,
+      language: CactusSTTLanguage,
       includeTimestamps: Bool
     ) -> String {
       var prompt = "<|startoftranscript|><|\(language.rawValue)|><|transcribe|>"
