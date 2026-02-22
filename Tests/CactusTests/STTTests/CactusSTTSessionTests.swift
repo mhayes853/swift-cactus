@@ -223,7 +223,7 @@ private struct StreamTranscriptionSnapshot: Codable {
   }
 }
 
-private let audioPrompt = "<|startoftranscript|><|en|><|transcribe|><|notimestamps|>"
+private let audioPrompt = CactusSTTPrompt(language: .english, includeTimestamps: false)
 private let testAudioURL = Bundle.module.url(forResource: "test", withExtension: "wav")!
 private let missingAudioURL = FileManager.default.temporaryDirectory
   .appendingPathComponent("missing-audio-\(UUID().uuidString)")

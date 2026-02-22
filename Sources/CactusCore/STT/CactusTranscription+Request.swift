@@ -5,11 +5,17 @@ import Foundation
 extension CactusTranscription {
   /// Input used to perform a transcription request.
   ///
-  /// A request is composed of a raw transcription prompt string, audio content,
+  /// A request is composed of a transcription prompt, audio content,
   /// and various options for controlling the transcription behavior.
   public struct Request: Hashable, Sendable {
-    /// The raw textual prompt sent to the transcription model.
-    public var prompt: String
+    /// The transcription prompt encoding language and timestamp configuration.
+    public var prompt: CactusSTTPrompt {
+      didSet {
+        if prompt.includeTimestamps && useVad == nil {
+          useVad = true
+        }
+      }
+    }
 
     /// The audio content to transcribe.
     public let content: Content
@@ -47,65 +53,13 @@ extension CactusTranscription {
     /// `nil` uses the engine default (8192).
     public var maxBufferSize: Int?
 
-    /// The language code extracted from the prompt.
-    public var language: CactusSTTLanguage {
-      get {
-        let prompt = self.prompt
-        guard let sotRange = prompt.range(of: "<|startoftranscript|>") else { return .english }
-        let searchStart = sotRange.upperBound
-        guard let langStart = prompt.range(of: "<|", range: searchStart..<prompt.endIndex),
-          let langEnd = prompt.range(of: "|>", range: langStart.upperBound..<prompt.endIndex)
-        else {
-          return .english
-        }
-        let languageCode = String(prompt[langStart.upperBound..<langEnd.lowerBound])
-        return CactusSTTLanguage(rawValue: languageCode)
-      }
-      set {
-        let prompt = self.prompt
-        guard let sotRange = prompt.range(of: "<|startoftranscript|>") else { return }
-        let searchStart = sotRange.upperBound
-        guard let langStart = prompt.range(of: "<|", range: searchStart..<prompt.endIndex),
-          let langEnd = prompt.range(of: "|>", range: langStart.upperBound..<prompt.endIndex)
-        else {
-          return
-        }
-        self.prompt.replaceSubrange(
-          langStart.upperBound..<langEnd.lowerBound,
-          with: newValue.rawValue
-        )
-      }
-    }
-
-    /// Whether the prompt includes timestamp tokens.
+    /// Creates a transcription request from a prompt and content.
     ///
-    /// When setting to `true`, if ``useVad`` is `nil`, it will automatically be set
-    /// to `true` to ensure timestamps work correctly.
-    public var includeTimestamps: Bool {
-      get {
-        !prompt.contains("<|notimestamps|>")
-      }
-      set {
-        if newValue {
-          prompt = prompt.replacingOccurrences(of: "<|notimestamps|>", with: "")
-          if useVad == nil {
-            useVad = true
-          }
-        } else {
-          if !prompt.contains("<|notimestamps|>") {
-            prompt += "<|notimestamps|>"
-          }
-        }
-      }
-    }
-
-    /// Creates a transcription request from a raw prompt and content.
-    ///
-    /// If the prompt does not contain `<|notimestamps|>` and `useVad` is `nil`,
+    /// If the prompt includes timestamps and `useVad` is `nil`,
     /// ``useVad`` will automatically be set to `true` to ensure timestamps work correctly.
     ///
     /// - Parameters:
-    ///   - prompt: The exact prompt string to send to the model.
+    ///   - prompt: The transcription prompt encoding language and timestamp configuration.
     ///   - content: The audio content to transcribe.
     ///   - maxTokens: The maximum number of tokens for the transcription.
     ///   - temperature: The sampling temperature.
@@ -116,7 +70,7 @@ extension CactusTranscription {
     ///   - cloudHandoffThreshold: Optional confidence threshold for cloud handoff.
     ///   - maxBufferSize: The maximum buffer size for the transcription.
     public init(
-      prompt: String,
+      prompt: CactusSTTPrompt,
       content: Content,
       maxTokens: Int = 512,
       temperature: Float = 0.6,
@@ -139,7 +93,7 @@ extension CactusTranscription {
 
       if let useVad {
         self.useVad = useVad
-      } else if !prompt.contains("<|notimestamps|>") {
+      } else if prompt.includeTimestamps {
         self.useVad = true
       } else {
         self.useVad = nil
@@ -179,8 +133,9 @@ extension CactusTranscription {
       cloudHandoffThreshold: Float? = nil,
       maxBufferSize: Int? = nil
     ) {
+      let prompt = CactusSTTPrompt(language: language, includeTimestamps: includeTimestamps)
       self.init(
-        prompt: Self.prompt(language: language, includeTimestamps: includeTimestamps),
+        prompt: prompt,
         content: content,
         maxTokens: maxTokens,
         temperature: temperature,
@@ -191,17 +146,6 @@ extension CactusTranscription {
         cloudHandoffThreshold: cloudHandoffThreshold,
         maxBufferSize: maxBufferSize
       )
-    }
-
-    private static func prompt(
-      language: CactusSTTLanguage,
-      includeTimestamps: Bool
-    ) -> String {
-      var prompt = "<|startoftranscript|><|\(language.rawValue)|><|transcribe|>"
-      if !includeTimestamps {
-        prompt += "<|notimestamps|>"
-      }
-      return prompt
     }
   }
 }
