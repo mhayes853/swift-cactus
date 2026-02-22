@@ -41,6 +41,37 @@ struct `CactusTranscriptionRequest tests` {
     expectNoDifference(content.audioURL, nil)
     expectNoDifference(content.pcmBytes, [1, 2, 3])
   }
+
+  @Test
+  func `useVad defaults to true when timestamps included`() {
+    let request = CactusTranscription.Request(
+      language: .english,
+      includeTimestamps: true,
+      content: .audio(testAudioURL)
+    )
+    expectNoDifference(request.useVad, true)
+  }
+
+  @Test
+  func `useVad defaults to nil when timestamps excluded`() {
+    let request = CactusTranscription.Request(
+      language: .english,
+      includeTimestamps: false,
+      content: .audio(testAudioURL)
+    )
+    expectNoDifference(request.useVad, nil)
+  }
+
+  @Test
+  func `useVad respects explicit false when timestamps included`() {
+    var request = CactusTranscription.Request(
+      language: .english,
+      includeTimestamps: true,
+      content: .audio(testAudioURL)
+    )
+    request.useVad = false
+    expectNoDifference(request.useVad, false)
+  }
 }
 
 private let testAudioURL = Bundle.module.url(forResource: "test", withExtension: "wav")!

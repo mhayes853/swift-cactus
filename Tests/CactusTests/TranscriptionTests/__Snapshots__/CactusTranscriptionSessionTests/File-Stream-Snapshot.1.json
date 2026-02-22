@@ -1,15 +1,15 @@
 {
   "metrics" : {
-    "confidence" : 0.9095,
-    "decodeTokens" : 10,
-    "decodeTps" : 8.57,
+    "confidence" : 0.8593,
+    "decodeTokens" : 106,
+    "decodeTps" : 61.77,
     "prefillTokens" : 4,
-    "prefillTps" : 0.37,
-    "ramUsageMb" : 1717.84,
-    "timeIntervalToFirstToken" : 10.79316,
-    "totalTimeInterval" : 11.84332,
-    "totalTokens" : 14
+    "prefillTps" : 0.61,
+    "ramUsageMb" : 1469.82,
+    "timeIntervalToFirstToken" : 6.52609,
+    "totalTimeInterval" : 8.22598,
+    "totalTokens" : 110
   },
-  "parsedContent" : "The power of the God cannot be overcome.",
-  "streamedText" : " The power of the God cannot be overcome.<|startoftranscript|>"
+  "parsedContent" : "The Power Of A God Can Not Be Overcome! Xanzer This is providence Of 'The World' Even Gods Are Nearly Being Restricted To 'Limited Power' Determined By 'Property' That Power Although Great, Is Not Unlimited The Voice! Alvast How Dare You Disappay Me? I Am Monadah. Was Here At The Beginning And Will Proclaim It But That's Impossible Shook It is Time For You To Choose Does This World?",
+  "streamedText" : " The Power Of A God Can Not Be Overcome! Xanzer This is providence Of 'The World' Even Gods Are Nearly Being Restricted To 'Limited Power' Determined By 'Property' That Power Although Great, Is Not Unlimited The Voice! Alvast How Dare You Disappay Me? I Am Monadah. Was Here At The Beginning And Will Proclaim It But That's Impossible Shook It is Time For You To Choose Does This World?<|startoftranscript|>"
 }
