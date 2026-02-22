@@ -48,7 +48,7 @@ struct `CactusInferenceStream tests` {
     _ = subscription
 
     await #expect(throws: StreamTestError.self) {
-      _ = try await stream.streamResponse()
+      _ = try await stream.collectResponse()
     }
 
     finished.withLock { result in
@@ -97,7 +97,7 @@ struct `CactusInferenceStream tests` {
     _ = subscription
 
     await #expect(throws: StreamTestError.self) {
-      _ = try await stream.streamResponse()
+      _ = try await stream.collectResponse()
     }
 
     finished.withLock { error in
@@ -107,31 +107,18 @@ struct `CactusInferenceStream tests` {
 
   @Test
   func `StreamResponse Happy Path`() async throws {
-    let expectedMetric = CactusMessageMetric(
-      prefillTokens: 4,
-      decodeTokens: 8,
-      totalTokens: 12,
-      confidence: 0.9,
-      prefillTps: 100,
-      decodeTps: 75,
-      ramUsageMb: 256,
-      timeIntervalToFirstToken: 0.1,
-      totalTimeInterval: 0.8
-    )
-
     let stream = CactusInferenceStream<String> { _ in
-      CactusInferenceStream<String>.Response(output: "done", metrics: expectedMetric)
+      "done"
     }
 
-    let response = try await stream.streamResponse()
-    expectNoDifference(response.output, "done")
-    expectNoDifference(response.metrics, expectedMetric)
+    let response = try await stream.collectResponse()
+    expectNoDifference(response, "done")
   }
 
   @Test
   func `CollectResponse Happy Path`() async throws {
     let stream = CactusInferenceStream<String> { _ in
-      CactusInferenceStream<String>.Response(output: "collected")
+      "collected"
     }
 
     let response = try await stream.collectResponse()
@@ -142,14 +129,14 @@ struct `CactusInferenceStream tests` {
   func `Is Streaming Is True While Stream Is Running`() async throws {
     let stream = CactusInferenceStream<String> { _ in
       try await Task.sleep(nanoseconds: cancellationLeadTimeNanoseconds * 10)
-      return CactusInferenceStream<String>.Response(output: "done")
+      return "done"
     }
 
     expectNoDifference(stream.isStreaming, true)
 
     stream.stop()
     await #expect(throws: CancellationError.self) {
-      _ = try await stream.streamResponse()
+      _ = try await stream.collectResponse()
     }
   }
 
@@ -157,11 +144,11 @@ struct `CactusInferenceStream tests` {
   func `Is Streaming Becomes False After StreamResponse Completes`() async throws {
     let stream = CactusInferenceStream<String> { _ in
       try await Task.sleep(nanoseconds: cancellationLeadTimeNanoseconds)
-      return CactusInferenceStream<String>.Response(output: "done")
+      return "done"
     }
 
     expectNoDifference(stream.isStreaming, true)
-    _ = try await stream.streamResponse()
+    _ = try await stream.collectResponse()
     expectNoDifference(stream.isStreaming, false)
   }
 
@@ -169,14 +156,14 @@ struct `CactusInferenceStream tests` {
   func `Is Streaming Becomes False When Stream Is Stopped`() async {
     let stream = CactusInferenceStream<String> { _ in
       try await Task.sleep(nanoseconds: producerSleepNanoseconds)
-      return CactusInferenceStream<String>.Response(output: "unreachable")
+      return "unreachable"
     }
 
     expectNoDifference(stream.isStreaming, true)
     stream.stop()
 
     await #expect(throws: CancellationError.self) {
-      _ = try await stream.streamResponse()
+      _ = try await stream.collectResponse()
     }
     expectNoDifference(stream.isStreaming, false)
   }
@@ -187,7 +174,7 @@ struct `CactusInferenceStream tests` {
     func `Is Streaming Emits Observation Updates On Completion`() async throws {
       let stream = CactusInferenceStream<String> { _ in
         try await Task.sleep(nanoseconds: cancellationLeadTimeNanoseconds)
-        return CactusInferenceStream<String>.Response(output: "done")
+        return "done"
       }
 
       let values = Lock([Bool]())
@@ -209,7 +196,7 @@ struct `CactusInferenceStream tests` {
     func `Is Streaming Emits Observation Updates On Stop`() async {
       let stream = CactusInferenceStream<String> { _ in
         try await Task.sleep(nanoseconds: producerSleepNanoseconds)
-        return CactusInferenceStream<String>.Response(output: "unreachable")
+        return "unreachable"
       }
 
       let values = Lock([Bool]())
@@ -219,7 +206,7 @@ struct `CactusInferenceStream tests` {
 
       stream.stop()
       await #expect(throws: CancellationError.self) {
-        _ = try await stream.streamResponse()
+        _ = try await stream.collectResponse()
       }
       token.cancel()
 
@@ -240,7 +227,7 @@ struct `CactusInferenceStream tests` {
           token: CactusStreamedToken(messageStreamId: messageID, stringValue: "a", tokenId: 0)
         )
       }
-      return CactusInferenceStream<String>.Response(output: expectedOutput)
+      return expectedOutput
     }
 
     var output = ""
@@ -256,7 +243,7 @@ struct `CactusInferenceStream tests` {
     let stream = CactusInferenceStream<StreamedUser> { continuation in
       continuation.yield(partial: .init(name: "Blob", age: nil))
       continuation.yield(partial: .init(name: "Blob", age: 42))
-      return CactusInferenceStream<StreamedUser>.Response(output: StreamedUser(name: "Blob", age: 42))
+      return StreamedUser(name: "Blob", age: 42)
     }
 
     var collectedPartials: [StreamedUser.Partial] = []
@@ -275,11 +262,11 @@ struct `CactusInferenceStream tests` {
     let stream = CactusInferenceStream<String> { _ in
       // NB: Keep the producer suspended long enough for the test to call `stop()` first.
       try await Task.sleep(nanoseconds: producerSleepNanoseconds)
-      return CactusInferenceStream<String>.Response(output: "unreachable")
+      return "unreachable"
     }
 
     let responseTask = Task {
-      try await stream.streamResponse()
+      try await stream.collectResponse()
     }
 
     // NB: Give the stream task a brief moment to start before triggering cancellation.
@@ -296,7 +283,7 @@ struct `CactusInferenceStream tests` {
     let stream = CactusInferenceStream<String> { _ in
       // NB: Keep the producer suspended long enough for the test to call `stop()` first.
       try await Task.sleep(nanoseconds: producerSleepNanoseconds)
-      return CactusInferenceStream<String>.Response(output: "unreachable")
+      return "unreachable"
     }
 
     let responseTask = Task {

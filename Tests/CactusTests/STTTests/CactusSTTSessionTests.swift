@@ -36,14 +36,13 @@ struct `CactusSTTSession tests` {
     for try await token in stream.tokens {
       streamedText += token.stringValue
     }
-    let response = try await stream.streamResponse()
+    let transcription = try await stream.collectResponse()
 
     withKnownIssue {
       assertSnapshot(
         of: StreamTranscriptionSnapshot(
           streamedText: streamedText,
-          transcription: response.output,
-          metrics: response.metrics
+          transcription: transcription
         ),
         as: .json,
         record: true
@@ -214,12 +213,18 @@ private struct TranscriptionSnapshot: Codable {
 private struct StreamTranscriptionSnapshot: Codable {
   let streamedText: String
   let parsedContent: String
-  let metrics: CactusMessageMetric
+  let prefillTokens: Int
+  let decodeTokens: Int
+  let totalTokens: Int
+  let confidence: Double
 
-  init(streamedText: String, transcription: CactusTranscription, metrics: CactusMessageMetric) {
+  init(streamedText: String, transcription: CactusTranscription) {
     self.streamedText = streamedText
     self.parsedContent = TranscriptionSnapshot(transcription: transcription).content
-    self.metrics = metrics
+    self.prefillTokens = transcription.prefillTokens
+    self.decodeTokens = transcription.decodeTokens
+    self.totalTokens = transcription.totalTokens
+    self.confidence = transcription.confidence
   }
 }
 

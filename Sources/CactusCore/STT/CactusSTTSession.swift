@@ -97,8 +97,7 @@ extension CactusSTTSession {
   ///   tokenText += token.stringValue
   /// }
   ///
-  /// let response = try await stream.streamResponse()
-  /// let transcription = response.output
+  /// let transcription = try await stream.collectResponse()
   /// ```
   ///
   /// - Parameter request: The transcription request.
@@ -171,11 +170,7 @@ extension CactusSTTSession {
         modelStopper.stop()
       }
 
-      return CactusInferenceStream<CactusTranscription>
-        .Response(
-          output: CactusTranscription(transcription: modelTranscription),
-          metrics: CactusMessageMetric(transcription: modelTranscription)
-        )
+      return CactusTranscription(transcription: modelTranscription)
     }
 
     try self.beginTranscribing(stream: stream)
