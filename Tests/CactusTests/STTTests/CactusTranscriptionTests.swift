@@ -13,7 +13,7 @@ struct `CactusTranscription tests` {
 
   @Test
   func `No Timestamps Response`() {
-    let responseText = "Hello world<|startoftranscript|>"
+    let responseText = "Hello world"
     let content = CactusTranscription.Content(response: responseText)
 
     expectNoDifference(content, .fullTranscript("Hello world"))
@@ -27,8 +27,7 @@ struct `CactusTranscription tests` {
         <|3.14|> Zanzan, this is the providence of the world. Even gods are merely beings \
         restricted to the limited power determined by prophets.\
         <|6.56|> That power, although great, is not unlimited. \
-        <|9.31|> That voice, Albrecht! How dare you!\
-        <|startoftranscript|>
+        <|9.31|> That voice, Albrecht! How dare you!
         """
     )
     expectNoDifference(
@@ -131,35 +130,28 @@ struct `CactusTranscription tests` {
       CactusTranscription.Timestamp(seconds: 1.5, transcript: "World")
     ]
     let content = CactusTranscription.Content.timestamps(timestamps)
-    expectNoDifference(content.response, "<0>Hello<1.5>World")
+    expectNoDifference(content.response, "<|0.00|>Hello<|1.50|>World")
   }
 
   @Test
   func `Content response from timestamps with complex example`() {
     let responseString = """
-      <|0.00|> How? The power of a god cannot be overcome.\
-      <|3.14|> Zanzan, this is the providence of the world. Even gods are merely beings \
+      <|0.00|>How? The power of a god cannot be overcome.\
+      <|3.14|>Zanzan, this is the providence of the world. Even gods are merely beings \
       restricted to the limited power determined by prophets.\
-      <|6.56|> That power, although great, is not unlimited. \
-      <|9.31|> That voice, Albrecht! How dare you!\
-      <|startoftranscript|>
+      <|6.56|>That power, although great, is not unlimited. \
+      <|9.31|>That voice, Albrecht! How dare you!
       """
     let content = CactusTranscription.Content(response: responseString)
-    expectNoDifference(
-      content.response,
-      "<0>How? The power of a god cannot be overcome.<3.14>Zanzan, this is the providence of the world. Even gods are merely beings restricted to the limited power determined by prophets.<6.56>That power, although great, is not unlimited. <9.31>That voice, Albrecht! How dare you!"
-    )
+    expectNoDifference(content.response, responseString)
   }
 
   @Test
   func `Content response from timestamps with silence markers`() {
     let responseString =
-      "<|0.02|> The power of a god cannot be overcome!<|2.94|><|3.14|> Zanza, this is the providence of the world."
+      "<|0.02|>The power of a god cannot be overcome!<|2.94|><|3.14|>Zanza, this is the providence of the world."
     let content = CactusTranscription.Content(response: responseString)
-    expectNoDifference(
-      content.response,
-      "<0.02>The power of a god cannot be overcome!<2.94><3.14>Zanza, this is the providence of the world."
-    )
+    expectNoDifference(content.response, responseString)
   }
 }
 

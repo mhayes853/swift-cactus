@@ -148,14 +148,10 @@ public struct CactusTranscription: Hashable, Sendable {
     ///
     /// - Parameter response: The raw transcription response string.
     public init(response: String) {
-      let fullTranscript = response.replacingOccurrences(
-        of: "<|startoftranscript|>",
-        with: ""
-      )
-      let matchGroups = responseRegex.matchGroups(from: fullTranscript)
+      let matchGroups = responseRegex.matchGroups(from: response)
 
       if matchGroups.isEmpty {
-        self = .fullTranscript(fullTranscript)
+        self = .fullTranscript(response)
       } else {
         self = .timestamps(
           stride(from: 0, to: matchGroups.count, by: 2)
@@ -183,11 +179,8 @@ public struct CactusTranscription: Hashable, Sendable {
       case .timestamps(let timestamps):
         return
           timestamps.map { timestamp in
-            let secondsString =
-              timestamp.seconds.truncatingRemainder(dividingBy: 1) == 0
-              ? String(Int(timestamp.seconds))
-              : String(timestamp.seconds)
-            return "<\(secondsString)>\(timestamp.transcript)"
+            let secondsString = String(format: "%.2f", timestamp.seconds)
+            return "<|\(secondsString)|>\(timestamp.transcript)"
           }
           .joined()
       }
