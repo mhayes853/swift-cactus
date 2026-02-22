@@ -8,50 +8,6 @@ import Zip
 // MARK: - Download Model
 
 extension CactusLanguageModel {
-  /// Returns the download `URL` for a model slug.
-  ///
-  /// - Parameter slug: The slug of the model.
-  @available(*, deprecated, message: "Use `PlatformDownloadRequest` instead.")
-  public static func modelDownloadURL(slug: String) -> URL {
-    PlatformDownloadRequest(slug: slug).url
-  }
-
-  /// Returns the download `URL` for an audio model slug.
-  ///
-  /// - Parameter slug: The slug of the model.
-  @available(*, deprecated, message: "Use `PlatformDownloadRequest` instead.")
-  public static func audioModelDownloadURL(slug: String) -> URL {
-    PlatformDownloadRequest(slug: slug).url
-  }
-
-  /// Downloads the model for the provided `slug` to the provided destination `URL`.
-  ///
-  /// - Parameters:
-  ///   - slug: The slug of the model.
-  ///   - destination: The `URL` to download the model to.
-  ///   - configuration: A `URLSessionConfiguration` for the download.
-  ///   - onProgress: A callback that is invoked when progress is made towards the download.
-  /// - Returns: The destination`URL` of the downloaded model.
-  @discardableResult
-  @available(
-    *,
-    deprecated,
-    message: "Use `downloadModel(request:)` with a `PlatformDownloadRequest` instead."
-  )
-  public static func downloadModel(
-    slug: String,
-    to destination: URL,
-    configuration: URLSessionConfiguration = .default,
-    onProgress: @escaping @Sendable (Result<DownloadProgress, any Error>) -> Void = { _ in }
-  ) async throws -> URL {
-    try await Self.downloadModel(
-      request: PlatformDownloadRequest(slug: slug),
-      to: destination,
-      configuration: configuration,
-      onProgress: onProgress
-    )
-  }
-
   /// Downloads the model for the provided ``HubDownloadRequest`` to the provided destination `URL`.
   ///
   /// - Parameters:
@@ -69,34 +25,6 @@ extension CactusLanguageModel {
   ) async throws -> URL {
     try await Self.downloadModel(
       from: request.url,
-      to: destination,
-      configuration: configuration,
-      onProgress: onProgress
-    )
-  }
-
-  /// Downloads the audio model for the provided `slug` to the provided destination `URL`.
-  ///
-  /// - Parameters:
-  ///   - slug: The slug of the model.
-  ///   - destination: The `URL` to download the model to.
-  ///   - configuration: A `URLSessionConfiguration` for the download.
-  ///   - onProgress: A callback that is invoked when progress is made towards the download.
-  /// - Returns: The destination`URL` of the downloaded model.
-  @available(
-    *,
-    deprecated,
-    message: "Use `downloadModel(request:)` with a `PlatformDownloadRequest` instead."
-  )
-  @discardableResult
-  public static func downloadAudioModel(
-    slug: String,
-    to destination: URL,
-    configuration: URLSessionConfiguration = .default,
-    onProgress: @escaping @Sendable (Result<DownloadProgress, any Error>) -> Void = { _ in }
-  ) async throws -> URL {
-    try await Self.downloadModel(
-      from: Self.audioModelDownloadURL(slug: slug),
       to: destination,
       configuration: configuration,
       onProgress: onProgress
@@ -129,32 +57,6 @@ extension CactusLanguageModel {
     }
   }
 
-  /// Returns a ``DownloadTask`` for the model with the specified `slug`.
-  ///
-  /// You must manually start the download by calling ``DownloadTask/resume()``.
-  ///
-  /// - Parameters:
-  ///   - slug: The slug of the model.
-  ///   - destination: The `URL` to download the model to.
-  ///   - configuration: A `URLSessionConfiguration` for the download.
-  /// - Returns: A ``DownloadTask``.
-  @available(
-    *,
-    deprecated,
-    message: "Use `downloadModelTask(request:)` with a `PlatformDownloadRequest` instead."
-  )
-  public static func downloadModelTask(
-    slug: String,
-    to destination: URL,
-    configuration: URLSessionConfiguration = .default
-  ) -> DownloadTask {
-    Self.downloadModelTask(
-      request: PlatformDownloadRequest(slug: slug),
-      to: destination,
-      configuration: configuration
-    )
-  }
-
   /// Returns a ``DownloadTask`` for the model with the specified ``HubDownloadRequest``.
   ///
   /// You must manually start the download by calling ``DownloadTask/resume()``.
@@ -174,28 +76,6 @@ extension CactusLanguageModel {
       to: destination,
       configuration: configuration
     )
-  }
-
-  /// Returns a ``DownloadTask`` for the audio model with the specified `slug`.
-  ///
-  /// You must manually start the download by calling ``DownloadTask/resume()``.
-  ///
-  /// - Parameters:
-  ///   - slug: The slug of the model.
-  ///   - destination: The `URL` to download the model to.
-  ///   - configuration: A `URLSessionConfiguration` for the download.
-  /// - Returns: A ``DownloadTask``.
-  @available(
-    *,
-    deprecated,
-    message: "Use `downloadModelTask(request:)` with a `PlatformDownloadRequest` instead."
-  )
-  public static func downloadAudioModelTask(
-    slug: String,
-    to destination: URL,
-    configuration: URLSessionConfiguration = .default
-  ) -> DownloadTask {
-    Self.downloadModelTask(slug: slug, to: destination, configuration: configuration)
   }
 
   /// Returns a ``DownloadTask`` for the model at the specificed source `URL`.
