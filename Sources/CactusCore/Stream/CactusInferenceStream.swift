@@ -286,7 +286,7 @@ extension CactusInferenceStream {
         }
         state.outputContinuations.removeAll()
 
-        state.onStreamFinished?()
+        state.onStreamFinished()
       }
     }
 
