@@ -1,6 +1,25 @@
 import Foundation
 
-// MARK: - CactusTranscription + LanguageModel
+// MARK: - Options
+
+extension CactusLanguageModel.Transcription.Options {
+  /// Creates transcription options from a transcription request.
+  ///
+  /// - Parameter request: The ``CactusTranscription/Request``.
+  public init(request: CactusTranscription.Request) {
+    self.init(
+      maxTokens: request.maxTokens,
+      temperature: request.temperature,
+      topP: request.topP,
+      topK: request.topK,
+      isTelemetryEnabled: request.isTelemetryEnabled,
+      useVad: request.useVad,
+      cloudHandoffThreshold: request.cloudHandoffThreshold
+    )
+  }
+}
+
+// MARK: - Transcription
 
 extension CactusTranscription {
   /// Creates a parsed transcription from a language model transcription result.

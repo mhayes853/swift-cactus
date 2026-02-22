@@ -108,15 +108,7 @@ extension CactusSTTSession {
   ) throws -> CactusInferenceStream<CactusTranscription> {
     let messageStreamID = CactusMessageID()
     let languageModelActor = self.languageModelActor
-    let options = CactusLanguageModel.Transcription.Options(
-      maxTokens: request.maxTokens,
-      temperature: request.temperature,
-      topP: request.topP,
-      topK: request.topK,
-      isTelemetryEnabled: request.isTelemetryEnabled,
-      useVad: request.useVad,
-      cloudHandoffThreshold: request.cloudHandoffThreshold
-    )
+    let options = CactusLanguageModel.Transcription.Options(request: request)
     let maxBufferSize = request.maxBufferSize
 
     let stream = CactusInferenceStream<CactusTranscription> { [weak self] continuation in

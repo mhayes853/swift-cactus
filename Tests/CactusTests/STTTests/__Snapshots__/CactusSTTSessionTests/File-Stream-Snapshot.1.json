@@ -1,15 +1,15 @@
 {
   "metrics" : {
-    "confidence" : 0.9014,
-    "decodeTokens" : 15,
-    "decodeTps" : 33.98,
+    "confidence" : 0.8184,
+    "decodeTokens" : 67,
+    "decodeTps" : 48.81,
     "prefillTokens" : 4,
-    "prefillTps" : 0.46,
-    "ramUsageMb" : 2100.77,
-    "timeIntervalToFirstToken" : 8.766440000000001,
-    "totalTimeInterval" : 9.17848,
-    "totalTokens" : 19
+    "prefillTps" : 0.47,
+    "ramUsageMb" : 1725.2,
+    "timeIntervalToFirstToken" : 8.50845,
+    "totalTimeInterval" : 9.86057,
+    "totalTokens" : 71
   },
-  "parsedContent" : "The power of a god cannot be overcome. But that is impossible.",
-  "streamedText" : " The power of a god cannot be overcome. But that is impossible.<|startoftranscript|>"
+  "parsedContent" : "The power of a god cannot be overcome. Zanzer, this is providence off world even gods are merely being restricted to limit it's powermnts determined by purpose that how although great in not unlimited the voice albex how can you diso baby i am monad i was here and first time",
+  "streamedText" : " The power of a god cannot be overcome. Zanzer, this is providence off world even gods are merely being restricted to limit it's powermnts determined by purpose that how although great in not unlimited the voice albex how can you diso baby i am monad i was here and first time<|startoftranscript|>"
 }
