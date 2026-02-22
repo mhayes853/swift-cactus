@@ -9,7 +9,7 @@ extension CactusTranscription {
   /// and various options for controlling the transcription behavior.
   public struct Request: Hashable, Sendable {
     /// The raw textual prompt sent to the transcription model.
-    public let prompt: String
+    public var prompt: String
 
     /// The audio content to transcribe.
     public let content: Content
@@ -44,9 +44,50 @@ extension CactusTranscription {
     /// `nil` uses the engine default (8192).
     public var maxBufferSize: Int?
 
+    /// The language code extracted from the prompt.
+    public var language: CactusTranscriptionLanguage {
+      get {
+        let prompt = self.prompt
+        guard let sotRange = prompt.range(of: "<|startoftranscript|>") else { return .english }
+        let searchStart = sotRange.upperBound
+        guard let langStart = prompt.range(of: "<|", range: searchStart..<prompt.endIndex),
+          let langEnd = prompt.range(of: "|>", range: langStart.upperBound..<prompt.endIndex)
+        else {
+          return .english
+        }
+        let languageCode = String(prompt[langStart.upperBound..<langEnd.lowerBound])
+        return CactusTranscriptionLanguage(rawValue: languageCode)
+      }
+      set {
+        let prompt = self.prompt
+        guard let sotRange = prompt.range(of: "<|startoftranscript|>") else { return }
+        let searchStart = sotRange.upperBound
+        guard let langStart = prompt.range(of: "<|", range: searchStart..<prompt.endIndex),
+          let langEnd = prompt.range(of: "|>", range: langStart.upperBound..<prompt.endIndex)
+        else {
+          return
+        }
+        self.prompt.replaceSubrange(
+          langStart.upperBound..<langEnd.lowerBound,
+          with: newValue.rawValue
+        )
+      }
+    }
+
     /// Whether the prompt includes timestamp tokens.
-    public var includesTimestamps: Bool {
-      !prompt.contains("<|notimestamps|>")
+    public var includeTimestamps: Bool {
+      get {
+        !prompt.contains("<|notimestamps|>")
+      }
+      set {
+        if newValue {
+          prompt = prompt.replacingOccurrences(of: "<|notimestamps|>", with: "")
+        } else {
+          if !prompt.contains("<|notimestamps|>") {
+            prompt += "<|notimestamps|>"
+          }
+        }
+      }
     }
 
     /// Creates a transcription request from a raw prompt and content.

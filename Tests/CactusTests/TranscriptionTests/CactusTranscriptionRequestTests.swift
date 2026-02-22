@@ -72,6 +72,95 @@ struct `CactusTranscriptionRequest tests` {
     request.useVad = false
     expectNoDifference(request.useVad, false)
   }
+
+  @Test
+  func `includeTimestamps true to true is no-op`() {
+    var request = CactusTranscription.Request(
+      language: .english,
+      includeTimestamps: true,
+      content: .audio(testAudioURL)
+    )
+    let originalPrompt = request.prompt
+    request.includeTimestamps = true
+    expectNoDifference(request.prompt, originalPrompt)
+    expectNoDifference(request.includeTimestamps, true)
+  }
+
+  @Test
+  func `includeTimestamps true to false removes timestamps`() {
+    var request = CactusTranscription.Request(
+      language: .english,
+      includeTimestamps: true,
+      content: .audio(testAudioURL)
+    )
+    request.includeTimestamps = false
+    expectNoDifference(request.prompt, "<|startoftranscript|><|en|><|transcribe|><|notimestamps|>")
+    expectNoDifference(request.includeTimestamps, false)
+  }
+
+  @Test
+  func `includeTimestamps false to true adds timestamps`() {
+    var request = CactusTranscription.Request(
+      language: .english,
+      includeTimestamps: false,
+      content: .audio(testAudioURL)
+    )
+    request.includeTimestamps = true
+    expectNoDifference(request.prompt, "<|startoftranscript|><|en|><|transcribe|>")
+    expectNoDifference(request.includeTimestamps, true)
+  }
+
+  @Test
+  func `language getter extracts correct code`() {
+    let languages: [CactusTranscriptionLanguage] = [
+      .english, .french, .german, .spanish, .chinese, .japanese, .arabic
+    ]
+    for language in languages {
+      let request = CactusTranscription.Request(
+        language: language,
+        includeTimestamps: true,
+        content: .audio(testAudioURL)
+      )
+      expectNoDifference(request.language, language, "Failed for \(language)")
+    }
+  }
+
+  @Test
+  func `language setter updates prompt`() {
+    var request = CactusTranscription.Request(
+      language: .english,
+      includeTimestamps: true,
+      content: .audio(testAudioURL)
+    )
+    request.language = .french
+    expectNoDifference(request.language, .french)
+    expectNoDifference(request.prompt, "<|startoftranscript|><|fr|><|transcribe|>")
+  }
+
+  @Test
+  func `language same value is no-op`() {
+    var request = CactusTranscription.Request(
+      language: .english,
+      includeTimestamps: true,
+      content: .audio(testAudioURL)
+    )
+    let originalPrompt = request.prompt
+    request.language = .english
+    expectNoDifference(request.prompt, originalPrompt)
+    expectNoDifference(request.language, .english)
+  }
+
+  @Test
+  func `language change preserves timestamps`() {
+    var request = CactusTranscription.Request(
+      language: .english,
+      includeTimestamps: true,
+      content: .audio(testAudioURL)
+    )
+    request.language = .french
+    expectNoDifference(request.prompt, "<|startoftranscript|><|fr|><|transcribe|>")
+    expectNoDifference(request.includeTimestamps, true)
+  }
 }
 
 private let testAudioURL = Bundle.module.url(forResource: "test", withExtension: "wav")!
