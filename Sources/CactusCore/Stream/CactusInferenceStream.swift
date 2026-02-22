@@ -16,44 +16,21 @@ public final class CactusInferenceStream<Output: Sendable>: Sendable {
   /// Creates an inference stream from an async producer closure.
   ///
   /// - Parameter run: A closure that receives a continuation for yielding tokens/partials and
-  ///   returns the final response when inference completes.
-  public init(run: sending @escaping (Continuation) async throws -> Response) {
+  ///   returns the final output when inference completes.
+  public init(run: sending @escaping (Continuation) async throws -> Output) {
     let storage = Storage()
     let continuation = Continuation(storage: storage)
     self.storage = storage
     self.task = Task {
       do {
-        let response = try await run(continuation)
-        storage.acceptStreamResponse(.success(response))
+        let output = try await run(continuation)
+        storage.acceptStreamResponse(.success(output))
       } catch {
         storage.acceptStreamResponse(.failure(error))
       }
     }
     self.storage.setOnStreamFinished { [weak self] in
       self?.markStreamingFinished()
-    }
-  }
-}
-
-// MARK: - Response
-
-extension CactusInferenceStream {
-  /// The final response produced by an inference stream.
-  public struct Response: Sendable {
-    /// The final output value.
-    public let output: Output
-
-    /// Metrics associated with the output generation.
-    public let metrics: CactusMessageMetric
-
-    /// Creates a response.
-    ///
-    /// - Parameters:
-    ///   - output: The final output value.
-    ///   - metrics: Inference metrics for the output.
-    public init(output: Output, metrics: CactusMessageMetric = CactusMessageMetric()) {
-      self.output = output
-      self.metrics = metrics
     }
   }
 }
@@ -67,20 +44,13 @@ extension CactusInferenceStream {
     return self.state.withLock { $0.isStreaming }
   }
 
-  /// Waits for and returns the final stream response.
-  ///
-  /// - Returns: The final response.
-  public func streamResponse() async throws -> Response {
-    try await withUnsafeThrowingContinuation { continuation in
-      self.storage.addStreamResponseContinuation(continuation)
-    }
-  }
-
-  /// Waits for and returns just the final output value.
+  /// Waits for and returns the final output value.
   ///
   /// - Returns: The final output value.
   public func collectResponse() async throws -> Output {
-    try await self.streamResponse().output
+    try await withUnsafeThrowingContinuation { continuation in
+      self.storage.addOutputContinuation(continuation)
+    }
   }
 
   /// Stops the stream and cancels any in-flight work.
@@ -252,8 +222,8 @@ where Output: StreamParseable, Output.Partial: Sendable {
 extension CactusInferenceStream {
   final class Storage: Sendable {
     private struct State {
-      var streamResponseContinuations = [UnsafeContinuation<Response, any Error>]()
-      var streamResponseResult: Result<Response, any Error>?
+      var outputContinuations = [UnsafeContinuation<Output, any Error>]()
+      var outputResult: Result<Output, any Error>?
       var streamedTokens = [CactusStreamedToken]()
       var tokenSubscribers = [UUID: TokenSubscriber]()
       var streamedPartials = [any Sendable]()
@@ -267,12 +237,12 @@ extension CactusInferenceStream {
       self.state.withLock { $0.onStreamFinished = operation }
     }
 
-    func addStreamResponseContinuation(_ continuation: UnsafeContinuation<Response, any Error>) {
+    func addOutputContinuation(_ continuation: UnsafeContinuation<Output, any Error>) {
       self.state.withLock { state in
-        if let streamResponseResult = state.streamResponseResult {
-          continuation.resume(with: streamResponseResult)
+        if let outputResult = state.outputResult {
+          continuation.resume(with: outputResult)
         } else {
-          state.streamResponseContinuations.append(continuation)
+          state.outputContinuations.append(continuation)
         }
       }
     }
@@ -295,16 +265,13 @@ extension CactusInferenceStream {
       }
     }
 
-    func acceptStreamResponse(_ result: Result<Response, any Error>) {
-      var onStreamFinished: (@Sendable () -> Void)?
+    func acceptStreamResponse(_ result: Result<Output, any Error>) {
       self.state.withLock { state in
-        guard state.streamResponseResult == nil else { return }
-        state.streamResponseResult = result
-        onStreamFinished = state.onStreamFinished
+        guard state.outputResult == nil else { return }
+        state.outputResult = result
 
-        let finishedResult = result.map(\.output)
         for subscriber in state.tokenSubscribers.values {
-          subscriber.onFinished(finishedResult)
+          subscriber.onFinished(result)
         }
         state.tokenSubscribers.removeAll()
 
@@ -314,12 +281,13 @@ extension CactusInferenceStream {
         }
         state.partialSubscribers.removeAll()
 
-        for continuation in state.streamResponseContinuations {
+        for continuation in state.outputContinuations {
           continuation.resume(with: result)
         }
-        state.streamResponseContinuations.removeAll()
+        state.outputContinuations.removeAll()
+
+        state.onStreamFinished()
       }
-      onStreamFinished?()
     }
 
     func cancel(_ error: any Error) {
@@ -337,8 +305,8 @@ extension CactusInferenceStream {
           callback(token)
         }
 
-        if let streamResponseResult = state.streamResponseResult {
-          onFinished(streamResponseResult.map(\.output))
+        if let outputResult = state.outputResult {
+          onFinished(outputResult)
         } else {
           state.tokenSubscribers[id] = TokenSubscriber(callback: callback, onFinished: onFinished)
         }
@@ -374,8 +342,8 @@ extension CactusInferenceStream.Storage where Output: StreamParseable, Output.Pa
         callback(typedPartial)
       }
 
-      if let streamResponseResult = state.streamResponseResult {
-        onFinished(streamResponseResult.failure)
+      if let outputResult = state.outputResult {
+        onFinished(outputResult.failure)
       } else {
         state.partialSubscribers[id] = PartialSubscriber(
           callback: { partial in

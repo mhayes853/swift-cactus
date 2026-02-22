@@ -730,70 +730,6 @@ extension CactusLanguageModel {
     return CompletedChatTurn(completion: completion, messages: completedMessages)
   }
 
-  /// Generates a ``ChatCompletion``.
-  ///
-  /// - Parameters:
-  ///   - messages: The list of ``ChatMessage`` instances.
-  ///   - options: The ``ChatCompletion/Options``.
-  ///   - maxBufferSize: The maximum buffer size to store the completion.
-  ///   - functions: A list of ``FunctionDefinition`` instances.
-  ///   - onToken: A callback invoked whenever a token is generated.
-  /// - Returns: A ``ChatCompletion``.
-  @available(
-    *,
-    deprecated,
-    message:
-      "Prefer complete(...) to receive canonical continuation messages for better cache reuse."
-  )
-  public func chatCompletion(
-    messages: [ChatMessage],
-    options: ChatCompletion.Options? = nil,
-    maxBufferSize: Int? = nil,
-    functions: [FunctionDefinition] = [],
-    onToken: (String) -> Void = { _ in }
-  ) throws -> ChatCompletion {
-    try self.complete(
-      messages: messages,
-      options: options,
-      maxBufferSize: maxBufferSize,
-      functions: functions,
-      onToken: onToken
-    )
-    .completion
-  }
-
-  /// Generates a ``ChatCompletion``.
-  ///
-  /// - Parameters:
-  ///   - messages: The list of ``ChatMessage`` instances.
-  ///   - options: The ``ChatCompletion/Options``.
-  ///   - maxBufferSize: The maximum buffer size to store the completion.
-  ///   - functions: A list of ``FunctionDefinition`` instances.
-  ///   - onToken: A callback invoked whenever a token is generated.
-  /// - Returns: A ``ChatCompletion``.
-  @available(
-    *,
-    deprecated,
-    message:
-      "Prefer complete(...) to receive canonical continuation messages for better cache reuse."
-  )
-  public func chatCompletion(
-    messages: [ChatMessage],
-    options: ChatCompletion.Options? = nil,
-    maxBufferSize: Int? = nil,
-    functions: [FunctionDefinition] = [],
-    onToken: (String, UInt32) -> Void
-  ) throws -> ChatCompletion {
-    try self.complete(
-      messages: messages,
-      options: options,
-      maxBufferSize: maxBufferSize,
-      functions: functions,
-      onToken: onToken
-    )
-    .completion
-  }
-
   private struct FFIFunctionDefinition: Codable {
     var function: FunctionDefinition
   }
@@ -1668,19 +1604,6 @@ extension CactusLanguageModel.VADOptions: Encodable {
     )
     try container.encodeIfPresent(self.samplingRate, forKey: .samplingRate)
   }
-}
-
-// MARK: - InferenceOptions
-
-extension CactusLanguageModel {
-  /// Options for generating inferences.
-  @available(
-    *,
-    deprecated,
-    message:
-      "Use CactusLanguageModel.ChatCompletion.Options for chat completions or CactusLanguageModel.Transcription.Options for transcriptions."
-  )
-  public typealias InferenceOptions = CactusLanguageModel.ChatCompletion.Options
 }
 
 // MARK: - Stop

@@ -66,13 +66,6 @@ extension CactusLanguageModel {
       self.quantizationBits = try container.decode(Int.self, forKey: .quantizationBits)
     }
   }
-
-  /// Fetches an array of ``Metadata`` of models supported by cactus.
-  ///
-  /// - Returns: A ``Metadata`` array.
-  public static func availableModels() async throws -> [Metadata] {
-    try await CactusSupabaseClient.shared.availableModels()
-  }
 }
 
 // MARK: - AudioMetadata
@@ -98,12 +91,5 @@ extension CactusLanguageModel {
       case downloadURL = "download_url"
       case sizeMegabytes = "size_mb"
     }
-  }
-
-  /// Fetches an array of ``VoiceMetadata`` of models supported by cactus.
-  ///
-  /// - Returns: A ``VoiceMetadata`` array.
-  public static func availableAudioModels() async throws -> [AudioMetadata] {
-    try await CactusSupabaseClient.shared.availableAudioModels()
   }
 }

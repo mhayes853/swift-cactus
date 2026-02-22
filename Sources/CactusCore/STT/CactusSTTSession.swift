@@ -97,8 +97,7 @@ extension CactusSTTSession {
   ///   tokenText += token.stringValue
   /// }
   ///
-  /// let response = try await stream.streamResponse()
-  /// let transcription = response.output
+  /// let transcription = try await stream.collectResponse()
   /// ```
   ///
   /// - Parameter request: The transcription request.
@@ -122,7 +121,7 @@ extension CactusSTTSession {
         if let audioURL = request.content.audioURL {
           return try await languageModelActor.transcribe(
             audio: audioURL,
-            prompt: request.prompt,
+            prompt: request.prompt.description,
             options: options,
             maxBufferSize: maxBufferSize
           ) { stringValue, tokenId in
@@ -139,7 +138,7 @@ extension CactusSTTSession {
         if let pcmBytes = request.content.pcmBytes {
           return try await languageModelActor.transcribe(
             buffer: pcmBytes,
-            prompt: request.prompt,
+            prompt: request.prompt.description,
             options: options,
             transcriptionMaxBufferSize: maxBufferSize
           ) { stringValue, tokenId in
@@ -155,7 +154,7 @@ extension CactusSTTSession {
 
         return try await languageModelActor.transcribe(
           buffer: [],
-          prompt: request.prompt,
+          prompt: request.prompt.description,
           options: options,
           transcriptionMaxBufferSize: maxBufferSize
         ) { stringValue, tokenId in
@@ -171,11 +170,7 @@ extension CactusSTTSession {
         modelStopper.stop()
       }
 
-      return CactusInferenceStream<CactusTranscription>
-        .Response(
-          output: CactusTranscription(transcription: modelTranscription),
-          metrics: CactusMessageMetric(transcription: modelTranscription)
-        )
+      return CactusTranscription(transcription: modelTranscription)
     }
 
     try self.beginTranscribing(stream: stream)
