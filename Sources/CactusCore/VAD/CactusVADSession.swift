@@ -1,0 +1,183 @@
+import CXXCactusShims
+import Foundation
+
+// MARK: - CactusVADSession
+
+/// A concurrency-safe session for voice activity detection.
+///
+/// This type serializes access to an underlying ``CactusLanguageModel`` actor and exposes a
+/// one-shot async API for VAD inference.
+public final class CactusVADSession: Sendable {
+  /// The underlying language model actor.
+  public let languageModelActor: CactusLanguageModelActor
+
+  /// Creates a VAD session from an existing language model.
+  ///
+  /// - Parameter model: The underlying language model.
+  public init(model: sending CactusLanguageModel) {
+    self.languageModelActor = CactusLanguageModelActor(model: model)
+  }
+
+  /// Creates a VAD session from an existing language model actor.
+  ///
+  /// - Parameter model: The underlying language model actor.
+  public init(model: CactusLanguageModelActor) {
+    self.languageModelActor = model
+  }
+
+  /// Creates a VAD session from a model URL.
+  ///
+  /// - Parameters:
+  ///   - url: The local model URL.
+  ///   - modelSlug: An optional model slug override.
+  public convenience init(from url: URL, modelSlug: String? = nil) throws {
+    let model = try CactusLanguageModel(from: url, modelSlug: modelSlug)
+    self.init(model: model)
+  }
+
+  /// Creates a VAD session from a raw model pointer.
+  ///
+  /// - Parameters:
+  ///   - model: The raw model pointer.
+  ///   - modelURL: The model URL used to construct model configuration.
+  ///   - modelSlug: An optional model slug override.
+  ///   - isModelPointerManaged: Whether the pointer should be destroyed by the model instance.
+  public convenience init(
+    model: sending cactus_model_t,
+    modelURL: URL,
+    modelSlug: String? = nil,
+    isModelPointerManaged: Bool = false
+  ) throws {
+    let languageModel = try CactusLanguageModel(
+      model: model,
+      configuration: CactusLanguageModel.Configuration(modelURL: modelURL, modelSlug: modelSlug),
+      isModelPointerManaged: isModelPointerManaged
+    )
+    self.init(model: languageModel)
+  }
+}
+
+// MARK: - Public API
+
+extension CactusVADSession {
+  /// Performs voice activity detection and returns parsed speech segments.
+  ///
+  /// - Parameter request: The voice activity detection request.
+  /// - Returns: The parsed VAD output.
+  public func vad(request: CactusVAD.Request) async throws -> CactusVAD {
+    if let samplingRate = request.samplingRate {
+      precondition(samplingRate > 0, "Sampling rate must be greater than 0.")
+    }
+    let state = VADContinuationState()
+    let options = CactusLanguageModel.VADOptions(request: request)
+
+    return try await withTaskCancellationHandler {
+      try await withUnsafeThrowingContinuation { continuation in
+        if Task.isCancelled {
+          continuation.resume(throwing: CancellationError())
+          return
+        }
+        state.setContinuation(continuation)
+        let task = Task {
+          let result: Result<CactusVAD, any Error>
+          do {
+            try Task.checkCancellation()
+            let rawResult = try await self.performVAD(
+              request: request,
+              options: options
+            )
+            result = .success(CactusVAD(rawResult: rawResult, samplingRate: request.samplingRate))
+          } catch {
+            result = .failure(error)
+          }
+          state.finish(with: result)
+        }
+        state.setTask(task)
+      }
+    } onCancel: {
+      state.cancel()
+    }
+  }
+}
+
+// MARK: - Helpers
+
+extension CactusVADSession {
+  private final class VADContinuationState: @unchecked Sendable {
+    private struct State {
+      var continuation: UnsafeContinuation<CactusVAD, any Error>?
+      var task: Task<Void, Never>?
+    }
+
+    private let state = Lock(State())
+
+    func setContinuation(_ continuation: UnsafeContinuation<CactusVAD, any Error>) {
+      self.state.withLock { $0.continuation = continuation }
+    }
+
+    func setTask(_ task: Task<Void, Never>) {
+      var shouldCancel = false
+      self.state.withLock { state in
+        if state.continuation == nil {
+          shouldCancel = true
+          return
+        }
+        state.task = task
+      }
+      if shouldCancel {
+        task.cancel()
+      }
+    }
+
+    func finish(with result: Result<CactusVAD, any Error>) {
+      var continuation: UnsafeContinuation<CactusVAD, any Error>?
+      self.state.withLock { state in
+        continuation = state.continuation
+        state.continuation = nil
+        state.task = nil
+      }
+      continuation?.resume(with: result)
+    }
+
+    func cancel() {
+      var continuation: UnsafeContinuation<CactusVAD, any Error>?
+      var task: Task<Void, Never>?
+      self.state.withLock { state in
+        continuation = state.continuation
+        task = state.task
+        state.continuation = nil
+        state.task = nil
+      }
+
+      task?.cancel()
+      continuation?.resume(throwing: CancellationError())
+    }
+  }
+
+  private func performVAD(
+    request: CactusVAD.Request,
+    options: CactusLanguageModel.VADOptions
+  ) async throws -> CactusLanguageModel.VADResult {
+    if let audioURL = request.content.audioURL {
+      return try await languageModelActor.vad(
+        audio: audioURL,
+        options: options,
+        maxBufferSize: request.maxBufferSize
+      )
+    }
+
+    if let pcmBytes = request.content.pcmBytes {
+      return try await languageModelActor.vad(
+        pcmBuffer: pcmBytes,
+        options: options,
+        maxBufferSize: request.maxBufferSize
+      )
+    }
+
+    return try await languageModelActor.vad(
+      pcmBuffer: [],
+      options: options,
+      maxBufferSize: request.maxBufferSize
+    )
+  }
+}
