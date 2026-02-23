@@ -27,7 +27,7 @@ public final class CactusIndex {
     let index = cactus_index_init(directory.nativePath, embeddingDimensions)
     guard let index else { throw CactusIndexError.lastErrorMessage() }
 
-    self.init(index: index, embeddingDimensions: embeddingDimensions, isIndexPointerManaged: true)
+    self.init(index: index, embeddingDimensions: embeddingDimensions)
   }
 
   /// Creates an index.
@@ -35,15 +35,13 @@ public final class CactusIndex {
   /// - Parameters:
   ///   - index: The raw index pointer.
   ///   - embeddingDimensions: The dimensionality of the embeddings stored in the index.
-  ///   - isIndexPointerManaged: Whether the memory of the index pointer should be managed by the index.
   public init(
     index: cactus_index_t,
-    embeddingDimensions: Int,
-    isIndexPointerManaged: Bool = false
+    embeddingDimensions: Int
   ) {
     self.index = index
     self.embeddingDimensions = embeddingDimensions
-    self.isIndexPointerManaged = isIndexPointerManaged
+    self.isIndexPointerManaged = true
   }
 
   deinit {

@@ -31,8 +31,8 @@ public final class CactusVADSession: Sendable {
   ///   - url: The local model URL.
   ///   - modelSlug: An optional model slug override.
   public convenience init(from url: URL, modelSlug: String? = nil) throws {
-    let model = try CactusLanguageModel(from: url, modelSlug: modelSlug)
-    self.init(model: model)
+    let languageModelActor = try CactusLanguageModelActor(from: url, modelSlug: modelSlug)
+    self.init(model: languageModelActor)
   }
 
   /// Creates a VAD session from a raw model pointer.
@@ -41,19 +41,16 @@ public final class CactusVADSession: Sendable {
   ///   - model: The raw model pointer.
   ///   - modelURL: The model URL used to construct model configuration.
   ///   - modelSlug: An optional model slug override.
-  ///   - isModelPointerManaged: Whether the pointer should be destroyed by the model instance.
   public convenience init(
     model: sending cactus_model_t,
     modelURL: URL,
-    modelSlug: String? = nil,
-    isModelPointerManaged: Bool = false
+    modelSlug: String? = nil
   ) throws {
-    let languageModel = try CactusLanguageModel(
+    let languageModelActor = try CactusLanguageModelActor(
       model: model,
-      configuration: CactusLanguageModel.Configuration(modelURL: modelURL, modelSlug: modelSlug),
-      isModelPointerManaged: isModelPointerManaged
+      configuration: CactusLanguageModel.Configuration(modelURL: modelURL, modelSlug: modelSlug)
     )
-    self.init(model: languageModel)
+    self.init(model: languageModelActor)
   }
 }
 

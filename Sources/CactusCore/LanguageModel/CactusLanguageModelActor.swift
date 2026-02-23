@@ -68,7 +68,7 @@ public actor CactusLanguageModelActor {
     modelSlug: String? = nil,
     corpusDirectoryURL: URL? = nil,
     cacheIndex: Bool = false
-  ) async throws {
+  ) throws {
     try self.init(
       executor: executor,
       model: CactusLanguageModel(
@@ -88,7 +88,7 @@ public actor CactusLanguageModelActor {
   public init(
     executor: (any SerialExecutor)? = nil,
     configuration: CactusLanguageModel.Configuration
-  ) async throws {
+  ) throws {
     try self.init(
       executor: executor,
       model: CactusLanguageModel(configuration: configuration)
@@ -109,13 +109,12 @@ public actor CactusLanguageModelActor {
     executor: (any SerialExecutor)? = nil,
     model: sending cactus_model_t,
     configuration: CactusLanguageModel.Configuration
-  ) async throws {
+  ) throws {
     try self.init(
       executor: executor,
       model: CactusLanguageModel(
         model: model,
-        configuration: configuration,
-        isModelPointerManaged: true
+        configuration: configuration
       )
     )
   }
