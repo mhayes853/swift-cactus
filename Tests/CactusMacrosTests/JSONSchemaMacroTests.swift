@@ -1,3 +1,4 @@
+import CactusMacros
 import MacroTesting
 import Testing
 
@@ -116,6 +117,7 @@ extension BaseTestSuite {
       } expansion: {
         """
         struct Person {
+          @StreamParseableMember(key: "first_name")
           var firstName: String
 
           static var jsonSchema: CactusCore.JSONSchema {
@@ -131,6 +133,130 @@ extension BaseTestSuite {
         }
 
         extension Person: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Auto Applies StreamParseableMember For Keyed JSONSchemaProperty`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(key: "display_name")
+          var name: String
+        }
+        """
+      } expansion: {
+        """
+        struct Payload {
+          @StreamParseableMember(key: "display_name")
+          var name: String
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "display_name": String.jsonSchema
+                ],
+                required: ["display_name"]
+              )
+            )
+          }
+        }
+
+        extension Payload: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Auto Applies StreamParseableIgnored For JSONSchemaIgnored`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaIgnored
+          var internalID: String
+        }
+        """
+      } expansion: {
+        """
+        struct Payload {
+          @StreamParseableIgnored
+          var internalID: String
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(valueSchema: .object())
+          }
+        }
+
+        extension Payload: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Does Not Auto Apply StreamParseableMember When Already Applied`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaProperty(key: "display_name")
+          @StreamParseableMember(key: "name")
+          var name: String
+        }
+        """
+      } expansion: {
+        """
+        struct Payload {
+          @StreamParseableMember(key: "name")
+          var name: String
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(
+              valueSchema: .object(
+                properties: [
+                  "display_name": String.jsonSchema
+                ],
+                required: ["display_name"]
+              )
+            )
+          }
+        }
+
+        extension Payload: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
+    func `Does Not Auto Apply StreamParseableIgnored When Already Applied`() {
+      assertMacro {
+        """
+        @JSONSchema
+        struct Payload {
+          @JSONSchemaIgnored
+          @StreamParseableIgnored
+          var internalID: String
+        }
+        """
+      } expansion: {
+        """
+        struct Payload {
+          @StreamParseableIgnored
+          var internalID: String
+
+          static var jsonSchema: CactusCore.JSONSchema {
+            .object(valueSchema: .object())
+          }
+        }
+
+        extension Payload: CactusCore.JSONSchemaRepresentable {
         }
         """
       }
