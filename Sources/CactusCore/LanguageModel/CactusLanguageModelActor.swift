@@ -29,10 +29,23 @@ public actor CactusLanguageModelActor {
   /// The ``CactusLanguageModel/ConfigurationFile`` for this model.
   public let configurationFile: CactusLanguageModel.ConfigurationFile
 
+  /// The custom `SerialExecutor` used by this actor, if provided.
+  public let executor: (any SerialExecutor)?
+
+  public nonisolated var unownedExecutor: UnownedSerialExecutor {
+    if let executor {
+      return executor.asUnownedSerialExecutor()
+    }
+    return DefaultExecutorHolder.shared.unownedExecutor
+  }
+
   /// Creates an actor from an existing language model.
   ///
-  /// - Parameter model: The underlying language model.
-  public init(model: sending CactusLanguageModel) {
+  /// - Parameters:
+  ///   - executor: A custom `SerialExecutor` to use for this actor.
+  ///   - model: The underlying language model.
+  public init(executor: (any SerialExecutor)? = nil, model: sending CactusLanguageModel) {
+    self.executor = executor
     self.model = model
     self.configuration = model.configuration
     self.configurationFile = model.configurationFile
@@ -41,17 +54,20 @@ public actor CactusLanguageModelActor {
   /// Loads a model from the specified `URL`.
   ///
   /// - Parameters:
+  ///   - executor: A custom `SerialExecutor` to use for this actor.
   ///   - url: The local `URL` of the model.
   ///   - modelSlug: The model slug.
   ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
   ///   - cacheIndex: Whether to load a cached RAG index if available.
   public init(
+    executor: (any SerialExecutor)? = nil,
     from url: URL,
     modelSlug: String? = nil,
     corpusDirectoryURL: URL? = nil,
     cacheIndex: Bool = false
   ) async throws {
     try self.init(
+      executor: executor,
       model: CactusLanguageModel(
         from: url,
         modelSlug: modelSlug,
@@ -63,9 +79,17 @@ public actor CactusLanguageModelActor {
 
   /// Loads a model from the specified ``CactusLanguageModel/Configuration``.
   ///
-  /// - Parameter configuration: The ``Configuration``.
-  public init(configuration: CactusLanguageModel.Configuration) async throws {
-    try self.init(model: CactusLanguageModel(configuration: configuration))
+  /// - Parameters:
+  ///   - executor: A custom serial executor to use for this actor. If `nil`, uses the default.
+  ///   - configuration: The ``Configuration``.
+  public init(
+    executor: (any SerialExecutor)? = nil,
+    configuration: CactusLanguageModel.Configuration
+  ) async throws {
+    try self.init(
+      executor: executor,
+      model: CactusLanguageModel(configuration: configuration)
+    )
   }
 
   /// Creates a language model from the specified model pointer and configuration.
@@ -75,13 +99,16 @@ public actor CactusLanguageModelActor {
   /// The memory for the model pointer is managed by the language model.
   ///
   /// - Parameters:
+  ///   - executor: A custom serial executor to use for this actor. If `nil`, uses the default.
   ///   - model: The model pointer.
   ///   - configuration: A ``Configuration`` that must accurately represent the model.
   public init(
+    executor: (any SerialExecutor)? = nil,
     model: sending cactus_model_t,
     configuration: CactusLanguageModel.Configuration
   ) async throws {
     try self.init(
+      executor: executor,
       model: CactusLanguageModel(
         model: model,
         configuration: configuration,
@@ -1127,4 +1154,10 @@ extension CactusLanguageModelActor {
   ) async throws(E) -> sending T {
     try operation(self.model)
   }
+}
+
+// MARK: - Default Executor Holder
+
+private actor DefaultExecutorHolder {
+  static let shared = DefaultExecutorHolder()
 }
