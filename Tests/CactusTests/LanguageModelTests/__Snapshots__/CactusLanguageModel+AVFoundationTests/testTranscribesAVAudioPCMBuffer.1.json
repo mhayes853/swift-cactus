@@ -2,15 +2,15 @@
   "slug" : "whisper-small",
   "transcription" : {
     "cloud_handoff" : false,
-    "confidence" : 0.8649,
-    "decode_tokens" : 22,
-    "decode_tps" : 68.83,
+    "confidence" : 0.9164,
+    "decode_tokens" : 10,
+    "decode_tps" : 68.56,
     "prefill_tokens" : 4,
-    "prefill_tps" : 1.91,
-    "ram_usage_mb" : 609.63,
-    "response" : "The power of a god cannot be overcome! That voice, Abbot how dare you diso baby?",
-    "time_to_first_token_ms" : 2089.8,
-    "total_time_ms" : 2394.87,
-    "total_tokens" : 26
+    "prefill_tps" : 2.31,
+    "ram_usage_mb" : 617.86,
+    "response" : "The power of a god cannot be overcome.",
+    "time_to_first_token_ms" : 1728.6999999999998,
+    "total_time_ms" : 1859.97,
+    "total_tokens" : 14
   }
 }

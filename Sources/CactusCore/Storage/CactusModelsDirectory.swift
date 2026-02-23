@@ -32,7 +32,6 @@ public final class CactusModelsDirectory: Sendable {
 
   private struct State {
     var downloadTasks = [CactusLanguageModel.PlatformDownloadRequest: DownloadTaskEntry]()
-    var downloadTaskCreator: any DownloadTaskCreator
     var delegate: (any Delegate)?
   }
 
@@ -49,20 +48,12 @@ public final class CactusModelsDirectory: Sendable {
   private let observationRegistrar = _ObservationRegistrar()
 
   /// Creates a model directory.
-  ///
-  /// - Parameter baseURL: The `URL` of the directory.
-  public convenience init(baseURL: URL) {
-    self.init(baseURL: baseURL, downloadTaskCreator: DefaultDownloadTaskCreator())
-  }
-
   /// Creates a model directory.
   ///
-  /// - Parameters:
-  ///   - baseURL: The `URL` of the directory.
-  ///   - downloadTaskCreator: The ``DownloadTaskCreator`` to use for downloading models.
-  public init(baseURL: URL, downloadTaskCreator: sending any DownloadTaskCreator) {
+  /// - Parameter baseURL: The `URL` of the directory.
+  public init(baseURL: URL) {
     self.baseURL = baseURL
-    self.state = RecursiveLock(State(downloadTaskCreator: downloadTaskCreator))
+    self.state = RecursiveLock(State())
   }
 }
 
@@ -122,6 +113,21 @@ extension CactusModelsDirectory {
       task: CactusLanguageModel.DownloadTask,
       result: Result<URL, any Error>
     )
+
+    /// Called when a download task needs to be created.
+    ///
+    /// - Parameters:
+    ///   - directory: The models directory creating the download task.
+    ///   - request: The request identifying the model to download.
+    ///   - destination: The destination URL for the downloaded model.
+    ///   - configuration: The URL session configuration to use.
+    /// - Returns: The download task to use for downloading the model.
+    func modelsDirectoryWillCreateDownloadTask(
+      _ directory: CactusModelsDirectory,
+      request: CactusLanguageModel.PlatformDownloadRequest,
+      to destination: URL,
+      configuration: URLSessionConfiguration
+    ) -> CactusLanguageModel.DownloadTask
   }
 
   public var delegate: (any Delegate)? {
@@ -154,6 +160,19 @@ extension CactusModelsDirectory.Delegate {
     task: CactusLanguageModel.DownloadTask,
     result: Result<URL, any Error>
   ) {}
+
+  public func modelsDirectoryWillCreateDownloadTask(
+    _ directory: CactusModelsDirectory,
+    request: CactusLanguageModel.PlatformDownloadRequest,
+    to destination: URL,
+    configuration: URLSessionConfiguration
+  ) -> CactusLanguageModel.DownloadTask {
+    CactusLanguageModel.downloadModelTask(
+      request: request,
+      to: destination,
+      configuration: configuration
+    )
+  }
 }
 
 // MARK: - Shared Directory
@@ -238,84 +257,6 @@ private func requireSharedDirectoryURL() -> URL {
   #endif
 }
 
-// MARK: - DownloadTaskCreator
-
-extension CactusModelsDirectory {
-  /// A protocol for creating ``CactusLanguageModel/DownloadTask`` instances for use inside
-  /// ``CactusModelsDirectory``.
-  ///
-  /// ``DefaultDownloadTaskCreator`` will create tasks that download models from the cactus
-  /// platform. If you want to create tasks that download models from other sources, you can make a
-  /// custom conformance to this protocol to do so.
-  /// ```swift
-  /// struct MyDownloadTaskCreator: CactusModelsDirectory.DownloadTaskCreator {
-  ///   func downloadModelTask(
-  ///     request: CactusLanguageModel.PlatformDownloadRequest,
-  ///     to destination: URL,
-  ///     configuration: URLSessionConfiguration
-  ///   ) -> CactusLanguageModel.DownloadTask {
-  ///     CactusLanguageModel.downloadModelTask(
-  ///       from: customDownloadURL(for: request),
-  ///       to: destination,
-  ///       configuration: configuration
-  ///     )
-  ///   }
-  ///
-  ///   private func customDownloadURL(for request: CactusLanguageModel.PlatformDownloadRequest) -> URL {
-  ///     // ...
-  ///   }
-  /// }
-  /// ```
-  public protocol DownloadTaskCreator {
-    /// Creates a ``CactusLanguageModel/DownloadTask``.
-    ///
-    /// - Parameters:
-    ///   - request: The platform download request to use.
-    ///   - destination: The destination `URL` of the download.
-    ///   - configuration: A `URLSessionConfiguration` for the download.
-    /// - Returns: A ``CactusLanguageModel/DownloadTask``.
-    func downloadModelTask(
-      request: CactusLanguageModel.PlatformDownloadRequest,
-      to destination: URL,
-      configuration: URLSessionConfiguration
-    ) -> CactusLanguageModel.DownloadTask
-  }
-
-  /// The default ``DownloadTaskCreator``.
-  ///
-  /// This task creator will download models directly from the cactus platform. Create a custom
-  /// conformance to `DownloadTaskCreator` if you wish to download models from elsewhere.
-  public struct DefaultDownloadTaskCreator: DownloadTaskCreator, Sendable {
-    /// Creates a default download task creator.
-    public init() {}
-  }
-}
-
-extension CactusModelsDirectory.DownloadTaskCreator {
-  public func downloadModelTask(
-    request: CactusLanguageModel.PlatformDownloadRequest,
-    to destination: URL,
-    configuration: URLSessionConfiguration
-  ) -> CactusLanguageModel.DownloadTask {
-    CactusLanguageModel.downloadModelTask(
-      request: request,
-      to: destination,
-      configuration: configuration
-    )
-  }
-}
-
-extension CactusModelsDirectory.DownloadTaskCreator
-where Self == CactusModelsDirectory.DefaultDownloadTaskCreator {
-  /// The default ``DownloadTaskCreator``.
-  ///
-  /// This task creator will download models directly from the cactus platform. Create a custom
-  /// conformance to `DownloadTaskCreator` if you wish to download models from elsewhere.
-  public static var `default`: Self {
-    CactusModelsDirectory.DefaultDownloadTaskCreator()
-  }
-}
-
 // MARK: - Model Loading
 
 extension CactusModelsDirectory {
@@ -379,21 +320,6 @@ extension CactusModelsDirectory {
     for request: CactusLanguageModel.PlatformDownloadRequest,
     configuration: URLSessionConfiguration = .default
   ) throws -> CactusLanguageModel.DownloadTask {
-    try self.modelDownloadTask(for: request, configuration: configuration) {
-      $3.downloadModelTask(request: $0, to: $1, configuration: $2)
-    }
-  }
-
-  private func modelDownloadTask(
-    for request: CactusLanguageModel.PlatformDownloadRequest,
-    configuration: URLSessionConfiguration = .default,
-    createTask: (
-      CactusLanguageModel.PlatformDownloadRequest,
-      URL,
-      URLSessionConfiguration,
-      any DownloadTaskCreator
-    ) throws -> CactusLanguageModel.DownloadTask
-  ) throws -> CactusLanguageModel.DownloadTask {
     try self.state.withLock { state in
       if let entry = state.downloadTasks[request] {
         return entry.task
@@ -401,12 +327,21 @@ extension CactusModelsDirectory {
       try self.ensureDirectory()
       let destinationURL = self.destinationURL(for: request)
       try self.ensureParentDirectory(for: destinationURL)
-      let task = try createTask(
-        request,
-        destinationURL,
-        configuration,
-        state.downloadTaskCreator
-      )
+      let task: CactusLanguageModel.DownloadTask
+      if let delegate = state.delegate {
+        task = delegate.modelsDirectoryWillCreateDownloadTask(
+          self,
+          request: request,
+          to: destinationURL,
+          configuration: configuration
+        )
+      } else {
+        task = CactusLanguageModel.downloadModelTask(
+          request: request,
+          to: destinationURL,
+          configuration: configuration
+        )
+      }
       let subscription = task.onProgress { [weak self] progress in
         guard let self else { return }
         switch progress {
