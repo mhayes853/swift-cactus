@@ -24,9 +24,12 @@ extension CactusLanguageModel.Transcription.Options {
 extension CactusTranscription {
   /// Creates a parsed transcription from a language model transcription result.
   ///
-  /// - Parameter transcription: The language model transcription containing raw response and metrics.
-  public init(transcription: CactusLanguageModel.Transcription) {
+  /// - Parameters:
+  ///   - id: The unique identifier for this transcription.
+  ///   - transcription: The language model transcription containing raw response and metrics.
+  public init(id: CactusMessageID, transcription: CactusLanguageModel.Transcription) {
     self.init(
+      id: id,
       prefillTokens: transcription.prefillTokens,
       decodeTokens: transcription.decodeTokens,
       totalTokens: transcription.totalTokens,

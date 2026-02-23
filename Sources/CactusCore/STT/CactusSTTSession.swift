@@ -156,7 +156,7 @@ extension CactusSTTSession {
         modelStopper.stop()
       }
 
-      return CactusTranscription(transcription: modelTranscription)
+      return CactusTranscription(id: messageStreamID, transcription: modelTranscription)
     }
 
     return stream
