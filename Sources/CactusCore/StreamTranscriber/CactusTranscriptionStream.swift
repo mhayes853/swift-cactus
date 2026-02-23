@@ -39,54 +39,57 @@ public final class CactusTranscriptionStream: Sendable {
     var finishers: [UUID: Finisher]
   }
 
-  private let transcriber: TranscriberActor
+  private let streamTranscriberActor: CactusStreamTranscriberActor
   private let state = RecursiveLock(State(handlers: [:], errorHandlers: [:], finishers: [:]))
 
-  /// Creates a transcription stream from an existing transcriber.
+  /// Creates a transcription stream from an existing streamTranscriberActor.
   ///
-  /// - Parameter transcriber: The transcriber to wrap.
-  public init(transcriber: sending CactusStreamTranscriber) {
-    self.transcriber = TranscriberActor(transcriber: transcriber)
+  /// - Parameter streamTranscriberActor: The streamTranscriberActor to wrap.
+  public init(
+    executor: (any SerialExecutor)? = nil,
+    streamTranscriber: sending CactusStreamTranscriber
+  ) {
+    self.streamTranscriberActor = CactusStreamTranscriberActor(
+      executor: executor,
+      streamTranscriber: streamTranscriber
+    )
   }
 
-  /// Creates a transcription stream from a raw stream transcriber pointer.
+  /// Creates a transcription stream from an existing streamTranscriberActor actor.
   ///
-  /// - Parameters:
-  ///   - streamTranscribe: The raw stream transcriber pointer.
-  ///   - isStreamPointerManaged: Whether the pointer is managed by the instance.
-  public convenience init(
-    streamTranscribe: sending cactus_stream_transcribe_t,
-    isStreamPointerManaged: Bool = false
-  ) {
-    let transcriber = CactusStreamTranscriber(
+  /// - Parameter streamTranscriberActor: The streamTranscriberActor actor to wrap.
+  public init(streamTranscriberActor: CactusStreamTranscriberActor) {
+    self.streamTranscriberActor = streamTranscriberActor
+  }
+
+  /// Creates a transcription stream from a raw stream streamTranscriberActor pointer.
+  ///
+  /// - Parameter streamTranscribe: The raw stream streamTranscriberActor pointer.
+  public init(streamTranscribe: sending cactus_stream_transcribe_t) {
+    let streamTranscriberActor = CactusStreamTranscriber(
       streamTranscribe: streamTranscribe,
-      isStreamPointerManaged: isStreamPointerManaged
+      isStreamPointerManaged: true
     )
-    self.init(transcriber: transcriber)
+    self.streamTranscriberActor = CactusStreamTranscriberActor(streamTranscriber: streamTranscriberActor)
   }
 
   /// Creates a transcription stream from a model URL.
   ///
   /// - Parameter modelURL: The URL of the model.
-  public convenience init(modelURL: URL) throws {
-    let transcriber = try CactusStreamTranscriber(modelURL: modelURL)
-    self.init(transcriber: transcriber)
+  public init(modelURL: URL) throws {
+    let streamTranscriberActor = try CactusStreamTranscriber(modelURL: modelURL)
+    self.streamTranscriberActor = CactusStreamTranscriberActor(streamTranscriber: streamTranscriberActor)
   }
 
   /// Creates a transcription stream from a raw model pointer.
   ///
-  /// - Parameters:
-  ///   - model: The raw model pointer.
-  ///   - isModelPointerManaged: Whether the pointer is managed by the instance.
-  public convenience init(
-    model: sending cactus_model_t,
-    isModelPointerManaged: Bool = false
-  ) throws {
-    let transcriber = try CactusStreamTranscriber(
+  /// - Parameter model: The raw model pointer.
+  public init(model: sending cactus_model_t) throws {
+    let streamTranscriberActor = try CactusStreamTranscriber(
       model: model,
-      isModelPointerManaged: isModelPointerManaged
+      isModelPointerManaged: true
     )
-    self.init(transcriber: transcriber)
+    self.streamTranscriberActor = CactusStreamTranscriberActor(streamTranscriber: streamTranscriberActor)
   }
 }
 
@@ -120,7 +123,7 @@ extension CactusTranscriptionStream {
   @discardableResult
   public func process(buffer: [UInt8]) async throws -> Element {
     do {
-      let transcription = try await self.transcriber.insertAndProcess(buffer: buffer)
+      let transcription = try await self.streamTranscriberActor.process(buffer: buffer)
       self.state.withLock { state in
         for handler in state.handlers.values {
           handler(transcription)
@@ -150,7 +153,7 @@ extension CactusTranscriptionStream {
   /// Finalizes the transcription stream.
   public func finish() async throws -> CactusStreamTranscriber.FinalizedTranscription {
     do {
-      let finalized = try await self.transcriber.finalize()
+      let finalized = try await self.streamTranscriberActor.stop()
       self.state.withLock { state in
         for finisher in state.finishers.values {
           finisher(finalized)
@@ -181,8 +184,7 @@ extension CactusTranscriptionStream {
   public func subscribe(
     _ handler: @escaping @Sendable (Element) -> Void,
     onError: @escaping @Sendable (any Error) -> Void = { _ in },
-    onFinish: @escaping @Sendable (CactusStreamTranscriber.FinalizedTranscription) -> Void = { _ in
-    }
+    onFinish: @escaping @Sendable (CactusStreamTranscriber.FinalizedTranscription) -> Void = { _ in }
   ) -> CactusSubscription {
     let id = UUID()
     self.state.withLock { state in
@@ -196,26 +198,6 @@ extension CactusTranscriptionStream {
         state.errorHandlers.removeValue(forKey: id)
         state.finishers.removeValue(forKey: id)
       }
-    }
-  }
-}
-
-// MARK: - TranscriberActor
-
-extension CactusTranscriptionStream {
-  private actor TranscriberActor {
-    private let transcriber: CactusStreamTranscriber
-
-    init(transcriber: CactusStreamTranscriber) {
-      self.transcriber = transcriber
-    }
-
-    func insertAndProcess(buffer: [UInt8]) throws -> Element {
-      try self.transcriber.process(buffer: buffer)
-    }
-
-    func finalize() throws -> CactusStreamTranscriber.FinalizedTranscription {
-      try self.transcriber.stop()
     }
   }
 }
