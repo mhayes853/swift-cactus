@@ -5,7 +5,7 @@ import Foundation
 /// A transcription output with metrics from an transcription model.
 public struct CactusTranscription: Hashable, Sendable, Identifiable {
   /// The unique identifier for this transcription.
-  public let id: CactusMessageID
+  public let id: CactusGenerationID
 
   /// The number of prefilled tokens.
   public let prefillTokens: Int
@@ -56,7 +56,7 @@ public struct CactusTranscription: Hashable, Sendable, Identifiable {
   ///   - totalDuration: The total generation time.
   ///   - content: The parsed transcription content.
   public init(
-    id: CactusMessageID,
+    id: CactusGenerationID,
     prefillTokens: Int,
     decodeTokens: Int,
     totalTokens: Int,
@@ -99,7 +99,7 @@ public struct CactusTranscription: Hashable, Sendable, Identifiable {
   ///   - durationToFirstToken: The amount of time to generate the first token.
   ///   - totalDuration: The total generation time.
   public init(
-    id: CactusMessageID,
+    id: CactusGenerationID,
     response: String,
     prefillTokens: Int,
     decodeTokens: Int,

@@ -15,7 +15,7 @@ struct `CactusTranscript tests` {
   @Test
   func `Append Element And Access By ID`() {
     var transcript = CactusTranscript()
-    let id = CactusMessageID()
+    let id = CactusGenerationID()
     let message = CactusLanguageModel.ChatMessage.user("Hello")
     let element = CactusTranscript.Element(id: id, message: message)
 
@@ -29,8 +29,8 @@ struct `CactusTranscript tests` {
   @Test
   func `Collection Conformance`() {
     var transcript = CactusTranscript()
-    let id1 = CactusMessageID()
-    let id2 = CactusMessageID()
+    let id1 = CactusGenerationID()
+    let id2 = CactusGenerationID()
 
     transcript.append(CactusTranscript.Element(id: id1, message: .user("First")))
     transcript.append(CactusTranscript.Element(id: id2, message: .user("Second")))
@@ -90,9 +90,9 @@ struct `CactusTranscript tests` {
   @Test
   func `Remove Element By ID`() {
     var transcript = CactusTranscript()
-    let id1 = CactusMessageID()
-    let id2 = CactusMessageID()
-    let id3 = CactusMessageID()
+    let id1 = CactusGenerationID()
+    let id2 = CactusGenerationID()
+    let id3 = CactusGenerationID()
 
     transcript.append(CactusTranscript.Element(id: id1, message: .user("First")))
     transcript.append(CactusTranscript.Element(id: id2, message: .user("Second")))
@@ -192,7 +192,7 @@ struct `CactusTranscript tests` {
   @Test
   func `Modify Element At Index`() {
     var transcript = CactusTranscript()
-    let id = CactusMessageID()
+    let id = CactusGenerationID()
     transcript.append(CactusTranscript.Element(id: id, message: .user("Hello")))
 
     transcript[0].message = CactusLanguageModel.ChatMessage.user("Hello, world!")
@@ -206,8 +206,8 @@ struct `CactusTranscript tests` {
   @Test
   func `Replace Element At Index`() {
     var transcript = CactusTranscript()
-    let oldID = CactusMessageID()
-    let newID = CactusMessageID()
+    let oldID = CactusGenerationID()
+    let newID = CactusGenerationID()
     transcript.append(CactusTranscript.Element(id: oldID, message: .user("First")))
     transcript.append(CactusTranscript.Element(message: .user("Second")))
 
@@ -238,7 +238,7 @@ struct `CactusTranscript tests` {
     @Test
     func `Duplicate ID Precondition Failure`() async {
       await #expect(processExitsWith: .failure) {
-        let existingID = CactusMessageID()
+        let existingID = CactusGenerationID()
         var transcript = CactusTranscript()
         transcript.append(CactusTranscript.Element(id: existingID, message: .user("First")))
         transcript.append(CactusTranscript.Element(message: .user("Second")))

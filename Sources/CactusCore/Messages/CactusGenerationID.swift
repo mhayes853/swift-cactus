@@ -1,9 +1,9 @@
 import Foundation
 
-// MARK: - CactusMessageID
+// MARK: - CactusGenerationID
 
 /// A unique identifier for a streamed model message.
-public struct CactusMessageID: Hashable, Sendable, RawRepresentable {
+public struct CactusGenerationID: Hashable, Sendable, RawRepresentable {
   /// The underlying UUID value.
   public let rawValue: UUID
 
@@ -22,14 +22,14 @@ public struct CactusMessageID: Hashable, Sendable, RawRepresentable {
 
 // MARK: - Codable
 
-extension CactusMessageID: Encodable {
+extension CactusGenerationID: Encodable {
   public func encode(to encoder: any Encoder) throws {
     var container = encoder.singleValueContainer()
     try container.encode(self.rawValue)
   }
 }
 
-extension CactusMessageID: Decodable {
+extension CactusGenerationID: Decodable {
   public init(from decoder: any Decoder) throws {
     let container = try decoder.singleValueContainer()
     self.init(rawValue: try container.decode(UUID.self))

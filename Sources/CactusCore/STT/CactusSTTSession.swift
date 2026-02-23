@@ -91,7 +91,7 @@ extension CactusSTTSession {
   public func transcriptionStream(
     request: CactusTranscription.Request
   ) throws -> CactusInferenceStream<CactusTranscription> {
-    let messageStreamID = CactusMessageID()
+    let messageStreamID = CactusGenerationID()
     let languageModelActor = self.languageModelActor
     let options = CactusLanguageModel.Transcription.Options(request: request)
     let maxBufferSize = request.maxBufferSize

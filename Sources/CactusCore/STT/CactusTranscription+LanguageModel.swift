@@ -27,7 +27,7 @@ extension CactusTranscription {
   /// - Parameters:
   ///   - id: The unique identifier for this transcription.
   ///   - transcription: The language model transcription containing raw response and metrics.
-  public init(id: CactusMessageID, transcription: CactusLanguageModel.Transcription) {
+  public init(id: CactusGenerationID, transcription: CactusLanguageModel.Transcription) {
     self.init(
       id: id,
       prefillTokens: transcription.prefillTokens,
