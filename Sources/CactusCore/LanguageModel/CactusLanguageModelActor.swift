@@ -32,11 +32,13 @@ public actor CactusLanguageModelActor {
   /// The custom `SerialExecutor` used by this actor, if provided.
   public let executor: (any SerialExecutor)?
 
+  private let defaultExecutor: DefaultActorExecutor
+
   public nonisolated var unownedExecutor: UnownedSerialExecutor {
     if let executor {
       return executor.asUnownedSerialExecutor()
     }
-    return DefaultExecutorHolder.shared.unownedExecutor
+    return self.defaultExecutor.unownedExecutor
   }
 
   /// Creates an actor from an existing language model.
@@ -49,6 +51,7 @@ public actor CactusLanguageModelActor {
     self.model = model
     self.configuration = model.configuration
     self.configurationFile = model.configurationFile
+    self.defaultExecutor = DefaultActorExecutor()
   }
 
   /// Loads a model from the specified `URL`.
@@ -1154,10 +1157,4 @@ extension CactusLanguageModelActor {
   ) async throws(E) -> sending T {
     try operation(self.model)
   }
-}
-
-// MARK: - Default Executor Holder
-
-private actor DefaultExecutorHolder {
-  static let shared = DefaultExecutorHolder()
 }

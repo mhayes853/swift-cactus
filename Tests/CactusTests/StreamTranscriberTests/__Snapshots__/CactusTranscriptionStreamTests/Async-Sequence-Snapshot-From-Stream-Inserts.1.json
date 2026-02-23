@@ -1,53 +1,56 @@
 [
   {
+    "buffer_duration_ms" : 0,
     "cloud_handoff" : false,
+    "cloud_job_id" : 0,
+    "cloud_result" : "",
+    "cloud_result_job_id" : 0,
     "confidence" : 0.9082,
     "confirmed" : "",
     "decode_tokens" : 64,
-    "decode_tps" : 37.69,
-    "function_calls" : [
-
-    ],
+    "decode_tps" : 9.56,
     "pending" : "The power of a god cannot be overcome. Zanzan, this is the providence of the world. Even gods are merely beings restricted to the limited power determined by profit. That power, although great, is not unlimited. The voice of this, how dare you diso baby? I am Manada.",
     "prefill_tokens" : 4,
-    "prefill_tps" : 0.4,
-    "ram_usage_mb" : 1419.61,
-    "time_to_first_token_ms" : 10004.7,
-    "total_time_ms" : 11676.4,
+    "prefill_tps" : 0.09,
+    "ram_usage_mb" : 1194.67,
+    "time_to_first_token_ms" : 45783.4,
+    "total_time_ms" : 52371.8,
     "total_tokens" : 68
   },
   {
+    "buffer_duration_ms" : 0,
     "cloud_handoff" : false,
+    "cloud_job_id" : 0,
+    "cloud_result" : "",
+    "cloud_result_job_id" : 0,
     "confidence" : 0.8703,
     "confirmed" : "",
     "decode_tokens" : 24,
-    "decode_tps" : 73.02,
-    "function_calls" : [
-
-    ],
+    "decode_tps" : 14.21,
     "pending" : "The power of a god cannot be overcome! The voice, Abyss! How dare you disobey me!",
     "prefill_tokens" : 4,
-    "prefill_tps" : 2.29,
-    "ram_usage_mb" : 1161.81,
-    "time_to_first_token_ms" : 1750.3,
-    "total_time_ms" : 2065.28,
+    "prefill_tps" : 0.26,
+    "ram_usage_mb" : 1227.96,
+    "time_to_first_token_ms" : 15544.9,
+    "total_time_ms" : 17163.3,
     "total_tokens" : 28
   },
   {
+    "buffer_duration_ms" : 67337.9,
     "cloud_handoff" : false,
+    "cloud_job_id" : 0,
+    "cloud_result" : "",
+    "cloud_result_job_id" : 0,
     "confidence" : 0.8703,
     "confirmed" : "The power of a god cannot be overcome! The voice, Abyss! How dare you disobey me!",
     "decode_tokens" : 24,
-    "decode_tps" : 74.21,
-    "function_calls" : [
-
-    ],
+    "decode_tps" : 21.41,
     "pending" : "The power of a god cannot be overcome! The voice, Abyss! How dare you disobey me!",
     "prefill_tokens" : 4,
-    "prefill_tps" : 2.19,
-    "ram_usage_mb" : 1167.25,
-    "time_to_first_token_ms" : 1822.79,
-    "total_time_ms" : 2132.71,
+    "prefill_tps" : 0.26,
+    "ram_usage_mb" : 1230.01,
+    "time_to_first_token_ms" : 15334.4,
+    "total_time_ms" : 16408.8,
     "total_tokens" : 28
   }
 ]
