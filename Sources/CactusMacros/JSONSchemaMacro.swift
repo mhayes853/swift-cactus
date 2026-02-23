@@ -4,7 +4,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-public enum JSONSchemaMacro: ExtensionMacro, MemberMacro {
+public enum JSONSchemaMacro: ExtensionMacro, MemberMacro, MemberAttributeMacro {
   public static func expansion(
     of node: AttributeSyntax,
     providingMembersOf declaration: some DeclGroupSyntax,
@@ -50,6 +50,37 @@ public enum JSONSchemaMacro: ExtensionMacro, MemberMacro {
         """
       )
     ]
+  }
+
+  public static func expansion(
+    of node: AttributeSyntax,
+    attachedTo declaration: some DeclGroupSyntax,
+    providingAttributesFor member: some DeclSyntaxProtocol,
+    in context: some MacroExpansionContext
+  ) throws -> [AttributeSyntax] {
+    guard declaration.as(StructDeclSyntax.self) != nil else { return [] }
+    guard let variableDecl = member.as(VariableDeclSyntax.self) else { return [] }
+    guard !Self.isStatic(variableDecl) else { return [] }
+    guard variableDecl.bindings.allSatisfy({ !Self.isComputedProperty($0) }) else {
+      return []
+    }
+
+    if Self.hasStreamParseableAttribute(in: variableDecl) {
+      return []
+    }
+
+    if Self.jsonSchemaIgnoredAttribute(in: variableDecl) != nil {
+      return ["@StreamParseableIgnored"]
+    }
+
+    guard let propertyAttribute = Self.singleJSONSchemaPropertyAttribute(in: variableDecl),
+      let key = Self.keyArgumentValue(in: propertyAttribute)
+    else {
+      return []
+    }
+
+    let keyLiteral = Self.quotedStringLiteral(key)
+    return [AttributeSyntax(stringLiteral: "@StreamParseableMember(key: \(keyLiteral))")]
   }
 
   private static func requireStructDecl(
@@ -1156,6 +1187,43 @@ extension JSONSchemaMacro {
         let name = $0.attributeName.trimmedDescription
         return name == "JSONSchemaProperty" || name == "Cactus.JSONSchemaProperty"
       }
+  }
+
+  private static func singleJSONSchemaPropertyAttribute(
+    in variableDecl: VariableDeclSyntax
+  ) -> AttributeSyntax? {
+    let attributes = Self.jsonSchemaPropertyAttributes(in: variableDecl)
+    guard attributes.count == 1 else { return nil }
+    return attributes.first
+  }
+
+  private static func hasStreamParseableAttribute(
+    in variableDecl: VariableDeclSyntax
+  ) -> Bool {
+    variableDecl.attributes
+      .compactMap { $0.as(AttributeSyntax.self) }
+      .contains { attribute in
+        Self.isAttributeNamed(attribute, names: ["StreamParseableMember", "StreamParseableIgnored"])
+      }
+  }
+
+  private static func isAttributeNamed(
+    _ attribute: AttributeSyntax,
+    names: Set<String>
+  ) -> Bool {
+    let attributeName = attribute.attributeName.trimmedDescription
+    return names.contains(attributeName)
+      || names.contains { attributeName.hasSuffix(".\($0)") }
+  }
+
+  private static func keyArgumentValue(in attribute: AttributeSyntax) -> String? {
+    guard case .argumentList(let arguments) = attribute.arguments else { return nil }
+
+    guard let keyExpression = arguments.first(where: { $0.label?.text == "key" })?.expression else {
+      return nil
+    }
+
+    return Self.stringLiteralValue(from: keyExpression)
   }
 
   private static func isValid(

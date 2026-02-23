@@ -15,6 +15,7 @@ import CactusCore
 /// ```
 @attached(extension, conformances: JSONSchemaRepresentable)
 @attached(member, names: named(jsonSchema))
+@attached(memberAttribute)
 public macro JSONSchema(
   title: String? = nil,
   description: String? = nil

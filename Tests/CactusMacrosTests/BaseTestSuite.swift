@@ -1,7 +1,9 @@
+import CactusMacros
 import MacroTesting
 import SnapshotTesting
-import CactusMacros
 import Testing
+
+// MARK: - Suite
 
 @MainActor
 @Suite(
