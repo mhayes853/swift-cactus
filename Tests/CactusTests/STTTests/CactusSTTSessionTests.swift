@@ -167,6 +167,21 @@ struct `CactusSTTSession tests` {
     expectNoDifference(session.isTranscribing, false)
   }
 
+  @Test
+  func `Custom Executor Transcription Succeeds`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+    let model = try await CactusLanguageModelActor(
+      executor: DispatchQueueSerialExecutor(),
+      from: modelURL
+    )
+    let session = CactusSTTSession(model: model)
+    let request = CactusTranscription.Request(prompt: audioPrompt, content: .audio(testAudioURL))
+
+    await #expect(throws: Never.self) {
+      try await session.transcribe(request: request)
+    }
+  }
+
   #if canImport(Observation)
     @Test
     @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
