@@ -40,7 +40,7 @@ public actor CactusStreamTranscriberActor {
   ///   - streamTranscriber: The underlying stream transcriber.
   public init(
     executor: (any SerialExecutor)? = nil,
-    streamTranscriber: CactusStreamTranscriber
+    streamTranscriber: sending CactusStreamTranscriber
   ) {
     self.executor = executor
     self.streamTranscriber = streamTranscriber
@@ -52,10 +52,7 @@ public actor CactusStreamTranscriberActor {
   /// - Parameters:
   ///   - executor: A custom `SerialExecutor` to use for this actor.
   ///   - modelURL: The URL of the model.
-  public init(
-    executor: (any SerialExecutor)? = nil,
-    modelURL: URL
-  ) async throws {
+  public init(executor: (any SerialExecutor)? = nil, modelURL: URL) throws {
     try self.init(
       executor: executor,
       streamTranscriber: CactusStreamTranscriber(modelURL: modelURL)
@@ -67,11 +64,7 @@ public actor CactusStreamTranscriberActor {
   /// - Parameters:
   ///   - executor: A custom `SerialExecutor` to use for this actor.
   ///   - model: The raw model pointer.
-  ///   - isModelPointerManaged: Whether or not the model pointer is managed by the instance.
-  public init(
-    executor: (any SerialExecutor)? = nil,
-    model: sending cactus_model_t
-  ) async throws {
+  public init(executor: (any SerialExecutor)? = nil, model: sending cactus_model_t) throws {
     try self.init(
       executor: executor,
       streamTranscriber: CactusStreamTranscriber(
