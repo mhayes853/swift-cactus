@@ -30,7 +30,7 @@ struct `CactusSTTSession tests` {
     let session = try CactusSTTSession(from: modelURL)
     let request = CactusTranscription.Request(prompt: audioPrompt, content: .audio(testAudioURL))
 
-    let stream = try session.stream(request: request)
+    let stream = try session.transcriptionStream(request: request)
 
     var streamedText = ""
     for try await token in stream.tokens {
@@ -100,24 +100,6 @@ struct `CactusSTTSession tests` {
   }
 
   @Test
-  func `Duplicate Transcriptions Throw Already Transcribing`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-    let session = try CactusSTTSession(from: modelURL)
-    let request = CactusTranscription.Request(
-      prompt: audioPrompt,
-      content: .audio(testAudioURL)
-    )
-
-    let stream = try session.stream(request: request)
-
-    #expect(throws: CactusTranscriptionStreamError.alreadyTranscribing) {
-      try session.stream(request: request)
-    }
-
-    stream.stop()
-  }
-
-  @Test
   func `Stop Mid Stream Cancels And Calls Through To Model Stop`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
     let session = try CactusSTTSession(from: modelURL)
@@ -126,7 +108,7 @@ struct `CactusSTTSession tests` {
       content: .pcm(longSilencePCMBytes)
     )
 
-    let stream = try session.stream(request: request)
+    let stream = try session.transcriptionStream(request: request)
 
     let responseTask = Task {
       try await stream.collectResponse()
@@ -138,9 +120,6 @@ struct `CactusSTTSession tests` {
     await #expect(throws: CancellationError.self) {
       _ = try await responseTask.value
     }
-
-    try await Task.sleep(for: .milliseconds(50))
-    expectNoDifference(session.isTranscribing, false)
   }
 
   @Test
@@ -162,9 +141,6 @@ struct `CactusSTTSession tests` {
     await #expect(throws: CancellationError.self) {
       try await transcriptionTask.value
     }
-
-    try await Task.sleep(for: .milliseconds(50))
-    expectNoDifference(session.isTranscribing, false)
   }
 
   @Test
@@ -181,32 +157,6 @@ struct `CactusSTTSession tests` {
       try await session.transcribe(request: request)
     }
   }
-
-  #if canImport(Observation)
-    @Test
-    @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
-    func `isTranscribing Emits Observation Updates`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-      let session = try CactusSTTSession(from: modelURL)
-      let request = CactusTranscription.Request(
-        prompt: audioPrompt,
-        content: .audio(testAudioURL)
-      )
-
-      let values = Lock([Bool]())
-      let token = observe {
-        values.withLock { $0.append(session.isTranscribing) }
-      }
-
-      let stream = try session.stream(request: request)
-      _ = try await stream.collectResponse()
-      token.cancel()
-
-      values.withLock { snapshots in
-        expectNoDifference(snapshots, [false, true, false])
-      }
-    }
-  #endif
 }
 
 private struct TranscriptionSnapshot: Codable {

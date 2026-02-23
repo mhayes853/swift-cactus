@@ -5,7 +5,7 @@ import Foundation
 /// An ordered collection of transcript elements.
 ///
 /// `CactusTranscript` maintains the order of elements while also providing efficient
-/// access by ``CactusMessageID``. It conforms to `MutableCollection` and
+/// access by ``CactusGenerationID``. It conforms to `MutableCollection` and
 /// `RandomAccessCollection` for standard collection operations.
 ///
 /// ```swift
@@ -26,7 +26,7 @@ import Foundation
 /// ```
 public struct CactusTranscript: Hashable, Sendable {
   private var elements = [Element]()
-  private var messageIndicies = [CactusMessageID: Int]()
+  private var messageIndicies = [CactusGenerationID: Int]()
 
   /// Creates a new transcript with the given elements.
   ///
@@ -61,10 +61,10 @@ public struct CactusTranscript: Hashable, Sendable {
 
   /// Accesses the element with the given identifier.
   ///
-  /// - Parameter id: The ``CactusMessageID`` to look up.
+  /// - Parameter id: The ``CactusGenerationID`` to look up.
   /// - Returns: The element with the given identifier, or `nil` if no such element exists.
   /// - Complexity: O(1).
-  public subscript(id id: CactusMessageID) -> Element? {
+  public subscript(id id: CactusGenerationID) -> Element? {
     _read {
       guard let index = self.messageIndicies[id] else {
         yield nil
@@ -107,11 +107,11 @@ public struct CactusTranscript: Hashable, Sendable {
 
   /// Removes the element with the given identifier.
   ///
-  /// - Parameter id: The ``CactusMessageID`` of the element to remove.
+  /// - Parameter id: The ``CactusGenerationID`` of the element to remove.
   /// - Returns: The removed element, or `nil` if no element with the given identifier exists.
   /// - Complexity: O(*n*) where *n* is the number of elements after the removed element.
   @discardableResult
-  public mutating func removeElement(id: CactusMessageID) -> Element? {
+  public mutating func removeElement(id: CactusGenerationID) -> Element? {
     guard let index = self.messageIndicies[id] else { return nil }
     return self.removeElement(at: index)
   }
@@ -232,7 +232,7 @@ extension CactusTranscript {
   /// An element in a transcript, containing a message and its unique identifier.
   public struct Element: Hashable, Sendable, Codable, Identifiable {
     /// The unique identifier for this element.
-    public let id: CactusMessageID
+    public let id: CactusGenerationID
 
     /// The chat message.
     public var message: CactusLanguageModel.ChatMessage
@@ -243,7 +243,7 @@ extension CactusTranscript {
     ///   - id: The unique identifier for this element. Defaults to a new random identifier.
     ///   - message: The chat message.
     public init(
-      id: CactusMessageID = CactusMessageID(),
+      id: CactusGenerationID = CactusGenerationID(),
       message: CactusLanguageModel.ChatMessage
     ) {
       self.id = id

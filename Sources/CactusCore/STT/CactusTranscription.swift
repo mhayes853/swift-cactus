@@ -3,7 +3,10 @@ import Foundation
 // MARK: - CactusTranscription
 
 /// A transcription output with metrics from an transcription model.
-public struct CactusTranscription: Hashable, Sendable {
+public struct CactusTranscription: Hashable, Sendable, Identifiable {
+  /// The unique identifier for this transcription.
+  public let id: CactusGenerationID
+
   /// The number of prefilled tokens.
   public let prefillTokens: Int
 
@@ -40,6 +43,7 @@ public struct CactusTranscription: Hashable, Sendable {
   /// Creates a parsed transcription with explicit content and metrics.
   ///
   /// - Parameters:
+  ///   - id: The unique identifier for this transcription.
   ///   - prefillTokens: The number of prefilled tokens.
   ///   - decodeTokens: The number of tokens decoded.
   ///   - totalTokens: The total amount of tokens.
@@ -52,6 +56,7 @@ public struct CactusTranscription: Hashable, Sendable {
   ///   - totalDuration: The total generation time.
   ///   - content: The parsed transcription content.
   public init(
+    id: CactusGenerationID,
     prefillTokens: Int,
     decodeTokens: Int,
     totalTokens: Int,
@@ -64,6 +69,7 @@ public struct CactusTranscription: Hashable, Sendable {
     totalDuration: CactusDuration,
     content: Content
   ) {
+    self.id = id
     self.prefillTokens = prefillTokens
     self.decodeTokens = decodeTokens
     self.totalTokens = totalTokens
@@ -80,6 +86,7 @@ public struct CactusTranscription: Hashable, Sendable {
   /// Creates a parsed transcription from a raw model response string with explicit metrics.
   ///
   /// - Parameters:
+  ///   - id: The unique identifier for this transcription.
   ///   - response: The raw transcription response string.
   ///   - prefillTokens: The number of prefilled tokens.
   ///   - decodeTokens: The number of tokens decoded.
@@ -92,6 +99,7 @@ public struct CactusTranscription: Hashable, Sendable {
   ///   - durationToFirstToken: The amount of time to generate the first token.
   ///   - totalDuration: The total generation time.
   public init(
+    id: CactusGenerationID,
     response: String,
     prefillTokens: Int,
     decodeTokens: Int,
@@ -104,6 +112,7 @@ public struct CactusTranscription: Hashable, Sendable {
     durationToFirstToken: CactusDuration,
     totalDuration: CactusDuration
   ) {
+    self.id = id
     self.prefillTokens = prefillTokens
     self.decodeTokens = decodeTokens
     self.totalTokens = totalTokens
