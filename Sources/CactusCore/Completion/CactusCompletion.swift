@@ -111,7 +111,7 @@ public struct CactusCompletionEntry: Hashable, Sendable, Identifiable {
   /// The total generation duration.
   public var totalDuration: CactusDuration
 
-  public var id: CactusMessageID {
+  public var id: CactusGenerationID {
     self.transcriptEntry.id
   }
 
