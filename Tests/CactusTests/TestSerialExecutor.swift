@@ -1,7 +1,7 @@
 import Foundation
 
 final class DispatchQueueSerialExecutor: SerialExecutor, @unchecked Sendable {
-  private let queue = DispatchQueue(label: "com.cactus.tests.serial.executor")
+  private let queue = DispatchQueue(label: "cactus.tests.serial.executor")
 
   func enqueue(_ job: consuming ExecutorJob) {
     let unownedJob = UnownedJob(job)

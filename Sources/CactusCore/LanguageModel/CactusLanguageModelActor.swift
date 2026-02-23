@@ -1,16 +1,6 @@
 import CXXCactusShims
 import Foundation
 
-// MARK: - Default Executor Holder
-
-private actor DefaultExecutorHolder {
-  static let shared = DefaultExecutorHolder()
-
-  nonisolated var unownedExecutor: UnownedSerialExecutor {
-    MainActor.sharedUnownedExecutor
-  }
-}
-
 // MARK: - CactusLanguageModelActor
 
 /// An actor that isolates a ``CactusLanguageModel``.
@@ -39,12 +29,11 @@ public actor CactusLanguageModelActor {
   /// The ``CactusLanguageModel/ConfigurationFile`` for this model.
   public let configurationFile: CactusLanguageModel.ConfigurationFile
 
-  /// The custom executor to use for this actor, if provided.
+  /// The custom `SerialExecutor` used by this actor, if provided.
   public let executor: (any SerialExecutor)?
 
-  /// The executor used by this actor.
   public nonisolated var unownedExecutor: UnownedSerialExecutor {
-    if let executor = executor {
+    if let executor {
       return executor.asUnownedSerialExecutor()
     }
     return DefaultExecutorHolder.shared.unownedExecutor
@@ -53,7 +42,7 @@ public actor CactusLanguageModelActor {
   /// Creates an actor from an existing language model.
   ///
   /// - Parameters:
-  ///   - executor: A custom serial executor to use for this actor. If `nil`, uses the default.
+  ///   - executor: A custom `SerialExecutor` to use for this actor.
   ///   - model: The underlying language model.
   public init(executor: (any SerialExecutor)? = nil, model: sending CactusLanguageModel) {
     self.executor = executor
@@ -65,7 +54,7 @@ public actor CactusLanguageModelActor {
   /// Loads a model from the specified `URL`.
   ///
   /// - Parameters:
-  ///   - executor: A custom serial executor to use for this actor. If `nil`, uses the default.
+  ///   - executor: A custom `SerialExecutor` to use for this actor.
   ///   - url: The local `URL` of the model.
   ///   - modelSlug: The model slug.
   ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
@@ -1165,4 +1154,10 @@ extension CactusLanguageModelActor {
   ) async throws(E) -> sending T {
     try operation(self.model)
   }
+}
+
+// MARK: - Default Executor Holder
+
+private actor DefaultExecutorHolder {
+  static let shared = DefaultExecutorHolder()
 }
