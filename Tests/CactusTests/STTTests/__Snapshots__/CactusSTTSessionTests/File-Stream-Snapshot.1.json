@@ -1,8 +1,8 @@
 {
-  "confidence" : 0.9072,
-  "decodeTokens" : 16,
-  "parsedContent" : "The power of the God can not be overcome! But that's impossible...",
+  "confidence" : 0.8581,
+  "decodeTokens" : 15,
+  "parsedContent" : "The Power Of A God CANNOT BE OVERCUPED!",
   "prefillTokens" : 4,
-  "streamedText" : " The power of the God can not be overcome! But that's impossible...<|startoftranscript|>",
-  "totalTokens" : 20
+  "streamedText" : " The Power Of A God CANNOT BE OVERCUPED!<|startoftranscript|>",
+  "totalTokens" : 19
 }

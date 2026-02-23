@@ -1,17 +1,18 @@
 {
+  "buffer_duration_ms" : 0,
   "cloud_handoff" : false,
+  "cloud_job_id" : 0,
+  "cloud_result" : "",
+  "cloud_result_job_id" : 0,
   "confidence" : 0.9345,
   "confirmed" : "",
   "decode_tokens" : 45,
-  "decode_tps" : 6.72,
-  "function_calls" : [
-
-  ],
+  "decode_tps" : 10.74,
   "pending" : "The power of a god cannot be overcome. Zanzan, this is the providence of the world. Even gods are merely beings restricted to the limited power determined by profit and power. Although great is not unlimited.",
   "prefill_tokens" : 4,
-  "prefill_tps" : 0.66,
-  "ram_usage_mb" : 6301.64,
-  "time_to_first_token_ms" : 6067.83,
-  "total_time_ms" : 12613.4,
+  "prefill_tps" : 0.08,
+  "ram_usage_mb" : 1131.96,
+  "time_to_first_token_ms" : 49845.9,
+  "total_time_ms" : 53941.1,
   "total_tokens" : 49
 }

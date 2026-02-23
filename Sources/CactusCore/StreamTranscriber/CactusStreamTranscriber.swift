@@ -95,45 +95,44 @@ extension CactusStreamTranscriber {
     /// The portion of the transcription that is still pending confirmation.
     public let pending: String
 
-    /// A list of ``CactusLanguageModel/FunctionCall`` instances from the model.
-    public let functionCalls: [CactusLanguageModel.FunctionCall]
+    /// The duration of the audio buffer that was processed.
+    public let bufferDuration: CactusDuration
 
     /// The model's confidence in its transcription.
     public let confidence: Double
 
-    /// The amount of time in milliseconds to generate the first token.
-    private let timeToFirstTokenMs: Double
+    /// The result from cloud transcription, if applicable.
+    public let cloudResult: String?
 
-    /// The total generation time in milliseconds.
-    private let totalTimeMs: Double
+    /// The cloud job ID for the transcription request.
+    public let cloudJobId: Int
 
-    /// The prefill tokens per second.
-    public let prefillTps: Double
+    /// The cloud job ID for the transcription result.
+    public let cloudResultJobId: Int
 
-    /// The decode tokens per second.
-    public let decodeTps: Double
+    /// The amount of time to generate the first token.
+    public let durationToFirstToken: CactusDuration
 
-    /// The current process RAM usage in MB.
-    public let ramUsageMb: Double
+    /// The total generation time.
+    public let totalDuration: CactusDuration
 
     /// The number of prefilled tokens.
     public let prefillTokens: Int
 
+    /// The prefill tokens per second.
+    public let prefillTps: Double
+
     /// The number of tokens decoded.
     public let decodeTokens: Int
+
+    /// The decode tokens per second.
+    public let decodeTps: Double
 
     /// The total amount of tokens that make up the response.
     public let totalTokens: Int
 
-    /// The amount of time in seconds to generate the first token.
-    public var timeIntervalToFirstToken: TimeInterval {
-      self.timeToFirstTokenMs / 1000
-    }
-
-    /// The total generation time in seconds.
-    public var totalTimeInterval: TimeInterval {
-      self.totalTimeMs / 1000
-    }
+    /// The current process RAM usage in MB.
+    public let ramUsageMb: Double
   }
 
   /// Processes a PCM audio buffer and returns interim transcription result.
@@ -184,19 +183,23 @@ extension CactusStreamTranscriber.ProcessedTranscription: Decodable {
     self.didHandoffToCloud = try container.decode(Bool.self, forKey: .didHandoffToCloud)
     self.confirmed = try container.decode(String.self, forKey: .confirmed)
     self.pending = try container.decode(String.self, forKey: .pending)
-    self.functionCalls = try container.decode(
-      [CactusLanguageModel.FunctionCall].self,
-      forKey: .functionCalls
-    )
+    self.bufferDuration = .milliseconds(try container.decode(Double.self, forKey: .bufferDurationMs))
     self.confidence = try container.decode(Double.self, forKey: .confidence)
-    self.timeToFirstTokenMs = try container.decode(Double.self, forKey: .timeToFirstTokenMs)
-    self.totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
-    self.prefillTps = try container.decode(Double.self, forKey: .prefillTps)
-    self.decodeTps = try container.decode(Double.self, forKey: .decodeTps)
-    self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
+    self.cloudResult = try container.decodeIfPresent(String.self, forKey: .cloudResult)
+    self.cloudJobId = try container.decode(Int.self, forKey: .cloudJobId)
+    self.cloudResultJobId = try container.decode(Int.self, forKey: .cloudResultJobId)
+    self.durationToFirstToken = .milliseconds(
+      try container.decode(Double.self, forKey: .timeToFirstTokenMs)
+    )
+    self.totalDuration = .milliseconds(
+      try container.decode(Double.self, forKey: .totalTimeMs)
+    )
     self.prefillTokens = try container.decode(Int.self, forKey: .prefillTokens)
+    self.prefillTps = try container.decode(Double.self, forKey: .prefillTps)
     self.decodeTokens = try container.decode(Int.self, forKey: .decodeTokens)
+    self.decodeTps = try container.decode(Double.self, forKey: .decodeTps)
     self.totalTokens = try container.decode(Int.self, forKey: .totalTokens)
+    self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
   }
 }
 
@@ -206,32 +209,38 @@ extension CactusStreamTranscriber.ProcessedTranscription: Encodable {
     try container.encode(self.didHandoffToCloud, forKey: .didHandoffToCloud)
     try container.encode(self.confirmed, forKey: .confirmed)
     try container.encode(self.pending, forKey: .pending)
-    try container.encode(self.functionCalls, forKey: .functionCalls)
+    try container.encode(self.bufferDuration.secondsDouble * 1000, forKey: .bufferDurationMs)
     try container.encode(self.confidence, forKey: .confidence)
-    try container.encode(self.timeToFirstTokenMs, forKey: .timeToFirstTokenMs)
-    try container.encode(self.totalTimeMs, forKey: .totalTimeMs)
-    try container.encode(self.prefillTps, forKey: .prefillTps)
-    try container.encode(self.decodeTps, forKey: .decodeTps)
-    try container.encode(self.ramUsageMb, forKey: .ramUsageMb)
+    try container.encodeIfPresent(self.cloudResult, forKey: .cloudResult)
+    try container.encode(self.cloudJobId, forKey: .cloudJobId)
+    try container.encode(self.cloudResultJobId, forKey: .cloudResultJobId)
+    try container.encode(self.durationToFirstToken.secondsDouble * 1000, forKey: .timeToFirstTokenMs)
+    try container.encode(self.totalDuration.secondsDouble * 1000, forKey: .totalTimeMs)
     try container.encode(self.prefillTokens, forKey: .prefillTokens)
+    try container.encode(self.prefillTps, forKey: .prefillTps)
     try container.encode(self.decodeTokens, forKey: .decodeTokens)
+    try container.encode(self.decodeTps, forKey: .decodeTps)
     try container.encode(self.totalTokens, forKey: .totalTokens)
+    try container.encode(self.ramUsageMb, forKey: .ramUsageMb)
   }
 
   private enum CodingKeys: String, CodingKey {
     case didHandoffToCloud = "cloud_handoff"
     case confirmed
     case pending
-    case functionCalls = "function_calls"
+    case bufferDurationMs = "buffer_duration_ms"
     case confidence
+    case cloudResult = "cloud_result"
+    case cloudJobId = "cloud_job_id"
+    case cloudResultJobId = "cloud_result_job_id"
     case timeToFirstTokenMs = "time_to_first_token_ms"
     case totalTimeMs = "total_time_ms"
-    case prefillTps = "prefill_tps"
-    case decodeTps = "decode_tps"
-    case ramUsageMb = "ram_usage_mb"
     case prefillTokens = "prefill_tokens"
+    case prefillTps = "prefill_tps"
     case decodeTokens = "decode_tokens"
+    case decodeTps = "decode_tps"
     case totalTokens = "total_tokens"
+    case ramUsageMb = "ram_usage_mb"
   }
 }
 
