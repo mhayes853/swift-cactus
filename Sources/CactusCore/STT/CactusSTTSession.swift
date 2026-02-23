@@ -21,22 +21,8 @@ import Foundation
 /// let transcription = try await session.transcribe(request: request)
 /// ```
 public final class CactusSTTSession: Sendable {
-  private let observationRegistrar = _ObservationRegistrar()
-  private let state = Lock(State())
-
   /// The underlying language model actor.
   public let languageModelActor: CactusLanguageModelActor
-
-  private struct State {
-    var activeStream: CactusInferenceStream<CactusTranscription>?
-    var activeStreamFinishedSubscription: CactusSubscription?
-  }
-
-  /// Whether a transcription is currently in progress.
-  public var isTranscribing: Bool {
-    self.observationRegistrar.access(self, keyPath: \.isTranscribing)
-    return self.state.withLock { $0.activeStream?.isStreaming ?? false }
-  }
 
   /// Creates a transcription session from an existing language model.
   ///
@@ -90,7 +76,7 @@ extension CactusSTTSession {
   /// Creates a transcription stream for the provided request.
   ///
   /// ```swift
-  /// let stream = try session.stream(request: request)
+  /// let stream = try session.transcriptionStream(request: request)
   ///
   /// var tokenText = ""
   /// for try await token in stream.tokens {
@@ -102,7 +88,7 @@ extension CactusSTTSession {
   ///
   /// - Parameter request: The transcription request.
   /// - Returns: A stream that yields transcription tokens and final output.
-  public func stream(
+  public func transcriptionStream(
     request: CactusTranscription.Request
   ) throws -> CactusInferenceStream<CactusTranscription> {
     let messageStreamID = CactusMessageID()
@@ -173,12 +159,6 @@ extension CactusSTTSession {
       return CactusTranscription(transcription: modelTranscription)
     }
 
-    try self.beginTranscribing(stream: stream)
-
-    let finishedSubscription = stream.onToken(perform: { _ in }) { [weak self] _ in
-      self?.endTranscribing(stream: stream)
-    }
-    self.setFinishedSubscription(finishedSubscription, for: stream)
     return stream
   }
 
@@ -193,7 +173,7 @@ extension CactusSTTSession {
   public func transcribe(
     request: CactusTranscription.Request
   ) async throws -> CactusTranscription {
-    let stream = try self.stream(request: request)
+    let stream = try self.transcriptionStream(request: request)
     return try await withTaskCancellationHandler {
       try await stream.collectResponse()
     } onCancel: {
@@ -201,54 +181,6 @@ extension CactusSTTSession {
     }
   }
 }
-
-// MARK: - State
-
-extension CactusSTTSession {
-  private func beginTranscribing(stream: CactusInferenceStream<CactusTranscription>) throws {
-    try self.observationRegistrar.withMutation(of: self, keyPath: \.isTranscribing) {
-      try self.state.withLock { state in
-        guard state.activeStream == nil else {
-          throw CactusTranscriptionStreamError.alreadyTranscribing
-        }
-        state.activeStream = stream
-        state.activeStreamFinishedSubscription = nil
-      }
-    }
-  }
-
-  private func setFinishedSubscription(
-    _ subscription: CactusSubscription,
-    for stream: CactusInferenceStream<CactusTranscription>
-  ) {
-    var shouldCancel = false
-    self.state.withLock { state in
-      if state.activeStream === stream {
-        state.activeStreamFinishedSubscription = subscription
-      } else {
-        shouldCancel = true
-      }
-    }
-    if shouldCancel {
-      subscription.cancel()
-    }
-  }
-
-  private func endTranscribing(stream: CactusInferenceStream<CactusTranscription>) {
-    var subscription: CactusSubscription?
-    self.observationRegistrar.withMutation(of: self, keyPath: \.isTranscribing) {
-      self.state.withLock { state in
-        guard state.activeStream === stream else { return }
-        state.activeStream = nil
-        subscription = state.activeStreamFinishedSubscription
-        state.activeStreamFinishedSubscription = nil
-      }
-    }
-    subscription?.cancel()
-  }
-}
-
-// MARK: - Error
 
 /// An error thrown by ``CactusSTTSession`` stream APIs.
 public struct CactusTranscriptionStreamError: Error, Hashable, Sendable {
@@ -258,14 +190,4 @@ public struct CactusTranscriptionStreamError: Error, Hashable, Sendable {
   private init(message: String) {
     self.message = message
   }
-
-  /// A transcription is already active for this session.
-  public static let alreadyTranscribing = CactusTranscriptionStreamError(
-    message: "A transcription is already in progress."
-  )
 }
-
-// MARK: - Observable
-
-@available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
-extension CactusSTTSession: _Observable {}
