@@ -1,8 +1,8 @@
 import Foundation
 
-// MARK: - CactusCompletionSession
+// MARK: - CactusAgentSession
 
-public final class CactusCompletionSession: Sendable {
+public final class CactusAgentSession: Sendable {
   private let observationRegistrar = _ObservationRegistrar()
   private let state: Lock<State>
 
@@ -18,11 +18,11 @@ public final class CactusCompletionSession: Sendable {
   /// The full history of interactions for this session.
   public var transcript: CactusTranscript {
     get {
-      self.observationRegistrar.access(self, keyPath: \CactusCompletionSession.transcript)
+      self.observationRegistrar.access(self, keyPath: \CactusAgentSession.transcript)
       return self.state.withLock { $0.transcript }
     }
     set {
-      self.observationRegistrar.withMutation(of: self, keyPath: \CactusCompletionSession.transcript) {
+      self.observationRegistrar.withMutation(of: self, keyPath: \CactusAgentSession.transcript) {
         self.state.withLock { $0.transcript = newValue }
       }
     }
@@ -30,7 +30,7 @@ public final class CactusCompletionSession: Sendable {
 
   /// A Boolean value indicating whether a response is currently being generated.
   public var isResponding: Bool {
-    self.observationRegistrar.access(self, keyPath: \CactusCompletionSession.isResponding)
+    self.observationRegistrar.access(self, keyPath: \CactusAgentSession.isResponding)
     return self.state.withLock { $0.isResponding }
   }
 
@@ -59,7 +59,7 @@ public final class CactusCompletionSession: Sendable {
 
 // MARK: - Initializers
 
-extension CactusCompletionSession {
+extension CactusAgentSession {
   /// Creates a completion session from a language model and explicit transcript.
   ///
   /// - Parameters:
@@ -179,7 +179,7 @@ extension CactusCompletionSession {
 
 // MARK: - Control
 
-extension CactusCompletionSession {
+extension CactusAgentSession {
   /// Stops any active generation on the underlying language model.
   nonisolated(nonsending) public func stop() async {
     fatalError("Not implemented")
@@ -193,7 +193,7 @@ extension CactusCompletionSession {
 
 // MARK: - Completion
 
-extension CactusCompletionSession {
+extension CactusAgentSession {
   /// Performs one completion turn and returns a text output completion.
   ///
   /// - Parameter request: The user message request for this turn.
@@ -251,4 +251,4 @@ extension CactusCompletionSession {
 // MARK: - Observable
 
 @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
-extension CactusCompletionSession: _Observable {}
+extension CactusAgentSession: _Observable {}

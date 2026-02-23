@@ -116,6 +116,18 @@ public struct CactusCompletionEntry: Hashable, Sendable, Identifiable {
   }
 
   /// Creates a completion entry.
+  ///
+  /// - Parameters:
+  ///   - transcriptEntry: The transcript element associated with this completion entry.
+  ///   - prefillTokens: The number of prefilled tokens.
+  ///   - decodeTokens: The number of decoded tokens.
+  ///   - totalTokens: The total number of generated tokens.
+  ///   - confidence: The model confidence for the generated response.
+  ///   - prefillTps: The prefill throughput in tokens per second.
+  ///   - decodeTps: The decode throughput in tokens per second.
+  ///   - ramUsageMb: The process memory usage in megabytes.
+  ///   - durationToFirstToken: The time until the first token was produced.
+  ///   - totalDuration: The total generation duration.
   public init(
     transcriptEntry: CactusTranscript.Element,
     prefillTokens: Int,
