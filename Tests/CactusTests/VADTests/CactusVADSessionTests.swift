@@ -54,6 +54,21 @@ struct `CactusVADSession tests` {
     }
   }
 
+  @Test
+  func `VAD With Custom Executor Succeeds`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .sileroVad())
+    let model = try await CactusLanguageModelActor(
+      executor: DispatchQueueSerialExecutor(),
+      from: modelURL
+    )
+    let session = CactusVADSession(model: model)
+    let request = CactusVAD.Request(content: .audio(testAudioURL))
+
+    let vad = try await session.vad(request: request)
+
+    expectNoDifference(vad.segments.isEmpty, false)
+  }
+
   #if canImport(AVFoundation)
     @Test
     func `PCM Buffer VAD Snapshot`() async throws {
