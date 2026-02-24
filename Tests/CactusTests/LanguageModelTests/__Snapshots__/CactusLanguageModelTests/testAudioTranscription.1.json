@@ -2,15 +2,15 @@
   "slug" : "whisper-small",
   "transcription" : {
     "cloud_handoff" : false,
-    "confidence" : 0.9208,
-    "decode_tokens" : 11,
-    "decode_tps" : 69.43,
+    "confidence" : 0.8837,
+    "decode_tokens" : 24,
+    "decode_tps" : 80.24,
     "prefill_tokens" : 4,
     "prefill_tps" : 1.72,
-    "ram_usage_mb" : 492.55,
-    "response" : "The power of the God can not be overcome!",
-    "time_to_first_token_ms" : 2328.16,
-    "total_time_ms" : 2472.19,
-    "total_tokens" : 15
+    "ram_usage_mb" : 361.82,
+    "response" : "The power of the God can not be overcome. The voice, Abyss how dare you disobey me?",
+    "time_to_first_token_ms" : 2319.22,
+    "total_time_ms" : 2605.86,
+    "total_tokens" : 28
   }
 }
