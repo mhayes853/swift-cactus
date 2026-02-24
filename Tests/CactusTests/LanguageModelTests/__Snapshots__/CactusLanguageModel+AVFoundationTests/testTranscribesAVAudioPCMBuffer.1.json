@@ -2,15 +2,15 @@
   "slug" : "whisper-small",
   "transcription" : {
     "cloud_handoff" : false,
-    "confidence" : 0.9166,
+    "confidence" : 0.9205,
     "decode_tokens" : 10,
-    "decode_tps" : 68.48,
+    "decode_tps" : 71.27,
     "prefill_tokens" : 4,
-    "prefill_tps" : 2.26,
-    "ram_usage_mb" : 394.04,
-    "response" : "The power of a god cannot be overcome!",
-    "time_to_first_token_ms" : 1772.1,
-    "total_time_ms" : 1903.53,
+    "prefill_tps" : 2.17,
+    "ram_usage_mb" : 388.3,
+    "response" : "The power of a god cannot be overcome.",
+    "time_to_first_token_ms" : 1839.99,
+    "total_time_ms" : 1966.27,
     "total_tokens" : 14
   }
 }

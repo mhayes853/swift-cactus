@@ -22,13 +22,15 @@ import struct Foundation.URL
 /// // ...
 /// ```
 public final class CactusModelsDirectory: Sendable {
-  /// A shared directory instance.
-  ///
-  /// This instance stores models inside
-  /// ``CactusModelsDirectory/sharedDirectoryURL``/`cactus-models`.
-  public static let shared = CactusModelsDirectory(
-    baseURL: requireSharedDirectoryURL()
-  )
+  #if canImport(Darwin)
+    /// A shared models directory instance.
+    public static let shared = CactusModelsDirectory(
+      baseURL: URL._applicationSupportDirectory.appendingPathComponent(
+        "cactus-models",
+        isDirectory: true
+      )
+    )
+  #endif
 
   private struct State {
     var downloadTasks = [CactusLanguageModel.PlatformDownloadRequest: DownloadTaskEntry]()
@@ -173,88 +175,6 @@ extension CactusModelsDirectory.Delegate {
       configuration: configuration
     )
   }
-}
-
-// MARK: - Shared Directory
-
-extension CactusModelsDirectory {
-  #if canImport(Darwin)
-    /// The shared base directory used by APIs such as ``CactusModelsDirectory/shared``.
-    public static var sharedDirectoryURL: URL {
-      get { _sharedDirectoryURL.withLock { $0 } }
-      set { _sharedDirectoryURL.withLock { $0 = newValue } }
-    }
-
-    private static let _sharedDirectoryURL = Lock<URL>(
-      URL._applicationSupportDirectory.appendingPathComponent("cactus-models", isDirectory: true)
-    )
-  #else
-    /// The shared base directory used by APIs such as ``CactusModelsDirectory/shared``.
-    ///
-    /// This must be set by the application before accessing APIs that depend on a shared models
-    /// directory.
-    public static var sharedDirectoryURL: URL? {
-      get { _sharedDirectoryURL.withLock { $0 } }
-      set { _sharedDirectoryURL.withLock { $0 = newValue } }
-    }
-
-    private static let _sharedDirectoryURL = Lock<URL?>(nil)
-  #endif
-}
-
-private func requireSharedDirectoryURL() -> URL {
-  #if canImport(Darwin)
-    return CactusModelsDirectory.sharedDirectoryURL
-  #else
-    if let sharedDirectoryURL = CactusModelsDirectory.sharedDirectoryURL {
-      return sharedDirectoryURL
-    }
-    #if os(Android)
-      fatalError(
-        """
-        Attempted to access the shared language models directory, but it has not been set.
-
-        On Android, the shared models directory is tied to your application context. When your app
-        launches, set `CactusModelsDirectory.sharedDirectoryURL` before using
-        `CactusModelsDirectory.shared`.
-
-            import Cactus
-            import Android
-            import AndroidNativeAppGlue
-
-            @_silgen_name("android_main")
-            public func android_main(_ app: UnsafeMutablePointer<android_app>) {
-              CactusModelsDirectory.sharedDirectoryURL = URL(
-                fileURLWithPath: app.pointee.activity.pointee.internalDataPath
-              )
-            }
-        """
-      )
-    #elseif os(Linux)
-      fatalError(
-        """
-        Attempted to access the shared language models directory, but it has not been set.
-
-        On Linux, there is no default shared models directory. Set
-        `CactusModelsDirectory.sharedDirectoryURL` during application startup before using
-        `CactusModelsDirectory.shared`.
-
-            import Cactus
-            import Foundation
-
-            CactusModelsDirectory.sharedDirectoryURL = URL(fileURLWithPath: "<models-directory>")
-        """
-      )
-    #else
-      fatalError(
-        """
-        Attempted to access the shared language models directory, but it has not been set.
-
-        Set `CactusModelsDirectory.sharedDirectoryURL` before using `CactusModelsDirectory.shared`.
-        """
-      )
-    #endif
-  #endif
 }
 
 // MARK: - Model Loading
@@ -565,7 +485,39 @@ extension CactusModelsDirectory {
   public func removeModel(
     with request: CactusLanguageModel.PlatformDownloadRequest
   ) throws {
-    let delegate = self.state.withLock { state in state.delegate }
+    try self.state.withLock { state in
+      try self._removeModel(request: request, state: state)
+    }
+  }
+
+  /// Removes all stored models that match the given predicate.
+  ///
+  /// - Parameter predicate: A closure that takes a ``StoredModel`` and returns a `Bool`
+  ///   indicating whether the model should be removed.
+  public func removeModels(where predicate: (StoredModel) -> Bool) throws {
+    try self.state.withLock { state in
+      let modelsToRemove = self.storedModels().filter(predicate)
+
+      var errors: [any Error] = []
+      for model in modelsToRemove {
+        do {
+          try self._removeModel(request: model.request, state: state)
+        } catch {
+          errors.append(error)
+        }
+      }
+
+      if !errors.isEmpty {
+        throw RemoveModelsError(errors: errors)
+      }
+    }
+  }
+
+  private func _removeModel(
+    request: CactusLanguageModel.PlatformDownloadRequest,
+    state: sending State
+  ) throws {
+    let delegate = state.delegate
 
     delegate?.modelsDirectoryWillRemoveModel(self, request: request)
     do {
@@ -609,6 +561,12 @@ extension CactusModelsDirectory: _Observable {
 // MARK: - Helpers
 
 extension CactusModelsDirectory {
+  /// An error that aggregates multiple removal failures.
+  public struct RemoveModelsError: Error, Sendable {
+    /// The errors that occurred during model removal.
+    public let errors: [any Error]
+  }
+
   static let ordinaryDirectoryName = "__ordinary__"
 
   private func destinationURL(
