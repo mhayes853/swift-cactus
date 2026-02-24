@@ -10,9 +10,16 @@ public struct CactusSTTPrompt: Hashable, Sendable, CustomStringConvertible {
   /// Whether the prompt should include timestamp tokens in the output.
   public var includeTimestamps: Bool
 
+  /// Previous transcription content to include as context.
+  public var previousTranscript: CactusTranscription.Content?
+
   /// The raw prompt text.
   public var description: String {
-    var prompt = "<|startoftranscript|><|\(language.rawValue)|><|transcribe|>"
+    var prompt = ""
+    if let previousTranscript = previousTranscript {
+      prompt += "<|startofprev|>\(previousTranscript.response)"
+    }
+    prompt += "<|startoftranscript|><|\(language.rawValue)|><|transcribe|>"
     if !includeTimestamps {
       prompt += "<|notimestamps|>"
     }
@@ -24,34 +31,58 @@ public struct CactusSTTPrompt: Hashable, Sendable, CustomStringConvertible {
   /// - Parameters:
   ///   - language: The language code token to include in the prompt.
   ///   - includeTimestamps: Whether timestamp tags should be included in output.
-  public init(language: CactusSTTLanguage, includeTimestamps: Bool) {
+  ///   - previousTranscript: Optional previous transcription content to include as context.
+  public init(
+    language: CactusSTTLanguage,
+    includeTimestamps: Bool,
+    previousTranscript: CactusTranscription.Content? = nil
+  ) {
     self.language = language
     self.includeTimestamps = includeTimestamps
+    self.previousTranscript = previousTranscript
   }
 
   /// Creates a transcription prompt from a text description string.
   ///
   /// Returns `nil` if the string is not a valid Whisper-style transcription prompt.
-  /// Valid format: `<|startoftranscript|><|{language}|><|transcribe|>[<|notimestamps|>]`
+  /// Valid format: `[<|startofprev|>{content}]<|startoftranscript|><|{language}|><|transcribe|>[<|notimestamps|>]`
   ///
   /// - Parameter description: The prompt string to parse.
   public init?(description: String) {
     guard promptRegex.matches(description) else { return nil }
 
     let groups = promptRegex.matchGroups(from: description)
-    guard
-      let language = groups.first.map({ String($0) })
-        .flatMap({ CactusSTTLanguage(rawValue: $0.lowercased()) })
-    else {
-      return nil
+    guard groups.count >= 1 else { return nil }
+
+    let rawLanguage = String(groups[0])
+    let language = CactusSTTLanguage(rawValue: rawLanguage.lowercased())
+
+    let previousTranscript: CactusTranscription.Content?
+    if let startOfPrev = description.range(of: startOfPrevToken, options: [.caseInsensitive]),
+      let startOfTranscript = description.range(
+        of: startOfTranscriptToken,
+        options: [.caseInsensitive]
+      ),
+      startOfPrev.lowerBound < startOfTranscript.lowerBound
+    {
+      let transcript = String(description[startOfPrev.upperBound..<startOfTranscript.lowerBound])
+      previousTranscript = CactusTranscription.Content(response: transcript)
+    } else {
+      previousTranscript = nil
     }
 
-    let hasNoTimestamps = groups.count > 1
+    let includeTimestamps = !description.lowercased().hasSuffix(notimestampsToken)
+
     self.language = language
-    self.includeTimestamps = !hasNoTimestamps
+    self.includeTimestamps = includeTimestamps
+    self.previousTranscript = previousTranscript
   }
 }
 
 private let promptRegex = try! RegularExpression(
-  #"(?i)<\|startoftranscript\|><\|([a-zA-Z]+)\|><\|transcribe\|>(<\|notimestamps\|>)?"#
+  #"(?i)^(?:<\|startofprev\|>[\s\S]*?)?<\|startoftranscript\|><\|([a-zA-Z]+)\|><\|transcribe\|>(?:<\|notimestamps\|>)?$"#
 )
+
+private let startOfPrevToken = "<|startofprev|>"
+private let startOfTranscriptToken = "<|startoftranscript|>"
+private let notimestampsToken = "<|notimestamps|>"

@@ -125,6 +125,21 @@ extension CactusLanguageModel {
 
   /// Options for generating a ``JSONCompletedChatTurn``.
   public struct JSONChatCompletionOptions: Sendable {
+    /// Defines how the JSON schema is included in the prompt.
+    public enum SchemaPromptMode: Sendable {
+      /// Default behavior - includes the JSON schema in the prompt to bias the model.
+      case `default`
+
+      /// Excludes the JSON schema from the prompt entirely.
+      ///
+      /// Use this if your model is fine-tuned to respond in the correct format, or if the schema
+      /// is included in an earlier part of the message history.
+      case exclude
+
+      /// Custom prompt builder that receives the original prompt content and JSON schema.
+      case custom(@Sendable (String, JSONSchema) throws -> String)
+    }
+
     /// The base ``ChatCompletion/Options`` used for inference.
     public var chatCompletionOptions: ChatCompletion.Options?
 
@@ -134,20 +149,26 @@ extension CactusLanguageModel {
     /// The decoder used when constructing ``Output`` from a JSON value.
     public var decoder: JSONSchema.Value.Decoder
 
+    /// The mode for including the JSON schema in the prompt.
+    public var schemaPromptMode: SchemaPromptMode
+
     /// Creates options for generating a ``JSONCompletedChatTurn``.
     ///
     /// - Parameters:
     ///   - chatCompletionOptions: The base ``ChatCompletion/Options`` used for inference.
     ///   - validator: The validator used when constructing ``Output`` from a JSON value.
     ///   - decoder: The decoder used when constructing ``Output`` from a JSON value.
+    ///   - schemaPromptMode: The mode for including the JSON schema in the prompt.
     public init(
       chatCompletionOptions: ChatCompletion.Options? = nil,
       validator: JSONSchema.Validator = .shared,
-      decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
+      decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder(),
+      schemaPromptMode: SchemaPromptMode = .default
     ) {
       self.chatCompletionOptions = chatCompletionOptions
       self.validator = validator
       self.decoder = decoder
+      self.schemaPromptMode = schemaPromptMode
     }
   }
 
@@ -278,7 +299,8 @@ extension CactusLanguageModel {
     let completedTurn = try self.complete(
       messages: self.messagesWithJSONSchemaPrompt(
         messages: messages,
-        jsonSchema: schema
+        jsonSchema: schema,
+        schemaPromptMode: options.schemaPromptMode
       ),
       options: options.chatCompletionOptions,
       maxBufferSize: maxBufferSize,
@@ -446,7 +468,8 @@ extension CactusLanguageModel {
     let completedTurn = try self.streamComplete(
       messages: self.messagesWithJSONSchemaPrompt(
         messages: messages,
-        jsonSchema: schema
+        jsonSchema: schema,
+        schemaPromptMode: options.schemaPromptMode
       ),
       parser: parser,
       options: options.chatCompletionOptions,
@@ -704,10 +727,35 @@ extension CactusLanguageModel.JSONCompletedChatTurn: Sendable where Output: Send
 extension CactusLanguageModel {
   private func messagesWithJSONSchemaPrompt(
     messages: [ChatMessage],
-    jsonSchema: JSONSchema
+    jsonSchema: JSONSchema,
+    schemaPromptMode: JSONChatCompletionOptions.SchemaPromptMode = .default
   ) throws -> [ChatMessage] {
-    let prompt = try self.jsonSchemaPrompt(for: jsonSchema)
+    switch schemaPromptMode {
+    case .default:
+      let prompt = try self.jsonSchemaPrompt(for: jsonSchema)
+      return self.appendPromptToLastUserMessage(prompt: prompt, messages: messages)
 
+    case .exclude:
+      return messages
+
+    case .custom(let builder):
+      let originalPrompt = self.lastUserMessageContent(messages: messages)
+      let prompt = try builder(originalPrompt, jsonSchema)
+      return self.appendPromptToLastUserMessage(prompt: prompt, messages: messages)
+    }
+  }
+
+  private func lastUserMessageContent(messages: [ChatMessage]) -> String {
+    if let lastUserIndex = messages.lastIndex(where: { $0.role == .user }) {
+      return messages[lastUserIndex].content
+    }
+    return ""
+  }
+
+  private func appendPromptToLastUserMessage(
+    prompt: String,
+    messages: [ChatMessage]
+  ) -> [ChatMessage] {
     if let lastUserIndex = messages.lastIndex(where: { $0.role == .user }) {
       var messages = messages
       messages[lastUserIndex].content += "\n\n\(prompt)"

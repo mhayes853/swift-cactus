@@ -57,7 +57,7 @@ struct `CactusVADSession tests` {
   @Test
   func `VAD With Custom Executor Succeeds`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .sileroVad())
-    let model = try await CactusLanguageModelActor(
+    let model = try CactusLanguageModelActor(
       executor: DispatchQueueSerialExecutor(),
       from: modelURL
     )

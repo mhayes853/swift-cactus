@@ -29,7 +29,7 @@ struct `CactusStreamTranscriber tests` {
     defer { cactus_destroy(modelPointer) }
 
     do {
-      _ = try CactusStreamTranscriber(model: modelPointer, isModelPointerManaged: false)
+      _ = try CactusStreamTranscriber(model: modelPointer)
     }
 
     let model = try CactusLanguageModel(

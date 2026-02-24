@@ -146,7 +146,7 @@ struct `CactusSTTSession tests` {
   @Test
   func `Custom Executor Transcription Succeeds`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-    let model = try await CactusLanguageModelActor(
+    let model = try CactusLanguageModelActor(
       executor: DispatchQueueSerialExecutor(),
       from: modelURL
     )

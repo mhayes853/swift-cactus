@@ -2,57 +2,57 @@
   {
     "completion" : {
       "cloud_handoff" : false,
-      "confidence" : 0.9321,
-      "decode_tokens" : 45,
-      "decode_tps" : 86.98,
+      "confidence" : 0.9373,
+      "decode_tokens" : 47,
+      "decode_tps" : 107.3,
       "function_calls" : [
 
       ],
       "prefill_tokens" : 9,
-      "prefill_tps" : 288.27,
-      "ram_usage_mb" : 581.19,
-      "response" : "Hello! It's a pleasure to assist you. Could you please provide more details about what you need help with? For example, are you looking for advice on a specific topic, or perhaps guidance on navigating certain situations?",
-      "time_to_first_token_ms" : 31.22,
-      "total_time_ms" : 537.06,
-      "total_tokens" : 54
+      "prefill_tps" : 306.38,
+      "ram_usage_mb" : 542.94,
+      "response" : "Hello! It's a pleasure to assist you. Could you please provide more details about what you need help with? For example, are you looking for advice on a specific topic, or perhaps troubleshooting an issue in your project?",
+      "time_to_first_token_ms" : 29.38,
+      "total_time_ms" : 458.07,
+      "total_tokens" : 56
     },
     "slug" : "lfm2-350m"
   },
   {
     "completion" : {
       "cloud_handoff" : false,
-      "confidence" : 0.8988,
-      "decode_tokens" : 107,
-      "decode_tps" : 46.99,
+      "confidence" : 0.8772,
+      "decode_tokens" : 200,
+      "decode_tps" : 54.37,
       "function_calls" : [
 
       ],
       "prefill_tokens" : 13,
-      "prefill_tps" : 209.38,
-      "ram_usage_mb" : 788.65,
-      "response" : "<think>\nOkay, the user is asking about some kind of data or information. I need to help them understand what they're dealing with.\n\nFirst, I should ask for more details. Are they talking about data in general? Or something specific?\n\nI also need to make sure that my response is helpful and answers their question as best as possible.\n<\/think>\n\nTo assist you better, could you clarify what type of \"data\" or \"information\" you are referring to? This will help me provide the most accurate support for your situation.",
-      "time_to_first_token_ms" : 62.09,
-      "total_time_ms" : 2317.68,
-      "total_tokens" : 120
+      "prefill_tps" : 219.78,
+      "ram_usage_mb" : 767.85,
+      "response" : "<think>\nOkay, the user is asking about some kind of structure or design. They might be looking for information on how to build something, like a house or office.\n\nI need to figure out what the user is really asking about. Are they interested in architecture, design principles, home planning, office layout? Or maybe it's more general and they want advice on building something from scratch?\n\nBut I also need to consider that maybe the user wants help with designing a room layout for an apartment.\n\nSo my job here is not only as an architect but also as someone who can guide someone through building their own space.\n\nTherefore my response should include both practical and conceptual aspects of architectural design: spatial organization; functional arrangement; aesthetic elements such as color schemes or symmetry in designs.\n\nSo putting this all together into a coherent answer.\n<\/think>\n\nTo address your query about designing a structure or space:\n\n### Key Aspects of Architectural Design:\n1. **Spatial Organization**:  \n   - Plan layouts (e.g",
+      "time_to_first_token_ms" : 59.15,
+      "total_time_ms" : 3719.14,
+      "total_tokens" : 213
     },
     "slug" : "qwen3-0.6b"
   },
   {
     "completion" : {
-      "cloud_handoff" : true,
-      "confidence" : 0.6986,
-      "decode_tokens" : 2,
-      "decode_tps" : 100.94,
+      "cloud_handoff" : false,
+      "confidence" : 0.8841,
+      "decode_tokens" : 200,
+      "decode_tps" : 97.3,
       "function_calls" : [
 
       ],
       "prefill_tokens" : 9,
-      "prefill_tps" : 370.08,
-      "ram_usage_mb" : 836.96,
-      "response" : "pickente",
-      "time_to_first_token_ms" : 24.32,
-      "total_time_ms" : 34.23,
-      "total_tokens" : 11
+      "prefill_tps" : 493.5,
+      "ram_usage_mb" : 812.11,
+      "response" : "A beautiful memory! A concise, heartfelt expression of gratitude for what you've learned. The journey is far from end, filled with the warmth of a new beginning. Take this as a reminder to cherish those who offer unexpected blessings and express your deepest gratitude. Whether it's building meaningful connections, nurturing loved ones, or simply being touched by something good about your everyday life, there are countless acts of kindness in our world that mean so much to us today.\n\n---\n\nWords are becoming increasingly rare without them! It evokes feelings of awe and admiration on many levels. What precious things have we gained? What treasures do we hold within ourselves? These lessons continue beyond the material journey inward: We acknowledge that each day brings us closer to gratitude for beings like these unimaginable creations around us all around this wide expanse of existence with compassion for goodness in other beings through what can be expressed in their hearts whether they come from human kindness towards nature or a kind heart towards another soul which becomes a subtle form yet",
+      "time_to_first_token_ms" : 18.24,
+      "total_time_ms" : 2063.43,
+      "total_tokens" : 209
     },
     "slug" : "gemma-3-270m-it"
   }
