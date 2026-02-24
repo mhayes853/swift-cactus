@@ -296,6 +296,59 @@ struct `CactusLanguageModelStructuredOutput tests` {
     expectNoDifference(completion.output.isFailure, true)
   }
 
+  @Test
+  func `JSON Complete Excludes Schema From Prompt When Schema Prompt Mode Is Exclude`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
+    let model = try CactusLanguageModel(from: modelURL)
+
+    let completion = try model.jsonComplete(
+      messages: [CactusLanguageModel.ChatMessage.user("Return a recipe.")],
+      as: RecipeOutput.self,
+      options: CactusLanguageModel.JSONChatCompletionOptions(
+        chatCompletionOptions: self.chatOptions(for: model),
+        schemaPromptMode: CactusLanguageModel.JSONChatCompletionOptions.SchemaPromptMode.exclude
+      )
+    )
+
+    let userMessages = completion.messages.filter { $0.role == .user }
+    for message in userMessages {
+      expectNoDifference(message.content.contains("JSON Schema"), false)
+    }
+  }
+
+  @Test
+  func `JSON Complete Uses Custom Prompt Builder When Schema Prompt Mode Is Custom`() async throws {
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
+    let model = try CactusLanguageModel(from: modelURL)
+
+    let originalUserContent = "Return a recipe."
+    let customMarker = "CUSTOM_PROMPT_MARKER_12345"
+    final class PromptCapture: @unchecked Sendable {
+      var value: String?
+    }
+    let capture = PromptCapture()
+
+    let completion = try model.jsonComplete(
+      messages: [CactusLanguageModel.ChatMessage.user(originalUserContent)],
+      as: RecipeOutput.self,
+      options: CactusLanguageModel.JSONChatCompletionOptions(
+        chatCompletionOptions: self.chatOptions(for: model),
+        schemaPromptMode: CactusLanguageModel.JSONChatCompletionOptions.SchemaPromptMode.custom { receivedPrompt, _ in
+          capture.value = receivedPrompt
+          return "\(customMarker) Custom: Use this schema"
+        }
+      )
+    )
+
+    let receivedOriginalPrompt = try #require(capture.value)
+    expectNoDifference(receivedOriginalPrompt, originalUserContent)
+
+    let userMessages = completion.messages.filter { $0.role == .user }
+    let lastUserMessage = try #require(userMessages.last)
+    expectNoDifference(lastUserMessage.content.contains(customMarker), true)
+    expectNoDifference(lastUserMessage.content.contains(originalUserContent), true)
+  }
+
   private func chatOptions(
     for model: CactusLanguageModel,
     forceFunctions: Bool = false

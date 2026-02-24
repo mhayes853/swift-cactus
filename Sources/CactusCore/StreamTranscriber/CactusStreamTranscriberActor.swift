@@ -68,8 +68,7 @@ public actor CactusStreamTranscriberActor {
     try self.init(
       executor: executor,
       streamTranscriber: CactusStreamTranscriber(
-        model: model,
-        isModelPointerManaged: true
+        model: model
       )
     )
   }
@@ -87,8 +86,7 @@ public actor CactusStreamTranscriberActor {
   ) {
     self.executor = executor
     self.streamTranscriber = CactusStreamTranscriber(
-      streamTranscribe: streamTranscribe,
-      isStreamPointerManaged: true
+      streamTranscribe: streamTranscribe
     )
     self.defaultExecutor = DefaultActorExecutor()
   }

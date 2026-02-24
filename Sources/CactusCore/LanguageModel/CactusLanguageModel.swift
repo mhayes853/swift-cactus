@@ -72,19 +72,16 @@ public final class CactusLanguageModel {
   /// - Parameters:
   ///   - model: The model pointer.
   ///   - configuration: A ``Configuration`` that must accurately represent the model.
-  ///   - isModelPointerManaged: Whether or not the model pointer is destroyed when the language
-  ///     model is deinitialized.
   public init(
     model: cactus_model_t,
-    configuration: Configuration,
-    isModelPointerManaged: Bool = false
+    configuration: Configuration
   ) throws {
     self.configuration = configuration
     self.configurationFile = try ConfigurationFile(
       contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
     )
     self.model = model
-    self.isModelPointerManaged = isModelPointerManaged
+    self.isModelPointerManaged = true
   }
 
   deinit {

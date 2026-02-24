@@ -64,11 +64,10 @@ public final class CactusTranscriptionStream: Sendable {
 
   /// Creates a transcription stream from a raw stream streamTranscriberActor pointer.
   ///
-  /// - Parameter streamTranscribe: The raw stream streamTranscriberActor pointer.
+  /// - Parameter streamTranscribe: The raw stream streamTranscriber pointer.
   public init(streamTranscribe: sending cactus_stream_transcribe_t) {
     let streamTranscriberActor = CactusStreamTranscriber(
-      streamTranscribe: streamTranscribe,
-      isStreamPointerManaged: true
+      streamTranscribe: streamTranscribe
     )
     self.streamTranscriberActor = CactusStreamTranscriberActor(streamTranscriber: streamTranscriberActor)
   }
@@ -86,8 +85,7 @@ public final class CactusTranscriptionStream: Sendable {
   /// - Parameter model: The raw model pointer.
   public init(model: sending cactus_model_t) throws {
     let streamTranscriberActor = try CactusStreamTranscriber(
-      model: model,
-      isModelPointerManaged: true
+      model: model
     )
     self.streamTranscriberActor = CactusStreamTranscriberActor(streamTranscriber: streamTranscriberActor)
   }

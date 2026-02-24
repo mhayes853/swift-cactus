@@ -22,15 +22,12 @@ public final class CactusStreamTranscriber {
   ///
   /// - Parameters:
   ///   - streamTranscribe: The raw stream transcriber pointer.
-  ///   - isStreamPointerManaged: Whether or not the stream transcriber pointer is managed by the instance.
   public convenience init(
-    streamTranscribe: cactus_stream_transcribe_t,
-    isStreamPointerManaged: Bool = false
+    streamTranscribe: cactus_stream_transcribe_t
   ) {
     self.init(
       streamTranscribe: streamTranscribe,
-      model: nil,
-      isStreamPointerManaged: isStreamPointerManaged
+      model: nil
     )
   }
 
@@ -42,33 +39,30 @@ public final class CactusStreamTranscriber {
     guard let model = cactus_init(modelURL.nativePath, nil, false) else {
       throw CactusStreamTranscriberError()
     }
-    try self.init(model: model, isModelPointerManaged: true)
+    try self.init(model: model)
   }
 
   /// Creates a stream transcriber from a raw model pointer.
   ///
   /// - Parameters:
   ///   - model: The raw model pointer.
-  ///   - isModelPointerManaged: Whether or not the model pointer is managed by the instance.
-  public convenience init(model: cactus_model_t, isModelPointerManaged: Bool = false) throws {
+  public convenience init(model: cactus_model_t) throws {
     guard let streamTranscribe = cactus_stream_transcribe_start(model, nil) else {
       throw CactusStreamTranscriberError()
     }
     self.init(
       streamTranscribe: streamTranscribe,
-      model: isModelPointerManaged ? model : nil,
-      isStreamPointerManaged: true
+      model: model
     )
   }
 
   private init(
     streamTranscribe: cactus_stream_transcribe_t,
-    model: cactus_model_t?,
-    isStreamPointerManaged: Bool = false
+    model: cactus_model_t?
   ) {
     self.streamTranscribe = streamTranscribe
     self.model = model
-    self.isStreamPointerManaged = isStreamPointerManaged
+    self.isStreamPointerManaged = true
   }
 
   deinit {
