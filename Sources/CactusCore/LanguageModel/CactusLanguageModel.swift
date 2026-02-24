@@ -49,20 +49,14 @@ public final class CactusLanguageModel {
   /// Loads a model from the specified ``Configuration``.
   ///
   /// - Parameter configuration: The ``Configuration``.
-  public init(configuration: Configuration) throws {
-    self.configuration = configuration
+  public convenience init(configuration: Configuration) throws {
     let model = cactus_init(
       configuration.modelURL.nativePath,
       configuration.corpusDirectoryURL?.nativePath,
       configuration.cacheIndex
     )
     guard let model else { throw ModelCreationError(configuration: configuration) }
-    self.model = model
-    let configFile = try ConfigurationFile(
-      contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
-    )
-    self.configurationFile = configFile
-    self.isModelPointerManaged = true
+    try self.init(model: model, configuration: configuration, isModelPointerManaged: true)
   }
 
   /// Creates a language model from the specified model pointer and configuration.
@@ -74,14 +68,15 @@ public final class CactusLanguageModel {
   ///   - configuration: A ``Configuration`` that must accurately represent the model.
   public init(
     model: cactus_model_t,
-    configuration: Configuration
+    configuration: Configuration,
+    isModelPointerManaged: Bool = false
   ) throws {
     self.configuration = configuration
     self.configurationFile = try ConfigurationFile(
       contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
     )
     self.model = model
-    self.isModelPointerManaged = true
+    self.isModelPointerManaged = isModelPointerManaged
   }
 
   deinit {

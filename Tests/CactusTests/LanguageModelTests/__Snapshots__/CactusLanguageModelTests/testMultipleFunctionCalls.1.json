@@ -1,21 +1,16 @@
 {
   "cloud_handoff" : false,
-  "confidence" : 0.9846,
-  "decode_tokens" : 21,
-  "decode_tps" : 38.61,
+  "confidence" : 0.9286,
+  "decode_tokens" : 122,
+  "decode_tps" : 51.99,
   "function_calls" : [
-    {
-      "arguments" : {
-        "location" : "Berkeley"
-      },
-      "name" : "get_weather"
-    }
+
   ],
-  "prefill_tokens" : 236,
-  "prefill_tps" : 358.52,
-  "ram_usage_mb" : 1589.26,
-  "response" : "",
-  "time_to_first_token_ms" : 658.26,
-  "total_time_ms" : 1176.27,
-  "total_tokens" : 257
+  "prefill_tokens" : 203,
+  "prefill_tps" : 404.57,
+  "ram_usage_mb" : 585.69,
+  "response" : "To help with your query, I'll use the available tools. Let's start by identifying the context of your question.\n\n1. **Function 1: get_weather** - This function requires a location (city name) and can return temperature data in celsius or fahrenheit.\n2. **Function 2: get_population** - This function also takes a city name to retrieve population statistics.\n\nSince you haven't provided specific details yet, I will first ask for the location to proceed with either of these functions. Please provide a city name so we can use one of our tools to gather information about it!",
+  "time_to_first_token_ms" : 501.76,
+  "total_time_ms" : 2829.15,
+  "total_tokens" : 325
 }

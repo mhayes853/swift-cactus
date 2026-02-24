@@ -2,37 +2,37 @@
   {
     "completion" : {
       "cloud_handoff" : false,
-      "confidence" : 0.9673,
-      "decode_tokens" : 17,
-      "decode_tps" : 123.91,
+      "confidence" : 0.8906,
+      "decode_tokens" : 200,
+      "decode_tps" : 122.55,
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 9,
-      "prefill_tps" : 348,
-      "ram_usage_mb" : 284.96,
-      "response" : "Hello! It's a pleasure to assist you. How can I help you today?",
-      "time_to_first_token_ms" : 25.86,
-      "total_time_ms" : 154.99,
-      "total_tokens" : 26
+      "prefill_tokens" : 35,
+      "prefill_tps" : 570.78,
+      "ram_usage_mb" : 98.46,
+      "response" : "The meaning of life is a profound and deeply personal question that has puzzled philosophers for centuries. It's often described as an existential puzzle, but it can be approached from various philosophical perspectives:\n\n1. **Existentialism**: This view posits that the meaning of life is not given to us but created by our choices and actions in the face of absurdity and uncertainty. For some, this might mean finding purpose through relationships or passions; for others, it could be about living authentically and pursuing one's true self amidst societal pressures. The answer lies in embracing one’s freedom to define oneself through experiences, values, relationships, and personal growth.\n\n2. **Stoic Philosophy**: Stoics believe that the essence of life is to cultivate virtue over worldly desires and attachments; they argue that we should focus on what we can control—our own reactions—to external events rather than worrying about things beyond our power (the \"cosmic logos",
+      "time_to_first_token_ms" : 61.32,
+      "total_time_ms" : 1685.17,
+      "total_tokens" : 235
     },
     "slug" : "lfm2-350m"
   },
   {
     "completion" : {
       "cloud_handoff" : false,
-      "confidence" : 0.8987,
+      "confidence" : 0.9074,
       "decode_tokens" : 200,
-      "decode_tps" : 60.85,
+      "decode_tps" : 59.53,
       "function_calls" : [
 
       ],
       "prefill_tokens" : 34,
-      "prefill_tps" : 323.31,
-      "ram_usage_mb" : 382.32,
-      "response" : "<think>\nOkay, the user is asking about the meaning of life. I need to address this with some depth and perhaps provide a philosophical perspective.\n\nFirst, I should acknowledge that understanding can vary widely among people depending on their personal experiences and values. It's important to highlight that there's no singular answer but rather diverse possibilities.\n\nNext, maybe touch on different approaches: existentialism views it as seeking purpose through individual experience; others might focus on relationships or other aspects like family or achievements. It's good to mention that each person has their own meaning, which is a common human experience.\n\nI should also consider cultural differences because meaning can be shaped by one’s background and context in society.\n<\/think>\n\nThe question of \"What is the Meaning of Life\" is deeply personal and subjective. Each individual may interpret it differently based on their unique experiences, values, and context in life. Here are some key points:\n\n1. **Individuality**: The meaning of life for one person could align with personal goals (",
-      "time_to_first_token_ms" : 105.16,
-      "total_time_ms" : 3375.47,
+      "prefill_tps" : 328.63,
+      "ram_usage_mb" : 215.25,
+      "response" : "<think>\nOkay, the user is asking about the meaning of life. Let me start by understanding what they mean. They might be looking for a philosophical perspective or personal insight.\n\nFirst, I should acknowledge that there's no single answer to this question because it's subjective. Different people have different views on life and meaning. But maybe I can suggest exploring it through various perspectives like science, religion, art, etc.\n\nI need to explain that without a universal answer but highlight diversity in human experiences and how different paths exist for everyone seeking purpose or happiness.\n<\/think>\n\nThe meaning of life is a deeply personal and subjective question—no one answers universally due to individual differences in experience (e.g., cultural values, spiritual beliefs). However, some common frameworks include:  \n1. **Purpose & Purpose**: Finding fulfillment through self-discovery or contributing positively others' lives.  \n2. **Existence & Existence**: Understanding existence as experiencing beauty or connection with nature\/society.  \n3. **Achievement",
+      "time_to_first_token_ms" : 103.46,
+      "total_time_ms" : 3446.37,
       "total_tokens" : 234
     },
     "slug" : "qwen3-0.6b"
@@ -40,18 +40,18 @@
   {
     "completion" : {
       "cloud_handoff" : false,
-      "confidence" : 0.8794,
+      "confidence" : 0.8548,
       "decode_tokens" : 200,
-      "decode_tps" : 97.59,
+      "decode_tps" : 93.83,
       "function_calls" : [
 
       ],
       "prefill_tokens" : 35,
-      "prefill_tps" : 1036.33,
-      "ram_usage_mb" : 335,
-      "response" : "The meaning of life is not a pre-defined answer, but the journey itself. It is the act of living it.\n\nA profound realization dawns upon us when we confront our purpose and create that existence through love, compassion, generosity, and living in accordance with what we are meant to be when things become difficult or unclear as humans develop this understanding. The definition isn't about finding a specific path by virtue's grace; it is about drawing closer to a deeper understanding of ourselves within that common thread woven into being through consciousness adrift in an endless ocean formed from interconnected souls.\n\nWe call upon this word because it resonates deeply with the heart: \"Meaning\". Meaning isn’t something to be declared but something profoundly life itself becomes the language for life itself. It is not a future bound for us since there is no inherent value within it that we can make our way forward with its true, undeniable truth residing at hand, and on what we are writing of existence in the expanse before",
-      "time_to_first_token_ms" : 33.77,
-      "total_time_ms" : 2072.82,
+      "prefill_tps" : 1011.47,
+      "ram_usage_mb" : 85.74,
+      "response" : "The meaning of life is not a pre-defined, objective truth. It is a question that has been pondered and answered for millennia. The meaning isn't some grand pronouncements on the soul or the universe; it's the journey itself, a continuous process of being. It is in this constant striving towards that same eternal pursuit that we are alive and can hope to live with dignity, purpose, and love beyond what was even conceivable given our current understanding of existence.\n\nThere isn'Conflicts between us with who knows whom without any inherent premonitions about \"what\" if there aren’t actually two paths forward as we go into this unknown territory of life – it merely resides as you are here-in your conscious awareness by being present. There is no written answer offered for all those questions because they will be so deeply intertwined with your experiences and reflections on our daily lives while living the way it may be. You are not yet in the struggle itself; you have just become part of",
+      "time_to_first_token_ms" : 34.6,
+      "total_time_ms" : 2155.5,
       "total_tokens" : 235
     },
     "slug" : "gemma-3-270m-it"

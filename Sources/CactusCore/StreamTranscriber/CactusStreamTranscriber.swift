@@ -23,11 +23,13 @@ public final class CactusStreamTranscriber {
   /// - Parameters:
   ///   - streamTranscribe: The raw stream transcriber pointer.
   public convenience init(
-    streamTranscribe: cactus_stream_transcribe_t
+    streamTranscribe: cactus_stream_transcribe_t,
+    isStreamPointerManaged: Bool = false
   ) {
     self.init(
       streamTranscribe: streamTranscribe,
-      model: nil
+      model: nil,
+      isStreamPointerManaged: isStreamPointerManaged
     )
   }
 
@@ -52,17 +54,19 @@ public final class CactusStreamTranscriber {
     }
     self.init(
       streamTranscribe: streamTranscribe,
-      model: model
+      model: model,
+      isStreamPointerManaged: true
     )
   }
 
   private init(
     streamTranscribe: cactus_stream_transcribe_t,
-    model: cactus_model_t?
+    model: cactus_model_t?,
+    isStreamPointerManaged: Bool
   ) {
     self.streamTranscribe = streamTranscribe
     self.model = model
-    self.isStreamPointerManaged = true
+    self.isStreamPointerManaged = isStreamPointerManaged
   }
 
   deinit {
@@ -177,7 +181,9 @@ extension CactusStreamTranscriber.ProcessedTranscription: Decodable {
     self.didHandoffToCloud = try container.decode(Bool.self, forKey: .didHandoffToCloud)
     self.confirmed = try container.decode(String.self, forKey: .confirmed)
     self.pending = try container.decode(String.self, forKey: .pending)
-    self.bufferDuration = .milliseconds(try container.decode(Double.self, forKey: .bufferDurationMs))
+    self.bufferDuration = .milliseconds(
+      try container.decode(Double.self, forKey: .bufferDurationMs)
+    )
     self.confidence = try container.decode(Double.self, forKey: .confidence)
     self.cloudResult = try container.decodeIfPresent(String.self, forKey: .cloudResult)
     self.cloudJobId = try container.decode(Int.self, forKey: .cloudJobId)
@@ -208,7 +214,10 @@ extension CactusStreamTranscriber.ProcessedTranscription: Encodable {
     try container.encodeIfPresent(self.cloudResult, forKey: .cloudResult)
     try container.encode(self.cloudJobId, forKey: .cloudJobId)
     try container.encode(self.cloudResultJobId, forKey: .cloudResultJobId)
-    try container.encode(self.durationToFirstToken.secondsDouble * 1000, forKey: .timeToFirstTokenMs)
+    try container.encode(
+      self.durationToFirstToken.secondsDouble * 1000,
+      forKey: .timeToFirstTokenMs
+    )
     try container.encode(self.totalDuration.secondsDouble * 1000, forKey: .totalTimeMs)
     try container.encode(self.prefillTokens, forKey: .prefillTokens)
     try container.encode(self.prefillTps, forKey: .prefillTps)
