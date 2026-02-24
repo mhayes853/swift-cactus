@@ -348,25 +348,9 @@ class MainActivity : ComponentActivity() {
 }
 ```
 
-### ARM Linux Setup
-
-On ARM Linux, APIs such as ``CactusModelsDirectory/shared`` do not have a default shared directory. Set `CactusModelsDirectory.sharedDirectoryURL` during application startup before using those APIs.
-
-```swift
-import Cactus
-import Foundation
-
-func bootstrapApp() {
-  CactusModelsDirectory.sharedDirectoryURL = URL(fileURLWithPath: "<models-directory>")
-
-  // ...
-}
-```
-
 ## Topics
 
 ### Model Downloading and Storage
-- ``CactusModelsDirectory/sharedDirectoryURL``
 - ``CactusModelsDirectory``
 - ``CactusLanguageModel/DownloadTask``
 - ``CactusLanguageModel/downloadModel(slug:to:configuration:onProgress:)``
