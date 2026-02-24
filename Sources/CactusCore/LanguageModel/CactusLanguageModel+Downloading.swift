@@ -114,10 +114,20 @@ extension CactusLanguageModel {
     }
 
     /// The library version of the model.
+    ///
+    /// New constants are added to the `Version` struct whenever the weights for the cactus model
+    /// format itself are changed, not the underlying version of the cactus engine itself. As such
+    ///  there will be gaps between version numbers, which indicates that the weights were not
+    /// changed between those engine releases. When such change occurs, previous version constants
+    /// will be deprecated.
     public struct Version: Hashable, Sendable, RawRepresentable {
-      @available(*, deprecated, message: "Use v1_7 for Hugging Face model downloads.")
+      @available(*, deprecated, message: "v1.5 weights are no longer supported.")
       public static let v1_5 = Self(rawValue: "v1.5")
+
+      @available(*, deprecated, message: "v1.7 weights are no longer supported.")
       public static let v1_7 = Self(rawValue: "v1.7")
+
+      public static let v1_8 = Self(rawValue: "v1.8")
 
       public let rawValue: String
 
@@ -195,7 +205,7 @@ extension CactusLanguageModel {
     public init(
       slug: String,
       quantization: Quantization = .int4,
-      version: Version = .v1_7,
+      version: Version = .v1_8,
       pro: Pro? = nil
     ) {
       self.slug = slug
@@ -208,21 +218,21 @@ extension CactusLanguageModel {
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func gemma3_270mIt(quantization: Quantization = .int4) -> Self {
-      Self(slug: "gemma-3-270m-it", quantization: quantization, version: .v1_7)
+      Self(slug: "gemma-3-270m-it", quantization: quantization, version: .v1_8)
     }
 
     /// Creates a download request for the `functiongemma-270m-it` model.
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func functiongemma270mIt(quantization: Quantization = .int4) -> Self {
-      Self(slug: "functiongemma-270m-it", quantization: quantization, version: .v1_7)
+      Self(slug: "functiongemma-270m-it", quantization: quantization, version: .v1_8)
     }
 
     /// Creates a download request for the `gemma-3-1b-it` model.
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func gemma3_1bIt(quantization: Quantization = .int4) -> Self {
-      Self(slug: "gemma-3-1b-it", quantization: quantization, version: .v1_7)
+      Self(slug: "gemma-3-1b-it", quantization: quantization, version: .v1_8)
     }
 
     /// Creates a download request for the `whisper-small` model.
@@ -234,7 +244,7 @@ extension CactusLanguageModel {
       quantization: Quantization = .int4,
       pro: Pro? = nil
     ) -> Self {
-      Self(slug: "whisper-small", quantization: quantization, version: .v1_7, pro: pro)
+      Self(slug: "whisper-small", quantization: quantization, version: .v1_8, pro: pro)
     }
 
     /// Creates a download request for the `whisper-medium` model.
@@ -246,63 +256,63 @@ extension CactusLanguageModel {
       quantization: Quantization = .int4,
       pro: Pro? = nil
     ) -> Self {
-      Self(slug: "whisper-medium", quantization: quantization, version: .v1_7, pro: pro)
+      Self(slug: "whisper-medium", quantization: quantization, version: .v1_8, pro: pro)
     }
 
     /// Creates a download request for the `lfm2-350m` model.
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func lfm2_350m(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2-350m", quantization: quantization, version: .v1_7)
+      Self(slug: "lfm2-350m", quantization: quantization, version: .v1_8)
     }
 
     /// Creates a download request for the `lfm2-700m` model.
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func lfm2_700m(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2-700m", quantization: quantization, version: .v1_7)
+      Self(slug: "lfm2-700m", quantization: quantization, version: .v1_8)
     }
 
     /// Creates a download request for the `lfm2-1.2b` model.
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func lfm2_1_2b(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2-1.2b", quantization: quantization, version: .v1_7)
+      Self(slug: "lfm2-1.2b", quantization: quantization, version: .v1_8)
     }
 
     /// Creates a download request for the `lfm2-1.2b-rag` model.
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func lfm2_1_2bRag(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2-1.2b-rag", quantization: quantization, version: .v1_7)
+      Self(slug: "lfm2-1.2b-rag", quantization: quantization, version: .v1_8)
     }
 
     /// Creates a download request for the `lfm2-1.2b-tool` model.
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func lfm2_1_2bTool(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2-1.2b-tool", quantization: quantization, version: .v1_7)
+      Self(slug: "lfm2-1.2b-tool", quantization: quantization, version: .v1_8)
     }
 
     /// Creates a download request for the `lfm2.5-1.2b-instruct` model.
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func lfm2_5_1_2bInstruct(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2.5-1.2b-instruct", quantization: quantization, version: .v1_7)
+      Self(slug: "lfm2.5-1.2b-instruct", quantization: quantization, version: .v1_8)
     }
 
     /// Creates a download request for the `lfm2.5-1.2b-thinking` model.
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func lfm2_5_1_2bThinking(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2.5-1.2b-thinking", quantization: quantization, version: .v1_7)
+      Self(slug: "lfm2.5-1.2b-thinking", quantization: quantization, version: .v1_8)
     }
 
     /// Creates a download request for the `lfm2-2.6b` model.
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func lfm2_2_6b(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2-2.6b", quantization: quantization, version: .v1_7)
+      Self(slug: "lfm2-2.6b", quantization: quantization, version: .v1_8)
     }
 
     /// Creates a download request for the `lfm2-vl-450m` model.
@@ -314,7 +324,7 @@ extension CactusLanguageModel {
       quantization: Quantization = .int4,
       pro: Pro? = nil
     ) -> Self {
-      Self(slug: "lfm2-vl-450m", quantization: quantization, version: .v1_7, pro: pro)
+      Self(slug: "lfm2-vl-450m", quantization: quantization, version: .v1_8, pro: pro)
     }
 
     /// Creates a download request for the `lfm2.5-vl-1.6b` model.
@@ -326,35 +336,35 @@ extension CactusLanguageModel {
       quantization: Quantization = .int4,
       pro: Pro? = nil
     ) -> Self {
-      Self(slug: "lfm2.5-vl-1.6b", quantization: quantization, version: .v1_7, pro: pro)
+      Self(slug: "lfm2.5-vl-1.6b", quantization: quantization, version: .v1_8, pro: pro)
     }
 
     /// Creates a download request for the `qwen3-0.6b` model.
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func qwen3_0_6b(quantization: Quantization = .int4) -> Self {
-      Self(slug: "qwen3-0.6b", quantization: quantization, version: .v1_7)
+      Self(slug: "qwen3-0.6b", quantization: quantization, version: .v1_8)
     }
 
     /// Creates a download request for the `qwen3-embedding-0.6b` model.
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func qwen3Embedding_0_6b(quantization: Quantization = .int4) -> Self {
-      Self(slug: "qwen3-embedding-0.6b", quantization: quantization, version: .v1_7)
+      Self(slug: "qwen3-embedding-0.6b", quantization: quantization, version: .v1_8)
     }
 
     /// Creates a download request for the `qwen3-1.7b` model.
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func qwen3_1_7b(quantization: Quantization = .int4) -> Self {
-      Self(slug: "qwen3-1.7b", quantization: quantization, version: .v1_7)
+      Self(slug: "qwen3-1.7b", quantization: quantization, version: .v1_8)
     }
 
     /// Creates a download request for the `nomic-embed-text-v2-moe` model.
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func nomicEmbedTextV2Moe(quantization: Quantization = .int4) -> Self {
-      Self(slug: "nomic-embed-text-v2-moe", quantization: quantization, version: .v1_7)
+      Self(slug: "nomic-embed-text-v2-moe", quantization: quantization, version: .v1_8)
     }
 
     /// Creates a download request for the `moonshine-base` model.
@@ -366,14 +376,14 @@ extension CactusLanguageModel {
       quantization: Quantization = .int4,
       pro: Pro? = nil
     ) -> Self {
-      Self(slug: "moonshine-base", quantization: quantization, version: .v1_7, pro: pro)
+      Self(slug: "moonshine-base", quantization: quantization, version: .v1_8, pro: pro)
     }
 
     /// Creates a download request for the `silero-vad` model.
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func sileroVad(quantization: Quantization = .int4) -> Self {
-      Self(slug: "silero-vad", quantization: quantization, version: .v1_7)
+      Self(slug: "silero-vad", quantization: quantization, version: .v1_8)
     }
   }
 }

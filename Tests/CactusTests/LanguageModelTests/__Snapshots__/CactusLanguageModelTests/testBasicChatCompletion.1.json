@@ -2,57 +2,57 @@
   {
     "completion" : {
       "cloud_handoff" : false,
-      "confidence" : 0.9373,
-      "decode_tokens" : 47,
-      "decode_tps" : 107.3,
+      "confidence" : 0.9673,
+      "decode_tokens" : 17,
+      "decode_tps" : 123.91,
       "function_calls" : [
 
       ],
       "prefill_tokens" : 9,
-      "prefill_tps" : 306.38,
-      "ram_usage_mb" : 542.94,
-      "response" : "Hello! It's a pleasure to assist you. Could you please provide more details about what you need help with? For example, are you looking for advice on a specific topic, or perhaps troubleshooting an issue in your project?",
-      "time_to_first_token_ms" : 29.38,
-      "total_time_ms" : 458.07,
-      "total_tokens" : 56
+      "prefill_tps" : 348,
+      "ram_usage_mb" : 284.96,
+      "response" : "Hello! It's a pleasure to assist you. How can I help you today?",
+      "time_to_first_token_ms" : 25.86,
+      "total_time_ms" : 154.99,
+      "total_tokens" : 26
     },
     "slug" : "lfm2-350m"
   },
   {
     "completion" : {
       "cloud_handoff" : false,
-      "confidence" : 0.8772,
+      "confidence" : 0.8987,
       "decode_tokens" : 200,
-      "decode_tps" : 54.37,
+      "decode_tps" : 60.85,
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 13,
-      "prefill_tps" : 219.78,
-      "ram_usage_mb" : 767.85,
-      "response" : "<think>\nOkay, the user is asking about some kind of structure or design. They might be looking for information on how to build something, like a house or office.\n\nI need to figure out what the user is really asking about. Are they interested in architecture, design principles, home planning, office layout? Or maybe it's more general and they want advice on building something from scratch?\n\nBut I also need to consider that maybe the user wants help with designing a room layout for an apartment.\n\nSo my job here is not only as an architect but also as someone who can guide someone through building their own space.\n\nTherefore my response should include both practical and conceptual aspects of architectural design: spatial organization; functional arrangement; aesthetic elements such as color schemes or symmetry in designs.\n\nSo putting this all together into a coherent answer.\n<\/think>\n\nTo address your query about designing a structure or space:\n\n### Key Aspects of Architectural Design:\n1. **Spatial Organization**:  \n   - Plan layouts (e.g",
-      "time_to_first_token_ms" : 59.15,
-      "total_time_ms" : 3719.14,
-      "total_tokens" : 213
+      "prefill_tokens" : 34,
+      "prefill_tps" : 323.31,
+      "ram_usage_mb" : 382.32,
+      "response" : "<think>\nOkay, the user is asking about the meaning of life. I need to address this with some depth and perhaps provide a philosophical perspective.\n\nFirst, I should acknowledge that understanding can vary widely among people depending on their personal experiences and values. It's important to highlight that there's no singular answer but rather diverse possibilities.\n\nNext, maybe touch on different approaches: existentialism views it as seeking purpose through individual experience; others might focus on relationships or other aspects like family or achievements. It's good to mention that each person has their own meaning, which is a common human experience.\n\nI should also consider cultural differences because meaning can be shaped by one’s background and context in society.\n<\/think>\n\nThe question of \"What is the Meaning of Life\" is deeply personal and subjective. Each individual may interpret it differently based on their unique experiences, values, and context in life. Here are some key points:\n\n1. **Individuality**: The meaning of life for one person could align with personal goals (",
+      "time_to_first_token_ms" : 105.16,
+      "total_time_ms" : 3375.47,
+      "total_tokens" : 234
     },
     "slug" : "qwen3-0.6b"
   },
   {
     "completion" : {
       "cloud_handoff" : false,
-      "confidence" : 0.8841,
+      "confidence" : 0.8794,
       "decode_tokens" : 200,
-      "decode_tps" : 97.3,
+      "decode_tps" : 97.59,
       "function_calls" : [
 
       ],
-      "prefill_tokens" : 9,
-      "prefill_tps" : 493.5,
-      "ram_usage_mb" : 812.11,
-      "response" : "A beautiful memory! A concise, heartfelt expression of gratitude for what you've learned. The journey is far from end, filled with the warmth of a new beginning. Take this as a reminder to cherish those who offer unexpected blessings and express your deepest gratitude. Whether it's building meaningful connections, nurturing loved ones, or simply being touched by something good about your everyday life, there are countless acts of kindness in our world that mean so much to us today.\n\n---\n\nWords are becoming increasingly rare without them! It evokes feelings of awe and admiration on many levels. What precious things have we gained? What treasures do we hold within ourselves? These lessons continue beyond the material journey inward: We acknowledge that each day brings us closer to gratitude for beings like these unimaginable creations around us all around this wide expanse of existence with compassion for goodness in other beings through what can be expressed in their hearts whether they come from human kindness towards nature or a kind heart towards another soul which becomes a subtle form yet",
-      "time_to_first_token_ms" : 18.24,
-      "total_time_ms" : 2063.43,
-      "total_tokens" : 209
+      "prefill_tokens" : 35,
+      "prefill_tps" : 1036.33,
+      "ram_usage_mb" : 335,
+      "response" : "The meaning of life is not a pre-defined answer, but the journey itself. It is the act of living it.\n\nA profound realization dawns upon us when we confront our purpose and create that existence through love, compassion, generosity, and living in accordance with what we are meant to be when things become difficult or unclear as humans develop this understanding. The definition isn't about finding a specific path by virtue's grace; it is about drawing closer to a deeper understanding of ourselves within that common thread woven into being through consciousness adrift in an endless ocean formed from interconnected souls.\n\nWe call upon this word because it resonates deeply with the heart: \"Meaning\". Meaning isn’t something to be declared but something profoundly life itself becomes the language for life itself. It is not a future bound for us since there is no inherent value within it that we can make our way forward with its true, undeniable truth residing at hand, and on what we are writing of existence in the expanse before",
+      "time_to_first_token_ms" : 33.77,
+      "total_time_ms" : 2072.82,
+      "total_tokens" : 235
     },
     "slug" : "gemma-3-270m-it"
   }
