@@ -485,7 +485,39 @@ extension CactusModelsDirectory {
   public func removeModel(
     with request: CactusLanguageModel.PlatformDownloadRequest
   ) throws {
-    let delegate = self.state.withLock { state in state.delegate }
+    try self.state.withLock { state in
+      try self._removeModel(request: request, state: state)
+    }
+  }
+
+  /// Removes all stored models that match the given predicate.
+  ///
+  /// - Parameter predicate: A closure that takes a ``StoredModel`` and returns a `Bool`
+  ///   indicating whether the model should be removed.
+  public func removeModels(where predicate: (StoredModel) -> Bool) throws {
+    try self.state.withLock { state in
+      let modelsToRemove = self.storedModels().filter(predicate)
+
+      var errors: [any Error] = []
+      for model in modelsToRemove {
+        do {
+          try self._removeModel(request: model.request, state: state)
+        } catch {
+          errors.append(error)
+        }
+      }
+
+      if !errors.isEmpty {
+        throw RemoveModelsError(errors: errors)
+      }
+    }
+  }
+
+  private func _removeModel(
+    request: CactusLanguageModel.PlatformDownloadRequest,
+    state: sending State
+  ) throws {
+    let delegate = state.delegate
 
     delegate?.modelsDirectoryWillRemoveModel(self, request: request)
     do {
@@ -529,6 +561,12 @@ extension CactusModelsDirectory: _Observable {
 // MARK: - Helpers
 
 extension CactusModelsDirectory {
+  /// An error that aggregates multiple removal failures.
+  public struct RemoveModelsError: Error, Sendable {
+    /// The errors that occurred during model removal.
+    public let errors: [any Error]
+  }
+
   static let ordinaryDirectoryName = "__ordinary__"
 
   private func destinationURL(

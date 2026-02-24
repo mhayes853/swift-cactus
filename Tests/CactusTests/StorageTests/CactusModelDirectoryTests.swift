@@ -53,6 +53,21 @@
     }
 
     @Test
+    func `Removes Models Matching Predicate`() async throws {
+      let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
+      directory.delegate = CallbackDelegate()
+
+      let request1 = CactusLanguageModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
+      let request2 = CactusLanguageModel.PlatformDownloadRequest.lfm2Vl_450m()
+      _ = try await directory.modelURL(for: request1, configuration: self.configuration)
+      _ = try await directory.modelURL(for: request2, configuration: self.configuration)
+
+      try directory.removeModels { $0.request == request1 }
+
+      expectNoDifference(directory.storedModels().map(\.request), [request2])
+    }
+
+    @Test
     func `Shares Model Download Tasks`() async throws {
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
       directory.delegate = CallbackDelegate()
