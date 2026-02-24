@@ -211,7 +211,6 @@ extension CactusAgentSession {
   ///   - request: The user message request for this turn.
   ///   - outputType: The output type to decode.
   ///   - schema: The JSON schema used to constrain and validate generated output.
-  ///   - includeSchemaInPrompt: Whether to include schema instructions in the user prompt.
   ///   - validator: The validator used to validate generated JSON values.
   ///   - decoder: The decoder used to decode the validated JSON value into `Output`.
   /// - Returns: A completion containing structured output and new entries.
@@ -220,7 +219,6 @@ extension CactusAgentSession {
     to request: CactusUserMessage,
     generating outputType: Output.Type,
     schema: JSONSchema,
-    includeSchemaInPrompt: Bool = true,
     validator: JSONSchema.Validator = .shared,
     decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
   ) async throws -> CactusCompletion<Output> {
@@ -232,7 +230,6 @@ extension CactusAgentSession {
   /// - Parameters:
   ///   - request: The user message request for this turn.
   ///   - outputType: The output type to decode.
-  ///   - includeSchemaInPrompt: Whether to include schema instructions in the user prompt.
   ///   - validator: The validator used to validate generated JSON values.
   ///   - decoder: The decoder used to decode the validated JSON value into `Output`.
   /// - Returns: A completion containing structured output and new entries.
@@ -240,7 +237,6 @@ extension CactusAgentSession {
   nonisolated(nonsending) public func respond<Output: JSONGenerable & Sendable>(
     to request: CactusUserMessage,
     generating outputType: Output.Type = Output.self,
-    includeSchemaInPrompt: Bool = true,
     validator: JSONSchema.Validator = .shared,
     decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
   ) async throws -> CactusCompletion<Output> {

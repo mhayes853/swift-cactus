@@ -10,7 +10,6 @@ extension CactusUserMessage {
       topK: self.topK,
       stopSequences: self.stopSequences,
       forceFunctions: self.forceFunctions,
-      confidenceThreshold: self.cloudHandoffThreshold,
       toolRagTopK: self.toolRagTopK,
       includeStopSequences: self.includeStopSequences,
       isTelemetryEnabled: self.isTelemetryEnabled
@@ -30,7 +29,6 @@ extension CactusUserMessage {
     self.topK = options.topK
     self.stopSequences = options.stopSequences
     self.forceFunctions = options.forceFunctions
-    self.cloudHandoffThreshold = options.confidenceThreshold
     self.toolRagTopK = options.toolRagTopK
     self.includeStopSequences = options.includeStopSequences
     self.isTelemetryEnabled = options.isTelemetryEnabled
@@ -50,7 +48,6 @@ extension CactusUserMessage {
     self.topK = options.topK
     self.stopSequences = options.stopSequences
     self.forceFunctions = options.forceFunctions
-    self.cloudHandoffThreshold = options.confidenceThreshold
     self.toolRagTopK = options.toolRagTopK
     self.includeStopSequences = options.includeStopSequences
     self.isTelemetryEnabled = options.isTelemetryEnabled

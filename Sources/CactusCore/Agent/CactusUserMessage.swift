@@ -23,9 +23,6 @@ public struct CactusUserMessage {
   /// Whether tool calls are forced when tools are provided.
   public var forceFunctions: Bool
 
-  /// Threshold for triggering cloud handoff based on confidence.
-  public var cloudHandoffThreshold: Float
-
   /// Number of top tools to keep after tool-RAG selection.
   public var toolRagTopK: Int
 
@@ -49,7 +46,6 @@ public struct CactusUserMessage {
     topK: Int = 20,
     stopSequences: [String] = CactusLanguageModel.ChatCompletion.Options.defaultStopSequences,
     forceFunctions: Bool = false,
-    cloudHandoffThreshold: Float = 0.7,
     toolRagTopK: Int = 2,
     includeStopSequences: Bool = false,
     isTelemetryEnabled: Bool = false,
@@ -62,7 +58,6 @@ public struct CactusUserMessage {
     self.topK = topK
     self.stopSequences = stopSequences
     self.forceFunctions = forceFunctions
-    self.cloudHandoffThreshold = cloudHandoffThreshold
     self.toolRagTopK = toolRagTopK
     self.includeStopSequences = includeStopSequences
     self.isTelemetryEnabled = isTelemetryEnabled
@@ -78,7 +73,6 @@ public struct CactusUserMessage {
     topK: Int = 20,
     stopSequences: [String] = CactusLanguageModel.ChatCompletion.Options.defaultStopSequences,
     forceFunctions: Bool = false,
-    cloudHandoffThreshold: Float = 0.7,
     toolRagTopK: Int = 2,
     includeStopSequences: Bool = false,
     isTelemetryEnabled: Bool = false,
@@ -91,7 +85,6 @@ public struct CactusUserMessage {
     self.topK = topK
     self.stopSequences = stopSequences
     self.forceFunctions = forceFunctions
-    self.cloudHandoffThreshold = cloudHandoffThreshold
     self.toolRagTopK = toolRagTopK
     self.includeStopSequences = includeStopSequences
     self.isTelemetryEnabled = isTelemetryEnabled
