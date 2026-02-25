@@ -145,7 +145,7 @@ struct `CactusAgentSession tests` {
       expectNoDifference(functionThrows.count, 2)
       expectNoDifference(functionThrows.map { $0.functionCall.function.name }, ["failable", "failable"])
       expectNoDifference(
-        functionThrows.compactMap(rawValueArgument(from:)),
+        functionThrows.compactMap(Self.rawValueArgument(from:)),
         ["a", "b"]
       )
       expectNoDifference(
@@ -155,82 +155,82 @@ struct `CactusAgentSession tests` {
         ["a", "b"]
       )
     }
-  }
-}
 
-private struct EchoFunction: CactusFunction, Sendable {
-  typealias Input = EchoFunctionInput
-  typealias Output = String
+    struct EchoFunction: CactusFunction, Sendable {
+      typealias Output = String
 
-  let name = "echo"
-  let description = "Echoes input text"
+      @JSONSchema
+      struct Input: Codable, Sendable {
+        let text: String
+      }
 
-  func invoke(input: sending Input) async throws -> sending String {
-    input.text
-  }
-}
+      let name = "echo"
+      let description = "Echoes input text"
 
-private struct DelayedEchoFunction: CactusFunction, Sendable {
-  typealias Input = DelayedEchoFunctionInput
-  typealias Output = String
-
-  let name = "delayed_echo"
-  let description = "Returns the input text after a delay"
-
-  func invoke(input: sending Input) async throws -> sending String {
-    try await Task.sleep(nanoseconds: UInt64(input.delayMs) * 1_000_000)
-    return input.text
-  }
-}
-
-private struct FailableFunction: CactusFunction, Sendable {
-  typealias Input = FailableFunctionInput
-  typealias Output = String
-
-  let name = "failable"
-  let description = "Returns value or throws"
-
-  func invoke(input: sending Input) async throws -> sending String {
-    if input.shouldFail {
-      throw TestToolError.failed(input.value)
+      func invoke(input: sending Input) async throws -> sending String {
+        input.text
+      }
     }
-    return input.value
-  }
-}
 
-private enum TestToolError: Error {
-  case failed(String)
+    struct DelayedEchoFunction: CactusFunction, Sendable {
+      typealias Output = String
 
-  static func value(from error: any Error) -> String? {
-    guard case let .failed(value) = error as? TestToolError else {
-      return nil
+      @JSONSchema
+      struct Input: Codable, Sendable {
+        let text: String
+        let delayMs: Int
+      }
+
+      let name = "delayed_echo"
+      let description = "Returns the input text after a delay"
+
+      func invoke(input: sending Input) async throws -> sending String {
+        try await Task.sleep(nanoseconds: UInt64(input.delayMs) * 1_000_000)
+        return input.text
+      }
     }
-    return value
+
+    struct FailableFunction: CactusFunction, Sendable {
+      typealias Output = String
+
+      @JSONSchema
+      struct Input: Codable, Sendable {
+        let value: String
+        let shouldFail: Bool
+      }
+
+      let name = "failable"
+      let description = "Returns value or throws"
+
+      func invoke(input: sending Input) async throws -> sending String {
+        if input.shouldFail {
+          throw TestToolError.failed(input.value)
+        }
+        return input.value
+      }
+    }
+
+    private enum TestToolError: Error {
+      case failed(String)
+
+      static func value(from error: any Error) -> String? {
+        guard case let .failed(value) = error as? TestToolError else {
+          return nil
+        }
+        return value
+      }
+    }
+
+    private static func rawValueArgument(
+      from functionThrow: CactusAgentSession.FunctionThrow
+    ) -> String? {
+      guard
+        case let .string(value) = functionThrow.functionCall.rawFunctionCall.arguments["value"]
+      else {
+        return nil
+      }
+      return value
+    }
+
   }
-}
-
-private func rawValueArgument(from functionThrow: CactusAgentSession.FunctionThrow) -> String? {
-  guard
-    case let .string(value) = functionThrow.functionCall.rawFunctionCall.arguments["value"]
-  else {
-    return nil
-  }
-  return value
-}
-
-@JSONSchema
-private struct EchoFunctionInput: Codable, Sendable {
-  let text: String
-}
-
-@JSONSchema
-private struct DelayedEchoFunctionInput: Codable, Sendable {
-  let text: String
-  let delayMs: Int
-}
-
-@JSONSchema
-private struct FailableFunctionInput: Codable, Sendable {
-  let value: String
-  let shouldFail: Bool
 }
