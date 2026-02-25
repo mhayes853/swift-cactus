@@ -29,8 +29,7 @@ struct `CactusAgentSession tests` {
     }
 
     @Test
-    func `Multi Turn Respond Maintains Conversation Context And Snapshots Transcript`() async throws
-    {
+    func `Multi Turn Conversation Maintains Context`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
       let model = try CactusLanguageModel(from: modelURL)
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
@@ -52,13 +51,41 @@ struct `CactusAgentSession tests` {
       expectNoDifference(secondTurn.output.isEmpty, false)
       expectNoDifference(session.transcript.count == 4, true)
       expectNoDifference(
-        session.transcript.suffix(4).map { $0.message.role },
-        [
-          CactusLanguageModel.MessageRole.user,
-          CactusLanguageModel.MessageRole.assistant,
-          CactusLanguageModel.MessageRole.user,
-          CactusLanguageModel.MessageRole.assistant
-        ]
+        session.transcript.map(\.message.role),
+        [.user, .assistant, .user, .assistant]
+      )
+      withKnownIssue {
+        assertSnapshot(of: session.transcript, as: .json, record: true)
+      }
+    }
+
+    @Test
+    func `Multi Turn Conversation With System Prompt Maintains Context`() async throws {
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusLanguageModel(from: modelURL)
+      let session = CactusAgentSession(model: model) {
+        "You are a helpful assistant that always responds in short, concise sentences."
+      }
+
+      let firstTurn = try await session.respond(
+        to: CactusUserMessage(
+          "My favorite color is green. Please acknowledge this.",
+          maxTokens: .limit(512)
+        )
+      )
+      let secondTurn = try await session.respond(
+        to: CactusUserMessage(
+          "What color did I say was my favorite?",
+          maxTokens: .limit(512)
+        )
+      )
+
+      expectNoDifference(firstTurn.output.isEmpty, false)
+      expectNoDifference(secondTurn.output.isEmpty, false)
+      expectNoDifference(session.transcript.count == 5, true)
+      expectNoDifference(
+        session.transcript.map(\.message.role),
+        [.system, .user, .assistant, .user, .assistant]
       )
       withKnownIssue {
         assertSnapshot(of: session.transcript, as: .json, record: true)

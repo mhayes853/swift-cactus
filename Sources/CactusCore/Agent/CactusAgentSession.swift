@@ -14,6 +14,7 @@ public final class CactusAgentSession: Sendable {
     var isResponding: Bool
     var functions: [any CactusFunction]
     var delegate: (any Delegate)?
+    var systemPrompt: CactusPromptContent?
   }
 
   /// The full history of interactions for this session.
@@ -58,7 +59,7 @@ public final class CactusAgentSession: Sendable {
     languageModelActor: CactusLanguageModelActor,
     functions: [any CactusFunction],
     transcript: CactusTranscript,
-    systemPrompt _: CactusPromptContent?
+    systemPrompt: sending CactusPromptContent?
   ) {
     self.languageModelActor = languageModelActor
     self.state = Lock(
@@ -66,7 +67,8 @@ public final class CactusAgentSession: Sendable {
         transcript: transcript,
         isResponding: false,
         functions: functions,
-        delegate: nil
+        delegate: nil,
+        systemPrompt: systemPrompt
       )
     )
   }
@@ -129,7 +131,7 @@ extension CactusAgentSession {
   public convenience init(
     model: consuming sending CactusLanguageModel,
     functions: [any CactusFunction] = [],
-    systemPrompt: CactusPromptContent
+    systemPrompt: sending CactusPromptContent
   ) {
     self.init(
       languageModelActor: CactusLanguageModelActor(model: model),
@@ -148,7 +150,7 @@ extension CactusAgentSession {
   public convenience init(
     model: CactusLanguageModelActor,
     functions: [any CactusFunction] = [],
-    systemPrompt: CactusPromptContent
+    systemPrompt: sending CactusPromptContent
   ) {
     self.init(
       languageModelActor: model,
@@ -562,6 +564,18 @@ extension CactusAgentSession {
     to request: CactusUserMessage
   ) -> CactusInferenceStream<String> {
     let context = self.streamRequestContext(from: request)
+
+    self.state.withLock {
+      guard $0.transcript.isEmpty, let prompt = $0.systemPrompt else {
+        return
+      }
+      guard let text = try? prompt.messageComponents().text else {
+        return
+      }
+      let systemMessage = CactusLanguageModel.ChatMessage.system(text)
+      $0.transcript.insert(CactusTranscript.Element(message: systemMessage), at: 0)
+    }
+
     return CactusInferenceStream<String> { continuation in
       let userMessage = try context.userMessageResult.get()
       self.state.withLock { $0.transcript.append(CactusTranscript.Element(message: userMessage)) }

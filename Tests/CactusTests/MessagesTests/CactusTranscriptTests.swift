@@ -158,6 +158,49 @@ struct `CactusTranscript tests` {
   }
 
   @Test
+  func `Insert Element At Beginning`() {
+    var transcript = CactusTranscript()
+    transcript.append(CactusTranscript.Element(message: .user("Second")))
+
+    transcript.insert(CactusTranscript.Element(message: .user("First")), at: 0)
+
+    expectNoDifference(transcript.count, 2)
+    expectNoDifference(transcript[0].message.content, "First")
+    expectNoDifference(transcript[1].message.content, "Second")
+  }
+
+  @Test
+  func `Insert Element At Middle`() {
+    var transcript = CactusTranscript()
+    transcript.append(CactusTranscript.Element(message: .user("First")))
+    transcript.append(CactusTranscript.Element(message: .user("Third")))
+
+    transcript.insert(CactusTranscript.Element(message: .user("Second")), at: 1)
+
+    expectNoDifference(transcript.count, 3)
+    expectNoDifference(transcript[0].message.content, "First")
+    expectNoDifference(transcript[1].message.content, "Second")
+    expectNoDifference(transcript[2].message.content, "Third")
+  }
+
+  @Test
+  func `Insert Element Updates ID Index`() {
+    var transcript = CactusTranscript()
+    let id1 = CactusGenerationID()
+    let id2 = CactusGenerationID()
+    transcript.append(CactusTranscript.Element(id: id1, message: .user("First")))
+    transcript.append(CactusTranscript.Element(id: id2, message: .user("Third")))
+
+    transcript.insert(CactusTranscript.Element(message: .user("Second")), at: 1)
+
+    expectNoDifference(transcript[id: id1]?.message.content, "First")
+    expectNoDifference(transcript[id: id2]?.message.content, "Third")
+    expectNoDifference(transcript[0].id, id1)
+    expectNoDifference(transcript[1].message.content, "Second")
+    expectNoDifference(transcript[2].id, id2)
+  }
+
+  @Test
   func `Init With Elements`() {
     let elements = [
       CactusTranscript.Element(message: .system("System")),
