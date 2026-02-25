@@ -1,21 +1,27 @@
 {
   "cloud_handoff" : false,
-  "confidence" : 0.9846,
-  "decode_tokens" : 21,
-  "decode_tps" : 38.61,
+  "confidence" : 0.9952,
+  "decode_tokens" : 41,
+  "decode_tps" : 54.46,
   "function_calls" : [
     {
       "arguments" : {
         "location" : "Berkeley"
       },
       "name" : "get_weather"
+    },
+    {
+      "arguments" : {
+        "location" : "Berkeley"
+      },
+      "name" : "get_population"
     }
   ],
-  "prefill_tokens" : 236,
-  "prefill_tps" : 358.52,
-  "ram_usage_mb" : 1589.26,
-  "response" : "",
-  "time_to_first_token_ms" : 658.26,
-  "total_time_ms" : 1176.27,
-  "total_tokens" : 257
+  "prefill_tokens" : 234,
+  "prefill_tps" : 411.74,
+  "ram_usage_mb" : 1226.74,
+  "response" : "\n",
+  "time_to_first_token_ms" : 568.32,
+  "total_time_ms" : 1302.84,
+  "total_tokens" : 275
 }

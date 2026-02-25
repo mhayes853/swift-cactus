@@ -8,34 +8,29 @@ import Foundation
 /// This class provides a low-level interface for streaming audio transcriptions in real time, but
 /// is not thread-safe or conforms to `Sendable`. Use ``CactusTranscriptionStream`` for a
 /// higher-level thread-safe alternative.
-public final class CactusStreamTranscriber {
-  private let isStreamPointerManaged: Bool
+public struct CactusStreamTranscriber: ~Copyable {
   private static let responseBufferSize = 8192
   private var isFinalized = false
 
   /// The underlying stream transcriber pointer.
-  public let streamTranscribe: cactus_stream_transcribe_t
+  private let streamTranscribePointer: cactus_stream_transcribe_t
 
-  private let model: cactus_model_t?
+  private let ownedModelPointer: cactus_model_t?
 
   /// Creates a stream transcriber from a raw pointer.
   ///
   /// - Parameters:
   ///   - streamTranscribe: The raw stream transcriber pointer.
-  public convenience init(
-    streamTranscribe: cactus_stream_transcribe_t
-  ) {
-    self.init(
-      streamTranscribe: streamTranscribe,
-      model: nil
-    )
+  public init(streamTranscribe: consuming cactus_stream_transcribe_t) {
+    self.streamTranscribePointer = streamTranscribe
+    self.ownedModelPointer = nil
   }
 
   /// Creates a stream transcriber from a model URL.
   ///
   /// - Parameters:
   ///   - modelURL: The URL of the model.
-  public convenience init(modelURL: URL) throws {
+  public init(modelURL: URL) throws {
     guard let model = cactus_init(modelURL.nativePath, nil, false) else {
       throw CactusStreamTranscriberError()
     }
@@ -46,32 +41,31 @@ public final class CactusStreamTranscriber {
   ///
   /// - Parameters:
   ///   - model: The raw model pointer.
-  public convenience init(model: cactus_model_t) throws {
+  public init(model: consuming cactus_model_t) throws {
     guard let streamTranscribe = cactus_stream_transcribe_start(model, nil) else {
       throw CactusStreamTranscriberError()
     }
-    self.init(
-      streamTranscribe: streamTranscribe,
-      model: model
-    )
-  }
-
-  private init(
-    streamTranscribe: cactus_stream_transcribe_t,
-    model: cactus_model_t?
-  ) {
-    self.streamTranscribe = streamTranscribe
-    self.model = model
-    self.isStreamPointerManaged = true
+    self.streamTranscribePointer = streamTranscribe
+    self.ownedModelPointer = model
   }
 
   deinit {
-    if self.isStreamPointerManaged, !self.isFinalized {
-      _ = cactus_stream_transcribe_stop(self.streamTranscribe, nil, 0)
+    if !self.isFinalized {
+      _ = cactus_stream_transcribe_stop(self.streamTranscribePointer, nil, 0)
     }
-    if let model {
-      cactus_destroy(model)
+    if let ownedModelPointer {
+      cactus_destroy(ownedModelPointer)
     }
+  }
+
+  /// Provides scoped access to the underlying stream transcriber pointer.
+  ///
+  /// - Parameter body: The operation to run with the stream transcriber pointer.
+  /// - Returns: The operation return value.
+  public borrowing func withStreamTranscribePointer<Result: ~Copyable, E: Error>(
+    _ body: (cactus_stream_transcribe_t) throws(E) -> sending Result
+  ) throws(E) -> sending Result {
+    try body(self.streamTranscribePointer)
   }
 }
 
@@ -150,7 +144,7 @@ extension CactusStreamTranscriber {
     defer { responseBuffer.deallocate() }
 
     let result = cactus_stream_transcribe_process(
-      self.streamTranscribe,
+      self.streamTranscribePointer,
       buffer.baseAddress,
       buffer.count,
       responseBuffer,
@@ -177,7 +171,9 @@ extension CactusStreamTranscriber.ProcessedTranscription: Decodable {
     self.didHandoffToCloud = try container.decode(Bool.self, forKey: .didHandoffToCloud)
     self.confirmed = try container.decode(String.self, forKey: .confirmed)
     self.pending = try container.decode(String.self, forKey: .pending)
-    self.bufferDuration = .milliseconds(try container.decode(Double.self, forKey: .bufferDurationMs))
+    self.bufferDuration = .milliseconds(
+      try container.decode(Double.self, forKey: .bufferDurationMs)
+    )
     self.confidence = try container.decode(Double.self, forKey: .confidence)
     self.cloudResult = try container.decodeIfPresent(String.self, forKey: .cloudResult)
     self.cloudJobId = try container.decode(Int.self, forKey: .cloudJobId)
@@ -208,7 +204,10 @@ extension CactusStreamTranscriber.ProcessedTranscription: Encodable {
     try container.encodeIfPresent(self.cloudResult, forKey: .cloudResult)
     try container.encode(self.cloudJobId, forKey: .cloudJobId)
     try container.encode(self.cloudResultJobId, forKey: .cloudResultJobId)
-    try container.encode(self.durationToFirstToken.secondsDouble * 1000, forKey: .timeToFirstTokenMs)
+    try container.encode(
+      self.durationToFirstToken.secondsDouble * 1000,
+      forKey: .timeToFirstTokenMs
+    )
     try container.encode(self.totalDuration.secondsDouble * 1000, forKey: .totalTimeMs)
     try container.encode(self.prefillTokens, forKey: .prefillTokens)
     try container.encode(self.prefillTps, forKey: .prefillTps)
@@ -250,14 +249,14 @@ extension CactusStreamTranscriber {
   /// Stops streaming transcription and returns the finalized result.
   ///
   /// - Returns: A ``FinalizedTranscription``.
-  public func stop() throws -> FinalizedTranscription {
+  public mutating func stop() throws -> FinalizedTranscription {
     try self.ensureNotFinalized()
 
     let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: Self.responseBufferSize)
     defer { responseBuffer.deallocate() }
 
     let result = cactus_stream_transcribe_stop(
-      self.streamTranscribe,
+      self.streamTranscribePointer,
       responseBuffer,
       Self.responseBufferSize * MemoryLayout<CChar>.stride
     )

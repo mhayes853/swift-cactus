@@ -5,13 +5,14 @@ import Foundation
 
 /// A language model powered by the cactus engine.
 ///
-/// This class is largely not thread safe outside of calling ``stop()`` on a separate thread when
+/// This type is largely not thread safe outside of calling ``stop()`` on a separate thread when
 /// the model is in the process of generating a response.
 ///
-/// All methods of this class are synchronous and blocking, and should not be called on the main
+/// All methods of this type are synchronous and blocking, and should not be called on the main
 /// actor due to the long runtimes. To access the model safely in the background, use ``CactusLanguageModelActor``.
-public final class CactusLanguageModel {
+public struct CactusLanguageModel: ~Copyable {
   private static let bufferNotBigEnoughErrorMessage = "buffer too small"
+  private static let unavailableModelPointerMessage = "CactusLanguageModel pointer is unavailable."
 
   /// The ``Configuration`` for this model.
   public let configuration: Configuration
@@ -20,9 +21,7 @@ public final class CactusLanguageModel {
   public let configurationFile: ConfigurationFile
 
   /// The underlying model pointer.
-  public let model: cactus_model_t
-
-  private let isModelPointerManaged: Bool
+  private var modelPointer: cactus_model_t?
 
   /// Loads a model from the specified `URL`.
   ///
@@ -31,7 +30,7 @@ public final class CactusLanguageModel {
   ///   - modelSlug: The model slug.
   ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
   ///   - cacheIndex: Whether to load a cached RAG index if available.
-  public convenience init(
+  public init(
     from url: URL,
     modelSlug: String? = nil,
     corpusDirectoryURL: URL? = nil,
@@ -50,19 +49,21 @@ public final class CactusLanguageModel {
   ///
   /// - Parameter configuration: The ``Configuration``.
   public init(configuration: Configuration) throws {
-    self.configuration = configuration
-    let model = cactus_init(
-      configuration.modelURL.nativePath,
-      configuration.corpusDirectoryURL?.nativePath,
-      configuration.cacheIndex
-    )
-    guard let model else { throw ModelCreationError(configuration: configuration) }
-    self.model = model
-    let configFile = try ConfigurationFile(
+    guard
+      let modelPointer = cactus_init(
+        configuration.modelURL.nativePath,
+        configuration.corpusDirectoryURL?.nativePath,
+        configuration.cacheIndex
+      )
+    else {
+      throw ModelCreationError(configuration: configuration)
+    }
+    let configurationFile = try ConfigurationFile(
       contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
     )
-    self.configurationFile = configFile
-    self.isModelPointerManaged = true
+    self.configuration = configuration
+    self.configurationFile = configurationFile
+    self.modelPointer = modelPointer
   }
 
   /// Creates a language model from the specified model pointer and configuration.
@@ -73,21 +74,53 @@ public final class CactusLanguageModel {
   ///   - model: The model pointer.
   ///   - configuration: A ``Configuration`` that must accurately represent the model.
   public init(
-    model: cactus_model_t,
+    model: consuming cactus_model_t,
     configuration: Configuration
   ) throws {
     self.configuration = configuration
     self.configurationFile = try ConfigurationFile(
       contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
     )
-    self.model = model
-    self.isModelPointerManaged = true
+    self.modelPointer = model
   }
 
   deinit {
-    if self.isModelPointerManaged {
-      cactus_destroy(self.model)
+    if let modelPointer {
+      cactus_destroy(modelPointer)
     }
+  }
+
+  /// Provides scoped access to the underlying model pointer.
+  ///
+  /// - Parameter body: The operation to run with the model pointer.
+  /// - Returns: The operation return value.
+  public borrowing func withModelPointer<Result: ~Copyable, E: Error>(
+    _ body: (cactus_model_t) throws(E) -> sending Result
+  ) throws(E) -> sending Result {
+    try body(self.requiredModelPointer())
+  }
+
+  /// Transfers ownership of the underlying model pointer out of this model.
+  ///
+  /// After calling this method, this value no longer owns a pointer and will not
+  /// destroy one during `deinit`.
+  ///
+  /// - Returns: The owned model pointer.
+  public consuming func takeModelPointer() -> cactus_model_t {
+    let modelPointer = self.requiredModelPointer()
+    self.modelPointer = nil
+    return modelPointer
+  }
+
+  private var rawModelPointer: cactus_model_t {
+    self.requiredModelPointer()
+  }
+
+  private func requiredModelPointer() -> cactus_model_t {
+    guard let modelPointer = self.modelPointer else {
+      preconditionFailure(Self.unavailableModelPointerMessage)
+    }
+    return modelPointer
   }
 }
 
@@ -198,7 +231,7 @@ extension CactusLanguageModel {
   public func tokenize(text: String, buffer: UnsafeMutableBufferPointer<UInt32>) throws -> Int {
     var tokenLength = 0
     let resultCode = cactus_tokenize(
-      self.model,
+      self.rawModelPointer,
       text,
       buffer.baseAddress,
       buffer.count,
@@ -290,7 +323,7 @@ extension CactusLanguageModel {
     defer { responseBuffer.deallocate() }
 
     let result = cactus_score_window(
-      self.model,
+      self.rawModelPointer,
       tokens.baseAddress,
       tokens.count,
       start,
@@ -481,10 +514,17 @@ extension CactusLanguageModel {
     let resultCode =
       switch request {
       case .text(let text, let normalize):
-        cactus_embed(self.model, text, buffer.baseAddress, rawBufferSize, &dimensions, normalize)
+        cactus_embed(
+          self.rawModelPointer,
+          text,
+          buffer.baseAddress,
+          rawBufferSize,
+          &dimensions,
+          normalize
+        )
       case .image(let image):
         cactus_image_embed(
-          self.model,
+          self.rawModelPointer,
           image.nativePath,
           buffer.baseAddress,
           rawBufferSize,
@@ -492,7 +532,7 @@ extension CactusLanguageModel {
         )
       case .audio(let audio):
         cactus_audio_embed(
-          self.model,
+          self.rawModelPointer,
           audio.nativePath,
           buffer.baseAddress,
           rawBufferSize,
@@ -691,7 +731,7 @@ extension CactusLanguageModel {
       onToken(token, tokenID)
     } perform: { userData, onToken in
       cactus_complete(
-        self.model,
+        self.rawModelPointer,
         String(decoding: try ffiEncoder.encode(ffiMessages), as: UTF8.self),
         buffer,
         maxBufferSize * MemoryLayout<CChar>.stride,
@@ -1118,7 +1158,7 @@ extension CactusLanguageModel {
       switch request {
       case .audio(let audio):
         return cactus_transcribe(
-          self.model,
+          self.rawModelPointer,
           audio.nativePath,
           prompt,
           buffer,
@@ -1132,7 +1172,7 @@ extension CactusLanguageModel {
       case .buffer(let pcmBuffer):
         return try pcmBuffer.withUnsafeBufferPointer { rawBuffer in
           cactus_transcribe(
-            self.model,
+            self.rawModelPointer,
             nil,
             prompt,
             buffer,
@@ -1478,7 +1518,7 @@ extension CactusLanguageModel {
       switch request {
       case .audio(let audio):
         cactus_vad(
-          self.model,
+          self.rawModelPointer,
           audio.nativePath,
           responseBuffer,
           maxBufferSize * MemoryLayout<CChar>.stride,
@@ -1489,7 +1529,7 @@ extension CactusLanguageModel {
       case .buffer(let pcmBuffer):
         pcmBuffer.withUnsafeBufferPointer { rawBuffer in
           cactus_vad(
-            self.model,
+            self.rawModelPointer,
             nil,
             responseBuffer,
             maxBufferSize * MemoryLayout<CChar>.stride,
@@ -1610,7 +1650,7 @@ extension CactusLanguageModel {
   ///
   /// This method is safe to call from other threads.
   public func stop() {
-    cactus_stop(self.model)
+    cactus_stop(self.rawModelPointer)
   }
 }
 
@@ -1619,7 +1659,7 @@ extension CactusLanguageModel {
 extension CactusLanguageModel {
   /// Resets the context state of the model.
   public func reset() {
-    cactus_reset(self.model)
+    cactus_reset(self.rawModelPointer)
   }
 }
 
@@ -1680,7 +1720,7 @@ extension CactusLanguageModel {
     defer { buffer.deallocate() }
 
     let result = cactus_rag_query(
-      self.model,
+      self.rawModelPointer,
       query,
       buffer,
       maxBufferSize * MemoryLayout<CChar>.stride,

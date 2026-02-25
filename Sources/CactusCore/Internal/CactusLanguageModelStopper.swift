@@ -2,15 +2,15 @@ import CXXCactusShims
 
 // MARK: - CactusLanguageModelStopper
 
-// NB: @unchecked Sendable is fine because model.stop is thread-safe.
+// NB: @unchecked Sendable is fine because cactus_stop is thread-safe.
 struct CactusLanguageModelStopper: @unchecked Sendable {
-  private let model: CactusLanguageModel
+  private let modelPointer: cactus_model_t
 
-  init(model: CactusLanguageModel) {
-    self.model = model
+  init(modelPointer: cactus_model_t) {
+    self.modelPointer = modelPointer
   }
 
   func stop() {
-    self.model.stop()
+    cactus_stop(self.modelPointer)
   }
 }
