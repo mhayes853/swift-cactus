@@ -172,7 +172,7 @@ struct `CactusAgentSession tests` {
 
         let toolMessageCount = session.transcript
           .filter {
-            $0.message.role.rawValue == "tool" || $0.message.role.rawValue == "function"
+            $0.message.isToolOrFunctionOutput
           }
           .count
         if toolMessageCount >= 2 {
@@ -190,13 +190,53 @@ struct `CactusAgentSession tests` {
 
       let toolMessageCount =
         resolvedTranscript.filter {
-          $0.message.role.rawValue == "tool" || $0.message.role.rawValue == "function"
+          $0.message.isToolOrFunctionOutput
         }
         .count
       expectNoDifference(toolMessageCount >= 2, true)
       withKnownIssue {
         assertSnapshot(of: resolvedTranscript, as: .json, record: true)
       }
+    }
+
+    @Test
+    func `Tool Call Delegate Is Invoked On Tool Call`() async throws {
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_2_6b())
+
+      var delegateCallCount = 0
+      var toolMessageCount = 0
+
+      for _ in 0..<10 where delegateCallCount == 0 {
+        let model = try CactusLanguageModel(from: modelURL)
+        let session = CactusAgentSession(
+          model: model,
+          functions: [ToolFactsFunction()],
+          transcript: CactusTranscript()
+        )
+        let delegate = ToolCallDelegateSpy()
+        session.delegate = delegate
+
+        do {
+          _ = try await session.respond(
+            to: CactusUserMessage(
+              "Use the get_fact tool for 'cactus' and respond with only that fact.",
+              maxTokens: .limit(512),
+              forceFunctions: true
+            )
+          )
+        } catch {
+          continue
+        }
+
+        delegateCallCount = delegate.callCount()
+        toolMessageCount =
+          session.transcript
+          .filter { $0.message.isToolOrFunctionOutput }
+          .count
+      }
+
+      expectNoDifference(delegateCallCount > 0, true)
+      expectNoDifference(toolMessageCount > 0, true)
     }
 
     @Test
@@ -288,6 +328,24 @@ struct `CactusAgentSession tests` {
           "Swift is a type-safe language that emphasizes expressive syntax and performance."
         default: "No fact available for \(input.topic)."
         }
+      }
+    }
+
+    final class ToolCallDelegateSpy: CactusAgentSession.Delegate, @unchecked Sendable {
+      private let invocations = Lock(0)
+
+      func agentFunctionWillExecuteFunctions(
+        _ session: CactusAgentSession,
+        functionCalls: sending [CactusAgentSession.FunctionCall]
+      ) async throws -> sending [CactusAgentSession.FunctionReturn] {
+        self.invocations.withLock { $0 += 1 }
+        return try await CactusAgentSession.executeParallelFunctionCalls(
+          functionCalls: functionCalls
+        )
+      }
+
+      func callCount() -> Int {
+        self.invocations.withLock { $0 }
       }
     }
 
