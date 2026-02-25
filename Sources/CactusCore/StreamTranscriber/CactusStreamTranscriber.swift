@@ -8,20 +8,20 @@ import Foundation
 /// This class provides a low-level interface for streaming audio transcriptions in real time, but
 /// is not thread-safe or conforms to `Sendable`. Use ``CactusTranscriptionStream`` for a
 /// higher-level thread-safe alternative.
-public final class CactusStreamTranscriber {
-  private let isStreamPointerManaged: Bool
+public struct CactusStreamTranscriber: ~Copyable {
   private static let responseBufferSize = 8192
   private var isFinalized = false
 
   /// The underlying stream transcriber pointer.
-  public let streamTranscribe: cactus_stream_transcribe_t
+  private let streamTranscribePointer: cactus_stream_transcribe_t
 
-  private let model: cactus_model_t?
+  private let ownedModelPointer: cactus_model_t?
 
   /// Creates a stream transcriber from a raw pointer.
   ///
   /// - Parameters:
   ///   - streamTranscribe: The raw stream transcriber pointer.
+<<<<<<< HEAD
   public convenience init(
     streamTranscribe: cactus_stream_transcribe_t,
     isStreamPointerManaged: Bool = false
@@ -31,13 +31,18 @@ public final class CactusStreamTranscriber {
       model: nil,
       isStreamPointerManaged: isStreamPointerManaged
     )
+=======
+  public init(streamTranscribe: consuming cactus_stream_transcribe_t) {
+    self.streamTranscribePointer = streamTranscribe
+    self.ownedModelPointer = nil
+>>>>>>> 5744344329230a36a090f31d665cc8c7a53a4090
   }
 
   /// Creates a stream transcriber from a model URL.
   ///
   /// - Parameters:
   ///   - modelURL: The URL of the model.
-  public convenience init(modelURL: URL) throws {
+  public init(modelURL: URL) throws {
     guard let model = cactus_init(modelURL.nativePath, nil, false) else {
       throw CactusStreamTranscriberError()
     }
@@ -48,10 +53,11 @@ public final class CactusStreamTranscriber {
   ///
   /// - Parameters:
   ///   - model: The raw model pointer.
-  public convenience init(model: cactus_model_t) throws {
+  public init(model: consuming cactus_model_t) throws {
     guard let streamTranscribe = cactus_stream_transcribe_start(model, nil) else {
       throw CactusStreamTranscriberError()
     }
+<<<<<<< HEAD
     self.init(
       streamTranscribe: streamTranscribe,
       model: model,
@@ -67,15 +73,29 @@ public final class CactusStreamTranscriber {
     self.streamTranscribe = streamTranscribe
     self.model = model
     self.isStreamPointerManaged = isStreamPointerManaged
+=======
+    self.streamTranscribePointer = streamTranscribe
+    self.ownedModelPointer = model
+>>>>>>> 5744344329230a36a090f31d665cc8c7a53a4090
   }
 
   deinit {
-    if self.isStreamPointerManaged, !self.isFinalized {
-      _ = cactus_stream_transcribe_stop(self.streamTranscribe, nil, 0)
+    if !self.isFinalized {
+      _ = cactus_stream_transcribe_stop(self.streamTranscribePointer, nil, 0)
     }
-    if let model {
-      cactus_destroy(model)
+    if let ownedModelPointer {
+      cactus_destroy(ownedModelPointer)
     }
+  }
+
+  /// Provides scoped access to the underlying stream transcriber pointer.
+  ///
+  /// - Parameter body: The operation to run with the stream transcriber pointer.
+  /// - Returns: The operation return value.
+  public borrowing func withStreamTranscribePointer<Result: ~Copyable, E: Error>(
+    _ body: (cactus_stream_transcribe_t) throws(E) -> sending Result
+  ) throws(E) -> sending Result {
+    try body(self.streamTranscribePointer)
   }
 }
 
@@ -154,7 +174,7 @@ extension CactusStreamTranscriber {
     defer { responseBuffer.deallocate() }
 
     let result = cactus_stream_transcribe_process(
-      self.streamTranscribe,
+      self.streamTranscribePointer,
       buffer.baseAddress,
       buffer.count,
       responseBuffer,
@@ -259,17 +279,22 @@ extension CactusStreamTranscriber {
   /// Stops streaming transcription and returns the finalized result.
   ///
   /// - Returns: A ``FinalizedTranscription``.
-  public func stop() throws -> FinalizedTranscription {
+  public consuming func stop() throws -> FinalizedTranscription {
+    try self.stopInPlace()
+  }
+
+  mutating func stopInPlace() throws -> FinalizedTranscription {
     try self.ensureNotFinalized()
 
     let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: Self.responseBufferSize)
     defer { responseBuffer.deallocate() }
 
     let result = cactus_stream_transcribe_stop(
-      self.streamTranscribe,
+      self.streamTranscribePointer,
       responseBuffer,
       Self.responseBufferSize * MemoryLayout<CChar>.stride
     )
+    self.isFinalized = true
 
     var responseData = Data()
     for i in 0..<strnlen(responseBuffer, Self.responseBufferSize) {
@@ -281,9 +306,7 @@ extension CactusStreamTranscriber {
       throw CactusStreamTranscriberError(message: response.error)
     }
 
-    let finalized = try ffiDecoder.decode(FinalizedTranscription.self, from: responseData)
-    self.isFinalized = true
-    return finalized
+    return try ffiDecoder.decode(FinalizedTranscription.self, from: responseData)
   }
 }
 
@@ -304,7 +327,7 @@ public struct CactusStreamTranscriberError: Error, Hashable {
   /// The error message from the underlying FFI, if available.
   public let message: String?
 
-  fileprivate init(message: String? = nil) {
+  init(message: String? = nil) {
     self.message = message ?? cactus_get_last_error().map { String(cString: $0) }
   }
 }

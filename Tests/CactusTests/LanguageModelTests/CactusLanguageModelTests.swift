@@ -21,7 +21,7 @@ struct `CactusLanguageModel tests` {
   @Test
   func `Attempt To Create Model From Non-Existent URL, Throws Error`() async throws {
     let error = #expect(throws: CactusLanguageModel.ModelCreationError.self) {
-      try CactusLanguageModel(from: temporaryModelDirectory())
+      _ = try CactusLanguageModel(from: temporaryModelDirectory())
     }
     expectNoDifference(error?.message.starts(with: "Failed to create model"), true)
   }
@@ -30,7 +30,7 @@ struct `CactusLanguageModel tests` {
   func `Successfully Creates Model From Downloaded Model`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
     #expect(throws: Never.self) {
-      try CactusLanguageModel(from: modelURL)
+      _ = try CactusLanguageModel(from: modelURL)
     }
   }
 
@@ -434,22 +434,6 @@ struct `CactusLanguageModel tests` {
       modelSlug: "custom-model"
     )
     expectNoDifference(configuration.modelSlug, "custom-model")
-  }
-
-  @Test
-  func `Does Not Deallocate Model Pointer When Passed Externally`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_5_1_2bThinking())
-    let baseModel = try CactusLanguageModel(from: modelURL)
-    do {
-      _ = try CactusLanguageModel(
-        model: baseModel.model,
-        configuration: CactusLanguageModel.Configuration(modelURL: modelURL)
-      )
-    }
-
-    #expect(throws: Never.self) {
-      try baseModel.embeddings(for: "Some Text")
-    }
   }
 
   @Test

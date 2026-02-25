@@ -91,7 +91,9 @@ struct `CactusLanguageModelStructuredOutput tests` {
       )
     )
 
-    let userMessages = completed.messages.filter { $0.role == .user }
+    let userMessages = completed.messages.filter {
+      $0.role == CactusLanguageModel.MessageRole.user
+    }
     guard let schemaMessage = userMessages.last else {
       Issue.record("Expected schema prompt to be appended as a user message.")
       return
@@ -310,7 +312,9 @@ struct `CactusLanguageModelStructuredOutput tests` {
       )
     )
 
-    let userMessages = completion.messages.filter { $0.role == .user }
+    let userMessages = completion.messages.filter {
+      $0.role == CactusLanguageModel.MessageRole.user
+    }
     for message in userMessages {
       expectNoDifference(message.content.contains("JSON Schema"), false)
     }
@@ -343,14 +347,16 @@ struct `CactusLanguageModelStructuredOutput tests` {
     let receivedOriginalPrompt = try #require(capture.value)
     expectNoDifference(receivedOriginalPrompt, originalUserContent)
 
-    let userMessages = completion.messages.filter { $0.role == .user }
+    let userMessages = completion.messages.filter {
+      $0.role == CactusLanguageModel.MessageRole.user
+    }
     let lastUserMessage = try #require(userMessages.last)
     expectNoDifference(lastUserMessage.content.contains(customMarker), true)
     expectNoDifference(lastUserMessage.content.contains(originalUserContent), true)
   }
 
   private func chatOptions(
-    for model: CactusLanguageModel,
+    for model: borrowing CactusLanguageModel,
     forceFunctions: Bool = false
   ) -> CactusLanguageModel.ChatCompletion.Options {
     CactusLanguageModel.ChatCompletion.Options(

@@ -52,7 +52,7 @@
       let outdatedRequest = CactusLanguageModel.PlatformDownloadRequest(
         slug: "whisper-small",
         quantization: .int4,
-        version: .v1_5
+        version: self.v1_5Version()
       )
       let supportedRequest = CactusLanguageModel.PlatformDownloadRequest.whisperSmall()
       let outdatedLegacyURL = try self.createLegacyStoredModel(
@@ -86,7 +86,7 @@
       let outdatedRequest = CactusLanguageModel.PlatformDownloadRequest(
         slug: "whisper-small",
         quantization: .int4,
-        version: .v1_5
+        version: self.v1_5Version()
       )
       _ = try self.createLegacyStoredModel(request: outdatedRequest, in: baseURL)
 
@@ -134,6 +134,10 @@
       let markerURL = legacyURL.appendingPathComponent("weights.bin")
       FileManager.default.createFile(atPath: markerURL.path, contents: Data([0x01]))
       return legacyURL
+    }
+
+    private func v1_5Version() -> CactusLanguageModel.PlatformDownloadRequest.Version {
+      CactusLanguageModel.PlatformDownloadRequest.Version(rawValue: "v1.5")
     }
   }
 

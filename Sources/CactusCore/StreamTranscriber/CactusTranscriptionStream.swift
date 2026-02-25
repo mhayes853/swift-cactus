@@ -47,11 +47,11 @@ public final class CactusTranscriptionStream: Sendable {
   /// - Parameter streamTranscriberActor: The streamTranscriberActor to wrap.
   public init(
     executor: (any SerialExecutor)? = nil,
-    streamTranscriber: sending CactusStreamTranscriber
+    streamTranscriber: consuming sending CactusStreamTranscriber
   ) {
     self.streamTranscriberActor = CactusStreamTranscriberActor(
       executor: executor,
-      streamTranscriber: streamTranscriber
+      streamTranscriber: consume streamTranscriber
     )
   }
 
@@ -65,29 +65,35 @@ public final class CactusTranscriptionStream: Sendable {
   /// Creates a transcription stream from a raw stream streamTranscriberActor pointer.
   ///
   /// - Parameter streamTranscribe: The raw stream streamTranscriber pointer.
-  public init(streamTranscribe: sending cactus_stream_transcribe_t) {
-    let streamTranscriberActor = CactusStreamTranscriber(
+  public init(streamTranscribe: consuming sending cactus_stream_transcribe_t) {
+    let streamTranscriber = CactusStreamTranscriber(
       streamTranscribe: streamTranscribe
     )
-    self.streamTranscriberActor = CactusStreamTranscriberActor(streamTranscriber: streamTranscriberActor)
+    self.streamTranscriberActor = CactusStreamTranscriberActor(
+      streamTranscriber: consume streamTranscriber
+    )
   }
 
   /// Creates a transcription stream from a model URL.
   ///
   /// - Parameter modelURL: The URL of the model.
   public init(modelURL: URL) throws {
-    let streamTranscriberActor = try CactusStreamTranscriber(modelURL: modelURL)
-    self.streamTranscriberActor = CactusStreamTranscriberActor(streamTranscriber: streamTranscriberActor)
+    let streamTranscriber = try CactusStreamTranscriber(modelURL: modelURL)
+    self.streamTranscriberActor = CactusStreamTranscriberActor(
+      streamTranscriber: consume streamTranscriber
+    )
   }
 
   /// Creates a transcription stream from a raw model pointer.
   ///
   /// - Parameter model: The raw model pointer.
-  public init(model: sending cactus_model_t) throws {
-    let streamTranscriberActor = try CactusStreamTranscriber(
+  public init(model: consuming sending cactus_model_t) throws {
+    let streamTranscriber = try CactusStreamTranscriber(
       model: model
     )
-    self.streamTranscriberActor = CactusStreamTranscriberActor(streamTranscriber: streamTranscriberActor)
+    self.streamTranscriberActor = CactusStreamTranscriberActor(
+      streamTranscriber: consume streamTranscriber
+    )
   }
 }
 

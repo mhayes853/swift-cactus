@@ -92,25 +92,6 @@ final class `CactusIndex tests` {
   }
 
   @Test
-  func `Index Pointer Is Not Deallocated When Not Managed`() throws {
-    let indexPointer = cactus_index_init(self.directoryURL.path, self.embeddingDimensions)
-    expectNoDifference(indexPointer != nil, true)
-    guard let indexPointer else { return }
-    defer { cactus_index_destroy(indexPointer) }
-
-    let document = self.makeDocument(id: 10, content: "persisted")
-    do {
-      let index = CactusIndex(index: indexPointer, embeddingDimensions: self.embeddingDimensions)
-      try index.add(document: document)
-    }
-
-    let restored = CactusIndex(index: indexPointer, embeddingDimensions: self.embeddingDimensions)
-    let retrieved = try restored.document(withId: document.id)
-
-    self.expectDocumentEqual(retrieved, document)
-  }
-
-  @Test
   func `Query Documents Snapshot Dump`() throws {
     let index = try self.makeIndex()
     let documents = [

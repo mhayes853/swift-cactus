@@ -46,11 +46,13 @@ public actor CactusLanguageModelActor {
   /// - Parameters:
   ///   - executor: A custom `SerialExecutor` to use for this actor.
   ///   - model: The underlying language model.
-  public init(executor: (any SerialExecutor)? = nil, model: sending CactusLanguageModel) {
+  public init(executor: (any SerialExecutor)? = nil, model: consuming sending CactusLanguageModel) {
+    let configuration = model.configuration
+    let configurationFile = model.configurationFile
     self.executor = executor
-    self.model = model
-    self.configuration = model.configuration
-    self.configurationFile = model.configurationFile
+    self.model = consume model
+    self.configuration = configuration
+    self.configurationFile = configurationFile
     self.defaultExecutor = DefaultActorExecutor()
   }
 
@@ -69,15 +71,13 @@ public actor CactusLanguageModelActor {
     corpusDirectoryURL: URL? = nil,
     cacheIndex: Bool = false
   ) throws {
-    try self.init(
-      executor: executor,
-      model: CactusLanguageModel(
-        from: url,
-        modelSlug: modelSlug,
-        corpusDirectoryURL: corpusDirectoryURL,
-        cacheIndex: cacheIndex
-      )
+    let model = try CactusLanguageModel(
+      from: url,
+      modelSlug: modelSlug,
+      corpusDirectoryURL: corpusDirectoryURL,
+      cacheIndex: cacheIndex
     )
+    self.init(executor: executor, model: model)
   }
 
   /// Loads a model from the specified ``CactusLanguageModel/Configuration``.
@@ -89,10 +89,8 @@ public actor CactusLanguageModelActor {
     executor: (any SerialExecutor)? = nil,
     configuration: CactusLanguageModel.Configuration
   ) throws {
-    try self.init(
-      executor: executor,
-      model: CactusLanguageModel(configuration: configuration)
-    )
+    let model = try CactusLanguageModel(configuration: configuration)
+    self.init(executor: executor, model: model)
   }
 
   /// Creates a language model from the specified model pointer and configuration.
@@ -107,16 +105,11 @@ public actor CactusLanguageModelActor {
   ///   - configuration: A ``Configuration`` that must accurately represent the model.
   public init(
     executor: (any SerialExecutor)? = nil,
-    model: sending cactus_model_t,
+    model: consuming sending cactus_model_t,
     configuration: CactusLanguageModel.Configuration
   ) throws {
-    try self.init(
-      executor: executor,
-      model: CactusLanguageModel(
-        model: model,
-        configuration: configuration
-      )
-    )
+    let languageModel = try CactusLanguageModel(model: model, configuration: configuration)
+    self.init(executor: executor, model: languageModel)
   }
 }
 
@@ -1151,9 +1144,19 @@ extension CactusLanguageModelActor {
   ///
   /// - Parameter operation: An operation to run with the model.
   /// - Returns: The operation return value.
-  public func withLanguageModel<T: Sendable, E: Error>(
-    _ operation: @Sendable (CactusLanguageModel) throws(E) -> sending T
+  public func withLanguageModel<T: ~Copyable, E: Error>(
+    _ operation: (borrowing CactusLanguageModel) throws(E) -> sending T
   ) async throws(E) -> sending T {
     try operation(self.model)
+  }
+
+  /// Provides scoped access to the underlying model pointer.
+  ///
+  /// - Parameter operation: An operation to run with the model pointer.
+  /// - Returns: The operation return value.
+  public func withModelPointer<T: ~Copyable, E: Error>(
+    _ operation: (cactus_model_t) throws(E) -> sending T
+  ) async throws(E) -> sending T {
+    try self.model.withModelPointer(operation)
   }
 }

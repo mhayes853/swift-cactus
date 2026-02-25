@@ -18,28 +18,7 @@ struct `CactusStreamTranscriber tests` {
       .appendingPathComponent("missing-model-\(UUID())")
 
     #expect(throws: CactusStreamTranscriberError.self) {
-      try CactusStreamTranscriber(modelURL: missingURL)
-    }
-  }
-
-  @Test
-  func `Stream Transcriber Does Not Deallocate Model Pointer`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-    let modelPointer = try #require(cactus_init(modelURL.nativePath, nil, false))
-    defer { cactus_destroy(modelPointer) }
-
-    do {
-      _ = try CactusStreamTranscriber(model: modelPointer)
-    }
-
-    let model = try CactusLanguageModel(
-      model: modelPointer,
-      configuration: CactusLanguageModel.Configuration(modelURL: modelURL)
-    )
-    #expect(throws: Never.self) {
-      try model.audioEmbeddings(
-        for: Bundle.module.url(forResource: "test", withExtension: "wav")!
-      )
+      _ = try CactusStreamTranscriber(modelURL: missingURL)
     }
   }
 
@@ -92,49 +71,43 @@ struct `CactusStreamTranscriber tests` {
     @Test
     func `Disallow Operations After Finalize`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-      let transcriber = try CactusStreamTranscriber(modelURL: modelURL)
+      let actor = try CactusStreamTranscriberActor(modelURL: modelURL)
 
       let fullBuffer = try testAudioPCMBuffer()
       let totalFrames = AVAudioFramePosition(fullBuffer.frameLength)
       let sliceLength = max(AVAudioFramePosition(1), totalFrames / 4)
       let slice = try testAudioPCMBuffer(frameLength: AVAudioFrameCount(sliceLength))
+      let sliceBytes = try slice.cactusPCMBytes()
 
-      _ = try transcriber.process(buffer: slice)
-      _ = try transcriber.stop()
+      _ = try await actor.process(buffer: sliceBytes)
+      _ = try await actor.stop()
 
-      #expect(throws: CactusStreamTranscriberError.self) {
-        try transcriber.process(buffer: slice)
+      do {
+        _ = try await actor.process(buffer: sliceBytes)
+        Issue.record("Expected processing after finalize to throw")
+      } catch {
+        expectNoDifference(error is CactusStreamTranscriberError, true)
       }
-      #expect(throws: CactusStreamTranscriberError.self) {
-        _ = try transcriber.stop()
+
+      do {
+        _ = try await actor.stop()
+        Issue.record("Expected stopping after finalize to throw")
+      } catch {
+        expectNoDifference(error is CactusStreamTranscriberError, true)
       }
     }
 
     @Test
-    func `Stream Transcriber Pointer Is Not Deallocated When Not Managed`() async throws {
+    func `Stop Is Idempotent Through Deinit Cleanup`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-      let modelPointer = try #require(cactus_init(modelURL.nativePath, nil, false))
-      defer { cactus_destroy(modelPointer) }
+      let transcriber = try CactusStreamTranscriber(modelURL: modelURL)
 
-      let streamPointer = try #require(cactus_stream_transcribe_start(modelPointer, nil))
-      defer {
-        let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: 8192)
-        defer { responseBuffer.deallocate() }
-        _ = cactus_stream_transcribe_stop(streamPointer, responseBuffer, 8192)
-      }
-
-      do {
-        _ = CactusStreamTranscriber(streamTranscribe: streamPointer)
-      }
-
-      let restored = CactusStreamTranscriber(streamTranscribe: streamPointer)
       let fullBuffer = try testAudioPCMBuffer()
       let totalFrames = AVAudioFramePosition(fullBuffer.frameLength)
       let sliceLength = max(AVAudioFramePosition(1), totalFrames / 8)
       let slice = try testAudioPCMBuffer(frameLength: AVAudioFrameCount(sliceLength))
-      #expect(throws: Never.self) {
-        try restored.process(buffer: slice)
-      }
+      _ = try transcriber.process(buffer: slice)
+      _ = try transcriber.stop()
     }
   #endif
 }

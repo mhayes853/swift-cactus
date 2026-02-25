@@ -19,7 +19,7 @@ import Foundation
 /// ```
 public actor CactusStreamTranscriberActor {
   /// The underlying stream transcriber.
-  public let streamTranscriber: CactusStreamTranscriber
+  public var streamTranscriber: CactusStreamTranscriber
 
   /// The custom `SerialExecutor` used by this actor, if provided.
   public let executor: (any SerialExecutor)?
@@ -40,10 +40,10 @@ public actor CactusStreamTranscriberActor {
   ///   - streamTranscriber: The underlying stream transcriber.
   public init(
     executor: (any SerialExecutor)? = nil,
-    streamTranscriber: sending CactusStreamTranscriber
+    streamTranscriber: consuming sending CactusStreamTranscriber
   ) {
     self.executor = executor
-    self.streamTranscriber = streamTranscriber
+    self.streamTranscriber = consume streamTranscriber
     self.defaultExecutor = DefaultActorExecutor()
   }
 
@@ -53,10 +53,8 @@ public actor CactusStreamTranscriberActor {
   ///   - executor: A custom `SerialExecutor` to use for this actor.
   ///   - modelURL: The URL of the model.
   public init(executor: (any SerialExecutor)? = nil, modelURL: URL) throws {
-    try self.init(
-      executor: executor,
-      streamTranscriber: CactusStreamTranscriber(modelURL: modelURL)
-    )
+    let streamTranscriber = try CactusStreamTranscriber(modelURL: modelURL)
+    self.init(executor: executor, streamTranscriber: consume streamTranscriber)
   }
 
   /// Creates a stream transcriber from a raw model pointer.
@@ -64,13 +62,9 @@ public actor CactusStreamTranscriberActor {
   /// - Parameters:
   ///   - executor: A custom `SerialExecutor` to use for this actor.
   ///   - model: The raw model pointer.
-  public init(executor: (any SerialExecutor)? = nil, model: sending cactus_model_t) throws {
-    try self.init(
-      executor: executor,
-      streamTranscriber: CactusStreamTranscriber(
-        model: model
-      )
-    )
+  public init(executor: (any SerialExecutor)? = nil, model: consuming sending cactus_model_t) throws {
+    let streamTranscriber = try CactusStreamTranscriber(model: model)
+    self.init(executor: executor, streamTranscriber: consume streamTranscriber)
   }
 
   /// Creates a stream transcriber from a raw stream transcriber pointer.
@@ -82,7 +76,7 @@ public actor CactusStreamTranscriberActor {
   ///   - streamTranscribe: The raw stream transcriber pointer.
   public init(
     executor: (any SerialExecutor)? = nil,
-    streamTranscribe: sending cactus_stream_transcribe_t
+    streamTranscribe: consuming sending cactus_stream_transcribe_t
   ) {
     self.executor = executor
     self.streamTranscriber = CactusStreamTranscriber(
@@ -123,7 +117,7 @@ extension CactusStreamTranscriberActor {
   ///
   /// - Returns: A ``CactusStreamTranscriber/FinalizedTranscription``.
   public func stop() async throws -> CactusStreamTranscriber.FinalizedTranscription {
-    try self.streamTranscriber.stop()
+    try self.streamTranscriber.stopInPlace()
   }
 }
 
@@ -142,9 +136,19 @@ extension CactusStreamTranscriberActor {
   ///
   /// - Parameter operation: An operation to run with the transcriber.
   /// - Returns: The operation return value.
-  public func withStreamTranscriber<T: Sendable, E: Error>(
-    _ operation: @Sendable (CactusStreamTranscriber) throws(E) -> sending T
+  public func withStreamTranscriber<T: ~Copyable, E: Error>(
+    _ operation: (borrowing CactusStreamTranscriber) throws(E) -> sending T
   ) async throws(E) -> sending T {
     try operation(self.streamTranscriber)
+  }
+
+  /// Provides scoped access to the underlying stream transcriber pointer.
+  ///
+  /// - Parameter operation: An operation to run with the stream transcriber pointer.
+  /// - Returns: The operation return value.
+  public func withStreamTranscribePointer<T: ~Copyable, E: Error>(
+    _ operation: (cactus_stream_transcribe_t) throws(E) -> sending T
+  ) async throws(E) -> sending T {
+    try self.streamTranscriber.withStreamTranscribePointer(operation)
   }
 }

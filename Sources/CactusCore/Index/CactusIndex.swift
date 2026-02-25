@@ -4,24 +4,22 @@ import Foundation
 // MARK: - CactusIndex
 
 /// An index for storing and querying document embeddings.
-public final class CactusIndex {
+public struct CactusIndex: ~Copyable {
   /// The maximum buffer size for a document's content or metadata.
   public static let maxBufferSize = 65535
 
   /// The raw index pointer.
-  public let index: cactus_index_t
+  private let indexPointer: cactus_index_t
 
   /// The dimensionality of the embeddings stored in this index.
   public let embeddingDimensions: Int
-
-  private let isIndexPointerManaged: Bool
 
   /// Creates an index at the specified directory.
   ///
   /// - Parameters:
   ///   - directory: The directory where the index will be stored.
   ///   - embeddingDimensions: The dimensionality of the embeddings stored in the index.
-  public convenience init(directory: URL, embeddingDimensions: Int) throws {
+  public init(directory: URL, embeddingDimensions: Int) throws {
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 
     let index = cactus_index_init(directory.nativePath, embeddingDimensions)
@@ -36,18 +34,25 @@ public final class CactusIndex {
   ///   - index: The raw index pointer.
   ///   - embeddingDimensions: The dimensionality of the embeddings stored in the index.
   public init(
-    index: cactus_index_t,
+    index: consuming cactus_index_t,
     embeddingDimensions: Int
   ) {
-    self.index = index
+    self.indexPointer = index
     self.embeddingDimensions = embeddingDimensions
-    self.isIndexPointerManaged = true
   }
 
   deinit {
-    if self.isIndexPointerManaged {
-      cactus_index_destroy(self.index)
-    }
+    cactus_index_destroy(self.indexPointer)
+  }
+
+  /// Provides scoped access to the underlying index pointer.
+  ///
+  /// - Parameter body: The operation to run with the index pointer.
+  /// - Returns: The operation return value.
+  public borrowing func withIndexPointer<Result: ~Copyable, E: Error>(
+    _ body: (cactus_index_t) throws(E) -> sending Result
+  ) throws(E) -> sending Result {
+    try body(self.indexPointer)
   }
 }
 
@@ -135,19 +140,25 @@ extension CactusIndex {
     if let bufferSizes, bufferSizes.count != ids.count {
       throw CactusIndexError(message: "Buffer sizes must match the number of document IDs.")
     }
-    var contentBufferSizes = (bufferSizes?.map(\.content) ?? Array(
-      repeating: CactusIndex.maxBufferSize,
-      count: ids.count
-    )).map { max(1, $0) }
-    var metadataBufferSizes = (bufferSizes?.map(\.metadata) ?? Array(
-      repeating: CactusIndex.maxBufferSize,
-      count: ids.count
-    )).map { max(1, $0) }
+    var contentBufferSizes =
+      (bufferSizes?.map(\.content)
+      ?? Array(
+        repeating: CactusIndex.maxBufferSize,
+        count: ids.count
+      ))
+      .map { max(1, $0) }
+    var metadataBufferSizes =
+      (bufferSizes?.map(\.metadata)
+      ?? Array(
+        repeating: CactusIndex.maxBufferSize,
+        count: ids.count
+      ))
+      .map { max(1, $0) }
     var embeddingBufferSizes = Array(repeating: max(1, self.embeddingDimensions), count: ids.count)
 
-    var contentBuffers = contentBufferSizes.map { Array<CChar>(repeating: 0, count: $0) }
-    var metadataBuffers = metadataBufferSizes.map { Array<CChar>(repeating: 0, count: $0) }
-    var embeddingBuffers = embeddingBufferSizes.map { Array<Float>(repeating: .zero, count: $0) }
+    var contentBuffers = contentBufferSizes.map { [CChar](repeating: 0, count: $0) }
+    var metadataBuffers = metadataBufferSizes.map { [CChar](repeating: 0, count: $0) }
+    var embeddingBuffers = embeddingBufferSizes.map { [Float](repeating: .zero, count: $0) }
 
     let result = ids.withUnsafeBufferPointer { idsPtr in
       self.withMutableBufferPointers(&contentBuffers) { contentPointers in
@@ -157,7 +168,7 @@ extension CactusIndex {
               metadataBufferSizes.withUnsafeMutableBufferPointer { metadataSizePtr in
                 embeddingBufferSizes.withUnsafeMutableBufferPointer { embeddingSizePtr in
                   cactus_index_get(
-                    self.index,
+                    self.indexPointer,
                     idsPtr.baseAddress,
                     ids.count,
                     contentPointers,
@@ -204,9 +215,13 @@ extension CactusIndex {
   /// Adds multiple ``Document`` instances to this index.
   public func add(documents: [Document]) throws {
     try self.validateEmbeddingDimensions(documents.map(\.embedding))
-    let result = self.withDocumentFieldPointers(documents) { ids, contentPointers, metadataPointers, embeddingPointers in
+    let result = self.withDocumentFieldPointers(documents) {
+      ids,
+      contentPointers,
+      metadataPointers,
+      embeddingPointers in
       cactus_index_add(
-        self.index,
+        self.indexPointer,
         ids,
         contentPointers,
         metadataPointers,
@@ -228,7 +243,7 @@ extension CactusIndex {
   /// Removes multiple ``Document`` instances from this index by the specified ids.
   public func deleteDocuments(withIds ids: [Document.ID]) throws {
     let result = ids.withUnsafeBufferPointer {
-      cactus_index_delete(self.index, $0.baseAddress, $0.count)
+      cactus_index_delete(self.indexPointer, $0.baseAddress, $0.count)
     }
     guard result == 0 else { throw CactusIndexError.lastErrorMessage() }
   }
@@ -284,8 +299,14 @@ extension CactusIndex {
       var idBufferSizes = Array(repeating: option.topK, count: batch.count)
       var scoreBufferSizes = Array(repeating: option.topK, count: batch.count)
       let resultCapacity = max(1, option.topK)
-      var idBuffers = Array(repeating: Array<Int32>(repeating: 0, count: resultCapacity), count: batch.count)
-      var scoreBuffers = Array(repeating: Array<Float>(repeating: .zero, count: resultCapacity), count: batch.count)
+      var idBuffers = Array(
+        repeating: [Int32](repeating: 0, count: resultCapacity),
+        count: batch.count
+      )
+      var scoreBuffers = Array(
+        repeating: [Float](repeating: .zero, count: resultCapacity),
+        count: batch.count
+      )
 
       let result = self.withEmbeddingPointers(embeddings) { embeddingPointers in
         self.withMutableBufferPointers(&idBuffers) { idPointers in
@@ -293,7 +314,7 @@ extension CactusIndex {
             return idBufferSizes.withUnsafeMutableBufferPointer { idSizePtr in
               scoreBufferSizes.withUnsafeMutableBufferPointer { scoreSizePtr in
                 cactus_index_query(
-                  self.index,
+                  self.indexPointer,
                   embeddingPointers,
                   batch.count,
                   self.embeddingDimensions,
@@ -370,9 +391,12 @@ extension CactusIndex {
   }
 
   private func validateEmbeddingDimensions(_ embeddings: [[Float]]) throws {
-    guard let mismatch = embeddings.first(where: { $0.count != self.embeddingDimensions }) else { return }
+    guard let mismatch = embeddings.first(where: { $0.count != self.embeddingDimensions }) else {
+      return
+    }
     throw CactusIndexError(
-      message: "Embedding dimension mismatch. Expected \(self.embeddingDimensions), got \(mismatch.count)."
+      message:
+        "Embedding dimension mismatch. Expected \(self.embeddingDimensions), got \(mismatch.count)."
     )
   }
 
@@ -410,7 +434,8 @@ extension CactusIndex {
     _ strings: [String],
     _ body: (UnsafeMutablePointer<UnsafePointer<CChar>?>?) throws -> Result
   ) rethrows -> Result {
-    try withUnsafeTemporaryAllocation(of: UnsafePointer<CChar>?.self, capacity: strings.count) { pointers in
+    try withUnsafeTemporaryAllocation(of: UnsafePointer<CChar>?.self, capacity: strings.count) {
+      pointers in
       guard let base = pointers.baseAddress else { return try body(nil) }
       return try self.withCStringPointers(strings, index: 0, pointers: base, body)
     }
@@ -423,17 +448,19 @@ extension CactusIndex {
     _ body: (UnsafeMutablePointer<UnsafePointer<CChar>?>?) throws -> Result
   ) rethrows -> Result {
     guard index < strings.count else { return try body(pointers) }
-    return try strings[index].withCString { cString in
-      pointers[index] = cString
-      return try self.withCStringPointers(strings, index: index + 1, pointers: pointers, body)
-    }
+    return try strings[index]
+      .withCString { cString in
+        pointers[index] = cString
+        return try self.withCStringPointers(strings, index: index + 1, pointers: pointers, body)
+      }
   }
 
   private func withEmbeddingPointers<Result>(
     _ embeddings: [[Float]],
     _ body: (UnsafeMutablePointer<UnsafePointer<Float>?>?) throws -> Result
   ) rethrows -> Result {
-    try withUnsafeTemporaryAllocation(of: UnsafePointer<Float>?.self, capacity: embeddings.count) { pointers in
+    try withUnsafeTemporaryAllocation(of: UnsafePointer<Float>?.self, capacity: embeddings.count) {
+      pointers in
       guard let base = pointers.baseAddress else { return try body(nil) }
       return try self.withEmbeddingPointers(embeddings, index: 0, pointers: base, body)
     }
@@ -446,10 +473,16 @@ extension CactusIndex {
     _ body: (UnsafeMutablePointer<UnsafePointer<Float>?>?) throws -> Result
   ) rethrows -> Result {
     guard index < embeddings.count else { return try body(pointers) }
-    return try embeddings[index].withUnsafeBufferPointer { embeddingBuffer in
-      pointers[index] = embeddingBuffer.baseAddress
-      return try self.withEmbeddingPointers(embeddings, index: index + 1, pointers: pointers, body)
-    }
+    return try embeddings[index]
+      .withUnsafeBufferPointer { embeddingBuffer in
+        pointers[index] = embeddingBuffer.baseAddress
+        return try self.withEmbeddingPointers(
+          embeddings,
+          index: index + 1,
+          pointers: pointers,
+          body
+        )
+      }
   }
 
   private func withMutableBufferPointers<Element, Result>(
@@ -457,7 +490,10 @@ extension CactusIndex {
     _ body: (UnsafeMutablePointer<UnsafeMutablePointer<Element>?>?) throws -> Result
   ) rethrows -> Result {
     try buffers.withUnsafeMutableBufferPointer { storage in
-      try withUnsafeTemporaryAllocation(of: UnsafeMutablePointer<Element>?.self, capacity: storage.count) { pointers in
+      try withUnsafeTemporaryAllocation(
+        of: UnsafeMutablePointer<Element>?.self,
+        capacity: storage.count
+      ) { pointers in
         guard let base = pointers.baseAddress else { return try body(nil) }
         return try self.withMutableBufferPointers(storage, index: 0, pointers: base, body)
       }
@@ -471,10 +507,16 @@ extension CactusIndex {
     _ body: (UnsafeMutablePointer<UnsafeMutablePointer<Element>?>?) throws -> Result
   ) rethrows -> Result {
     guard index < buffers.count else { return try body(pointers) }
-    return try buffers[index].withUnsafeMutableBufferPointer { buffer in
-      pointers[index] = buffer.baseAddress
-      return try self.withMutableBufferPointers(buffers, index: index + 1, pointers: pointers, body)
-    }
+    return try buffers[index]
+      .withUnsafeMutableBufferPointer { buffer in
+        pointers[index] = buffer.baseAddress
+        return try self.withMutableBufferPointers(
+          buffers,
+          index: index + 1,
+          pointers: pointers,
+          body
+        )
+      }
   }
 }
 
@@ -483,7 +525,7 @@ extension CactusIndex {
 extension CactusIndex {
   /// Compacts this index.
   public func compact() throws {
-    let result = cactus_index_compact(self.index)
+    let result = cactus_index_compact(self.indexPointer)
     guard result == 0 else { throw CactusIndexError.lastErrorMessage() }
   }
 }

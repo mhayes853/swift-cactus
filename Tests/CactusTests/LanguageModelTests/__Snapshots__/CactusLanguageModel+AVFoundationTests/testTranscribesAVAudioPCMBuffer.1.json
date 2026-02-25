@@ -4,13 +4,13 @@
     "cloud_handoff" : false,
     "confidence" : 0.9166,
     "decode_tokens" : 10,
-    "decode_tps" : 68.48,
+    "decode_tps" : 46.13,
     "prefill_tokens" : 4,
-    "prefill_tps" : 2.26,
-    "ram_usage_mb" : 394.04,
+    "prefill_tps" : 1.66,
+    "ram_usage_mb" : 397.18,
     "response" : "The power of a god cannot be overcome!",
-    "time_to_first_token_ms" : 1772.1,
-    "total_time_ms" : 1903.53,
+    "time_to_first_token_ms" : 2404.98,
+    "total_time_ms" : 2600.08,
     "total_tokens" : 14
   }
 }
