@@ -1,304 +1,304 @@
 ▿ CactusVAD
-  - ramUsageMb: 138.99
+  - ramUsageMb: 215.03
   - samplingRate: 16000
   ▿ segments: 33 elements
     ▿ Segment
       ▿ endDuration: 8.158 seconds
         - secondsComponent: 8
         - attosecondsComponent: 157999999999999488
-      - endFrame: 130528
+      - endSampleIndex: 130528
       ▿ startDuration: 5.122 seconds
         - secondsComponent: 5
         - attosecondsComponent: 121999999999999888
-      - startFrame: 81952
+      - startSampleIndex: 81952
     ▿ Segment
       ▿ endDuration: 9.054 seconds
         - secondsComponent: 9
         - attosecondsComponent: 54000000000000272
-      - endFrame: 144864
+      - endSampleIndex: 144864
       ▿ startDuration: 8.354 seconds
         - secondsComponent: 8
         - attosecondsComponent: 353999999999999232
-      - startFrame: 133664
+      - startSampleIndex: 133664
     ▿ Segment
       ▿ endDuration: 12.542 seconds
         - secondsComponent: 12
         - attosecondsComponent: 541999999999999808
-      - endFrame: 200672
+      - endSampleIndex: 200672
       ▿ startDuration: 10.018 seconds
         - secondsComponent: 10
         - attosecondsComponent: 18000000000000682
-      - startFrame: 160288
+      - startSampleIndex: 160288
     ▿ Segment
       ▿ endDuration: 17.342 seconds
         - secondsComponent: 17
         - attosecondsComponent: 341999999999998720
-      - endFrame: 277472
+      - endSampleIndex: 277472
       ▿ startDuration: 13.346 seconds
         - secondsComponent: 13
         - attosecondsComponent: 346000000000000064
-      - startFrame: 213536
+      - startSampleIndex: 213536
     ▿ Segment
       ▿ endDuration: 19.358 seconds
         - secondsComponent: 19
         - attosecondsComponent: 358000000000000512
-      - endFrame: 309728
+      - endSampleIndex: 309728
       ▿ startDuration: 17.698 seconds
         - secondsComponent: 17
         - attosecondsComponent: 698000000000000384
-      - startFrame: 283168
+      - startSampleIndex: 283168
     ▿ Segment
       ▿ endDuration: 21.566 seconds
         - secondsComponent: 21
         - attosecondsComponent: 565999999999998976
-      - endFrame: 345056
+      - endSampleIndex: 345056
       ▿ startDuration: 20.418 seconds
         - secondsComponent: 20
         - attosecondsComponent: 417999999999999232
-      - startFrame: 326688
+      - startSampleIndex: 326688
     ▿ Segment
       ▿ endDuration: 23.262 seconds
         - secondsComponent: 23
         - attosecondsComponent: 262000000000000448
-      - endFrame: 372192
+      - endSampleIndex: 372192
       ▿ startDuration: 22.05 seconds
         - secondsComponent: 22
         - attosecondsComponent: 50000000000000712
-      - startFrame: 352800
+      - startSampleIndex: 352800
     ▿ Segment
       ▿ endDuration: 25.246 seconds
         - secondsComponent: 25
         - attosecondsComponent: 245999999999998656
-      - endFrame: 403936
+      - endSampleIndex: 403936
       ▿ startDuration: 23.554 seconds
         - secondsComponent: 23
         - attosecondsComponent: 553999999999998464
-      - startFrame: 376864
+      - startSampleIndex: 376864
     ▿ Segment
       ▿ endDuration: 27.198 seconds
         - secondsComponent: 27
         - attosecondsComponent: 198000000000000384
-      - endFrame: 435168
+      - endSampleIndex: 435168
       ▿ startDuration: 26.434 seconds
         - secondsComponent: 26
         - attosecondsComponent: 434000000000001024
-      - startFrame: 422944
+      - startSampleIndex: 422944
     ▿ Segment
       ▿ endDuration: 28.734 seconds
         - secondsComponent: 28
         - attosecondsComponent: 734000000000001792
-      - endFrame: 459744
+      - endSampleIndex: 459744
       ▿ startDuration: 28.002 seconds
         - secondsComponent: 28
         - attosecondsComponent: 1999999999998891
-      - startFrame: 448032
+      - startSampleIndex: 448032
     ▿ Segment
       ▿ endDuration: 31.774 seconds
         - secondsComponent: 31
         - attosecondsComponent: 774000000000000896
-      - endFrame: 508384
+      - endSampleIndex: 508384
       ▿ startDuration: 29.282 seconds
         - secondsComponent: 29
         - attosecondsComponent: 282000000000000032
-      - startFrame: 468512
+      - startSampleIndex: 468512
     ▿ Segment
-      ▿ endDuration: 33.854 seconds
+      ▿ endDuration: 33.79 seconds
         - secondsComponent: 33
-        - attosecondsComponent: 853999999999999232
-      - endFrame: 541664
+        - attosecondsComponent: 789999999999999104
+      - endSampleIndex: 540640
       ▿ startDuration: 32.61 seconds
         - secondsComponent: 32
         - attosecondsComponent: 609999999999999488
-      - startFrame: 521760
+      - startSampleIndex: 521760
     ▿ Segment
       ▿ endDuration: 36.446 seconds
         - secondsComponent: 36
         - attosecondsComponent: 445999999999997952
-      - endFrame: 583136
+      - endSampleIndex: 583136
       ▿ startDuration: 34.466 seconds
         - secondsComponent: 34
         - attosecondsComponent: 466000000000001088
-      - startFrame: 551456
+      - startSampleIndex: 551456
     ▿ Segment
       ▿ endDuration: 38.878 seconds
         - secondsComponent: 38
         - attosecondsComponent: 878000000000000128
-      - endFrame: 622048
+      - endSampleIndex: 622048
       ▿ startDuration: 37.346 seconds
         - secondsComponent: 37
         - attosecondsComponent: 345999999999996544
-      - startFrame: 597536
+      - startSampleIndex: 597536
     ▿ Segment
       ▿ endDuration: 39.518 seconds
         - secondsComponent: 39
         - attosecondsComponent: 518000000000000704
-      - endFrame: 632288
-      ▿ startDuration: 38.978 seconds
-        - secondsComponent: 38
-        - attosecondsComponent: 978000000000001536
-      - startFrame: 623648
+      - endSampleIndex: 632288
+      ▿ startDuration: 39.01 seconds
+        - secondsComponent: 39
+        - attosecondsComponent: 9999999999998010
+      - startSampleIndex: 624160
     ▿ Segment
       ▿ endDuration: 40.734 seconds
         - secondsComponent: 40
         - attosecondsComponent: 734000000000001792
-      - endFrame: 651744
+      - endSampleIndex: 651744
       ▿ startDuration: 40.066 seconds
         - secondsComponent: 40
         - attosecondsComponent: 66000000000002504
-      - startFrame: 641056
+      - startSampleIndex: 641056
     ▿ Segment
       ▿ endDuration: 42.43 seconds
         - secondsComponent: 42
         - attosecondsComponent: 429999999999999744
-      - endFrame: 678880
+      - endSampleIndex: 678880
       ▿ startDuration: 41.122 seconds
         - secondsComponent: 41
         - attosecondsComponent: 121999999999999888
-      - startFrame: 657952
+      - startSampleIndex: 657952
     ▿ Segment
       ▿ endDuration: 43.646 seconds
         - secondsComponent: 43
         - attosecondsComponent: 646000000000000768
-      - endFrame: 698336
+      - endSampleIndex: 698336
       ▿ startDuration: 43.17 seconds
         - secondsComponent: 43
         - attosecondsComponent: 170000000000001696
-      - startFrame: 690720
+      - startSampleIndex: 690720
     ▿ Segment
       ▿ endDuration: 45.822 seconds
         - secondsComponent: 45
         - attosecondsComponent: 822000000000002688
-      - endFrame: 733152
+      - endSampleIndex: 733152
       ▿ startDuration: 44.13 seconds
         - secondsComponent: 44
         - attosecondsComponent: 130000000000002560
-      - startFrame: 706080
+      - startSampleIndex: 706080
     ▿ Segment
       ▿ endDuration: 48.382 seconds
         - secondsComponent: 48
         - attosecondsComponent: 381999999999997888
-      - endFrame: 774112
+      - endSampleIndex: 774112
       ▿ startDuration: 46.338 seconds
         - secondsComponent: 46
         - attosecondsComponent: 338000000000000960
-      - startFrame: 741408
+      - startSampleIndex: 741408
     ▿ Segment
       ▿ endDuration: 50.174 seconds
         - secondsComponent: 50
         - attosecondsComponent: 173999999999999488
-      - endFrame: 802784
+      - endSampleIndex: 802784
       ▿ startDuration: 48.61 seconds
         - secondsComponent: 48
         - attosecondsComponent: 609999999999999488
-      - startFrame: 777760
+      - startSampleIndex: 777760
     ▿ Segment
       ▿ endDuration: 51.294 seconds
         - secondsComponent: 51
         - attosecondsComponent: 293999999999996928
-      - endFrame: 820704
+      - endSampleIndex: 820704
       ▿ startDuration: 50.274 seconds
         - secondsComponent: 50
         - attosecondsComponent: 274000000000000896
-      - startFrame: 804384
+      - startSampleIndex: 804384
     ▿ Segment
       ▿ endDuration: 54.398 seconds
         - secondsComponent: 54
         - attosecondsComponent: 398000000000003264
-      - endFrame: 870368
+      - endSampleIndex: 870368
       ▿ startDuration: 52.226 seconds
         - secondsComponent: 52
         - attosecondsComponent: 225999999999999104
-      - startFrame: 835616
+      - startSampleIndex: 835616
     ▿ Segment
       ▿ endDuration: 55.774 seconds
         - secondsComponent: 55
         - attosecondsComponent: 774000000000000896
-      - endFrame: 892384
+      - endSampleIndex: 892384
       ▿ startDuration: 54.914 seconds
         - secondsComponent: 54
         - attosecondsComponent: 914000000000001536
-      - startFrame: 878624
+      - startSampleIndex: 878624
     ▿ Segment
       ▿ endDuration: 65.342 seconds
         - secondsComponent: 65
         - attosecondsComponent: 341999999999998720
-      - endFrame: 1045472
+      - endSampleIndex: 1045472
       ▿ startDuration: 65.026 seconds
         - secondsComponent: 65
         - attosecondsComponent: 25999999999996248
-      - startFrame: 1040416
+      - startSampleIndex: 1040416
     ▿ Segment
-      ▿ endDuration: 68.638 seconds
+      ▿ endDuration: 68.702 seconds
         - secondsComponent: 68
-        - attosecondsComponent: 638000000000005248
-      - endFrame: 1098208
+        - attosecondsComponent: 701999999999998208
+      - endSampleIndex: 1099232
       ▿ startDuration: 66.178 seconds
         - secondsComponent: 66
         - attosecondsComponent: 177999999999997280
-      - startFrame: 1058848
+      - startSampleIndex: 1058848
     ▿ Segment
       ▿ endDuration: 69.502 seconds
         - secondsComponent: 69
         - attosecondsComponent: 501999999999995328
-      - endFrame: 1112032
+      - endSampleIndex: 1112032
       ▿ startDuration: 69.058 seconds
         - secondsComponent: 69
         - attosecondsComponent: 58000000000006936
-      - startFrame: 1104928
+      - startSampleIndex: 1104928
     ▿ Segment
       ▿ endDuration: 71.774 seconds
         - secondsComponent: 71
         - attosecondsComponent: 774000000000000896
-      - endFrame: 1148384
+      - endSampleIndex: 1148384
       ▿ startDuration: 70.242 seconds
         - secondsComponent: 70
         - attosecondsComponent: 242000000000004448
-      - startFrame: 1123872
+      - startSampleIndex: 1123872
     ▿ Segment
       ▿ endDuration: 74.366 seconds
         - secondsComponent: 74
         - attosecondsComponent: 365999999999999680
-      - endFrame: 1189856
+      - endSampleIndex: 1189856
       ▿ startDuration: 73.154 seconds
         - secondsComponent: 73
         - attosecondsComponent: 153999999999996352
-      - startFrame: 1170464
+      - startSampleIndex: 1170464
     ▿ Segment
       ▿ endDuration: 91.934 seconds
         - secondsComponent: 91
         - attosecondsComponent: 933999999999997440
-      - endFrame: 1470944
+      - endSampleIndex: 1470944
       ▿ startDuration: 90.978 seconds
         - secondsComponent: 90
         - attosecondsComponent: 977999999999994368
-      - startFrame: 1455648
+      - startSampleIndex: 1455648
     ▿ Segment
       ▿ endDuration: 95.198 seconds
         - secondsComponent: 95
         - attosecondsComponent: 197999999999993280
-      - endFrame: 1523168
+      - endSampleIndex: 1523168
       ▿ startDuration: 92.77 seconds
         - secondsComponent: 92
         - attosecondsComponent: 769999999999996032
-      - startFrame: 1484320
+      - startSampleIndex: 1484320
     ▿ Segment
       ▿ endDuration: 97.726 seconds
         - secondsComponent: 97
         - attosecondsComponent: 725999999999999104
-      - endFrame: 1563616
+      - endSampleIndex: 1563616
       ▿ startDuration: 95.394 seconds
         - secondsComponent: 95
         - attosecondsComponent: 394000000000005440
-      - startFrame: 1526304
+      - startSampleIndex: 1526304
     ▿ Segment
-      ▿ endDuration: 99.006 seconds
-        - secondsComponent: 99
-        - attosecondsComponent: 6000000000000227
-      - endFrame: 1584096
+      ▿ endDuration: 98.974 seconds
+        - secondsComponent: 98
+        - attosecondsComponent: 974000000000003712
+      - endSampleIndex: 1583584
       ▿ startDuration: 98.434 seconds
         - secondsComponent: 98
         - attosecondsComponent: 433999999999997504
-      - startFrame: 1574944
-  ▿ totalDuration: 0.47132 seconds
+      - startSampleIndex: 1574944
+  ▿ totalDuration: 0.5229299999999999 seconds
     - secondsComponent: 0
-    - attosecondsComponent: 471320000000000000
+    - attosecondsComponent: 522929999999999936

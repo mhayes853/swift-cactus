@@ -1345,16 +1345,18 @@ extension CactusLanguageModel {
   }
 
   /// A detected speech segment.
+  ///
+  /// Indices are sample offsets in the sampling domain used by VAD.
   public struct VADSegment: Hashable, Sendable, Codable {
-    /// Segment start frame.
-    public let startFrame: Int
+    /// Segment start sample index.
+    public let startSampleIndex: Int
 
-    /// Segment end frame.
-    public let endFrame: Int
+    /// Segment end sample index.
+    public let endSampleIndex: Int
 
     private enum CodingKeys: String, CodingKey {
-      case startFrame = "start"
-      case endFrame = "end"
+      case startSampleIndex = "start"
+      case endSampleIndex = "end"
     }
   }
 
