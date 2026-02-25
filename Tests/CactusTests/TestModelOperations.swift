@@ -10,11 +10,13 @@ extension CactusLanguageModel {
   static func testModelURL(
     request: CactusLanguageModel.PlatformDownloadRequest
   ) async throws -> URL {
-    try await client.store(for: $downloadQuery(for: request)).fetch()
+    try await client.store(for: TestModelDownloadOperations.$downloadQuery(for: request)).fetch()
   }
+}
 
+private enum TestModelDownloadOperations {
   @QueryRequest
-  private static func downloadQuery(
+  static func downloadQuery(
     for request: CactusLanguageModel.PlatformDownloadRequest
   ) async throws -> URL {
     if let url = CactusModelsDirectory.testModels.storedModelURL(for: request) {

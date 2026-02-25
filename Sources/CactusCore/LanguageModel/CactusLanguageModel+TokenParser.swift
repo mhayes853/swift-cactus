@@ -16,7 +16,7 @@ extension CactusLanguageModel {
     ///   - model: The language model instance producing tokens.
     /// - Throws: Any error encountered while parsing the token.
     /// - Returns: The latest parsed partial value, or `nil` when no parseable update is available.
-    mutating func parse(token: String, tokenId: UInt32, model: CactusLanguageModel) throws
+    mutating func parse(token: String, tokenId: UInt32, model: borrowing CactusLanguageModel) throws
       -> Partial?
   }
 }
@@ -56,7 +56,7 @@ extension CactusLanguageModel {
     public mutating func parse(
       token: String,
       tokenId: UInt32,
-      model: CactusLanguageModel
+      model: borrowing CactusLanguageModel
     ) throws -> Partial? {
       if Self.functionCallStartTokenIDs(for: model.configurationFile.modelType).contains(tokenId) {
         self.hasDetectedFunctionCall = true

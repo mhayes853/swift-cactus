@@ -27,7 +27,7 @@ public final class CactusSTTSession: Sendable {
   /// Creates a transcription session from an existing language model.
   ///
   /// - Parameter model: The underlying language model.
-  public init(model: sending CactusLanguageModel) {
+  public init(model: consuming sending CactusLanguageModel) {
     self.languageModelActor = CactusLanguageModelActor(model: model)
   }
 
@@ -55,7 +55,7 @@ public final class CactusSTTSession: Sendable {
   ///   - modelURL: The model URL used to construct model configuration.
   ///   - modelSlug: An optional model slug override.
   public convenience init(
-    model: sending cactus_model_t,
+    model: consuming sending cactus_model_t,
     modelURL: URL,
     modelSlug: String? = nil
   ) throws {
@@ -96,8 +96,8 @@ extension CactusSTTSession {
     let stream = CactusInferenceStream<CactusTranscription> { [weak self] continuation in
       guard self != nil else { throw CancellationError() }
 
-      let modelStopper = await languageModelActor.withLanguageModel {
-        CactusLanguageModelStopper(model: $0)
+      let modelStopper = await languageModelActor.withModelPointer {
+        CactusLanguageModelStopper(modelPointer: $0)
       }
 
       let modelTranscription = try await withTaskCancellationHandler {
