@@ -1,14 +1,7 @@
 /// Controls whether compatible models should produce internal reasoning output.
-public enum ThinkMode: Hashable, Sendable {
-  case think
-  case noThink
-
-  fileprivate var promptCommand: String {
-    switch self {
-    case .think: "/think"
-    case .noThink: "/no_think"
-    }
-  }
+public enum ThinkMode: String, Hashable, Sendable {
+  case think = "/think"
+  case noThink = "/no_think"
 }
 
 extension CactusPromptRepresentable {
@@ -36,7 +29,7 @@ public struct _ThinkModeContent<Content: CactusPromptRepresentable>: CactusPromp
   public var promptContent: CactusPromptContent {
     get throws {
       CactusPromptContent {
-        self.mode.promptCommand
+        self.mode.rawValue
         self.content
       }
     }

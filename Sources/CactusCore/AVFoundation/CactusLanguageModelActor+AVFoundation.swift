@@ -4,9 +4,7 @@
   // MARK: - CactusLanguageModelActor + AVFoundation
 
   extension CactusLanguageModelActor {
-    /// Transcribes the specified PCM buffer.
-    ///
-    /// The buffer is converted to cactus-compatible mono 16 kHz PCM bytes using the default audio format conversion.
+    /// Transcribes the specified PCM buffer to mono 16 kHz signed 16-bit PCM bytes.
     ///
     /// - Parameters:
     ///   - buffer: The PCM buffer to transcribe.
@@ -31,9 +29,7 @@
       )
     }
 
-    /// Transcribes the specified PCM buffer.
-    ///
-    /// The buffer is converted to cactus-compatible mono 16 kHz PCM bytes using the default audio format conversion.
+    /// Transcribes the specified PCM buffer to mono 16 kHz signed 16-bit PCM bytes.
     ///
     /// - Parameters:
     ///   - buffer: The PCM buffer to transcribe.
@@ -58,9 +54,7 @@
       )
     }
 
-    /// Runs voice activity detection on the specified PCM buffer.
-    ///
-    /// The buffer is converted to cactus-compatible mono 16 kHz PCM bytes using the default audio format conversion.
+    /// Runs voice activity detection on the specified PCM buffer to mono 16 kHz signed 16-bit PCM bytes.
     ///
     /// - Parameters:
     ///   - buffer: The PCM buffer to analyze.

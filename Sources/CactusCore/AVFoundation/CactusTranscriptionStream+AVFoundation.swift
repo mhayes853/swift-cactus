@@ -3,9 +3,7 @@
   import AVFoundation
 
   extension CactusTranscriptionStream {
-    /// Processes an `AVAudioPCMBuffer` and returns interim transcription result.
-    ///
-    /// The buffer is converted to cactus-compatible mono 16 kHz PCM bytes using the default audio format conversion.
+    /// Processes an `AVAudioPCMBuffer` and returns interim transcription result to mono 16 kHz signed 16-bit PCM bytes.
     @discardableResult
     public func process(
       buffer: AVAudioPCMBuffer
