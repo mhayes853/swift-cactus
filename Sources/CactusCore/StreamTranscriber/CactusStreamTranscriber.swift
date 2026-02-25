@@ -250,10 +250,17 @@ extension CactusStreamTranscriber {
   ///
   /// - Returns: A ``FinalizedTranscription``.
   public consuming func stop() throws -> FinalizedTranscription {
-    try self.stopInPlace()
+    try self.mutatingStop()
   }
 
-  mutating func stopInPlace() throws -> FinalizedTranscription {
+  /// Stops streaming transcription and returns the finalized result without forcing ownership
+  /// semantics.
+  ///
+  /// Subsequent methods to any of the operations of this type will throw an error. Prefer using
+  /// ``stop`` for compile time safety.
+  ///
+  /// - Returns: A ``FinalizedTranscription``.
+  public mutating func mutatingStop() throws -> FinalizedTranscription {
     try self.ensureNotFinalized()
 
     let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: Self.responseBufferSize)

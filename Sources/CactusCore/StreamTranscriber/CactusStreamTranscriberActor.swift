@@ -62,7 +62,10 @@ public actor CactusStreamTranscriberActor {
   /// - Parameters:
   ///   - executor: A custom `SerialExecutor` to use for this actor.
   ///   - model: The raw model pointer.
-  public init(executor: (any SerialExecutor)? = nil, model: consuming sending cactus_model_t) throws {
+  public init(
+    executor: (any SerialExecutor)? = nil,
+    model: consuming sending cactus_model_t
+  ) throws {
     let streamTranscriber = try CactusStreamTranscriber(model: model)
     self.init(executor: executor, streamTranscriber: consume streamTranscriber)
   }
@@ -117,7 +120,7 @@ extension CactusStreamTranscriberActor {
   ///
   /// - Returns: A ``CactusStreamTranscriber/FinalizedTranscription``.
   public func stop() async throws -> CactusStreamTranscriber.FinalizedTranscription {
-    try self.streamTranscriber.stopInPlace()
+    try self.streamTranscriber.mutatingStop()
   }
 }
 
