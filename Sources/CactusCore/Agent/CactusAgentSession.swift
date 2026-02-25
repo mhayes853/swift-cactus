@@ -13,6 +13,7 @@ public final class CactusAgentSession: Sendable {
     var transcript: CactusTranscript
     var isResponding: Bool
     var functions: [any CactusFunction]
+    var delegate: (any Delegate)?
   }
 
   /// The full history of interactions for this session.
@@ -47,6 +48,12 @@ public final class CactusAgentSession: Sendable {
     }
   }
 
+  /// Delegate for customizing function call execution.
+  public var delegate: (any Delegate)? {
+    get { self.state.withLock { $0.delegate } }
+    set { self.state.withLock { $0.delegate = newValue } }
+  }
+
   private init(
     languageModelActor: CactusLanguageModelActor,
     functions: [any CactusFunction],
@@ -58,7 +65,8 @@ public final class CactusAgentSession: Sendable {
       State(
         transcript: transcript,
         isResponding: false,
-        functions: functions
+        functions: functions,
+        delegate: nil
       )
     )
   }
@@ -187,54 +195,218 @@ extension CactusAgentSession {
 // MARK: - FunctionCall
 
 extension CactusAgentSession {
+  /// A function call output used for transcript tool response messages.
+  public struct FunctionReturn {
+    /// The function name.
+    public let name: String
+
+    /// The function output.
+    public let content: CactusPromptContent
+
+    /// Creates a function return value.
+    public init(name: String, content: CactusPromptContent) {
+      self.name = name
+      self.content = content
+    }
+  }
+
   /// A resolved function call pairing a model-emitted call with a concrete registered function.
   public struct FunctionCall: Sendable {
-    private let function: any CactusFunction
-    private let invokeFunction: @Sendable () async throws -> CactusPromptContent
+    public enum Error: Swift.Error {
+      case mismatchedFunctionName(expected: String, received: String)
+    }
+
+    /// The matched function instance.
+    public let function: any CactusFunction
+    private let invoker: any FunctionCallInvoker
 
     /// The raw function call emitted by the language model.
-    public let rawValue: CactusLanguageModel.FunctionCall
+    public let rawFunctionCall: CactusLanguageModel.FunctionCall
 
-    /// The decoded function arguments.
-    public let arguments: any Decodable & Sendable
-
-    /// The function name.
-    public var name: String {
-      self.function.name
-    }
-
-    /// The function parameter schema.
-    public var schema: JSONSchema {
-      self.function.parametersSchema
-    }
-
-    /// A short description of the function.
-    public var description: String {
-      self.function.description
-    }
-
-    init<Function: CactusFunction & Sendable>(
+    /// Creates a resolved function call.
+    public init<Function: CactusFunction & Sendable>(
       function: Function,
-      rawFunctionCall: CactusLanguageModel.FunctionCall,
-      decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
+      rawFunctionCall: CactusLanguageModel.FunctionCall
     ) throws where Function.Input: Sendable {
-      let arguments = try decoder.decode(
-        Function.Input.self,
-        from: .object(rawFunctionCall.arguments)
-      )
+      guard function.name == rawFunctionCall.name else {
+        throw Error.mismatchedFunctionName(
+          expected: function.name,
+          received: rawFunctionCall.name
+        )
+      }
 
       self.function = function
-      self.rawValue = rawFunctionCall
-      self.arguments = arguments
-      self.invokeFunction = {
-        let output = try await function.invoke(input: arguments)
-        return try output.promptContent
-      }
+      self.invoker = ConcreteFunctionCallInvoker(function: function)
+      self.rawFunctionCall = rawFunctionCall
+    }
+
+    /// Decodes arguments from the raw function call payload.
+    public func arguments<Arguments: Decodable>(
+      decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder(),
+      validator: JSONSchema.Validator = .shared
+    ) throws -> Arguments {
+      try self.function.decodeFunctionCallArguments(
+        self.rawFunctionCall.arguments,
+        as: Arguments.self,
+        decoder: decoder,
+        validator: validator
+      )
     }
 
     /// Invokes the underlying function and returns prompt content output.
-    public func invoke() async throws -> CactusPromptContent {
-      try await self.invokeFunction()
+    public func invoke(
+      decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder(),
+      validator: JSONSchema.Validator = .shared
+    ) async throws -> CactusPromptContent {
+      try await self.invoker.invoke(
+        self.rawFunctionCall.arguments,
+        decoder: decoder,
+        validator: validator
+      )
+    }
+  }
+}
+
+extension CactusFunction {
+  fileprivate func decodeFunctionCallArguments<Arguments: Decodable>(
+    _ rawArguments: [String: JSONSchema.Value],
+    as type: Arguments.Type,
+    decoder: JSONSchema.Value.Decoder,
+    validator: JSONSchema.Validator
+  ) throws -> Arguments {
+    try validator.validate(value: .object(rawArguments), with: self.parametersSchema)
+    return try decoder.decode(type, from: .object(rawArguments))
+  }
+
+}
+
+private protocol FunctionCallInvoker: Sendable {
+  func invoke(
+    _ rawArguments: [String: JSONSchema.Value],
+    decoder: JSONSchema.Value.Decoder,
+    validator: JSONSchema.Validator
+  ) async throws -> CactusPromptContent
+}
+
+private struct ConcreteFunctionCallInvoker<Function: CactusFunction & Sendable>: FunctionCallInvoker
+where Function.Input: Sendable {
+  let function: Function
+
+  func invoke(
+    _ rawArguments: [String: JSONSchema.Value],
+    decoder: JSONSchema.Value.Decoder,
+    validator: JSONSchema.Validator
+  ) async throws -> CactusPromptContent {
+    let input = try self.function.decodeFunctionCallArguments(
+      rawArguments,
+      as: Function.Input.self,
+      decoder: decoder,
+      validator: validator
+    )
+    let output = try await self.function.invoke(input: consume input)
+    return try output.promptContent
+  }
+}
+
+// MARK: - Delegate
+
+extension CactusAgentSession {
+  /// A delegate that customizes tool execution for a function-calling step.
+  public protocol Delegate: Sendable {
+    /// Executes resolved function calls and returns outputs in matching array order.
+    ///
+    /// - Parameters:
+    ///   - session: The active session.
+    ///   - functionCalls: The resolved function calls for the current model turn.
+    /// - Returns: Function return outputs in the same order as `functionCalls`.
+    func agentFunctionWillExecuteFunctions(
+      _ session: CactusAgentSession,
+      functionCalls: sending [CactusAgentSession.FunctionCall]
+    ) async throws -> sending [CactusAgentSession.FunctionReturn]
+  }
+}
+
+extension CactusAgentSession.Delegate {
+  public func agentFunctionWillExecuteFunctions(
+    _ session: CactusAgentSession,
+    functionCalls: sending [CactusAgentSession.FunctionCall]
+  ) async throws -> sending [CactusAgentSession.FunctionReturn] {
+    try await CactusAgentSession.executeParallelFunctionCalls(functionCalls: functionCalls)
+  }
+}
+
+// MARK: - Parallel Function Call Executor
+
+extension CactusAgentSession {
+  /// An error thrown when one or more parallel function calls fail.
+  public struct ExecuteParallelFunctionCallsError: Error {
+    /// Collected failures from all function calls that threw.
+    public let errors: [any Error]
+  }
+
+  /// Executes function calls in parallel and returns ordered function outputs.
+  public static func executeParallelFunctionCalls(
+    functionCalls: sending [CactusAgentSession.FunctionCall]
+  ) async throws -> sending [CactusAgentSession.FunctionReturn] {
+    guard !functionCalls.isEmpty else { return [] }
+
+    let collector = ErrorCollector()
+
+    let results = await withTaskGroup(
+      of: (Int, String, CactusPromptContent.MessageComponents)?.self,
+      returning: [(Int, String, CactusPromptContent.MessageComponents)].self
+    ) { group in
+      for (index, functionCall) in functionCalls.enumerated() {
+        group.addTask {
+          do {
+            let content = try await functionCall.invoke()
+            let components = try content.messageComponents()
+            return (index, functionCall.function.name, components)
+          } catch {
+            await collector.append(error)
+            return nil
+          }
+        }
+      }
+
+      var results = [(Int, String, CactusPromptContent.MessageComponents)]()
+      for await result in group {
+        if let result {
+          results.append(result)
+        }
+      }
+      return results
+    }
+
+    var orderedReturns = [CactusAgentSession.FunctionReturn?](
+      repeating: nil,
+      count: functionCalls.count
+    )
+    for (index, name, components) in results {
+      orderedReturns[index] = CactusAgentSession.FunctionReturn(
+        name: name,
+        content: CactusPromptContent {
+          components.text
+          CactusPromptContent(images: components.images)
+        }
+      )
+    }
+
+    try await collector.checkErrors()
+    return orderedReturns.compactMap { $0 }
+  }
+
+  private actor ErrorCollector {
+    private var errors = [any Error]()
+
+    func append(_ error: sending any Error) {
+      self.errors.append(error)
+    }
+
+    func checkErrors() throws {
+      if !errors.isEmpty {
+        throw ExecuteParallelFunctionCallsError(errors: errors)
+      }
     }
   }
 }
