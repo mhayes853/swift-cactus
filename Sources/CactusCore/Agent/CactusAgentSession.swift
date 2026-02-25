@@ -184,9 +184,65 @@ extension CactusAgentSession {
   }
 }
 
+// MARK: - FunctionCall
+
+extension CactusAgentSession {
+  /// A resolved function call pairing a model-emitted call with a concrete registered function.
+  public struct FunctionCall: Sendable {
+    private let function: any CactusFunction
+    private let invokeFunction: @Sendable () async throws -> CactusPromptContent
+
+    /// The raw function call emitted by the language model.
+    public let rawValue: CactusLanguageModel.FunctionCall
+
+    /// The decoded function arguments.
+    public let arguments: any Decodable & Sendable
+
+    /// The function name.
+    public var name: String {
+      self.function.name
+    }
+
+    /// The function parameter schema.
+    public var schema: JSONSchema {
+      self.function.parametersSchema
+    }
+
+    /// A short description of the function.
+    public var description: String {
+      self.function.description
+    }
+
+    init<Function: CactusFunction & Sendable>(
+      function: Function,
+      rawFunctionCall: CactusLanguageModel.FunctionCall,
+      decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
+    ) throws where Function.Input: Sendable {
+      let arguments = try decoder.decode(
+        Function.Input.self,
+        from: .object(rawFunctionCall.arguments)
+      )
+
+      self.function = function
+      self.rawValue = rawFunctionCall
+      self.arguments = arguments
+      self.invokeFunction = {
+        let output = try await function.invoke(input: arguments)
+        return try output.promptContent
+      }
+    }
+
+    /// Invokes the underlying function and returns prompt content output.
+    public func invoke() async throws -> CactusPromptContent {
+      try await self.invokeFunction()
+    }
+  }
+}
+
 // MARK: - Control
 
 extension CactusAgentSession {
+
   /// Stops any active generation on the underlying language model.
   nonisolated(nonsending) public func stop() async {
     fatalError("Not implemented")
