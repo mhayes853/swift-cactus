@@ -9,6 +9,8 @@
     }
 
     /// Extracts cactus compatible PCM bytes from this buffer.
+    ///
+    /// The buffer is converted to mono 16 kHz signed 16-bit PCM using the default audio format conversion.
     public func cactusPCMBytes() throws -> [UInt8] {
       guard self.frameLength > 0 else { return [] }
 

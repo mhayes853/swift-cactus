@@ -8,7 +8,7 @@
 
     /// Creates PCM transcription content from an `AVAudioPCMBuffer`.
     ///
-    /// The buffer is converted to cactus-compatible mono 16 kHz PCM bytes.
+    /// The buffer is converted to cactus-compatible mono 16 kHz PCM bytes using the default audio format conversion.
     ///
     /// - Parameter buffer: The audio PCM buffer to convert.
     /// - Returns: Content configured for PCM-based transcription.
