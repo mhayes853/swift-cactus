@@ -5,6 +5,10 @@ import SnapshotTesting
 import StreamParsing
 import Testing
 
+#if canImport(Observation)
+  import Observation
+#endif
+
 @Suite
 struct `CactusAgentSession tests` {
   @Suite(.serialized)
@@ -201,7 +205,7 @@ struct `CactusAgentSession tests` {
       let model = try CactusLanguageModel(from: modelURL)
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
-      let stream = session.stream(
+      let stream = try session.stream(
         to: try CactusUserMessage(
           "Respond with one short sentence about trees.",
           maxTokens: .limit(512)
@@ -233,7 +237,7 @@ struct `CactusAgentSession tests` {
       for _ in 0..<3 where output == nil {
         let model = try CactusLanguageModel(from: modelURL)
         let session = CactusAgentSession(model: model, transcript: CactusTranscript())
-        let stream = session.stream(
+        let stream = try session.stream(
           to: try CactusUserMessage(
             "Provide a JSON object with title and servings for a simple recipe.",
             maxTokens: .limit(512)
@@ -287,6 +291,68 @@ struct `CactusAgentSession tests` {
       }
     }
 
+    @Test
+    func `Is Responding Error Case Has Expected Message`() {
+      expectNoDifference(
+        CactusAgentSessionError.alreadyResponding.message,
+        "The agent is already responding to another request."
+      )
+    }
+
+    @Test
+    func `Is Responding Is False When No Stream Is Active`() async throws {
+      let session = try await Self.makeSession()
+      expectNoDifference(session.isResponding, false)
+    }
+
+    @Test
+    func `Is Responding Is True While Stream Is Active`() async throws {
+      let session = try await Self.makeSession()
+      let stream = try session.stream(
+        to: try CactusUserMessage(
+          "Respond with one short sentence.",
+          maxTokens: .limit(512)
+        )
+      )
+
+      expectNoDifference(session.isResponding, true)
+
+      stream.stop()
+      _ = try? await stream.collectResponse()
+    }
+
+    @Test
+    func `Already Responding Rejects New Message`() async throws {
+      let session = try await Self.makeSession()
+      let stream = try session.stream(
+        to: try CactusUserMessage(
+          "Write one short sentence about cacti.",
+          maxTokens: .limit(512)
+        )
+      )
+
+      expectNoDifference(session.isResponding, true)
+
+      let error = await #expect(throws: CactusAgentSessionError.self) {
+        _ = try await session.respond(
+          to: try CactusUserMessage(
+            "This second request should fail while the first stream is active.",
+            maxTokens: .limit(512)
+          )
+        )
+      }
+
+      expectNoDifference(try #require(error), .alreadyResponding)
+
+      stream.stop()
+      _ = try? await stream.collectResponse()
+    }
+
+    private static func makeSession() async throws -> CactusAgentSession {
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusLanguageModel(from: modelURL)
+      return CactusAgentSession(model: model, transcript: CactusTranscript())
+    }
   }
 
   @Suite

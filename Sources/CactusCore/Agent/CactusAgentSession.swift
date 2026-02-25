@@ -77,7 +77,6 @@ public final class CactusAgentSession: Sendable {
 // MARK: - Initializers
 
 extension CactusAgentSession {
-
   public enum AgentLoopError: Error {
     case missingFunction(String)
     case unsupportedFunctionInputSendability(String)
@@ -443,7 +442,7 @@ extension CactusAgentSession {
     to request: CactusUserMessage
   ) async throws -> CactusCompletion<String> {
     let transcriptCountBeforeStream = self.transcript.count
-    let stream = self.stream(to: request)
+    let stream = try self.stream(to: request)
     let output = try await withTaskCancellationHandler {
       try await stream.collectResponse()
     } onCancel: {
@@ -451,7 +450,8 @@ extension CactusAgentSession {
     }
 
     let newEntries = self.transcript.dropFirst(transcriptCountBeforeStream)
-    let completionEntries = newEntries
+    let completionEntries =
+      newEntries
       .filter { $0.message.role != .user }
       .map {
         CactusCompletionEntry(
@@ -493,7 +493,7 @@ extension CactusAgentSession {
     decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
   ) async throws -> CactusCompletion<Output> {
     let transcriptCountBeforeStream = self.transcript.count
-    let stream = self.stream(
+    let stream = try self.stream(
       to: request,
       generating: outputType,
       schema: schema,
@@ -507,7 +507,8 @@ extension CactusAgentSession {
     }
 
     let newEntries = self.transcript.dropFirst(transcriptCountBeforeStream)
-    let completionEntries = newEntries
+    let completionEntries =
+      newEntries
       .filter { $0.message.role != .user }
       .map {
         CactusCompletionEntry(
@@ -562,7 +563,11 @@ extension CactusAgentSession {
   /// Streams plain text tokens and returns the final assistant response.
   public func stream(
     to request: CactusUserMessage
-  ) -> CactusInferenceStream<String> {
+  ) throws -> CactusInferenceStream<String> {
+    guard self.beginRespondingIfNecessary() else {
+      throw CactusAgentSessionError.alreadyResponding
+    }
+
     let context = self.streamRequestContext(from: request)
 
     self.state.withLock {
@@ -576,7 +581,9 @@ extension CactusAgentSession {
       $0.transcript.insert(CactusTranscript.Element(message: systemMessage), at: 0)
     }
 
-    return CactusInferenceStream<String> { continuation in
+    let stream = CactusInferenceStream<String> { continuation in
+      defer { self.endResponding() }
+
       let userMessage = try context.userMessageResult.get()
       self.state.withLock { $0.transcript.append(CactusTranscript.Element(message: userMessage)) }
 
@@ -614,7 +621,9 @@ extension CactusAgentSession {
           return finalResponse
         }
 
-        let resolvedFunctionCalls = try self.resolveFunctionCalls(completedTurn.completion.functionCalls)
+        let resolvedFunctionCalls = try self.resolveFunctionCalls(
+          completedTurn.completion.functionCalls
+        )
         let functionReturns: [CactusAgentSession.FunctionReturn]
         if let delegate = self.delegate {
           functionReturns = try await delegate.agentFunctionWillExecuteFunctions(
@@ -622,7 +631,9 @@ extension CactusAgentSession {
             functionCalls: resolvedFunctionCalls
           )
         } else {
-          functionReturns = try await Self.executeParallelFunctionCalls(functionCalls: resolvedFunctionCalls)
+          functionReturns = try await Self.executeParallelFunctionCalls(
+            functionCalls: resolvedFunctionCalls
+          )
         }
 
         let role = self.functionOutputRole()
@@ -643,6 +654,7 @@ extension CactusAgentSession {
         conversationMessages = self.transcript.messages
       }
     }
+    return stream
   }
 
   /// Streams structured output partials and returns the final decoded output.
@@ -650,9 +662,15 @@ extension CactusAgentSession {
     to request: CactusUserMessage,
     generating outputType: Output.Type = Output.self,
     configuration: JSONStreamParserConfiguration = JSONStreamParserConfiguration()
-  ) -> CactusInferenceStream<Output> where Output.Partial: Sendable {
+  ) throws -> CactusInferenceStream<Output> where Output.Partial: Sendable {
+    guard self.beginRespondingIfNecessary() else {
+      throw CactusAgentSessionError.alreadyResponding
+    }
+
     let context = self.streamRequestContext(from: request)
-    return CactusInferenceStream<Output> { continuation in
+    let stream = CactusInferenceStream<Output> { continuation in
+      defer { self.endResponding() }
+
       let userMessage = try context.userMessageResult.get()
       let userTranscriptEntry = CactusTranscript.Element(message: userMessage)
       self.state.withLock { $0.transcript.append(userTranscriptEntry) }
@@ -690,6 +708,7 @@ extension CactusAgentSession {
 
       return try completedTurn.output.get()
     }
+    return stream
   }
 
   public func stream<Output: Decodable & Sendable>(
@@ -698,9 +717,15 @@ extension CactusAgentSession {
     schema: JSONSchema,
     validator: JSONSchema.Validator = .shared,
     decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
-  ) -> CactusInferenceStream<Output> {
+  ) throws -> CactusInferenceStream<Output> {
+    guard self.beginRespondingIfNecessary() else {
+      throw CactusAgentSessionError.alreadyResponding
+    }
+
     let context = self.streamRequestContext(from: request)
-    return CactusInferenceStream<Output> { continuation in
+    let stream = CactusInferenceStream<Output> { continuation in
+      defer { self.endResponding() }
+
       let userMessage = try context.userMessageResult.get()
       self.state.withLock { $0.transcript.append(CactusTranscript.Element(message: userMessage)) }
 
@@ -736,12 +761,32 @@ extension CactusAgentSession {
 
       return try completedTurn.output.get()
     }
+    return stream
   }
 }
 
 // MARK: - Agent Loop Helpers
 
 extension CactusAgentSession {
+  private func beginRespondingIfNecessary() -> Bool {
+    self.observationRegistrar.withMutation(of: self, keyPath: \CactusAgentSession.isResponding) {
+      self.state.withLock { state in
+        guard !state.isResponding else { return false }
+        state.isResponding = true
+        return true
+      }
+    }
+  }
+
+  private func endResponding() {
+    self.observationRegistrar.withMutation(of: self, keyPath: \CactusAgentSession.isResponding) {
+      self.state.withLock { state in
+        guard state.isResponding else { return }
+        state.isResponding = false
+      }
+    }
+  }
+
   private func resolveFunctionCalls(
     _ functionCalls: [CactusLanguageModel.FunctionCall]
   ) throws -> [CactusAgentSession.FunctionCall] {
@@ -841,6 +886,21 @@ extension CactusAgentSession {
     let data = try JSONEncoder().encode(Payload(name: name, content: components.text))
     return String(decoding: data, as: UTF8.self)
   }
+}
+
+/// An error thrown by ``CactusAgentSession`` APIs.
+public struct CactusAgentSessionError: Error, Hashable, Sendable {
+  /// A human-readable description of the failure.
+  public let message: String
+
+  private init(message: String) {
+    self.message = message
+  }
+
+  /// A request was sent while another response stream was still active.
+  public static let alreadyResponding = Self(
+    message: "The agent is already responding to another request."
+  )
 }
 
 // MARK: - Observable
