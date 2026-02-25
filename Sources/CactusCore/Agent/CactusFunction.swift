@@ -2,7 +2,7 @@
 
 /// A strongly typed function that can be exposed to a language model.
 public protocol CactusFunction<Input, Output>: Sendable {
-  associatedtype Input: Decodable
+  associatedtype Input: Decodable & Sendable
   associatedtype Output: CactusPromptRepresentable
 
   /// The unique function name exposed to the model.
@@ -34,5 +34,17 @@ extension CactusFunction {
       description: self.description,
       parameters: self.parametersSchema
     )
+  }
+
+  /// Invokes this function from raw function-call arguments.
+  public func invoke(
+    rawArguments: [String: JSONSchema.Value],
+    decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder(),
+    validator: JSONSchema.Validator = .shared
+  ) async throws -> CactusPromptContent {
+    try validator.validate(value: .object(rawArguments), with: self.parametersSchema)
+    let input = try decoder.decode(Input.self, from: .object(rawArguments))
+    let output = try await self.invoke(input: consume input)
+    return try output.promptContent
   }
 }
