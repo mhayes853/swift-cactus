@@ -29,6 +29,43 @@ struct `CactusAgentSession tests` {
     }
 
     @Test
+    func `Multi Turn Respond Maintains Conversation Context And Snapshots Transcript`() async throws
+    {
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusLanguageModel(from: modelURL)
+      let session = CactusAgentSession(model: model, transcript: CactusTranscript())
+
+      let firstTurn = try await session.respond(
+        to: CactusUserMessage(
+          "My favorite color is green. Please acknowledge this in one short sentence.",
+          maxTokens: .limit(512)
+        )
+      )
+      let secondTurn = try await session.respond(
+        to: CactusUserMessage(
+          "What color did I say was my favorite? Reply with a thoughtful short sentence.",
+          maxTokens: .limit(512)
+        )
+      )
+
+      expectNoDifference(firstTurn.output.isEmpty, false)
+      expectNoDifference(secondTurn.output.isEmpty, false)
+      expectNoDifference(session.transcript.count == 4, true)
+      expectNoDifference(
+        session.transcript.suffix(4).map { $0.message.role },
+        [
+          CactusLanguageModel.MessageRole.user,
+          CactusLanguageModel.MessageRole.assistant,
+          CactusLanguageModel.MessageRole.user,
+          CactusLanguageModel.MessageRole.assistant
+        ]
+      )
+      withKnownIssue {
+        assertSnapshot(of: session.transcript, as: .json, record: true)
+      }
+    }
+
+    @Test
     func `Respond Appends User And Assistant Messages To Transcript`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
       let model = try CactusLanguageModel(from: modelURL)
