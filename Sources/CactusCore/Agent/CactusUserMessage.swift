@@ -6,7 +6,7 @@ public struct CactusUserMessage {
   public var content: CactusPromptContent
 
   /// The maximum number of tokens for the completion.
-  public var maxTokens: Int
+  public var maxTokens: CactusLanguageModel.ChatCompletion.Options.MaxTokenLimit
 
   /// The sampling temperature.
   public var temperature: Float
@@ -38,9 +38,22 @@ public struct CactusUserMessage {
   public var maxBufferSize: Int?
 
   /// Creates a user message.
+  ///
+  /// - Parameters:
+  ///   - content: The prompt content for this user message.
+  ///   - maxTokens: The maximum number of tokens for the completion.
+  ///   - temperature: Sampling temperature.
+  ///   - topP: Nucleus sampling probability.
+  ///   - topK: The k most probable options to limit the next token to.
+  ///   - stopSequences: Phrases that stop generation when emitted.
+  ///   - forceFunctions: Whether tool calls are forced when tools are provided.
+  ///   - toolRagTopK: Number of top tools to keep after tool-RAG selection.
+  ///   - includeStopSequences: Whether stop sequences are kept in final output.
+  ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
+  ///   - maxBufferSize: The maximum buffer size used to store the completion.
   public init(
     content: CactusPromptContent,
-    maxTokens: Int = 512,
+    maxTokens: CactusLanguageModel.ChatCompletion.Options.MaxTokenLimit = .contextLength,
     temperature: Float = 0.6,
     topP: Float = 0.95,
     topK: Int = 20,
@@ -65,9 +78,22 @@ public struct CactusUserMessage {
   }
 
   /// Creates a user message from prompt representable content.
+  ///
+  /// - Parameters:
+  ///   - content: The prompt content for this user message.
+  ///   - maxTokens: The maximum number of tokens for the completion.
+  ///   - temperature: Sampling temperature.
+  ///   - topP: Nucleus sampling probability.
+  ///   - topK: The k most probable options to limit the next token to.
+  ///   - stopSequences: Phrases that stop generation when emitted.
+  ///   - forceFunctions: Whether tool calls are forced when tools are provided.
+  ///   - toolRagTopK: Number of top tools to keep after tool-RAG selection.
+  ///   - includeStopSequences: Whether stop sequences are kept in final output.
+  ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
+  ///   - maxBufferSize: The maximum buffer size used to store the completion.
   public init(
     _ content: some CactusPromptRepresentable,
-    maxTokens: Int = 512,
+    maxTokens: CactusLanguageModel.ChatCompletion.Options.MaxTokenLimit = .contextLength,
     temperature: Float = 0.6,
     topP: Float = 0.95,
     topK: Int = 20,

@@ -21,21 +21,9 @@ public struct CactusStreamTranscriber: ~Copyable {
   ///
   /// - Parameters:
   ///   - streamTranscribe: The raw stream transcriber pointer.
-<<<<<<< HEAD
-  public convenience init(
-    streamTranscribe: cactus_stream_transcribe_t,
-    isStreamPointerManaged: Bool = false
-  ) {
-    self.init(
-      streamTranscribe: streamTranscribe,
-      model: nil,
-      isStreamPointerManaged: isStreamPointerManaged
-    )
-=======
   public init(streamTranscribe: consuming cactus_stream_transcribe_t) {
     self.streamTranscribePointer = streamTranscribe
     self.ownedModelPointer = nil
->>>>>>> 5744344329230a36a090f31d665cc8c7a53a4090
   }
 
   /// Creates a stream transcriber from a model URL.
@@ -57,26 +45,8 @@ public struct CactusStreamTranscriber: ~Copyable {
     guard let streamTranscribe = cactus_stream_transcribe_start(model, nil) else {
       throw CactusStreamTranscriberError()
     }
-<<<<<<< HEAD
-    self.init(
-      streamTranscribe: streamTranscribe,
-      model: model,
-      isStreamPointerManaged: true
-    )
-  }
-
-  private init(
-    streamTranscribe: cactus_stream_transcribe_t,
-    model: cactus_model_t?,
-    isStreamPointerManaged: Bool
-  ) {
-    self.streamTranscribe = streamTranscribe
-    self.model = model
-    self.isStreamPointerManaged = isStreamPointerManaged
-=======
     self.streamTranscribePointer = streamTranscribe
     self.ownedModelPointer = model
->>>>>>> 5744344329230a36a090f31d665cc8c7a53a4090
   }
 
   deinit {

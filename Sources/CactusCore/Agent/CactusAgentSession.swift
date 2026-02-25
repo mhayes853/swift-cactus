@@ -67,7 +67,7 @@ extension CactusAgentSession {
   ///   - functions: Tool functions available to the session.
   ///   - transcript: The initial transcript to seed the session.
   public convenience init(
-    model: sending CactusLanguageModel,
+    model: consuming sending CactusLanguageModel,
     functions: [any CactusFunction] = [],
     transcript: CactusTranscript
   ) {
@@ -105,7 +105,7 @@ extension CactusAgentSession {
   ///   - functions: Tool functions available to the session.
   ///   - systemPrompt: The system prompt injected for the session.
   public convenience init(
-    model: sending CactusLanguageModel,
+    model: consuming sending CactusLanguageModel,
     functions: [any CactusFunction] = [],
     systemPrompt: CactusPromptContent
   ) {
@@ -143,7 +143,7 @@ extension CactusAgentSession {
   ///   - functions: Tool functions available to the session.
   ///   - systemPrompt: A builder that produces the session's system prompt content.
   public convenience init(
-    model: sending CactusLanguageModel,
+    model: consuming sending CactusLanguageModel,
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: @Sendable () -> some CactusPromptRepresentable
   ) {
