@@ -36,8 +36,15 @@ public final class CactusAgentSession: Sendable {
 
   /// Functions available for tool-calling during completion.
   public var functions: [any CactusFunction] {
-    get { self.state.withLock { $0.functions } }
-    set { self.state.withLock { $0.functions = newValue } }
+    get {
+      self.observationRegistrar.access(self, keyPath: \CactusAgentSession.functions)
+      return self.state.withLock { $0.functions }
+    }
+    set {
+      self.observationRegistrar.withMutation(of: self, keyPath: \CactusAgentSession.functions) {
+        self.state.withLock { $0.functions = newValue }
+      }
+    }
   }
 
   private init(
