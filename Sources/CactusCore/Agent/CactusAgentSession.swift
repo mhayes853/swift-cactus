@@ -195,6 +195,21 @@ extension CactusAgentSession {
 // MARK: - FunctionCall
 
 extension CactusAgentSession {
+  /// A function call failure that preserves the function call context.
+  public struct FunctionThrow: Sendable {
+    /// The function call that failed.
+    public let functionCall: CactusAgentSession.FunctionCall
+
+    /// The underlying thrown error.
+    public let error: any Error
+
+    /// Creates a function throw wrapper.
+    public init(functionCall: CactusAgentSession.FunctionCall, error: any Error) {
+      self.functionCall = functionCall
+      self.error = error
+    }
+  }
+
   /// A function call output used for transcript tool response messages.
   public struct FunctionReturn {
     /// The function name.
@@ -277,7 +292,6 @@ extension CactusFunction {
     try validator.validate(value: .object(rawArguments), with: self.parametersSchema)
     return try decoder.decode(type, from: .object(rawArguments))
   }
-
 }
 
 private protocol FunctionCallInvoker: Sendable {
@@ -341,7 +355,7 @@ extension CactusAgentSession {
   /// An error thrown when one or more parallel function calls fail.
   public struct ExecuteParallelFunctionCallsError: Error {
     /// Collected failures from all function calls that threw.
-    public let errors: [any Error]
+    public let errors: [CactusAgentSession.FunctionThrow]
   }
 
   /// Executes function calls in parallel and returns ordered function outputs.
@@ -363,7 +377,13 @@ extension CactusAgentSession {
             let components = try content.messageComponents()
             return (index, functionCall.function.name, components)
           } catch {
-            await collector.append(error)
+            await collector.append(
+              index: index,
+              functionThrow: CactusAgentSession.FunctionThrow(
+                functionCall: functionCall,
+                error: error
+              )
+            )
             return nil
           }
         }
@@ -397,15 +417,19 @@ extension CactusAgentSession {
   }
 
   private actor ErrorCollector {
-    private var errors = [any Error]()
+    private var indexedErrors = [(Int, CactusAgentSession.FunctionThrow)]()
 
-    func append(_ error: sending any Error) {
-      self.errors.append(error)
+    func append(index: Int, functionThrow: sending CactusAgentSession.FunctionThrow) {
+      self.indexedErrors.append((index, functionThrow))
     }
 
     func checkErrors() throws {
-      if !errors.isEmpty {
-        throw ExecuteParallelFunctionCallsError(errors: errors)
+      if !indexedErrors.isEmpty {
+        throw ExecuteParallelFunctionCallsError(
+          errors: self.indexedErrors
+            .sorted { lhs, rhs in lhs.0 < rhs.0 }
+            .map(\.1)
+        )
       }
     }
   }

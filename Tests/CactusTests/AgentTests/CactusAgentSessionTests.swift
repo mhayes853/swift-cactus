@@ -54,7 +54,7 @@ struct `CactusAgentSession tests` {
         )
       ]
 
-      let returns = try await CactusAgentSession.executeParallelToolCalls(
+      let returns = try await CactusAgentSession.executeParallelFunctionCalls(
         functionCalls: functionCalls
       )
 
@@ -86,7 +86,7 @@ struct `CactusAgentSession tests` {
       ]
 
       let error = await #expect(throws: CactusAgentSession.ExecuteParallelFunctionCallsError.self) {
-        _ = try await CactusAgentSession.executeParallelToolCalls(functionCalls: functionCalls)
+        _ = try await CactusAgentSession.executeParallelFunctionCalls(functionCalls: functionCalls)
       }
       expectNoDifference(error?.errors.count, 2)
     }
@@ -113,9 +113,47 @@ struct `CactusAgentSession tests` {
       ]
 
       let error = await #expect(throws: CactusAgentSession.ExecuteParallelFunctionCallsError.self) {
-        _ = try await CactusAgentSession.executeParallelToolCalls(functionCalls: functionCalls)
+        _ = try await CactusAgentSession.executeParallelFunctionCalls(functionCalls: functionCalls)
       }
       expectNoDifference(error?.errors.count, 1)
+    }
+
+    @Test
+    func `Execute Parallel Tool Calls Aggregated Error Includes Function Throw Details`() async throws {
+      let functionCalls = [
+        try CactusAgentSession.FunctionCall(
+          function: FailableFunction(),
+          rawFunctionCall: CactusLanguageModel.FunctionCall(
+            name: "failable",
+            arguments: ["value": .string("a"), "shouldFail": .boolean(true)]
+          )
+        ),
+        try CactusAgentSession.FunctionCall(
+          function: FailableFunction(),
+          rawFunctionCall: CactusLanguageModel.FunctionCall(
+            name: "failable",
+            arguments: ["value": .string("b"), "shouldFail": .boolean(true)]
+          )
+        )
+      ]
+
+      let error = await #expect(throws: CactusAgentSession.ExecuteParallelFunctionCallsError.self) {
+        _ = try await CactusAgentSession.executeParallelFunctionCalls(functionCalls: functionCalls)
+      }
+
+      let functionThrows = try #require(error?.errors)
+      expectNoDifference(functionThrows.count, 2)
+      expectNoDifference(functionThrows.map { $0.functionCall.function.name }, ["failable", "failable"])
+      expectNoDifference(
+        functionThrows.compactMap(rawValueArgument(from:)),
+        ["a", "b"]
+      )
+      expectNoDifference(
+        functionThrows.compactMap { functionThrow in
+          TestToolError.value(from: functionThrow.error)
+        },
+        ["a", "b"]
+      )
     }
   }
 }
@@ -162,6 +200,22 @@ private struct FailableFunction: CactusFunction, Sendable {
 
 private enum TestToolError: Error {
   case failed(String)
+
+  static func value(from error: any Error) -> String? {
+    guard case let .failed(value) = error as? TestToolError else {
+      return nil
+    }
+    return value
+  }
+}
+
+private func rawValueArgument(from functionThrow: CactusAgentSession.FunctionThrow) -> String? {
+  guard
+    case let .string(value) = functionThrow.functionCall.rawFunctionCall.arguments["value"]
+  else {
+    return nil
+  }
+  return value
 }
 
 @JSONSchema
