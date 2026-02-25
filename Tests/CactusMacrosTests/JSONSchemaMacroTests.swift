@@ -39,6 +39,42 @@ extension BaseTestSuite {
     }
 
     @Test
+    func `Expands Inner JSONSchema Type Using Qualified Extension Name`() {
+      assertMacro {
+        """
+        struct Outer {
+          @JSONSchema
+          struct Inner {
+            var name: String
+          }
+        }
+        """
+      } expansion: {
+        """
+        struct Outer {
+          struct Inner {
+            var name: String
+
+            static var jsonSchema: CactusCore.JSONSchema {
+              .object(
+                valueSchema: .object(
+                  properties: [
+                    "name": String.jsonSchema
+                  ],
+                  required: ["name"]
+                )
+              )
+            }
+          }
+        }
+
+        extension Outer.Inner: CactusCore.JSONSchemaRepresentable {
+        }
+        """
+      }
+    }
+
+    @Test
     func `Applies Inferred Property Description`() {
       assertMacro {
         """

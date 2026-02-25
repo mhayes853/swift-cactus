@@ -40,9 +40,8 @@ public enum JSONSchemaMacro: ExtensionMacro, MemberMacro, MemberAttributeMacro {
     conformingTo protocols: [TypeSyntax],
     in context: some MacroExpansionContext
   ) throws -> [ExtensionDeclSyntax] {
-    let structDecl = try Self.requireStructDecl(declaration: declaration)
-
-    let typeName = structDecl.name.text
+    _ = try Self.requireStructDecl(declaration: declaration)
+    let typeName = type.trimmedDescription
     return [
       try ExtensionDeclSyntax(
         """
