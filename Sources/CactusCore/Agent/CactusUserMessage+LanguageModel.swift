@@ -10,6 +10,7 @@ extension CactusUserMessage {
       topK: self.topK,
       stopSequences: self.stopSequences,
       forceFunctions: self.forceFunctions,
+      confidenceThreshold: -1.0,  // TODO: Supports cloud handoff for agent sessions.
       toolRagTopK: self.toolRagTopK,
       includeStopSequences: self.includeStopSequences,
       isTelemetryEnabled: self.isTelemetryEnabled
