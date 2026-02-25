@@ -77,10 +77,11 @@ public struct CactusLanguageModel: ~Copyable {
     model: consuming cactus_model_t,
     configuration: Configuration
   ) throws {
-    self.configuration = configuration
-    self.configurationFile = try ConfigurationFile(
+    let configurationFile = try ConfigurationFile(
       contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
     )
+    self.configuration = configuration
+    self.configurationFile = configurationFile
     self.modelPointer = model
   }
 
