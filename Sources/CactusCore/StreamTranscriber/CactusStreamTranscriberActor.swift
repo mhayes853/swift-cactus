@@ -117,7 +117,7 @@ extension CactusStreamTranscriberActor {
   ///
   /// - Returns: A ``CactusStreamTranscriber/FinalizedTranscription``.
   public func stop() async throws -> CactusStreamTranscriber.FinalizedTranscription {
-    try self.streamTranscriber.stop()
+    try self.streamTranscriber.stopInPlace()
   }
 }
 

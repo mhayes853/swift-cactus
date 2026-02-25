@@ -249,7 +249,11 @@ extension CactusStreamTranscriber {
   /// Stops streaming transcription and returns the finalized result.
   ///
   /// - Returns: A ``FinalizedTranscription``.
-  public mutating func stop() throws -> FinalizedTranscription {
+  public consuming func stop() throws -> FinalizedTranscription {
+    try self.stopInPlace()
+  }
+
+  mutating func stopInPlace() throws -> FinalizedTranscription {
     try self.ensureNotFinalized()
 
     let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: Self.responseBufferSize)
@@ -260,6 +264,7 @@ extension CactusStreamTranscriber {
       responseBuffer,
       Self.responseBufferSize * MemoryLayout<CChar>.stride
     )
+    self.isFinalized = true
 
     var responseData = Data()
     for i in 0..<strnlen(responseBuffer, Self.responseBufferSize) {
@@ -271,9 +276,7 @@ extension CactusStreamTranscriber {
       throw CactusStreamTranscriberError(message: response.error)
     }
 
-    let finalized = try ffiDecoder.decode(FinalizedTranscription.self, from: responseData)
-    self.isFinalized = true
-    return finalized
+    return try ffiDecoder.decode(FinalizedTranscription.self, from: responseData)
   }
 }
 
@@ -294,7 +297,7 @@ public struct CactusStreamTranscriberError: Error, Hashable {
   /// The error message from the underlying FFI, if available.
   public let message: String?
 
-  fileprivate init(message: String? = nil) {
+  init(message: String? = nil) {
     self.message = message ?? cactus_get_last_error().map { String(cString: $0) }
   }
 }

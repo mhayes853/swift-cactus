@@ -43,7 +43,7 @@ struct `CactusStreamTranscriber tests` {
     @Test
     func `Finalize Snapshot After Chunked Inserts`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-      var transcriber = try CactusStreamTranscriber(modelURL: modelURL)
+      let transcriber = try CactusStreamTranscriber(modelURL: modelURL)
 
       let fullBuffer = try testAudioPCMBuffer()
       let totalFrames = AVAudioFramePosition(fullBuffer.frameLength)
@@ -71,28 +71,36 @@ struct `CactusStreamTranscriber tests` {
     @Test
     func `Disallow Operations After Finalize`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-      var transcriber = try CactusStreamTranscriber(modelURL: modelURL)
+      let actor = try CactusStreamTranscriberActor(modelURL: modelURL)
 
       let fullBuffer = try testAudioPCMBuffer()
       let totalFrames = AVAudioFramePosition(fullBuffer.frameLength)
       let sliceLength = max(AVAudioFramePosition(1), totalFrames / 4)
       let slice = try testAudioPCMBuffer(frameLength: AVAudioFrameCount(sliceLength))
+      let sliceBytes = try slice.cactusPCMBytes()
 
-      _ = try transcriber.process(buffer: slice)
-      _ = try transcriber.stop()
+      _ = try await actor.process(buffer: sliceBytes)
+      _ = try await actor.stop()
 
-      #expect(throws: CactusStreamTranscriberError.self) {
-        try transcriber.process(buffer: slice)
+      do {
+        _ = try await actor.process(buffer: sliceBytes)
+        Issue.record("Expected processing after finalize to throw")
+      } catch {
+        expectNoDifference(error is CactusStreamTranscriberError, true)
       }
-      #expect(throws: CactusStreamTranscriberError.self) {
-        _ = try transcriber.stop()
+
+      do {
+        _ = try await actor.stop()
+        Issue.record("Expected stopping after finalize to throw")
+      } catch {
+        expectNoDifference(error is CactusStreamTranscriberError, true)
       }
     }
 
     @Test
     func `Stop Is Idempotent Through Deinit Cleanup`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-      var transcriber = try CactusStreamTranscriber(modelURL: modelURL)
+      let transcriber = try CactusStreamTranscriber(modelURL: modelURL)
 
       let fullBuffer = try testAudioPCMBuffer()
       let totalFrames = AVAudioFramePosition(fullBuffer.frameLength)
