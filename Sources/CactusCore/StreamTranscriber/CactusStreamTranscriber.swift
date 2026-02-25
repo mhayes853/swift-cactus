@@ -140,25 +140,22 @@ extension CactusStreamTranscriber {
   /// - Returns: A ``ProcessedTranscription``.
   public func process(buffer: UnsafeBufferPointer<UInt8>) throws -> ProcessedTranscription {
     try self.ensureNotFinalized()
-    let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: Self.responseBufferSize)
-    defer { responseBuffer.deallocate() }
 
-    let result = cactus_stream_transcribe_process(
-      self.streamTranscribePointer,
-      buffer.baseAddress,
-      buffer.count,
-      responseBuffer,
-      Self.responseBufferSize * MemoryLayout<CChar>.stride
-    )
-
-    var responseData = Data()
-    for i in 0..<strnlen(responseBuffer, Self.responseBufferSize) {
-      responseData.append(UInt8(bitPattern: responseBuffer[i]))
+    let (result, responseData) = try withFFIBuffer(
+      bufferSize: Self.responseBufferSize
+    ) { responseBuffer, responseBufferSize in
+      cactus_stream_transcribe_process(
+        self.streamTranscribePointer,
+        buffer.baseAddress,
+        buffer.count,
+        responseBuffer,
+        responseBufferSize
+      )
     }
 
     guard result != -1 else {
-      let response = try ffiDecoder.decode(FFIErrorResponse.self, from: responseData)
-      throw CactusStreamTranscriberError(message: response.error)
+      let errorResponse = try ffiDecoder.decode(FFIErrorResponse.self, from: responseData)
+      throw CactusStreamTranscriberError(message: errorResponse.error)
     }
 
     return try ffiDecoder.decode(ProcessedTranscription.self, from: responseData)
@@ -263,24 +260,20 @@ extension CactusStreamTranscriber {
   public mutating func mutatingStop() throws -> FinalizedTranscription {
     try self.ensureNotFinalized()
 
-    let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: Self.responseBufferSize)
-    defer { responseBuffer.deallocate() }
-
-    let result = cactus_stream_transcribe_stop(
-      self.streamTranscribePointer,
-      responseBuffer,
-      Self.responseBufferSize * MemoryLayout<CChar>.stride
-    )
+    let (result, responseData) = try withFFIBuffer(
+      bufferSize: Self.responseBufferSize
+    ) { responseBuffer, responseBufferSize in
+      cactus_stream_transcribe_stop(
+        self.streamTranscribePointer,
+        responseBuffer,
+        responseBufferSize
+      )
+    }
     self.isFinalized = true
 
-    var responseData = Data()
-    for i in 0..<strnlen(responseBuffer, Self.responseBufferSize) {
-      responseData.append(UInt8(bitPattern: responseBuffer[i]))
-    }
-
     guard result != -1 else {
-      let response = try ffiDecoder.decode(FFIErrorResponse.self, from: responseData)
-      throw CactusStreamTranscriberError(message: response.error)
+      let errorResponse = try ffiDecoder.decode(FFIErrorResponse.self, from: responseData)
+      throw CactusStreamTranscriberError(message: errorResponse.error)
     }
 
     return try ffiDecoder.decode(FinalizedTranscription.self, from: responseData)
