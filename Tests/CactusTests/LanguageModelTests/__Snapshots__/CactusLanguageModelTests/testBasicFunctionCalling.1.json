@@ -1,8 +1,8 @@
 {
   "cloud_handoff" : false,
-  "confidence" : 0.9991,
+  "confidence" : 0.9987,
   "decode_tokens" : 20,
-  "decode_tps" : 57.65,
+  "decode_tps" : 50.83,
   "function_calls" : [
     {
       "arguments" : {
@@ -12,10 +12,10 @@
     }
   ],
   "prefill_tokens" : 165,
-  "prefill_tps" : 409.98,
-  "ram_usage_mb" : 410.82,
+  "prefill_tps" : 387.19,
+  "ram_usage_mb" : 447.86,
   "response" : "",
-  "time_to_first_token_ms" : 402.46,
-  "total_time_ms" : 732.07,
+  "time_to_first_token_ms" : 426.15,
+  "total_time_ms" : 799.92,
   "total_tokens" : 185
 }

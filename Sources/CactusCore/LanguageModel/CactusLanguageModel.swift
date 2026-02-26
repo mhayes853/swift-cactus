@@ -320,23 +320,18 @@ extension CactusLanguageModel {
     let start = range?.lowerBound ?? 0
     let end = range?.upperBound ?? tokens.count
     let responseBufferSize = 256
-    let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: responseBufferSize)
-    defer { responseBuffer.deallocate() }
 
-    let result = cactus_score_window(
-      self.rawModelPointer,
-      tokens.baseAddress,
-      tokens.count,
-      start,
-      end,
-      context,
-      responseBuffer,
-      responseBufferSize * MemoryLayout<CChar>.stride
-    )
-
-    var responseData = Data()
-    for i in 0..<strnlen(responseBuffer, responseBufferSize) {
-      responseData.append(UInt8(bitPattern: responseBuffer[i]))
+    let (result, responseData) = try withFFIBuffer(bufferSize: responseBufferSize) { responseBuffer, responseBufferSize in
+      cactus_score_window(
+        self.rawModelPointer,
+        tokens.baseAddress,
+        tokens.count,
+        start,
+        end,
+        context,
+        responseBuffer,
+        responseBufferSize
+      )
     }
 
     guard result != -1 else {
@@ -715,9 +710,6 @@ extension CactusLanguageModel {
       throw ChatCompletionError.bufferSizeTooSmall
     }
 
-    let buffer = UnsafeMutablePointer<CChar>.allocate(capacity: maxBufferSize)
-    defer { buffer.deallocate() }
-
     let functions = functions.map { FFIFunctionDefinition(function: $0) }
     let functionsJSON =
       functions.isEmpty
@@ -727,25 +719,22 @@ extension CactusLanguageModel {
     let ffiMessages = messages.map { FFIMessage(message: $0) }
     var streamedResponse = ""
 
-    let result = try withTokenCallback { token, tokenID in
-      streamedResponse += token
-      onToken(token, tokenID)
-    } perform: { userData, onToken in
-      cactus_complete(
-        self.rawModelPointer,
-        String(decoding: try ffiEncoder.encode(ffiMessages), as: UTF8.self),
-        buffer,
-        maxBufferSize * MemoryLayout<CChar>.stride,
-        String(decoding: try ffiEncoder.encode(options), as: UTF8.self),
-        functionsJSON,
-        onToken,
-        userData
-      )
-    }
-
-    var responseData = Data()
-    for i in 0..<strnlen(buffer, maxBufferSize) {
-      responseData.append(UInt8(bitPattern: buffer[i]))
+    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) { buffer, responseBufferSize in
+      try withTokenCallback { token, tokenID in
+        streamedResponse += token
+        onToken(token, tokenID)
+      } perform: { userData, onToken in
+        cactus_complete(
+          self.rawModelPointer,
+          String(decoding: try ffiEncoder.encode(ffiMessages), as: UTF8.self),
+          buffer,
+          responseBufferSize,
+          String(decoding: try ffiEncoder.encode(options), as: UTF8.self),
+          functionsJSON,
+          onToken,
+          userData
+        )
+      }
     }
 
     guard result != -1 else {
@@ -1152,45 +1141,39 @@ extension CactusLanguageModel {
       throw TranscriptionError.bufferSizeTooSmall
     }
 
-    let buffer = UnsafeMutablePointer<CChar>.allocate(capacity: maxBufferSize)
-    defer { buffer.deallocate() }
-
-    let result = try withTokenCallback(onToken) { userData, onToken in
-      switch request {
-      case .audio(let audio):
-        return cactus_transcribe(
-          self.rawModelPointer,
-          audio.nativePath,
-          prompt,
-          buffer,
-          maxBufferSize * MemoryLayout<CChar>.stride,
-          String(decoding: try ffiEncoder.encode(options), as: UTF8.self),
-          onToken,
-          userData,
-          nil,
-          0
-        )
-      case .buffer(let pcmBuffer):
-        return try pcmBuffer.withUnsafeBufferPointer { rawBuffer in
-          cactus_transcribe(
+    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) { buffer, responseBufferSize in
+      try withTokenCallback(onToken) { userData, onToken in
+        switch request {
+        case .audio(let audio):
+          return cactus_transcribe(
             self.rawModelPointer,
-            nil,
+            audio.nativePath,
             prompt,
             buffer,
-            maxBufferSize * MemoryLayout<CChar>.stride,
+            responseBufferSize,
             String(decoding: try ffiEncoder.encode(options), as: UTF8.self),
             onToken,
             userData,
-            rawBuffer.baseAddress,
-            rawBuffer.count
+            nil,
+            0
           )
+        case .buffer(let pcmBuffer):
+          return try pcmBuffer.withUnsafeBufferPointer { rawBuffer in
+            cactus_transcribe(
+              self.rawModelPointer,
+              nil,
+              prompt,
+              buffer,
+              responseBufferSize,
+              String(decoding: try ffiEncoder.encode(options), as: UTF8.self),
+              onToken,
+              userData,
+              rawBuffer.baseAddress,
+              rawBuffer.count
+            )
+          }
         }
       }
-    }
-
-    var responseData = Data()
-    for i in 0..<strnlen(buffer, maxBufferSize) {
-      responseData.append(UInt8(bitPattern: buffer[i]))
     }
 
     guard result != -1 else {
@@ -1345,16 +1328,18 @@ extension CactusLanguageModel {
   }
 
   /// A detected speech segment.
+  ///
+  /// Indices are sample offsets in the sampling domain used by VAD.
   public struct VADSegment: Hashable, Sendable, Codable {
-    /// Segment start frame.
-    public let startFrame: Int
+    /// Segment start sample index.
+    public let startSampleIndex: Int
 
-    /// Segment end frame.
-    public let endFrame: Int
+    /// Segment end sample index.
+    public let endSampleIndex: Int
 
     private enum CodingKeys: String, CodingKey {
-      case startFrame = "start"
-      case endFrame = "end"
+      case startSampleIndex = "start"
+      case endSampleIndex = "end"
     }
   }
 
@@ -1510,19 +1495,16 @@ extension CactusLanguageModel {
       throw VADError.bufferSizeTooSmall
     }
 
-    let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: maxBufferSize)
-    defer { responseBuffer.deallocate() }
-
     let optionsJSON = try options.map { try String(decoding: ffiEncoder.encode($0), as: UTF8.self) }
 
-    let result =
+    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) { responseBuffer, responseBufferSize in
       switch request {
       case .audio(let audio):
         cactus_vad(
           self.rawModelPointer,
           audio.nativePath,
           responseBuffer,
-          maxBufferSize * MemoryLayout<CChar>.stride,
+          responseBufferSize,
           optionsJSON,
           nil,
           0
@@ -1533,17 +1515,13 @@ extension CactusLanguageModel {
             self.rawModelPointer,
             nil,
             responseBuffer,
-            maxBufferSize * MemoryLayout<CChar>.stride,
+            responseBufferSize,
             optionsJSON,
             rawBuffer.baseAddress,
             rawBuffer.count
           )
         }
       }
-
-    var responseData = Data()
-    for i in 0..<strnlen(responseBuffer, maxBufferSize) {
-      responseData.append(UInt8(bitPattern: responseBuffer[i]))
     }
 
     guard result != -1 else {
@@ -1717,20 +1695,14 @@ extension CactusLanguageModel {
     let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else { throw RAGQueryError.bufferSizeTooSmall }
 
-    let buffer = UnsafeMutablePointer<CChar>.allocate(capacity: maxBufferSize)
-    defer { buffer.deallocate() }
-
-    let result = cactus_rag_query(
-      self.rawModelPointer,
-      query,
-      buffer,
-      maxBufferSize * MemoryLayout<CChar>.stride,
-      topK
-    )
-
-    var responseData = Data()
-    for i in 0..<strnlen(buffer, maxBufferSize) {
-      responseData.append(UInt8(bitPattern: buffer[i]))
+    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) { buffer, responseBufferSize in
+      cactus_rag_query(
+        self.rawModelPointer,
+        query,
+        buffer,
+        responseBufferSize,
+        topK
+      )
     }
 
     guard result > 0 else {

@@ -2,7 +2,7 @@
   import AVFoundation
 
   extension CactusLanguageModel {
-    /// Transcribes the specified PCM buffer.
+    /// Transcribes the specified PCM buffer to mono 16 kHz signed 16-bit PCM bytes.
     ///
     /// - Parameters:
     ///   - buffer: The PCM buffer to transcribe.
@@ -27,7 +27,7 @@
       )
     }
 
-    /// Transcribes the specified PCM buffer.
+    /// Transcribes the specified PCM buffer to mono 16 kHz signed 16-bit PCM bytes.
     ///
     /// - Parameters:
     ///   - buffer: The PCM buffer to transcribe.
@@ -52,7 +52,7 @@
       )
     }
 
-    /// Runs voice activity detection on the specified PCM buffer.
+    /// Runs voice activity detection on the specified PCM buffer to mono 16 kHz signed 16-bit PCM bytes.
     ///
     /// - Parameters:
     ///   - buffer: The PCM buffer to analyze.

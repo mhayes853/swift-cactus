@@ -117,16 +117,12 @@ extension CactusLanguageModel {
     ///
     /// New constants are added to the `Version` struct whenever the weights for the cactus model
     /// format itself are changed, not the underlying version of the cactus engine itself. As such
-    ///  there will be gaps between version numbers, which indicates that the weights were not
+    /// there will be gaps between version numbers, which indicates that the weights were not
     /// changed between those engine releases. When such change occurs, previous version constants
     /// will be deprecated.
     public struct Version: Hashable, Sendable, RawRepresentable {
-      @available(*, deprecated, message: "v1.5 weights are no longer supported.")
       public static let v1_5 = Self(rawValue: "v1.5")
-
-      @available(*, deprecated, message: "v1.7 weights are no longer supported.")
       public static let v1_7 = Self(rawValue: "v1.7")
-
       public static let v1_8 = Self(rawValue: "v1.8")
 
       public let rawValue: String
@@ -383,7 +379,7 @@ extension CactusLanguageModel {
     ///
     /// - Parameter quantization: The quantization format of the model.
     public static func sileroVad(quantization: Quantization = .int4) -> Self {
-      Self(slug: "silero-vad", quantization: quantization, version: .v1_8)
+      Self(slug: "silero-vad", quantization: quantization, version: .v1_7)
     }
   }
 }

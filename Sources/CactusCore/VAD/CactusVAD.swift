@@ -6,11 +6,11 @@ import Foundation
 public struct CactusVAD: Hashable, Sendable {
   /// A detected speech segment.
   public struct Segment: Hashable, Sendable {
-    /// Segment start frame.
-    public let startFrame: Int
+    /// Segment start sample index.
+    public let startSampleIndex: Int
 
-    /// Segment end frame.
-    public let endFrame: Int
+    /// Segment end sample index.
+    public let endSampleIndex: Int
 
     /// Segment start duration.
     public let startDuration: CactusDuration
@@ -23,31 +23,41 @@ public struct CactusVAD: Hashable, Sendable {
       self.endDuration - self.startDuration
     }
 
-    /// Creates a segment from frame positions.
+    /// Creates a segment from sample positions.
     ///
     /// - Parameters:
-    ///   - startFrame: Segment start frame.
-    ///   - endFrame: Segment end frame.
-    ///   - samplingRate: Sampling rate in Hz used to convert frames to durations.
+    ///   - startSampleIndex: Segment start sample index.
+    ///   - endSampleIndex: Segment end sample index.
+    ///   - samplingRate: Sampling rate in Hz used to convert sample indices to durations.
     public init(
-      startFrame: Int,
-      endFrame: Int,
+      startSampleIndex: Int,
+      endSampleIndex: Int,
       samplingRate: Int
     ) {
-      let resolvedSamplingRate = max(samplingRate, 1)
-      self.startFrame = startFrame
-      self.endFrame = endFrame
-      self.startDuration = CactusDuration.seconds(Double(startFrame) / Double(resolvedSamplingRate))
-      self.endDuration = CactusDuration.seconds(Double(endFrame) / Double(resolvedSamplingRate))
+      precondition(samplingRate > 0, "Sampling rate must be > 0")
+      precondition(
+        startSampleIndex >= 0 && endSampleIndex >= 0,
+        "Sample indices must be non-negative"
+      )
+      precondition(endSampleIndex >= startSampleIndex, "endSampleIndex must be >= startSampleIndex")
+
+      self.startSampleIndex = startSampleIndex
+      self.endSampleIndex = endSampleIndex
+      self.startDuration = .seconds(Double(startSampleIndex) / Double(samplingRate))
+      self.endDuration = .seconds(Double(endSampleIndex) / Double(samplingRate))
     }
 
-    /// Creates a segment from frame positions using the default cactus sample rate.
+    /// Creates a segment from sample positions using the default cactus sample rate.
     ///
     /// - Parameters:
-    ///   - startFrame: Segment start frame.
-    ///   - endFrame: Segment end frame.
-    public init(startFrame: Int, endFrame: Int) {
-      self.init(startFrame: startFrame, endFrame: endFrame, samplingRate: cactusAudioSampleRateHz)
+    ///   - startSampleIndex: Segment start sample index.
+    ///   - endSampleIndex: Segment end sample index.
+    public init(startSampleIndex: Int, endSampleIndex: Int) {
+      self.init(
+        startSampleIndex: startSampleIndex,
+        endSampleIndex: endSampleIndex,
+        samplingRate: cactusAudioSampleRateHz
+      )
     }
   }
 
@@ -60,7 +70,7 @@ public struct CactusVAD: Hashable, Sendable {
   /// The total processing duration.
   public let totalDuration: CactusDuration
 
-  /// Sampling rate in Hz used to interpret segment frame timestamps.
+  /// Sampling rate in Hz used to interpret segment sample-index timestamps.
   public let samplingRate: Int
 
   /// The total processing time in seconds.
@@ -74,7 +84,7 @@ public struct CactusVAD: Hashable, Sendable {
   ///   - segments: The detected speech segments.
   ///   - ramUsageMb: The current process RAM usage in MB.
   ///   - totalDuration: The total processing duration.
-  ///   - samplingRate: Sampling rate in Hz used to interpret frame timestamps.
+  ///   - samplingRate: Sampling rate in Hz used to interpret sample-index timestamps.
   public init(
     segments: [Segment],
     ramUsageMb: Double,

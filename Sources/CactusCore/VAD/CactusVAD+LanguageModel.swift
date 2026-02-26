@@ -29,13 +29,13 @@ extension CactusVAD {
   ///
   /// - Parameters:
   ///   - rawResult: The language-model VAD result.
-  ///   - samplingRate: Sampling rate in Hz used to interpret frame timestamps.
+  ///   - samplingRate: Sampling rate in Hz used to interpret sample-index timestamps.
   public init(rawResult: CactusLanguageModel.VADResult, samplingRate: Int? = nil) {
     self.init(
       segments: rawResult.segments.map {
         CactusVAD.Segment(
-          startFrame: $0.startFrame,
-          endFrame: $0.endFrame,
+          startSampleIndex: $0.startSampleIndex,
+          endSampleIndex: $0.endSampleIndex,
           samplingRate: samplingRate ?? cactusAudioSampleRateHz
         )
       },

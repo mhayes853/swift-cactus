@@ -2,9 +2,7 @@
   import AVFoundation
 
   extension CactusVAD.Request.Content {
-    /// Creates PCM VAD content from an `AVAudioPCMBuffer`.
-    ///
-    /// The buffer is converted to cactus-compatible mono 16 kHz PCM bytes.
+    /// Creates PCM VAD content from an `AVAudioPCMBuffer` to mono 16 kHz signed 16-bit PCM bytes.
     ///
     /// - Parameter buffer: The audio PCM buffer to convert.
     /// - Returns: Content configured for PCM-based VAD.
