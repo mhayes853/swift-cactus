@@ -853,7 +853,7 @@ extension CactusAgentSession {
     case .limit(let limit):
       maxTokens = limit
     case .engineBehavior:
-      maxTokens = self.languageModelActor.configurationFile.contextLengthTokens ?? 4096
+      maxTokens = 512
     }
 
     return CactusLanguageModel.ChatCompletion.Options(
@@ -863,6 +863,7 @@ extension CactusAgentSession {
       topK: request.topK,
       stopSequences: request.stopSequences,
       forceFunctions: request.forceFunctions,
+      confidenceThreshold: 0, // TODO: Support cloud handoff in delegate.
       toolRagTopK: request.toolRagTopK,
       includeStopSequences: request.includeStopSequences,
       isTelemetryEnabled: request.isTelemetryEnabled

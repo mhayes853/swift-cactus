@@ -1,25 +1,25 @@
 ▿ CactusCompletion<String>
   ▿ entries: 1 element
     ▿ CactusCompletionEntry
-      - confidence: 0.9115
-      - decodeTokens: 69
-      - decodeTps: 115.38
-      ▿ durationToFirstToken: 0.01844 seconds
+      - confidence: 0.9345
+      - decodeTokens: 13
+      - decodeTps: 113.29
+      ▿ durationToFirstToken: 0.02262 seconds
         - secondsComponent: 0
-        - attosecondsComponent: 18440000000000000
-      - prefillTokens: 9
-      - prefillTps: 488.15
-      - ramUsageMb: 56.75
-      ▿ totalDuration: 0.60779 seconds
+        - attosecondsComponent: 22620000000000000
+      - prefillTokens: 16
+      - prefillTps: 707.37
+      - ramUsageMb: 48.24
+      ▿ totalDuration: 0.12855 seconds
         - secondsComponent: 0
-        - attosecondsComponent: 607790000000000000
-      - totalTokens: 78
+        - attosecondsComponent: 128550000000000000
+      - totalTokens: 29
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 9CA0DDC8-DC9C-4DF0-8AC6-BA275901A9D7
+          - rawValue: 1EFC8BC0-0CD6-4D78-B1CB-269045D15A14
         ▿ message: ChatMessage
-          - content: "The internet has evolved tremendously since its inception. It is an incredible tool that has changed how we live, work, and interact with our world. It offers unprecedented opportunities and challenges to everyone who uses it. What are some common questions you can be asked about this technology?\nWhat is one thing you would like to learn about using the internet?"
+          - content: "Hello! How can I help you? What\'s up?"
           - images: Optional<Array<URL>>.none
           ▿ role: MessageRole
             - rawValue: "assistant"
-  - output: "The internet has evolved tremendously since its inception. It is an incredible tool that has changed how we live, work, and interact with our world. It offers unprecedented opportunities and challenges to everyone who uses it. What are some common questions you can be asked about this technology?\nWhat is one thing you would like to learn about using the internet?"
+  - output: "Hello! How can I help you? What\'s up?"

@@ -33,7 +33,8 @@ struct `CactusAgentSession tests` {
     }
 
     @Test
-    func `Simple Prompt Respond With Trailing Closure Message Returns Assistant Text`() async throws {
+    func `Simple Prompt Respond With Trailing Closure Message Returns Assistant Text`() async throws
+    {
       let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
       let model = try CactusLanguageModel(from: modelURL)
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
@@ -79,6 +80,34 @@ struct `CactusAgentSession tests` {
         session.transcript.map(\.message.role),
         [.user, .assistant, .user, .assistant]
       )
+      withKnownIssue {
+        assertSnapshot(of: session.transcript, as: .json, record: true)
+      }
+    }
+
+    @Test
+    func `Multi Turn Conversation With Image Turn Maintains Context`() async throws {
+      let modelURL = try await CactusLanguageModel.testModelURL(
+        request: .lfm2Vl_450m(quantization: .int8)
+      )
+      let model = try CactusLanguageModel(from: modelURL)
+      let session = CactusAgentSession(model: model, transcript: CactusTranscript())
+
+      try await session.respond(
+        to: try CactusUserMessage {
+          CactusPromptContent {
+            "Describe what you see in this image in one short sentence."
+            CactusPromptContent(images: [Self.testImageURL])
+          }
+        }
+      )
+      try await session.respond(
+        to: try CactusUserMessage {
+          "What emotion is the smile evoking?"
+        }
+      )
+
+      expectNoDifference(session.transcript[2].message.images, [Self.testImageURL])
       withKnownIssue {
         assertSnapshot(of: session.transcript, as: .json, record: true)
       }
@@ -454,6 +483,10 @@ struct `CactusAgentSession tests` {
       let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
       let model = try CactusLanguageModel(from: modelURL)
       return CactusAgentSession(model: model, transcript: CactusTranscript())
+    }
+
+    private static var testImageURL: URL {
+      Bundle.module.url(forResource: "sean_avatar", withExtension: "jpeg")!
     }
   }
 
