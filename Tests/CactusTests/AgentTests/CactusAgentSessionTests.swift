@@ -33,6 +33,27 @@ struct `CactusAgentSession tests` {
     }
 
     @Test
+    func `Simple Prompt Respond With Trailing Closure Message Returns Assistant Text`() async throws {
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusLanguageModel(from: modelURL)
+      let session = CactusAgentSession(model: model, transcript: CactusTranscript())
+
+      let resolvedCompletion = try await session.respond(
+        to: CactusUserMessage(maxTokens: .limit(512), temperature: 0.7) {
+          "Say hello in one concise sentence."
+        }
+      )
+
+      expectNoDifference(resolvedCompletion.output.isEmpty, false)
+      expectNoDifference(session.transcript.count == 2, true)
+      expectNoDifference(session.transcript[0].message.role, CactusLanguageModel.MessageRole.user)
+      expectNoDifference(
+        session.transcript.last?.message.role,
+        CactusLanguageModel.MessageRole.assistant
+      )
+    }
+
+    @Test
     func `Multi Turn Conversation Maintains Context`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
       let model = try CactusLanguageModel(from: modelURL)

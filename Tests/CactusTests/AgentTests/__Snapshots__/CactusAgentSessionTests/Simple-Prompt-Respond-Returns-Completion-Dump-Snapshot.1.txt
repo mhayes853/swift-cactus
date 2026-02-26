@@ -1,25 +1,25 @@
 ▿ CactusCompletion<String>
   ▿ entries: 1 element
     ▿ CactusCompletionEntry
-      - confidence: 0.9038
-      - decodeTokens: 28
-      - decodeTps: 115.81
-      ▿ durationToFirstToken: 0.02239 seconds
+      - confidence: 0.9115
+      - decodeTokens: 69
+      - decodeTps: 115.38
+      ▿ durationToFirstToken: 0.01844 seconds
         - secondsComponent: 0
-        - attosecondsComponent: 22390000000000000
-      - prefillTokens: 16
-      - prefillTps: 714.6
-      - ramUsageMb: 300.05
-      ▿ totalDuration: 0.25553 seconds
+        - attosecondsComponent: 18440000000000000
+      - prefillTokens: 9
+      - prefillTps: 488.15
+      - ramUsageMb: 56.75
+      ▿ totalDuration: 0.60779 seconds
         - secondsComponent: 0
-        - attosecondsComponent: 255529999999999968
-      - totalTokens: 44
+        - attosecondsComponent: 607790000000000000
+      - totalTokens: 78
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 92B4C6FA-CDF9-44CB-A2B1-15E5424670F5
+          - rawValue: 9CA0DDC8-DC9C-4DF0-8AC6-BA275901A9D7
         ▿ message: ChatMessage
-          - content: "The English language is a complex skill, so learning how to speak effectively requires constant practice and the ability to communicate effectively across cultures. \n"
+          - content: "The internet has evolved tremendously since its inception. It is an incredible tool that has changed how we live, work, and interact with our world. It offers unprecedented opportunities and challenges to everyone who uses it. What are some common questions you can be asked about this technology?\nWhat is one thing you would like to learn about using the internet?"
           - images: Optional<Array<URL>>.none
           ▿ role: MessageRole
             - rawValue: "assistant"
-  - output: "The English language is a complex skill, so learning how to speak effectively requires constant practice and the ability to communicate effectively across cultures. \n"
+  - output: "The internet has evolved tremendously since its inception. It is an incredible tool that has changed how we live, work, and interact with our world. It offers unprecedented opportunities and challenges to everyone who uses it. What are some common questions you can be asked about this technology?\nWhat is one thing you would like to learn about using the internet?"
