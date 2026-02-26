@@ -788,15 +788,6 @@ extension CactusLanguageModel {
 extension CactusLanguageModel.ChatCompletion {
   /// Options for generating a ``CactusLanguageModel/ChatCompletion``.
   public struct Options: Hashable, Sendable, Codable {
-    /// Specifies the maximum token limit for completion generation.
-    public enum MaxTokenLimit: Hashable, Sendable, Codable {
-      /// A user-defined maximum token count.
-      case limit(Int)
-
-      /// Uses the model's full context length.
-      case contextLength
-    }
-
     /// A default array of common stop sequences.
     public static let defaultStopSequences = ["<|im_end|>", "<end_of_turn>"]
 

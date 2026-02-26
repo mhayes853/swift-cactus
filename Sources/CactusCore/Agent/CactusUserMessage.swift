@@ -2,11 +2,22 @@
 
 /// A user turn payload for completion sessions.
 public struct CactusUserMessage {
+  /// Specifies the maximum token limit for completion generation.
+  public enum MaxTokenLimit: Hashable, Sendable, Codable {
+    /// A user-defined maximum token count.
+    case limit(Int)
+
+    /// Uses the Cactus engine's behavior for no explicit maximum token count.
+    ///
+    /// Currently, this defaults to the sliding window attention size in the engine (512 tokens).
+    case engineBehavior
+  }
+
   /// The prompt content for this user message.
   public var content: CactusPromptContent
 
   /// The maximum number of tokens for the completion.
-  public var maxTokens: CactusLanguageModel.ChatCompletion.Options.MaxTokenLimit
+  public var maxTokens: MaxTokenLimit
 
   /// The sampling temperature.
   public var temperature: Float
@@ -53,7 +64,7 @@ public struct CactusUserMessage {
   ///   - maxBufferSize: The maximum buffer size used to store the completion.
   public init(
     content: CactusPromptContent,
-    maxTokens: CactusLanguageModel.ChatCompletion.Options.MaxTokenLimit = .contextLength,
+    maxTokens: MaxTokenLimit = .engineBehavior,
     temperature: Float = 0.6,
     topP: Float = 0.95,
     topK: Int = 20,
@@ -93,7 +104,7 @@ public struct CactusUserMessage {
   ///   - maxBufferSize: The maximum buffer size used to store the completion.
   public init(
     _ content: some CactusPromptRepresentable,
-    maxTokens: CactusLanguageModel.ChatCompletion.Options.MaxTokenLimit = .contextLength,
+    maxTokens: MaxTokenLimit = .engineBehavior,
     temperature: Float = 0.6,
     topP: Float = 0.95,
     topK: Int = 20,
@@ -132,7 +143,7 @@ public struct CactusUserMessage {
   ///   - maxBufferSize: The maximum buffer size used to store the completion.
   ///   - content: The prompt content for this user message.
   public init(
-    maxTokens: CactusLanguageModel.ChatCompletion.Options.MaxTokenLimit = .contextLength,
+    maxTokens: MaxTokenLimit = .engineBehavior,
     temperature: Float = 0.6,
     topP: Float = 0.95,
     topK: Int = 20,

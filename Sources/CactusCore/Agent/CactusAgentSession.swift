@@ -852,7 +852,7 @@ extension CactusAgentSession {
     switch request.maxTokens {
     case .limit(let limit):
       maxTokens = limit
-    case .contextLength:
+    case .engineBehavior:
       maxTokens = self.languageModelActor.configurationFile.contextLengthTokens ?? 4096
     }
 
