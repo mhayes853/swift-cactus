@@ -235,30 +235,19 @@ extension CactusAgentSession {
 
   /// A resolved function call pairing a model-emitted call with a concrete registered function.
   public struct FunctionCall: Sendable {
-    public enum Error: Swift.Error {
-      case mismatchedFunctionName(expected: String, received: String)
-    }
-
     /// The matched function instance.
     public let function: any CactusFunction
 
-    /// The raw function call emitted by the language model.
-    public let rawFunctionCall: CactusLanguageModel.FunctionCall
+    /// The arguments that the function was invoked with.
+    public let arguments: [String: JSONSchema.Value]
 
     /// Creates a resolved function call.
     public init(
       function: any CactusFunction,
-      rawFunctionCall: CactusLanguageModel.FunctionCall
-    ) throws {
-      guard function.name == rawFunctionCall.name else {
-        throw Error.mismatchedFunctionName(
-          expected: function.name,
-          received: rawFunctionCall.name
-        )
-      }
-
+      arguments: [String: JSONSchema.Value]
+    ) {
       self.function = function
-      self.rawFunctionCall = rawFunctionCall
+      self.arguments = arguments
     }
 
     /// Decodes arguments from the raw function call payload.
@@ -267,7 +256,7 @@ extension CactusAgentSession {
       validator: JSONSchema.Validator = .shared
     ) throws -> Arguments {
       try self.function.decodeFunctionCallArguments(
-        self.rawFunctionCall.arguments,
+        self.arguments,
         as: Arguments.self,
         decoder: decoder,
         validator: validator
@@ -280,7 +269,7 @@ extension CactusAgentSession {
       validator: JSONSchema.Validator = .shared
     ) async throws -> CactusPromptContent {
       try await self.function.invoke(
-        rawArguments: self.rawFunctionCall.arguments,
+        rawArguments: self.arguments,
         decoder: decoder,
         validator: validator
       )
@@ -841,7 +830,10 @@ extension CactusAgentSession {
       guard let function = availableFunctions.first(where: { $0.name == functionCall.name }) else {
         throw AgentLoopError.missingFunction(functionCall.name)
       }
-      return try CactusAgentSession.FunctionCall(function: function, rawFunctionCall: functionCall)
+      return CactusAgentSession.FunctionCall(
+        function: function,
+        arguments: functionCall.arguments
+      )
     }
   }
 
@@ -863,7 +855,7 @@ extension CactusAgentSession {
       topK: request.topK,
       stopSequences: request.stopSequences,
       forceFunctions: request.forceFunctions,
-      confidenceThreshold: 0, // TODO: Support cloud handoff in delegate.
+      confidenceThreshold: 0,  // TODO: Support cloud handoff in delegate.
       toolRagTopK: request.toolRagTopK,
       includeStopSequences: request.includeStopSequences,
       isTelemetryEnabled: request.isTelemetryEnabled

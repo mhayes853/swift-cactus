@@ -500,12 +500,9 @@ struct `CactusAgentSession tests` {
 
     @Test
     func `Execute Parallel Tool Calls Single Tool Call Returns Single Result`() async throws {
-      let functionCall = try CactusAgentSession.FunctionCall(
+      let functionCall = CactusAgentSession.FunctionCall(
         function: EchoFunction(),
-        rawFunctionCall: CactusLanguageModel.FunctionCall(
-          name: "echo",
-          arguments: ["text": .string("hello")]
-        )
+        arguments: ["text": .string("hello")]
       )
 
       let returns = try await CactusAgentSession.executeParallelFunctionCalls(functionCalls: [
@@ -523,19 +520,13 @@ struct `CactusAgentSession tests` {
       async throws
     {
       let functionCalls = [
-        try CactusAgentSession.FunctionCall(
+        CactusAgentSession.FunctionCall(
           function: DelayedEchoFunction(),
-          rawFunctionCall: CactusLanguageModel.FunctionCall(
-            name: "delayed_echo",
-            arguments: ["text": .string("first"), "delayMs": .integer(100)]
-          )
+          arguments: ["text": .string("first"), "delayMs": .integer(100)]
         ),
-        try CactusAgentSession.FunctionCall(
+        CactusAgentSession.FunctionCall(
           function: DelayedEchoFunction(),
-          rawFunctionCall: CactusLanguageModel.FunctionCall(
-            name: "delayed_echo",
-            arguments: ["text": .string("second"), "delayMs": .integer(1)]
-          )
+          arguments: ["text": .string("second"), "delayMs": .integer(1)]
         )
       ]
 
@@ -554,19 +545,13 @@ struct `CactusAgentSession tests` {
     @Test
     func `Execute Parallel Tool Calls Multiple Failures Throws Aggregated Error`() async throws {
       let functionCalls = [
-        try CactusAgentSession.FunctionCall(
+        CactusAgentSession.FunctionCall(
           function: FailableFunction(),
-          rawFunctionCall: CactusLanguageModel.FunctionCall(
-            name: "failable",
-            arguments: ["value": .string("a"), "shouldFail": .boolean(true)]
-          )
+          arguments: ["value": .string("a"), "shouldFail": .boolean(true)]
         ),
-        try CactusAgentSession.FunctionCall(
+        CactusAgentSession.FunctionCall(
           function: FailableFunction(),
-          rawFunctionCall: CactusLanguageModel.FunctionCall(
-            name: "failable",
-            arguments: ["value": .string("b"), "shouldFail": .boolean(true)]
-          )
+          arguments: ["value": .string("b"), "shouldFail": .boolean(true)]
         )
       ]
 
@@ -581,19 +566,13 @@ struct `CactusAgentSession tests` {
       async throws
     {
       let functionCalls = [
-        try CactusAgentSession.FunctionCall(
+        CactusAgentSession.FunctionCall(
           function: FailableFunction(),
-          rawFunctionCall: CactusLanguageModel.FunctionCall(
-            name: "failable",
-            arguments: ["value": .string("ok"), "shouldFail": .boolean(false)]
-          )
+          arguments: ["value": .string("ok"), "shouldFail": .boolean(false)]
         ),
-        try CactusAgentSession.FunctionCall(
+        CactusAgentSession.FunctionCall(
           function: FailableFunction(),
-          rawFunctionCall: CactusLanguageModel.FunctionCall(
-            name: "failable",
-            arguments: ["value": .string("boom"), "shouldFail": .boolean(true)]
-          )
+          arguments: ["value": .string("boom"), "shouldFail": .boolean(true)]
         )
       ]
 
@@ -608,19 +587,13 @@ struct `CactusAgentSession tests` {
       async throws
     {
       let functionCalls = [
-        try CactusAgentSession.FunctionCall(
+        CactusAgentSession.FunctionCall(
           function: FailableFunction(),
-          rawFunctionCall: CactusLanguageModel.FunctionCall(
-            name: "failable",
-            arguments: ["value": .string("a"), "shouldFail": .boolean(true)]
-          )
+          arguments: ["value": .string("a"), "shouldFail": .boolean(true)]
         ),
-        try CactusAgentSession.FunctionCall(
+        CactusAgentSession.FunctionCall(
           function: FailableFunction(),
-          rawFunctionCall: CactusLanguageModel.FunctionCall(
-            name: "failable",
-            arguments: ["value": .string("b"), "shouldFail": .boolean(true)]
-          )
+          arguments: ["value": .string("b"), "shouldFail": .boolean(true)]
         )
       ]
 
@@ -715,7 +688,7 @@ struct `CactusAgentSession tests` {
       from functionThrow: CactusAgentSession.FunctionThrow
     ) -> String? {
       guard
-        case .string(let value) = functionThrow.functionCall.rawFunctionCall.arguments["value"]
+        case .string(let value) = functionThrow.functionCall.arguments["value"]
       else {
         return nil
       }
