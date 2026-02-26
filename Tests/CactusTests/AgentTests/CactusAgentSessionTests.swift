@@ -479,6 +479,61 @@ struct `CactusAgentSession tests` {
       _ = try? await stream.collectResponse()
     }
 
+    @Test
+    func `Reset Clears Transcript`() async throws {
+      let session = try await Self.makeSession()
+
+      _ = try await session.respond(
+        to: try CactusUserMessage(
+          "Write one short sentence about cacti.",
+          maxTokens: .limit(512)
+        )
+      )
+      expectNoDifference(session.transcript.isEmpty, false)
+
+      await session.reset()
+
+      expectNoDifference(session.transcript.isEmpty, true)
+    }
+
+    @Test
+    func `Reset Stops Ongoing Inference Stream`() async throws {
+      let session = try await Self.makeSession()
+      let stream = try session.stream(
+        to: try CactusUserMessage(
+          "Write one short sentence about cacti.",
+          maxTokens: .limit(512)
+        )
+      )
+
+      expectNoDifference(session.isResponding, true)
+
+      await session.reset()
+
+      await #expect(throws: CancellationError.self) {
+        _ = try await stream.collectResponse()
+      }
+      expectNoDifference(stream.isStreaming, false)
+    }
+
+    @Test
+    func `Reset Sets Is Responding To False`() async throws {
+      let session = try await Self.makeSession()
+      let stream = try session.stream(
+        to: try CactusUserMessage(
+          "Write one short sentence about cacti.",
+          maxTokens: .limit(512)
+        )
+      )
+
+      expectNoDifference(session.isResponding, true)
+
+      await session.reset()
+      _ = try? await stream.collectResponse()
+
+      expectNoDifference(session.isResponding, false)
+    }
+
     private static func makeSession() async throws -> CactusAgentSession {
       let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
       let model = try CactusLanguageModel(from: modelURL)

@@ -12,6 +12,7 @@ public final class CactusAgentSession: Sendable {
   private struct State {
     var transcript: CactusTranscript
     var isResponding: Bool
+    var activeStreamStopper: (@Sendable () -> Void)?
     var functions: [any CactusFunction]
     var delegate: (any Delegate)?
     var systemPrompt: CactusPromptContent?
@@ -66,6 +67,7 @@ public final class CactusAgentSession: Sendable {
       State(
         transcript: transcript,
         isResponding: false,
+        activeStreamStopper: nil,
         functions: functions,
         delegate: nil,
         systemPrompt: systemPrompt
@@ -170,13 +172,7 @@ extension CactusAgentSession {
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: @Sendable () -> some CactusPromptRepresentable
   ) {
-    let content: CactusPromptContent
-    do {
-      content = try systemPrompt().promptContent
-    } catch {
-      content = CactusPromptContent()
-    }
-    self.init(model: model, functions: functions, systemPrompt: content)
+    self.init(model: model, functions: functions, systemPrompt: CactusPromptContent(systemPrompt()))
   }
 
   /// Creates a completion session from a language model actor and prompt builder.
@@ -190,13 +186,7 @@ extension CactusAgentSession {
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: @Sendable () -> some CactusPromptRepresentable
   ) {
-    let content: CactusPromptContent
-    do {
-      content = try systemPrompt().promptContent
-    } catch {
-      content = CactusPromptContent()
-    }
-    self.init(model: model, functions: functions, systemPrompt: content)
+    self.init(model: model, functions: functions, systemPrompt: CactusPromptContent(systemPrompt()))
   }
 }
 
@@ -408,11 +398,15 @@ extension CactusAgentSession {
 
   /// Stops any active generation on the underlying language model.
   nonisolated(nonsending) public func stop() async {
+    self.stopActiveStreamIfNecessary()
+    self.endResponding()
     await self.languageModelActor.stop()
   }
 
   /// Stops active generation, clears transcript state, and resets model context.
   nonisolated(nonsending) public func reset() async {
+    self.stopActiveStreamIfNecessary()
+    self.endResponding()
     await self.languageModelActor.stop()
     await self.languageModelActor.reset()
     self.transcript = CactusTranscript()
@@ -607,6 +601,7 @@ extension CactusAgentSession {
       }
       return CactusCompletion(output: finalResponse, entries: completionEntries)
     }
+    self.registerActiveStreamStopper(stream)
     return stream
   }
 
@@ -684,6 +679,7 @@ extension CactusAgentSession {
         entries: completionEntries
       )
     }
+    self.registerActiveStreamStopper(stream)
     return stream
   }
 
@@ -763,6 +759,7 @@ extension CactusAgentSession {
         entries: completionEntries
       )
     }
+    self.registerActiveStreamStopper(stream)
     return stream
   }
 }
@@ -780,9 +777,24 @@ extension CactusAgentSession {
     }
   }
 
+  private func registerActiveStreamStopper<Output>(_ stream: CactusInferenceStream<Output>)
+  where Output: Sendable {
+    self.state.withLock { $0.activeStreamStopper = { stream.stop() } }
+  }
+
+  private func stopActiveStreamIfNecessary() {
+    let activeStreamStopper = self.state.withLock { state in
+      let stopper = state.activeStreamStopper
+      state.activeStreamStopper = nil
+      return stopper
+    }
+    activeStreamStopper?()
+  }
+
   private func endResponding() {
     self.observationRegistrar.withMutation(of: self, keyPath: \CactusAgentSession.isResponding) {
       self.state.withLock { state in
+        state.activeStreamStopper = nil
         guard state.isResponding else { return }
         state.isResponding = false
       }
