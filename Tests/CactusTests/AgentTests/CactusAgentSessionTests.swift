@@ -142,6 +142,26 @@ struct `CactusAgentSession tests` {
     }
 
     @Test
+    func `Simple Prompt Respond Returns Completion Dump Snapshot`() async throws {
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusLanguageModel(from: modelURL)
+      let session = CactusAgentSession(model: model, transcript: CactusTranscript())
+
+      let completion = try await session.respond(
+        to: CactusUserMessage(
+          "Say hello in one concise sentence.",
+          maxTokens: .limit(512)
+        )
+      )
+
+      expectNoDifference(completion.output.isEmpty, false)
+      expectNoDifference(completion.entries.isEmpty, false)
+      withKnownIssue {
+        assertSnapshot(of: completion, as: .dump, record: true)
+      }
+    }
+
+    @Test
     func
       `Simple Prompt Tool Execution Loop Supports Multiple Tool Calls And Returns Final Assistant Text Snapshot`()
       async throws
@@ -257,11 +277,12 @@ struct `CactusAgentSession tests` {
         streamedText.append(token.stringValue)
       }
 
-      let output = try await stream.collectResponse()
+      let completion = try await stream.collectResponse()
       expectNoDifference(streamedText.isEmpty, false)
-      expectNoDifference(output.isEmpty, false)
+      expectNoDifference(completion.output.isEmpty, false)
+      expectNoDifference(completion.entries.isEmpty, false)
       withKnownIssue {
-        assertSnapshot(of: output, as: .dump, record: true)
+        assertSnapshot(of: completion.output, as: .dump, record: true)
       }
     }
 
@@ -295,7 +316,9 @@ struct `CactusAgentSession tests` {
           continue
         }
 
-        output = try? await stream.collectResponse()
+        if let completion = try? await stream.collectResponse() {
+          output = completion.output
+        }
       }
 
       guard let resolvedOutput = output else {

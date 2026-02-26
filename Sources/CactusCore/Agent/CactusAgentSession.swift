@@ -441,38 +441,12 @@ extension CactusAgentSession {
   nonisolated(nonsending) public func respond(
     to request: CactusUserMessage
   ) async throws -> CactusCompletion<String> {
-    let transcriptCountBeforeStream = self.transcript.count
     let stream = try self.stream(to: request)
-    let output = try await withTaskCancellationHandler {
+    return try await withTaskCancellationHandler {
       try await stream.collectResponse()
     } onCancel: {
       stream.stop()
     }
-
-    let newEntries = self.transcript.dropFirst(transcriptCountBeforeStream)
-    let completionEntries =
-      newEntries
-      .filter { $0.message.role != .user }
-      .map {
-        CactusCompletionEntry(
-          transcriptEntry: $0,
-          prefillTokens: 0,
-          decodeTokens: 0,
-          totalTokens: 0,
-          confidence: 0,
-          prefillTps: 0,
-          decodeTps: 0,
-          ramUsageMb: 0,
-          durationToFirstToken: .seconds(0),
-          totalDuration: .seconds(0)
-        )
-      }
-
-    guard !completionEntries.isEmpty else {
-      throw AgentLoopError.missingAssistantResponse
-    }
-
-    return CactusCompletion(output: output, entries: completionEntries)
   }
 
   /// Performs one completion turn and decodes structured output using an explicit schema.
@@ -492,7 +466,6 @@ extension CactusAgentSession {
     validator: JSONSchema.Validator = .shared,
     decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
   ) async throws -> CactusCompletion<Output> {
-    let transcriptCountBeforeStream = self.transcript.count
     let stream = try self.stream(
       to: request,
       generating: outputType,
@@ -500,36 +473,11 @@ extension CactusAgentSession {
       validator: validator,
       decoder: decoder
     )
-    let output = try await withTaskCancellationHandler {
+    return try await withTaskCancellationHandler {
       try await stream.collectResponse()
     } onCancel: {
       stream.stop()
     }
-
-    let newEntries = self.transcript.dropFirst(transcriptCountBeforeStream)
-    let completionEntries =
-      newEntries
-      .filter { $0.message.role != .user }
-      .map {
-        CactusCompletionEntry(
-          transcriptEntry: $0,
-          prefillTokens: 0,
-          decodeTokens: 0,
-          totalTokens: 0,
-          confidence: 0,
-          prefillTps: 0,
-          decodeTps: 0,
-          ramUsageMb: 0,
-          durationToFirstToken: .seconds(0),
-          totalDuration: .seconds(0)
-        )
-      }
-
-    guard !completionEntries.isEmpty else {
-      throw AgentLoopError.missingAssistantResponse
-    }
-
-    return CactusCompletion(output: output, entries: completionEntries)
   }
 
   /// Performs one completion turn and decodes structured output for a `JSONGenerable` type.
@@ -560,10 +508,13 @@ extension CactusAgentSession {
 // MARK: - Streaming
 
 extension CactusAgentSession {
-  /// Streams plain text tokens and returns the final assistant response.
+  /// Streams plain-text tokens and returns completion entries and the final assistant response.
+  ///
+  /// - Parameter request: The user message request for this turn.
+  /// - Returns: A stream whose final response is a completion containing generated text and entries.
   public func stream(
     to request: CactusUserMessage
-  ) throws -> CactusInferenceStream<String> {
+  ) throws -> CactusInferenceStream<CactusCompletion<String>> {
     guard self.beginRespondingIfNecessary() else {
       throw CactusAgentSessionError.alreadyResponding
     }
@@ -581,7 +532,7 @@ extension CactusAgentSession {
       $0.transcript.insert(CactusTranscript.Element(message: systemMessage), at: 0)
     }
 
-    let stream = CactusInferenceStream<String> { continuation in
+    let stream = CactusInferenceStream<CactusCompletion<String>> { continuation in
       defer { self.endResponding() }
 
       let userMessage = try context.userMessageResult.get()
@@ -589,6 +540,7 @@ extension CactusAgentSession {
 
       var conversationMessages = self.transcript.messages
       var finalResponse = ""
+      var completionEntries = [CactusCompletionEntry]()
       while true {
         let assistantStreamID = CactusGenerationID()
         let completedTurn = try await self.languageModelActor.complete(
@@ -611,14 +563,21 @@ extension CactusAgentSession {
           originalMessagesCount: conversationMessages.count
         )
         for message in appendedMessages {
-          self.state.withLock { $0.transcript.append(CactusTranscript.Element(message: message)) }
+          let transcriptEntry = CactusTranscript.Element(message: message)
+          self.state.withLock { $0.transcript.append(transcriptEntry) }
+          completionEntries.append(
+            Self.completionEntry(
+              transcriptEntry: transcriptEntry,
+              completionMetrics: message.role == .assistant ? completedTurn.completion : nil
+            )
+          )
         }
 
         conversationMessages = self.transcript.messages
         finalResponse = completedTurn.completion.response
 
-        guard !completedTurn.completion.functionCalls.isEmpty else {
-          return finalResponse
+        if completedTurn.completion.functionCalls.isEmpty {
+          break
         }
 
         let resolvedFunctionCalls = try self.resolveFunctionCalls(
@@ -642,38 +601,51 @@ extension CactusAgentSession {
             name: functionReturn.name,
             content: functionReturn.content
           )
+          let transcriptEntry = CactusTranscript.Element(
+            message: CactusLanguageModel.ChatMessage(role: role, content: content)
+          )
           self.state.withLock {
-            $0.transcript.append(
-              CactusTranscript.Element(
-                message: CactusLanguageModel.ChatMessage(role: role, content: content)
-              )
-            )
+            $0.transcript.append(transcriptEntry)
           }
+          completionEntries.append(Self.completionEntry(transcriptEntry: transcriptEntry))
         }
 
         conversationMessages = self.transcript.messages
       }
+
+      guard !completionEntries.isEmpty else {
+        throw AgentLoopError.missingAssistantResponse
+      }
+      return CactusCompletion(output: finalResponse, entries: completionEntries)
     }
     return stream
   }
 
-  /// Streams structured output partials and returns the final decoded output.
+  /// Streams structured output tokens and partials, then returns completion entries and output.
+  ///
+  /// - Parameters:
+  ///   - request: The user message request for this turn.
+  ///   - outputType: The structured output type to decode.
+  ///   - configuration: The parser configuration used for structured streaming partials.
+  /// - Returns: A stream whose final response is a completion containing decoded output and entries.
   public func stream<Output: JSONStreamGenerable & Sendable>(
     to request: CactusUserMessage,
     generating outputType: Output.Type = Output.self,
     configuration: JSONStreamParserConfiguration = JSONStreamParserConfiguration()
-  ) throws -> CactusInferenceStream<Output> where Output.Partial: Sendable {
+  ) throws -> CactusInferenceStream<CactusCompletion<Output>> where Output.Partial: Sendable {
     guard self.beginRespondingIfNecessary() else {
       throw CactusAgentSessionError.alreadyResponding
     }
 
     let context = self.streamRequestContext(from: request)
-    let stream = CactusInferenceStream<Output> { continuation in
+    let stream = CactusInferenceStream<CactusCompletion<Output>> { continuation in
       defer { self.endResponding() }
 
       let userMessage = try context.userMessageResult.get()
       let userTranscriptEntry = CactusTranscript.Element(message: userMessage)
       self.state.withLock { $0.transcript.append(userTranscriptEntry) }
+
+      let transcriptCountBeforeTurn = self.transcript.count
 
       let assistantStreamID = CactusGenerationID()
       let completedTurn = try await self.languageModelActor.jsonStreamableComplete(
@@ -700,34 +672,60 @@ extension CactusAgentSession {
 
       let appendedMessages = Self.appendedMessages(
         in: completedTurn.messages,
-        originalMessagesCount: self.transcript.messages.count
+        originalMessagesCount: transcriptCountBeforeTurn
       )
+      var completionEntries = [CactusCompletionEntry]()
       for message in appendedMessages {
-        self.state.withLock { $0.transcript.append(CactusTranscript.Element(message: message)) }
+        let transcriptEntry = CactusTranscript.Element(message: message)
+        self.state.withLock { $0.transcript.append(transcriptEntry) }
+        completionEntries.append(
+          Self.completionEntry(
+            transcriptEntry: transcriptEntry,
+            completionMetrics: message.role == .assistant ? completedTurn.completion : nil
+          )
+        )
       }
 
-      return try completedTurn.output.get()
+      guard !completionEntries.isEmpty else {
+        throw AgentLoopError.missingAssistantResponse
+      }
+
+      return CactusCompletion(
+        output: try completedTurn.output.get(),
+        entries: completionEntries
+      )
     }
     return stream
   }
 
+  /// Streams structured output tokens and returns completion entries and decoded output.
+  ///
+  /// - Parameters:
+  ///   - request: The user message request for this turn.
+  ///   - outputType: The structured output type to decode.
+  ///   - schema: The JSON schema used to constrain and validate generated output.
+  ///   - validator: The validator used to validate generated JSON values.
+  ///   - decoder: The decoder used to decode the validated JSON value into `Output`.
+  /// - Returns: A stream whose final response is a completion containing decoded output and entries.
   public func stream<Output: Decodable & Sendable>(
     to request: CactusUserMessage,
     generating outputType: Output.Type,
     schema: JSONSchema,
     validator: JSONSchema.Validator = .shared,
     decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
-  ) throws -> CactusInferenceStream<Output> {
+  ) throws -> CactusInferenceStream<CactusCompletion<Output>> {
     guard self.beginRespondingIfNecessary() else {
       throw CactusAgentSessionError.alreadyResponding
     }
 
     let context = self.streamRequestContext(from: request)
-    let stream = CactusInferenceStream<Output> { continuation in
+    let stream = CactusInferenceStream<CactusCompletion<Output>> { continuation in
       defer { self.endResponding() }
 
       let userMessage = try context.userMessageResult.get()
       self.state.withLock { $0.transcript.append(CactusTranscript.Element(message: userMessage)) }
+
+      let transcriptCountBeforeTurn = self.transcript.count
 
       let assistantStreamID = CactusGenerationID()
       let completedTurn = try await self.languageModelActor.jsonComplete(
@@ -753,13 +751,28 @@ extension CactusAgentSession {
 
       let appendedMessages = Self.appendedMessages(
         in: completedTurn.messages,
-        originalMessagesCount: self.transcript.messages.count
+        originalMessagesCount: transcriptCountBeforeTurn
       )
+      var completionEntries = [CactusCompletionEntry]()
       for message in appendedMessages {
-        self.state.withLock { $0.transcript.append(CactusTranscript.Element(message: message)) }
+        let transcriptEntry = CactusTranscript.Element(message: message)
+        self.state.withLock { $0.transcript.append(transcriptEntry) }
+        completionEntries.append(
+          Self.completionEntry(
+            transcriptEntry: transcriptEntry,
+            completionMetrics: message.role == .assistant ? completedTurn.completion : nil
+          )
+        )
       }
 
-      return try completedTurn.output.get()
+      guard !completionEntries.isEmpty else {
+        throw AgentLoopError.missingAssistantResponse
+      }
+
+      return CactusCompletion(
+        output: try completedTurn.output.get(),
+        entries: completionEntries
+      )
     }
     return stream
   }
@@ -785,6 +798,39 @@ extension CactusAgentSession {
         state.isResponding = false
       }
     }
+  }
+
+  private static func completionEntry(
+    transcriptEntry: CactusTranscript.Element,
+    completionMetrics: CactusLanguageModel.ChatCompletion? = nil
+  ) -> CactusCompletionEntry {
+    if let completionMetrics {
+      return CactusCompletionEntry(
+        transcriptEntry: transcriptEntry,
+        prefillTokens: completionMetrics.prefillTokens,
+        decodeTokens: completionMetrics.decodeTokens,
+        totalTokens: completionMetrics.totalTokens,
+        confidence: completionMetrics.confidence,
+        prefillTps: completionMetrics.prefillTps,
+        decodeTps: completionMetrics.decodeTps,
+        ramUsageMb: completionMetrics.ramUsageMb,
+        durationToFirstToken: .seconds(completionMetrics.timeIntervalToFirstToken),
+        totalDuration: .seconds(completionMetrics.totalTimeInterval)
+      )
+    }
+
+    return CactusCompletionEntry(
+      transcriptEntry: transcriptEntry,
+      prefillTokens: 0,
+      decodeTokens: 0,
+      totalTokens: 0,
+      confidence: 0,
+      prefillTps: 0,
+      decodeTps: 0,
+      ramUsageMb: 0,
+      durationToFirstToken: .seconds(0),
+      totalDuration: .seconds(0)
+    )
   }
 
   private func resolveFunctionCalls(

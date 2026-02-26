@@ -1,4 +1,5 @@
 import Foundation
+import StreamParsingCore
 
 // MARK: - CactusCompletion
 
@@ -23,6 +24,14 @@ public struct CactusCompletion<Output: Sendable>: Sendable {
 
 extension CactusCompletion: Equatable where Output: Hashable {}
 extension CactusCompletion: Hashable where Output: Hashable {}
+
+extension CactusCompletion: StreamParseable where Output: StreamParseable {
+  public typealias Partial = Output.Partial
+
+  public var streamPartialValue: Partial {
+    self.output.streamPartialValue
+  }
+}
 
 // MARK: - Computed Values
 

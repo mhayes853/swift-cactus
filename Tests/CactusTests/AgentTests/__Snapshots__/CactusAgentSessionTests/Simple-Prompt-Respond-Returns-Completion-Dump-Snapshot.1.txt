@@ -1,0 +1,25 @@
+▿ CactusCompletion<String>
+  ▿ entries: 1 element
+    ▿ CactusCompletionEntry
+      - confidence: 0.9038
+      - decodeTokens: 28
+      - decodeTps: 115.81
+      ▿ durationToFirstToken: 0.02239 seconds
+        - secondsComponent: 0
+        - attosecondsComponent: 22390000000000000
+      - prefillTokens: 16
+      - prefillTps: 714.6
+      - ramUsageMb: 300.05
+      ▿ totalDuration: 0.25553 seconds
+        - secondsComponent: 0
+        - attosecondsComponent: 255529999999999968
+      - totalTokens: 44
+      ▿ transcriptEntry: Element
+        ▿ id: CactusGenerationID
+          - rawValue: 92B4C6FA-CDF9-44CB-A2B1-15E5424670F5
+        ▿ message: ChatMessage
+          - content: "The English language is a complex skill, so learning how to speak effectively requires constant practice and the ability to communicate effectively across cultures. \n"
+          - images: Optional<Array<URL>>.none
+          ▿ role: MessageRole
+            - rawValue: "assistant"
+  - output: "The English language is a complex skill, so learning how to speak effectively requires constant practice and the ability to communicate effectively across cultures. \n"
