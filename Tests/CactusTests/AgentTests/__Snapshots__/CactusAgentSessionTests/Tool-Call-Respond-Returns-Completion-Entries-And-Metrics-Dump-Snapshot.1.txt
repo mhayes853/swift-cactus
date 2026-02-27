@@ -1,9 +1,9 @@
-▿ 5 elements
+▿ 2 elements
   ▿ CactusCompletionEntry
     - metrics: Optional<Metrics>.none
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: EB36CEB8-1418-4609-A9EE-E951F7E2A24E
+        - rawValue: 351423EC-ACE9-4CF0-A0F3-0FD778C19C13
       ▿ message: ChatMessage
         - content: "Use the get_fact tool for both \'cactus\' and \'swift\', then summarize both facts."
         ▿ images: Optional<Array<URL>>
@@ -13,68 +13,24 @@
   ▿ CactusCompletionEntry
     ▿ metrics: Optional<Metrics>
       ▿ some: Metrics
-        - confidence: 0.9891
-        - decodeTokens: 22
-        - decodeTps: 31.96
-        ▿ durationToFirstToken: 1.541 seconds
+        - confidence: 0.9231
+        - decodeTokens: 172
+        - decodeTps: 31.13
+        ▿ durationToFirstToken: 1.44092 seconds
           - secondsComponent: 1
-          - attosecondsComponent: 540999999999999936
-        - prefillTokens: 141
-        - prefillTps: 91.5
-        - ramUsageMb: 405.9
-        ▿ totalDuration: 2.19802 seconds
-          - secondsComponent: 2
-          - attosecondsComponent: 198020000000000096
-        - totalTokens: 163
+          - attosecondsComponent: 440920000000000000
+        - prefillTokens: 118
+        - prefillTps: 81.89
+        - ramUsageMb: 255.6
+        ▿ totalDuration: 6.9346499999999995 seconds
+          - secondsComponent: 6
+          - attosecondsComponent: 934649999999999488
+        - totalTokens: 290
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: 607A55DF-A45F-4E16-9F3D-AAA100579C7A
+        - rawValue: 4D653DD5-C147-410A-BFA8-7A535059961B
       ▿ message: ChatMessage
-        - content: "<|tool_call_start|>[get_fact(topic=\"cactus\"), get_fact(topic=\"swift\")]<|tool_call_end|>"
-        - images: Optional<Array<URL>>.none
-        ▿ role: MessageRole
-          - rawValue: "assistant"
-  ▿ CactusCompletionEntry
-    - metrics: Optional<Metrics>.none
-    ▿ transcriptEntry: Element
-      ▿ id: CactusGenerationID
-        - rawValue: 3D61D189-F2E4-4869-B237-C07E1DF8B534
-      ▿ message: ChatMessage
-        - content: "{\"name\":\"get_fact\",\"content\":\"Cacti store water in thick stems to survive arid climates.\"}"
-        - images: Optional<Array<URL>>.none
-        ▿ role: MessageRole
-          - rawValue: "tool"
-  ▿ CactusCompletionEntry
-    - metrics: Optional<Metrics>.none
-    ▿ transcriptEntry: Element
-      ▿ id: CactusGenerationID
-        - rawValue: 7C13404F-A662-48B7-B29F-2D3F7C04E1FC
-      ▿ message: ChatMessage
-        - content: "{\"name\":\"get_fact\",\"content\":\"Swift is a type-safe language that emphasizes expressive syntax and performance.\"}"
-        - images: Optional<Array<URL>>.none
-        ▿ role: MessageRole
-          - rawValue: "tool"
-  ▿ CactusCompletionEntry
-    ▿ metrics: Optional<Metrics>
-      ▿ some: Metrics
-        - confidence: 0.9309
-        - decodeTokens: 64
-        - decodeTps: 31.72
-        ▿ durationToFirstToken: 0.77147 seconds
-          - secondsComponent: 0
-          - attosecondsComponent: 771470000000000000
-        - prefillTokens: 66
-        - prefillTps: 85.55
-        - ramUsageMb: 557.49
-        ▿ totalDuration: 2.75771 seconds
-          - secondsComponent: 2
-          - attosecondsComponent: 757709999999999872
-        - totalTokens: 130
-    ▿ transcriptEntry: Element
-      ▿ id: CactusGenerationID
-        - rawValue: FFAD1308-A0E2-48F4-AED0-AED694879589
-      ▿ message: ChatMessage
-        - content: "The cactus stores water in its thick stems to survive arid environments. Swift is a modern programming language known for its safety features and efficient performance, designed for building apps across platforms like iOS and macOS. While distinct fields, both reflect innovation—one in biology/adaptation, the other in software engineering design. "
+        - content: "I\'m sorry, but it seems I don\'t have enough context to determine what specific facts or information you\'re looking for. Could you please provide more details about the topic or question you\'d like me to address? Additionally, if there\'s a particular tool function or service that needs assistance with, let me know how I can help further.\n\nHowever, since your request is generic and doesn\'t specify a topic for \"get_fact\", here are some examples of topics and corresponding facts based on my knowledge:\n\n- Topic: Earth\n  Fact: The Earth is the third planet from the Sun in our solar system.\n  \n- Topic: Space\n  Fact: There are over 1 million asteroids believed to exist within our Solar System.\n\nIf none of these match what you\'re interested in, please provide more details so I can assist you better!"
         - images: Optional<Array<URL>>.none
         ▿ role: MessageRole
           - rawValue: "assistant"

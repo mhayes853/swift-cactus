@@ -499,7 +499,8 @@ extension CactusAgentSession {
         }
 
         let resolvedFunctionCalls = try self.resolveFunctionCalls(
-          completedTurn.completion.functionCalls
+          completedTurn.completion.functionCalls,
+          using: context.functions
         )
         let functionReturns = try await self.executeFunctionCalls(resolvedFunctionCalls)
 
@@ -556,11 +557,11 @@ extension CactusAgentSession {
   }
 
   private func resolveFunctionCalls(
-    _ functionCalls: [CactusLanguageModel.FunctionCall]
+    _ functionCalls: [CactusLanguageModel.FunctionCall],
+    using functions: [any CactusFunction]
   ) throws -> [CactusAgentSession.FunctionCall] {
-    let availableFunctions = self.functions
     return try functionCalls.map { functionCall in
-      guard let function = availableFunctions.first(where: { $0.name == functionCall.name }) else {
+      guard let function = functions.first(where: { $0.name == functionCall.name }) else {
         throw CactusAgentSessionError.missingFunction(functionCall.name)
       }
       return CactusAgentSession.FunctionCall(
@@ -605,6 +606,7 @@ extension CactusAgentSession {
     let options: CactusLanguageModel.ChatCompletion.Options
     let maxBufferSize: Int?
     let functionDefinitions: [CactusLanguageModel.FunctionDefinition]
+    let functions: [any CactusFunction]
   }
 
   private func streamRequestContext(
@@ -620,7 +622,8 @@ extension CactusAgentSession {
       userMessage: userMessage,
       options: self.chatOptions(from: request),
       maxBufferSize: request.maxBufferSize,
-      functionDefinitions: self.functions.map(\.definition)
+      functionDefinitions: self.functions.map(\.definition),
+      functions: self.functions
     )
   }
 
@@ -654,7 +657,7 @@ extension CactusAgentSession {
     completionEntries: inout [CactusCompletionEntry]
   ) {
     let transcriptEntry = CactusTranscript.Element(message: message)
-    self.state.withLock { $0.transcript.append(transcriptEntry) }
+    self.transcript.append(transcriptEntry)
     completionEntries.append(
       CactusCompletionEntry(transcriptEntry: transcriptEntry, metrics: metrics)
     )
