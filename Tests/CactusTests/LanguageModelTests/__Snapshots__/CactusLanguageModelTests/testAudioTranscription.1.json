@@ -2,15 +2,15 @@
   "slug" : "whisper-small",
   "transcription" : {
     "cloud_handoff" : true,
-    "confidence" : 0.8531,
-    "decode_tokens" : 25,
-    "decode_tps" : 76.07,
+    "confidence" : 0.8953,
+    "decode_tokens" : 74,
+    "decode_tps" : 81.62,
     "prefill_tokens" : 4,
-    "prefill_tps" : 1.59,
-    "ram_usage_mb" : 360.16,
-    "response" : "The power of a god cannot be overcome! The voice of this Abyss! How dare you disobey me?",
-    "time_to_first_token_ms" : 2512.29,
-    "total_time_ms" : 2827.81,
-    "total_tokens" : 29
+    "prefill_tps" : 1.74,
+    "ram_usage_mb" : 345.79,
+    "response" : "The power of the God cannot be overcome. Even Gods are merely beings restricted to limited powers, determined by promise that power although great is not unlimited That voice! Abyss how dare you disobey me I am Manada , i was here at the beginning and will proclaim the end but thats impossible shulk it is time for yu to choose does this world",
+    "time_to_first_token_ms" : 2301.56,
+    "total_time_ms" : 3195.96,
+    "total_tokens" : 78
   }
 }

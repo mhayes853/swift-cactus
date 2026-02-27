@@ -432,6 +432,14 @@ extension CactusLanguageModel {
       defaultTopK: 0
     )
 
+    /// A model type for parakeet models.
+    public static let parakeet = Self(
+      identifier: "parakeet",
+      defaultTemperature: 0.0,
+      defaultTopP: 0.0,
+      defaultTopK: 0
+    )
+
     /// A model type for moonshine models.
     public static let moonshine = Self(
       identifier: "moonshine",

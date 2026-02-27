@@ -84,7 +84,7 @@ extension CactusStreamTranscriber {
     public let pending: String
 
     /// The duration of the audio buffer that was processed.
-    public let bufferDuration: CactusDuration
+    public let bufferDuration: Duration
 
     /// The model's confidence in its transcription.
     public let confidence: Double
@@ -99,10 +99,10 @@ extension CactusStreamTranscriber {
     public let cloudResultJobId: Int
 
     /// The amount of time to generate the first token.
-    public let durationToFirstToken: CactusDuration
+    public let durationToFirstToken: Duration
 
     /// The total generation time.
-    public let totalDuration: CactusDuration
+    public let totalDuration: Duration
 
     /// The number of prefilled tokens.
     public let prefillTokens: Int

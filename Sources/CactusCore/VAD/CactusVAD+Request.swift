@@ -15,16 +15,16 @@ extension CactusVAD {
     public var negThreshold: Float?
 
     /// The minimum speech duration to keep.
-    public var minSpeechDuration: CactusDuration?
+    public var minSpeechDuration: Duration?
 
     /// The maximum speech duration to keep.
-    public var maxSpeechDuration: CactusDuration?
+    public var maxSpeechDuration: Duration?
 
     /// The minimum silence duration required between speech segments.
-    public var minSilenceDuration: CactusDuration?
+    public var minSilenceDuration: Duration?
 
     /// The amount of padding duration to add around speech segments.
-    public var speechPadDuration: CactusDuration?
+    public var speechPadDuration: Duration?
 
     /// The VAD window size in samples.
     public var windowSizeSamples: Int?
@@ -60,10 +60,10 @@ extension CactusVAD {
       content: Content,
       threshold: Float? = nil,
       negThreshold: Float? = nil,
-      minSpeechDuration: CactusDuration? = nil,
-      maxSpeechDuration: CactusDuration? = nil,
-      minSilenceDuration: CactusDuration? = nil,
-      speechPadDuration: CactusDuration? = nil,
+      minSpeechDuration: Duration? = nil,
+      maxSpeechDuration: Duration? = nil,
+      minSilenceDuration: Duration? = nil,
+      speechPadDuration: Duration? = nil,
       windowSizeSamples: Int? = nil,
       minSilenceAtMaxSpeech: Int? = nil,
       useMaxPossSilAtMaxSpeech: Bool? = nil,

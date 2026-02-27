@@ -37,6 +37,11 @@ extension CactusFunction {
   }
 
   /// Invokes this function from raw function-call arguments.
+  ///
+  /// - Parameters:
+  ///   - rawArguments: The args returned from a model function call.
+  ///   - decoder: The ``JSONSchema/Value/Decoder`` to use.
+  ///   - validator: The ``JSONSchema/Validator`` to use.
   public func invoke(
     rawArguments: [String: JSONSchema.Value],
     decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder(),
@@ -44,7 +49,7 @@ extension CactusFunction {
   ) async throws -> CactusPromptContent {
     try validator.validate(value: .object(rawArguments), with: self.parametersSchema)
     let input = try decoder.decode(Input.self, from: .object(rawArguments))
-    let output = try await self.invoke(input: consume input)
+    let output = try await self.invoke(input: input)
     return try output.promptContent
   }
 }

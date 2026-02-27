@@ -9,33 +9,33 @@ struct `CactusVAD tests` {
       startSampleIndex: cactusAudioSampleRateHz,
       endSampleIndex: cactusAudioSampleRateHz * 2,
       samplingRate: cactusAudioSampleRateHz,
-      expectedStart: CactusDuration.seconds(1),
-      expectedEnd: CactusDuration.seconds(2),
-      expectedDuration: CactusDuration.seconds(1)
+      expectedStart: Duration.seconds(1),
+      expectedEnd: Duration.seconds(2),
+      expectedDuration: Duration.seconds(1)
     ),
     VADSegmentDurationCase(
       startSampleIndex: 8_000,
       endSampleIndex: 16_000,
       samplingRate: 8_000,
-      expectedStart: CactusDuration.seconds(1),
-      expectedEnd: CactusDuration.seconds(2),
-      expectedDuration: CactusDuration.seconds(1)
+      expectedStart: Duration.seconds(1),
+      expectedEnd: Duration.seconds(2),
+      expectedDuration: Duration.seconds(1)
     ),
     VADSegmentDurationCase(
       startSampleIndex: 400,
       endSampleIndex: 800,
       samplingRate: cactusAudioSampleRateHz,
-      expectedStart: CactusDuration.milliseconds(25),
-      expectedEnd: CactusDuration.milliseconds(50),
-      expectedDuration: CactusDuration.milliseconds(25)
+      expectedStart: Duration.milliseconds(25),
+      expectedEnd: Duration.milliseconds(50),
+      expectedDuration: Duration.milliseconds(25)
     ),
     VADSegmentDurationCase(
       startSampleIndex: 12_345,
       endSampleIndex: 12_345,
       samplingRate: cactusAudioSampleRateHz,
-      expectedStart: CactusDuration.nanoseconds(771_562_500),
-      expectedEnd: CactusDuration.nanoseconds(771_562_500),
-      expectedDuration: CactusDuration.nanoseconds(0)
+      expectedStart: Duration.nanoseconds(771_562_500),
+      expectedEnd: Duration.nanoseconds(771_562_500),
+      expectedDuration: Duration.nanoseconds(0)
     )
   ])
   func `Segment Duration Conversion`(testCase: VADSegmentDurationCase) {
@@ -54,8 +54,8 @@ struct `CactusVAD tests` {
     let startSampleIndex: Int
     let endSampleIndex: Int
     let samplingRate: Int
-    let expectedStart: CactusDuration
-    let expectedEnd: CactusDuration
-    let expectedDuration: CactusDuration
+    let expectedStart: Duration
+    let expectedEnd: Duration
+    let expectedDuration: Duration
   }
 }

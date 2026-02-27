@@ -4,7 +4,7 @@
       - metrics: Optional<Metrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 6A9FFFD5-BA78-4325-B49B-1176EB0CFCAF
+          - rawValue: 47466B05-2B8E-4EF9-948B-AC50C0407DFD
         ▿ message: ChatMessage
           - content: "Say hello in one concise sentence."
           ▿ images: Optional<Array<URL>>
@@ -14,39 +14,39 @@
     ▿ CactusCompletionEntry
       ▿ metrics: Optional<Metrics>
         ▿ some: Metrics
-          - confidence: 0.8924
-          - decodeTokens: 352
-          - decodeTps: 88.37
-          ▿ durationToFirstToken: 0.01828 seconds
-            - secondsComponent: 0
-            - attosecondsComponent: 18280000000000000
-          - prefillTokens: 9
-          - prefillTps: 492.23
-          - ramUsageMb: 48.89
-          ▿ totalDuration: 3.99026 seconds
-            - secondsComponent: 3
-            - attosecondsComponent: 990260000000000128
-          - totalTokens: 361
+          - confidence: 0.9266
+          - decodeTokens: 55
+          - decodeTps: 64.81
+          ▿ durationToFirstToken: 0.03954 seconds
+            - _low: 39540000000000000
+            - _high: 0
+          - prefillTokens: 16
+          - prefillTps: 404.65
+          - ramUsageMb: 960.98
+          ▿ totalDuration: 0.8726900000000001 seconds
+            - _low: 872690000000000128
+            - _high: 0
+          - totalTokens: 71
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 0FFEDF14-4008-4BB2-B687-A97C0355282C
+          - rawValue: EB6ABEEB-D284-42CB-ABA3-DC28122850D9
         ▿ message: ChatMessage
-          - content: "The term \"quantum\" has been used as a reference point for its fundamental properties and behavior in physics. It describes the ability of a particle to exist in a superposition of multiple states until it is measured, meaning that it can exist in both potential states at the same time.\n\nIn other words: \"Quantumism\" was one name for something more profound than just \"quantum\". It\'s not about describing something alive; it\'s about describing how things are *actually* here, which is what resonates with many people.\n\nHere are some key aspects associated with the concept:\n\n*   **ความเป็นไปถึงความเป็นนิ้ว (Sufficiency):** The ability to be in multiple places simultaneously – being on the other side of an equation.\n*   **ความเท่ากันของตนเอง (The Sameness of Others):** A fundamental aspect that underlies all forms of existence and has been a cornerstone of many theories.\n*   It’ANDS been used as a reference point for its underlying principles and implications, offering insights into how reality is structured at the most fundamental level. It\'s not about describing something alive; it\'s about describing *what is*.\n\nIn essence, \"quantum\" has become a reminder that even with the power to exist in multiple realms, everything we know is incomplete until we understand what happens when our laws are bent or if things are fundamentally different. The journey continues as researchers continue to refine this concept and explore its profound implications across various fields from quantum computing to materials science!\n\nWhat aspects of \"quantumism\" do you find most intriguing? What questions does your understanding of \"quantum\" hope to answer? Let me know! I am ready for any new insights from this fascinating and enduring philosophical concept.\n"
+          - content: "There are many ways in which you can say \"Hello\" in one concise sentence. Whether it\'s a greeting, formal greetings, or simply wishing someone well, there are different ways to express yourself based on your relationship with the person. What is most meaningful to you?"
           - images: Optional<Array<URL>>.none
           ▿ role: MessageRole
             - rawValue: "assistant"
   ▿ metrics: Metrics
-    - confidence: 0.8924
-    - decodeTokens: 352
-    - decodeTps: 88.37
-    ▿ durationToFirstToken: 0.01828 seconds
-      - secondsComponent: 0
-      - attosecondsComponent: 18280000000000000
-    - prefillTokens: 9
-    - prefillTps: 492.23
-    - ramUsageMb: 48.89
-    ▿ totalDuration: 3.99026 seconds
-      - secondsComponent: 3
-      - attosecondsComponent: 990260000000000128
-    - totalTokens: 361
-  - output: "The term \"quantum\" has been used as a reference point for its fundamental properties and behavior in physics. It describes the ability of a particle to exist in a superposition of multiple states until it is measured, meaning that it can exist in both potential states at the same time.\n\nIn other words: \"Quantumism\" was one name for something more profound than just \"quantum\". It\'s not about describing something alive; it\'s about describing how things are *actually* here, which is what resonates with many people.\n\nHere are some key aspects associated with the concept:\n\n*   **ความเป็นไปถึงความเป็นนิ้ว (Sufficiency):** The ability to be in multiple places simultaneously – being on the other side of an equation.\n*   **ความเท่ากันของตนเอง (The Sameness of Others):** A fundamental aspect that underlies all forms of existence and has been a cornerstone of many theories.\n*   It’ANDS been used as a reference point for its underlying principles and implications, offering insights into how reality is structured at the most fundamental level. It\'s not about describing something alive; it\'s about describing *what is*.\n\nIn essence, \"quantum\" has become a reminder that even with the power to exist in multiple realms, everything we know is incomplete until we understand what happens when our laws are bent or if things are fundamentally different. The journey continues as researchers continue to refine this concept and explore its profound implications across various fields from quantum computing to materials science!\n\nWhat aspects of \"quantumism\" do you find most intriguing? What questions does your understanding of \"quantum\" hope to answer? Let me know! I am ready for any new insights from this fascinating and enduring philosophical concept.\n"
+    - confidence: 0.9266
+    - decodeTokens: 55
+    - decodeTps: 64.81
+    ▿ durationToFirstToken: 0.03954 seconds
+      - _low: 39540000000000000
+      - _high: 0
+    - prefillTokens: 16
+    - prefillTps: 404.65
+    - ramUsageMb: 960.98
+    ▿ totalDuration: 0.8726900000000001 seconds
+      - _low: 872690000000000128
+      - _high: 0
+    - totalTokens: 71
+  - output: "There are many ways in which you can say \"Hello\" in one concise sentence. Whether it\'s a greeting, formal greetings, or simply wishing someone well, there are different ways to express yourself based on your relationship with the person. What is most meaningful to you?"

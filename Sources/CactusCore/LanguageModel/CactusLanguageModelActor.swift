@@ -286,7 +286,7 @@ extension CactusLanguageModelActor {
   /// - Returns: A ``CactusLanguageModel/CompletedChatTurn``.
   public func complete(
     messages: [CactusLanguageModel.ChatMessage],
-    options: CactusLanguageModel.ChatCompletion.Options? = nil,
+    options: CactusLanguageModel.Completion.Options? = nil,
     maxBufferSize: Int? = nil,
     functions: [CactusLanguageModel.FunctionDefinition] = [],
     onToken: @escaping @Sendable (String) -> Void = { _ in }
@@ -323,7 +323,7 @@ extension CactusLanguageModelActor {
   /// - Returns: A ``CactusLanguageModel/CompletedChatTurn``.
   public func complete(
     messages: [CactusLanguageModel.ChatMessage],
-    options: CactusLanguageModel.ChatCompletion.Options? = nil,
+    options: CactusLanguageModel.Completion.Options? = nil,
     maxBufferSize: Int? = nil,
     functions: [CactusLanguageModel.FunctionDefinition] = [],
     onToken: @escaping @Sendable (String, UInt32) -> Void

@@ -573,7 +573,7 @@ extension CactusAgentSession {
 
   private func chatOptions(
     from request: CactusUserMessage
-  ) -> CactusLanguageModel.ChatCompletion.Options {
+  ) -> CactusLanguageModel.Completion.Options {
     let maxTokens: Int
     switch request.maxTokens {
     case .limit(let limit):
@@ -582,7 +582,7 @@ extension CactusAgentSession {
       maxTokens = 512
     }
 
-    return CactusLanguageModel.ChatCompletion.Options(
+    return CactusLanguageModel.Completion.Options(
       maxTokens: maxTokens,
       temperature: request.temperature,
       topP: request.topP,
@@ -603,7 +603,7 @@ extension CactusAgentSession {
 
   private struct StreamRequestContext: Sendable {
     let userMessage: CactusLanguageModel.ChatMessage
-    let options: CactusLanguageModel.ChatCompletion.Options
+    let options: CactusLanguageModel.Completion.Options
     let maxBufferSize: Int?
     let functionDefinitions: [CactusLanguageModel.FunctionDefinition]
     let functions: [any CactusFunction]
@@ -665,7 +665,7 @@ extension CactusAgentSession {
 
   private func appendModelMessages(
     _ messages: [CactusLanguageModel.ChatMessage],
-    completion: CactusLanguageModel.ChatCompletion,
+    completion: CactusLanguageModel.Completion,
     completionEntries: inout [CactusCompletionEntry]
   ) {
     for message in messages {

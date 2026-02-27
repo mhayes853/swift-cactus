@@ -229,7 +229,7 @@ struct `CactusLanguageModel tests` {
         .system("You are a philosopher, philosophize about any questions you are asked."),
         .user("What is the meaning of life?")
       ],
-      options: CactusLanguageModel.ChatCompletion.Options(
+      options: CactusLanguageModel.Completion.Options(
         maxTokens: 1024,
         modelType: model.configurationFile.modelType ?? .qwen
       ),
@@ -260,7 +260,7 @@ struct `CactusLanguageModel tests` {
   func `Complete Returned Messages Can Be Reused For Next Complete`() async throws {
     let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
     let model = try CactusLanguageModel(from: modelURL)
-    let options = CactusLanguageModel.ChatCompletion.Options(
+    let options = CactusLanguageModel.Completion.Options(
       maxTokens: 128,
       modelType: model.configurationFile.modelType ?? .qwen
     )
@@ -292,7 +292,7 @@ struct `CactusLanguageModel tests` {
         .system("You are a weather assistant that must use tools when available."),
         .user("What is the weather in Santa Cruz?")
       ],
-      options: CactusLanguageModel.ChatCompletion.Options(
+      options: CactusLanguageModel.Completion.Options(
         maxTokens: 256,
         modelType: model.configurationFile.modelType ?? .qwen,
         forceFunctions: true
@@ -497,7 +497,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
   func testComplete() async throws {
     struct Completion: Encodable {
       let slug: String
-      let completion: CactusLanguageModel.ChatCompletion
+      let completion: CactusLanguageModel.Completion
       let messages: [CactusLanguageModel.ChatMessage]
     }
 
@@ -526,7 +526,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
   func testBasicChatCompletion() async throws {
     struct Completion: Codable {
       let slug: String
-      let completion: CactusLanguageModel.ChatCompletion
+      let completion: CactusLanguageModel.Completion
     }
 
     var completions = [Completion]()
@@ -558,7 +558,7 @@ final class CactusLanguageModelGenerationSnapshotTests: XCTestCase {
         .system("You are a helpful weather assistant that can use tools."),
         .user("What is the weather in Santa Cruz?")
       ],
-      options: CactusLanguageModel.ChatCompletion.Options(
+      options: CactusLanguageModel.Completion.Options(
         modelType: model.configurationFile.modelType ?? .qwen,
         forceFunctions: true
       ),
@@ -753,10 +753,10 @@ private let modelRequests: [CactusLanguageModel.PlatformDownloadRequest] = [
 private let testImageURL = Bundle.module.url(forResource: "joe", withExtension: "png")!
 private let testAudioURL = Bundle.module.url(forResource: "test", withExtension: "wav")!
 
-extension CactusLanguageModel.ChatCompletion {
+extension CactusLanguageModel.Completion {
   fileprivate var cleanedResponse: String {
     var response = self.response
-    for sequence in CactusLanguageModel.ChatCompletion.Options.defaultStopSequences {
+    for sequence in CactusLanguageModel.Completion.Options.defaultStopSequences {
       response = response.replacingOccurrences(of: sequence, with: "")
     }
     return response

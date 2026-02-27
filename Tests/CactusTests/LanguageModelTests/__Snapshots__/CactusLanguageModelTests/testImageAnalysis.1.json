@@ -1,15 +1,16 @@
 {
-  "confidence" : 0.8787,
-  "decode_tokens" : 94,
-  "decode_tps" : 45.38,
+  "cloud_handoff" : false,
+  "confidence" : 0.8525,
+  "decode_tokens" : 112,
+  "decode_tps" : 102.67,
   "function_calls" : [
 
   ],
   "prefill_tokens" : 314,
-  "prefill_tps" : 181.03,
-  "ram_usage_mb" : 1165.37,
-  "response" : "The guy in the first image is smiling and holding a book, which suggests he might be excited or enthusiastic about what he's about to read. He also has a backpack on his shoulder, indicating that he might be going somewhere or traveling. The red bull and monster on the night before a final exam could imply that he is preparing for an important event or challenge ahead of him. Overall, it seems like the guy is looking forward to something exciting and significant coming up.",
-  "time_to_first_token_ms" : 1734.53,
-  "total_time_ms" : 3783.69,
-  "total_tokens" : 408
+  "prefill_tps" : 325.68,
+  "ram_usage_mb" : 1162.6,
+  "response" : "The image depicts a young man wearing a long-sleeved shirt with a button-down collar. He is holding an open book and smiling at the camera, giving off an inviting and friendly vibe. The man's attire suggests he might be in his early 20s, as indicated by his youthful appearance and the casual yet neat style of his shirt. His expression is warm and approachable, which could imply that he is either excited about the content or looking for some light-hearted entertainment during what appears to be a study session or exam preparation.",
+  "time_to_first_token_ms" : 964.14,
+  "total_time_ms" : 2045.27,
+  "total_tokens" : 426
 }
