@@ -9,7 +9,7 @@ struct `CactusLanguageModelDownloading tests` {
   func `Builds Hugging Face URL`() {
     let request = CactusLanguageModel.PlatformDownloadRequest.lfm2_700m()
     expectNoDifference(
-      request.url.absoluteString,
+      request.defaultURL.absoluteString,
       "https://huggingface.co/Cactus-Compute/LFM2-700M/resolve/v1.8/weights/lfm2-700m-int4.zip"
     )
   }
@@ -18,7 +18,7 @@ struct `CactusLanguageModelDownloading tests` {
   func `Builds Pro Hugging Face URL`() {
     let request = CactusLanguageModel.PlatformDownloadRequest.lfm2_5Vl_1_6b(pro: .apple)
     expectNoDifference(
-      request.url.absoluteString,
+      request.defaultURL.absoluteString,
       "https://huggingface.co/Cactus-Compute/LFM2.5-VL-1.6B/resolve/v1.8/weights/lfm2.5-vl-1.6b-int4-apple.zip"
     )
   }
@@ -33,7 +33,7 @@ struct `CactusLanguageModelDownloading tests` {
   func `Builds Moonshine URL`() {
     let request = CactusLanguageModel.PlatformDownloadRequest.moonshineBase(pro: .apple)
     expectNoDifference(
-      request.url.absoluteString,
+      request.defaultURL.absoluteString,
       "https://huggingface.co/Cactus-Compute/moonshine-base/resolve/v1.8/weights/moonshine-base-int4-apple.zip"
     )
   }
@@ -42,7 +42,7 @@ struct `CactusLanguageModelDownloading tests` {
   func `Builds Silero VAD URL`() {
     let request = CactusLanguageModel.PlatformDownloadRequest.sileroVad(quantization: .int8)
     expectNoDifference(
-      request.url.absoluteString,
+      request.defaultURL.absoluteString,
       "https://huggingface.co/Cactus-Compute/silero-vad/resolve/v1.8/weights/silero-vad-int8.zip"
     )
   }

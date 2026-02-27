@@ -24,7 +24,7 @@ extension CactusLanguageModel {
     onProgress: @escaping @Sendable (Result<DownloadProgress, any Error>) -> Void = { _ in }
   ) async throws -> URL {
     try await Self.downloadModel(
-      from: request.url,
+      from: request.defaultURL,
       to: destination,
       configuration: configuration,
       onProgress: onProgress
@@ -72,7 +72,7 @@ extension CactusLanguageModel {
     configuration: URLSessionConfiguration = .default
   ) -> DownloadTask {
     Self.downloadModelTask(
-      from: request.url,
+      from: request.defaultURL,
       to: destination,
       configuration: configuration
     )
@@ -124,6 +124,7 @@ extension CactusLanguageModel {
       public static let v1_5 = Self(rawValue: "v1.5")
       public static let v1_7 = Self(rawValue: "v1.7")
       public static let v1_8 = Self(rawValue: "v1.8")
+      public static let v1_9 = Self(rawValue: "v1.9")
 
       public let rawValue: String
 
@@ -156,7 +157,7 @@ extension CactusLanguageModel {
     public var pro: Pro?
 
     /// A download URL for the model.
-    public var url: URL {
+    public var defaultURL: URL {
       let proSuffix = self.pro.map { "-\($0.rawValue)" } ?? ""
       let filename = "\(self.slug)-\(self.quantization.rawValue)\(proSuffix).zip"
       return URL(
