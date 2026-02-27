@@ -140,25 +140,22 @@ extension CactusStreamTranscriber {
   /// - Returns: A ``ProcessedTranscription``.
   public func process(buffer: UnsafeBufferPointer<UInt8>) throws -> ProcessedTranscription {
     try self.ensureNotFinalized()
-    let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: Self.responseBufferSize)
-    defer { responseBuffer.deallocate() }
 
-    let result = cactus_stream_transcribe_process(
-      self.streamTranscribePointer,
-      buffer.baseAddress,
-      buffer.count,
-      responseBuffer,
-      Self.responseBufferSize * MemoryLayout<CChar>.stride
-    )
-
-    var responseData = Data()
-    for i in 0..<strnlen(responseBuffer, Self.responseBufferSize) {
-      responseData.append(UInt8(bitPattern: responseBuffer[i]))
+    let (result, responseData) = try withFFIBuffer(
+      bufferSize: Self.responseBufferSize
+    ) { responseBuffer, responseBufferSize in
+      cactus_stream_transcribe_process(
+        self.streamTranscribePointer,
+        buffer.baseAddress,
+        buffer.count,
+        responseBuffer,
+        responseBufferSize
+      )
     }
 
     guard result != -1 else {
-      let response = try ffiDecoder.decode(FFIErrorResponse.self, from: responseData)
-      throw CactusStreamTranscriberError(message: response.error)
+      let errorResponse = try ffiDecoder.decode(FFIErrorResponse.self, from: responseData)
+      throw CactusStreamTranscriberError(message: errorResponse.error)
     }
 
     return try ffiDecoder.decode(ProcessedTranscription.self, from: responseData)
@@ -250,30 +247,33 @@ extension CactusStreamTranscriber {
   ///
   /// - Returns: A ``FinalizedTranscription``.
   public consuming func stop() throws -> FinalizedTranscription {
-    try self.stopInPlace()
+    try self.mutatingStop()
   }
 
-  mutating func stopInPlace() throws -> FinalizedTranscription {
+  /// Stops streaming transcription and returns the finalized result without forcing ownership
+  /// semantics.
+  ///
+  /// Subsequent methods to any of the operations of this type will throw an error. Prefer using
+  /// ``stop`` for compile time safety.
+  ///
+  /// - Returns: A ``FinalizedTranscription``.
+  public mutating func mutatingStop() throws -> FinalizedTranscription {
     try self.ensureNotFinalized()
 
-    let responseBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: Self.responseBufferSize)
-    defer { responseBuffer.deallocate() }
-
-    let result = cactus_stream_transcribe_stop(
-      self.streamTranscribePointer,
-      responseBuffer,
-      Self.responseBufferSize * MemoryLayout<CChar>.stride
-    )
+    let (result, responseData) = try withFFIBuffer(
+      bufferSize: Self.responseBufferSize
+    ) { responseBuffer, responseBufferSize in
+      cactus_stream_transcribe_stop(
+        self.streamTranscribePointer,
+        responseBuffer,
+        responseBufferSize
+      )
+    }
     self.isFinalized = true
 
-    var responseData = Data()
-    for i in 0..<strnlen(responseBuffer, Self.responseBufferSize) {
-      responseData.append(UInt8(bitPattern: responseBuffer[i]))
-    }
-
     guard result != -1 else {
-      let response = try ffiDecoder.decode(FFIErrorResponse.self, from: responseData)
-      throw CactusStreamTranscriberError(message: response.error)
+      let errorResponse = try ffiDecoder.decode(FFIErrorResponse.self, from: responseData)
+      throw CactusStreamTranscriberError(message: errorResponse.error)
     }
 
     return try ffiDecoder.decode(FinalizedTranscription.self, from: responseData)

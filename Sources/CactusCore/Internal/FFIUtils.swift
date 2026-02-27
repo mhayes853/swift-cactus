@@ -17,3 +17,23 @@ let ffiEncoder: JSONEncoder = {
   encoder.outputFormatting = [.withoutEscapingSlashes]
   return encoder
 }()
+
+func bufferToData(_ buffer: UnsafePointer<CChar>, maxLength: Int) -> Data {
+  let length = strnlen(buffer, maxLength)
+  return buffer.withMemoryRebound(to: UInt8.self, capacity: length) { pointer in
+    Data(bytes: pointer, count: length)
+  }
+}
+
+func withFFIBuffer(
+  bufferSize: Int = 8192,
+  _ ffiCall: (UnsafeMutablePointer<CChar>, Int) throws -> Int32
+) throws -> (result: Int32, responseData: Data) {
+  let buffer = UnsafeMutablePointer<CChar>.allocate(capacity: bufferSize)
+  defer { buffer.deallocate() }
+
+  let result = try ffiCall(buffer, bufferSize * MemoryLayout<CChar>.stride)
+  let responseData = bufferToData(buffer, maxLength: bufferSize)
+
+  return (result, responseData)
+}
