@@ -202,7 +202,7 @@ extension CactusLanguageModel {
     public init(
       slug: String,
       quantization: Quantization = .int4,
-      version: Version = .v1_8,
+      version: Version = .v1_9,
       pro: Pro? = nil
     ) {
       self.slug = slug
@@ -213,23 +213,29 @@ extension CactusLanguageModel {
 
     /// Creates a download request for the `gemma-3-270m-it` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func gemma3_270mIt(quantization: Quantization = .int4) -> Self {
-      Self(slug: "gemma-3-270m-it", quantization: quantization, version: .v1_8)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func gemma3_270mIt(quantization: Quantization = .int4, version: Version = .v1_9) -> Self {
+      Self(slug: "gemma-3-270m-it", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `functiongemma-270m-it` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func functiongemma270mIt(quantization: Quantization = .int4) -> Self {
-      Self(slug: "functiongemma-270m-it", quantization: quantization, version: .v1_8)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func functiongemma270mIt(quantization: Quantization = .int4, version: Version = .v1_9) -> Self {
+      Self(slug: "functiongemma-270m-it", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `gemma-3-1b-it` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func gemma3_1bIt(quantization: Quantization = .int4) -> Self {
-      Self(slug: "gemma-3-1b-it", quantization: quantization, version: .v1_8)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func gemma3_1bIt(quantization: Quantization = .int4, version: Version = .v1_9) -> Self {
+      Self(slug: "gemma-3-1b-it", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `whisper-small` model.
@@ -237,11 +243,13 @@ extension CactusLanguageModel {
     /// - Parameters:
     ///   - quantization: The quantization format of the model.
     ///   - pro: The pro version configuration for the model.
+    ///   - version: The library version of the model.
     public static func whisperSmall(
       quantization: Quantization = .int4,
-      pro: Pro? = nil
+      pro: Pro? = nil,
+      version: Version = .v1_9
     ) -> Self {
-      Self(slug: "whisper-small", quantization: quantization, version: .v1_8, pro: pro)
+      Self(slug: "whisper-small", quantization: quantization, version: version, pro: pro)
     }
 
     /// Creates a download request for the `whisper-medium` model.
@@ -249,67 +257,85 @@ extension CactusLanguageModel {
     /// - Parameters:
     ///   - quantization: The quantization format of the model.
     ///   - pro: The pro version configuration for the model.
+    ///   - version: The library version of the model.
     public static func whisperMedium(
       quantization: Quantization = .int4,
-      pro: Pro? = nil
+      pro: Pro? = nil,
+      version: Version = .v1_9
     ) -> Self {
-      Self(slug: "whisper-medium", quantization: quantization, version: .v1_8, pro: pro)
+      Self(slug: "whisper-medium", quantization: quantization, version: version, pro: pro)
     }
 
     /// Creates a download request for the `lfm2-350m` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func lfm2_350m(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2-350m", quantization: quantization, version: .v1_8)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func lfm2_350m(quantization: Quantization = .int4, version: Version = .v1_9) -> Self {
+      Self(slug: "lfm2-350m", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `lfm2-700m` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func lfm2_700m(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2-700m", quantization: quantization, version: .v1_8)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func lfm2_700m(quantization: Quantization = .int4, version: Version = .v1_9) -> Self {
+      Self(slug: "lfm2-700m", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `lfm2-1.2b` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func lfm2_1_2b(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2-1.2b", quantization: quantization, version: .v1_8)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func lfm2_1_2b(quantization: Quantization = .int4, version: Version = .v1_9) -> Self {
+      Self(slug: "lfm2-1.2b", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `lfm2-1.2b-rag` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func lfm2_1_2bRag(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2-1.2b-rag", quantization: quantization, version: .v1_8)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func lfm2_1_2bRag(quantization: Quantization = .int4, version: Version = .v1_9) -> Self {
+      Self(slug: "lfm2-1.2b-rag", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `lfm2-1.2b-tool` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func lfm2_1_2bTool(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2-1.2b-tool", quantization: quantization, version: .v1_8)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func lfm2_1_2bTool(quantization: Quantization = .int4, version: Version = .v1_9) -> Self {
+      Self(slug: "lfm2-1.2b-tool", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `lfm2.5-1.2b-instruct` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func lfm2_5_1_2bInstruct(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2.5-1.2b-instruct", quantization: quantization, version: .v1_8)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func lfm2_5_1_2bInstruct(quantization: Quantization = .int4, version: Version = .v1_9) -> Self {
+      Self(slug: "lfm2.5-1.2b-instruct", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `lfm2.5-1.2b-thinking` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func lfm2_5_1_2bThinking(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2.5-1.2b-thinking", quantization: quantization, version: .v1_8)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func lfm2_5_1_2bThinking(quantization: Quantization = .int4, version: Version = .v1_9) -> Self {
+      Self(slug: "lfm2.5-1.2b-thinking", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `lfm2-2.6b` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func lfm2_2_6b(quantization: Quantization = .int4) -> Self {
-      Self(slug: "lfm2-2.6b", quantization: quantization, version: .v1_8)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func lfm2_2_6b(quantization: Quantization = .int4, version: Version = .v1_9) -> Self {
+      Self(slug: "lfm2-2.6b", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `lfm2-vl-450m` model.
@@ -317,11 +343,13 @@ extension CactusLanguageModel {
     /// - Parameters:
     ///   - quantization: The quantization format of the model.
     ///   - pro: The pro version configuration for the model.
+    ///   - version: The library version of the model.
     public static func lfm2Vl_450m(
       quantization: Quantization = .int4,
-      pro: Pro? = nil
+      pro: Pro? = nil,
+      version: Version = .v1_9
     ) -> Self {
-      Self(slug: "lfm2-vl-450m", quantization: quantization, version: .v1_8, pro: pro)
+      Self(slug: "lfm2-vl-450m", quantization: quantization, version: version, pro: pro)
     }
 
     /// Creates a download request for the `lfm2.5-vl-1.6b` model.
@@ -329,39 +357,49 @@ extension CactusLanguageModel {
     /// - Parameters:
     ///   - quantization: The quantization format of the model.
     ///   - pro: The pro version configuration for the model.
+    ///   - version: The library version of the model.
     public static func lfm2_5Vl_1_6b(
       quantization: Quantization = .int4,
-      pro: Pro? = nil
+      pro: Pro? = nil,
+      version: Version = .v1_9
     ) -> Self {
-      Self(slug: "lfm2.5-vl-1.6b", quantization: quantization, version: .v1_8, pro: pro)
+      Self(slug: "lfm2.5-vl-1.6b", quantization: quantization, version: version, pro: pro)
     }
 
     /// Creates a download request for the `qwen3-0.6b` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func qwen3_0_6b(quantization: Quantization = .int4) -> Self {
-      Self(slug: "qwen3-0.6b", quantization: quantization, version: .v1_8)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func qwen3_0_6b(quantization: Quantization = .int4, version: Version = .v1_9) -> Self {
+      Self(slug: "qwen3-0.6b", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `qwen3-embedding-0.6b` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func qwen3Embedding_0_6b(quantization: Quantization = .int4) -> Self {
-      Self(slug: "qwen3-embedding-0.6b", quantization: quantization, version: .v1_8)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func qwen3Embedding_0_6b(quantization: Quantization = .int4, version: Version = .v1_9) -> Self {
+      Self(slug: "qwen3-embedding-0.6b", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `qwen3-1.7b` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func qwen3_1_7b(quantization: Quantization = .int4) -> Self {
-      Self(slug: "qwen3-1.7b", quantization: quantization, version: .v1_8)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func qwen3_1_7b(quantization: Quantization = .int4, version: Version = .v1_9) -> Self {
+      Self(slug: "qwen3-1.7b", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `nomic-embed-text-v2-moe` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func nomicEmbedTextV2Moe(quantization: Quantization = .int4) -> Self {
-      Self(slug: "nomic-embed-text-v2-moe", quantization: quantization, version: .v1_8)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func nomicEmbedTextV2Moe(quantization: Quantization = .int4, version: Version = .v1_9) -> Self {
+      Self(slug: "nomic-embed-text-v2-moe", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `moonshine-base` model.
@@ -369,18 +407,22 @@ extension CactusLanguageModel {
     /// - Parameters:
     ///   - quantization: The quantization format of the model.
     ///   - pro: The pro version configuration for the model.
+    ///   - version: The library version of the model.
     public static func moonshineBase(
       quantization: Quantization = .int4,
-      pro: Pro? = nil
+      pro: Pro? = nil,
+      version: Version = .v1_9
     ) -> Self {
-      Self(slug: "moonshine-base", quantization: quantization, version: .v1_8, pro: pro)
+      Self(slug: "moonshine-base", quantization: quantization, version: version, pro: pro)
     }
 
     /// Creates a download request for the `silero-vad` model.
     ///
-    /// - Parameter quantization: The quantization format of the model.
-    public static func sileroVad(quantization: Quantization = .int4) -> Self {
-      Self(slug: "silero-vad", quantization: quantization, version: .v1_7)
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func sileroVad(quantization: Quantization = .int4, version: Version = .v1_7) -> Self {
+      Self(slug: "silero-vad", quantization: quantization, version: version)
     }
   }
 }

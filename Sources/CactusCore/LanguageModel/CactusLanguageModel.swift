@@ -321,7 +321,9 @@ extension CactusLanguageModel {
     let end = range?.upperBound ?? tokens.count
     let responseBufferSize = 256
 
-    let (result, responseData) = try withFFIBuffer(bufferSize: responseBufferSize) { responseBuffer, responseBufferSize in
+    let (result, responseData) = try withFFIBuffer(bufferSize: responseBufferSize) {
+      responseBuffer,
+      responseBufferSize in
       cactus_score_window(
         self.rawModelPointer,
         tokens.baseAddress,
@@ -719,7 +721,9 @@ extension CactusLanguageModel {
     let ffiMessages = messages.map { FFIMessage(message: $0) }
     var streamedResponse = ""
 
-    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) { buffer, responseBufferSize in
+    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) {
+      buffer,
+      responseBufferSize in
       try withTokenCallback { token, tokenID in
         streamedResponse += token
         onToken(token, tokenID)
@@ -776,7 +780,7 @@ extension CactusLanguageModel {
 
 extension CactusLanguageModel.ChatCompletion {
   /// Options for generating a ``CactusLanguageModel/ChatCompletion``.
-  public struct Options: Hashable, Sendable, Codable {
+  public struct Options: Hashable, Sendable {
     /// A default array of common stop sequences.
     public static let defaultStopSequences = ["<|im_end|>", "<end_of_turn>"]
 
@@ -810,6 +814,15 @@ extension CactusLanguageModel.ChatCompletion {
     /// Whether telemetry is enabled.
     public var isTelemetryEnabled: Bool
 
+    /// Whether to automatically handoff to cloud when confidence is below threshold.
+    public var autoHandoff: Bool
+
+    /// Timeout duration for cloud handoff.
+    public var cloudTimeoutDuration: CactusDuration
+
+    /// Whether to include images when handing off to cloud.
+    public var handoffWithImages: Bool
+
     /// Creates options for generating chat completions.
     ///
     /// - Parameters:
@@ -823,6 +836,9 @@ extension CactusLanguageModel.ChatCompletion {
     ///   - toolRagTopK: Number of top tools to keep after tool-RAG selection.
     ///   - includeStopSequences: Whether stop sequences are kept in final output.
     ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
+    ///   - autoHandoff: Whether to automatically handoff to cloud when confidence is below threshold.
+    ///   - cloudTimeoutDuration: Timeout duration for cloud handoff.
+    ///   - handoffWithImages: Whether to include images when handing off to cloud.
     public init(
       maxTokens: Int = 200,
       temperature: Float = 0.6,
@@ -833,7 +849,10 @@ extension CactusLanguageModel.ChatCompletion {
       confidenceThreshold: Float = 0.7,
       toolRagTopK: Int = 2,
       includeStopSequences: Bool = false,
-      isTelemetryEnabled: Bool = false
+      isTelemetryEnabled: Bool = false,
+      autoHandoff: Bool = true,
+      cloudTimeoutDuration: CactusDuration = .milliseconds(15000),
+      handoffWithImages: Bool = true
     ) {
       self.maxTokens = maxTokens
       self.temperature = temperature
@@ -845,6 +864,9 @@ extension CactusLanguageModel.ChatCompletion {
       self.toolRagTopK = toolRagTopK
       self.includeStopSequences = includeStopSequences
       self.isTelemetryEnabled = isTelemetryEnabled
+      self.autoHandoff = autoHandoff
+      self.cloudTimeoutDuration = cloudTimeoutDuration
+      self.handoffWithImages = handoffWithImages
     }
 
     /// Creates options for generating chat completions.
@@ -858,6 +880,9 @@ extension CactusLanguageModel.ChatCompletion {
     ///   - toolRagTopK: Number of top tools to keep after tool-RAG selection.
     ///   - includeStopSequences: Whether stop sequences are kept in final output.
     ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
+    ///   - autoHandoff: Whether to automatically handoff to cloud when confidence is below threshold.
+    ///   - cloudTimeoutDuration: Timeout duration for cloud handoff.
+    ///   - handoffWithImages: Whether to include images when handing off to cloud.
     public init(
       maxTokens: Int = 200,
       modelType: CactusLanguageModel.ModelType,
@@ -866,7 +891,10 @@ extension CactusLanguageModel.ChatCompletion {
       confidenceThreshold: Float = 0.7,
       toolRagTopK: Int = 2,
       includeStopSequences: Bool = false,
-      isTelemetryEnabled: Bool = false
+      isTelemetryEnabled: Bool = false,
+      autoHandoff: Bool = true,
+      cloudTimeoutDuration: CactusDuration = .milliseconds(15000),
+      handoffWithImages: Bool = true
     ) {
       self.maxTokens = maxTokens
       self.temperature = modelType.defaultTemperature
@@ -878,6 +906,9 @@ extension CactusLanguageModel.ChatCompletion {
       self.toolRagTopK = toolRagTopK
       self.includeStopSequences = includeStopSequences
       self.isTelemetryEnabled = isTelemetryEnabled
+      self.autoHandoff = autoHandoff
+      self.cloudTimeoutDuration = cloudTimeoutDuration
+      self.handoffWithImages = handoffWithImages
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -891,7 +922,53 @@ extension CactusLanguageModel.ChatCompletion {
       case toolRagTopK = "tool_rag_top_k"
       case includeStopSequences = "include_stop_sequences"
       case isTelemetryEnabled = "telemetry_enabled"
+      case autoHandoff = "auto_handoff"
+      case cloudTimeoutDuration = "cloud_timeout_ms"
+      case handoffWithImages = "handoff_with_images"
     }
+  }
+}
+
+extension CactusLanguageModel.ChatCompletion.Options: Encodable {
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(self.maxTokens, forKey: .maxTokens)
+    try container.encode(self.temperature, forKey: .temperature)
+    try container.encode(self.topP, forKey: .topP)
+    try container.encode(self.topK, forKey: .topK)
+    try container.encode(self.stopSequences, forKey: .stopSequences)
+    try container.encode(self.forceFunctions, forKey: .forceFunctions)
+    try container.encode(self.confidenceThreshold, forKey: .confidenceThreshold)
+    try container.encode(self.toolRagTopK, forKey: .toolRagTopK)
+    try container.encode(self.includeStopSequences, forKey: .includeStopSequences)
+    try container.encode(self.isTelemetryEnabled, forKey: .isTelemetryEnabled)
+    try container.encode(self.autoHandoff, forKey: .autoHandoff)
+    try container.encode(
+      self.cloudTimeoutDuration.secondsDouble * 1000,
+      forKey: .cloudTimeoutDuration
+    )
+    try container.encode(self.handoffWithImages, forKey: .handoffWithImages)
+  }
+}
+
+extension CactusLanguageModel.ChatCompletion.Options: Decodable {
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.maxTokens = try container.decode(Int.self, forKey: .maxTokens)
+    self.temperature = try container.decode(Float.self, forKey: .temperature)
+    self.topP = try container.decode(Float.self, forKey: .topP)
+    self.topK = try container.decode(Int.self, forKey: .topK)
+    self.stopSequences = try container.decode([String].self, forKey: .stopSequences)
+    self.forceFunctions = try container.decode(Bool.self, forKey: .forceFunctions)
+    self.confidenceThreshold = try container.decode(Float.self, forKey: .confidenceThreshold)
+    self.toolRagTopK = try container.decode(Int.self, forKey: .toolRagTopK)
+    self.includeStopSequences = try container.decode(Bool.self, forKey: .includeStopSequences)
+    self.isTelemetryEnabled = try container.decode(Bool.self, forKey: .isTelemetryEnabled)
+    self.autoHandoff = try container.decode(Bool.self, forKey: .autoHandoff)
+    self.cloudTimeoutDuration = .milliseconds(
+      try container.decode(Double.self, forKey: .cloudTimeoutDuration)
+    )
+    self.handoffWithImages = try container.decode(Bool.self, forKey: .handoffWithImages)
   }
 }
 
@@ -1141,7 +1218,9 @@ extension CactusLanguageModel {
       throw TranscriptionError.bufferSizeTooSmall
     }
 
-    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) { buffer, responseBufferSize in
+    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) {
+      buffer,
+      responseBufferSize in
       try withTokenCallback(onToken) { userData, onToken in
         switch request {
         case .audio(let audio):
@@ -1497,7 +1576,9 @@ extension CactusLanguageModel {
 
     let optionsJSON = try options.map { try String(decoding: ffiEncoder.encode($0), as: UTF8.self) }
 
-    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) { responseBuffer, responseBufferSize in
+    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) {
+      responseBuffer,
+      responseBufferSize in
       switch request {
       case .audio(let audio):
         cactus_vad(
@@ -1695,7 +1776,9 @@ extension CactusLanguageModel {
     let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else { throw RAGQueryError.bufferSizeTooSmall }
 
-    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) { buffer, responseBufferSize in
+    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) {
+      buffer,
+      responseBufferSize in
       cactus_rag_query(
         self.rawModelPointer,
         query,
