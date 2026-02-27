@@ -13,13 +13,13 @@ public struct CactusVAD: Hashable, Sendable {
     public let endSampleIndex: Int
 
     /// Segment start duration.
-    public let startDuration: CactusDuration
+    public let startDuration: Duration
 
     /// Segment end duration.
-    public let endDuration: CactusDuration
+    public let endDuration: Duration
 
     /// Segment duration.
-    public var duration: CactusDuration {
+    public var duration: Duration {
       self.endDuration - self.startDuration
     }
 
@@ -68,7 +68,7 @@ public struct CactusVAD: Hashable, Sendable {
   public let ramUsageMb: Double
 
   /// The total processing duration.
-  public let totalDuration: CactusDuration
+  public let totalDuration: Duration
 
   /// Sampling rate in Hz used to interpret segment sample-index timestamps.
   public let samplingRate: Int
@@ -88,7 +88,7 @@ public struct CactusVAD: Hashable, Sendable {
   public init(
     segments: [Segment],
     ramUsageMb: Double,
-    totalDuration: CactusDuration,
+    totalDuration: Duration,
     samplingRate: Int
   ) {
     self.segments = segments
@@ -106,7 +106,7 @@ public struct CactusVAD: Hashable, Sendable {
   public init(
     segments: [Segment],
     ramUsageMb: Double,
-    totalDuration: CactusDuration
+    totalDuration: Duration
   ) {
     self.init(
       segments: segments,

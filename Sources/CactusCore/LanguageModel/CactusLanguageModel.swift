@@ -818,7 +818,7 @@ extension CactusLanguageModel.ChatCompletion {
     public var autoHandoff: Bool
 
     /// Timeout duration for cloud handoff.
-    public var cloudTimeoutDuration: CactusDuration
+    public var cloudTimeoutDuration: Duration
 
     /// Whether to include images when handing off to cloud.
     public var handoffWithImages: Bool
@@ -851,7 +851,7 @@ extension CactusLanguageModel.ChatCompletion {
       includeStopSequences: Bool = false,
       isTelemetryEnabled: Bool = false,
       autoHandoff: Bool = true,
-      cloudTimeoutDuration: CactusDuration = .milliseconds(15000),
+      cloudTimeoutDuration: Duration = .milliseconds(15000),
       handoffWithImages: Bool = true
     ) {
       self.maxTokens = maxTokens
@@ -893,7 +893,7 @@ extension CactusLanguageModel.ChatCompletion {
       includeStopSequences: Bool = false,
       isTelemetryEnabled: Bool = false,
       autoHandoff: Bool = true,
-      cloudTimeoutDuration: CactusDuration = .milliseconds(15000),
+      cloudTimeoutDuration: Duration = .milliseconds(15000),
       handoffWithImages: Bool = true
     ) {
       self.maxTokens = maxTokens
@@ -1070,16 +1070,16 @@ extension CactusLanguageModel {
     /// Whether this transcription was handed off to cloud inference.
     public let didHandoffToCloud: Bool
 
-    private let timeToFirstToken: CactusDuration
-    private let totalTime: CactusDuration
+    private let timeToFirstToken: Duration
+    private let totalTime: Duration
 
     /// The amount of time to generate the first token.
-    public var durationToFirstToken: CactusDuration {
+    public var durationToFirstToken: Duration {
       self.timeToFirstToken
     }
 
     /// The total generation time.
-    public var totalDuration: CactusDuration {
+    public var totalDuration: Duration {
       self.totalTime
     }
 
@@ -1430,10 +1430,10 @@ extension CactusLanguageModel {
     /// The current process RAM usage in MB.
     public let ramUsageMb: Double
 
-    private let totalDurationValue: CactusDuration
+    private let totalDurationValue: Duration
 
     /// The total processing duration.
-    public var totalDuration: CactusDuration {
+    public var totalDuration: Duration {
       self.totalDurationValue
     }
 
@@ -1452,16 +1452,16 @@ extension CactusLanguageModel {
     public var negThreshold: Float?
 
     /// The minimum speech duration.
-    public var minSpeechDuration: CactusDuration?
+    public var minSpeechDuration: Duration?
 
     /// The maximum speech duration.
-    public var maxSpeechDuration: CactusDuration?
+    public var maxSpeechDuration: Duration?
 
     /// The minimum silence duration.
-    public var minSilenceDuration: CactusDuration?
+    public var minSilenceDuration: Duration?
 
     /// The amount of padding duration to add around speech segments.
-    public var speechPadDuration: CactusDuration?
+    public var speechPadDuration: Duration?
 
     /// The VAD window size in samples.
     public var windowSizeSamples: Int?
@@ -1479,10 +1479,10 @@ extension CactusLanguageModel {
     public init(
       threshold: Float? = nil,
       negThreshold: Float? = nil,
-      minSpeechDuration: CactusDuration? = nil,
-      maxSpeechDuration: CactusDuration? = nil,
-      minSilenceDuration: CactusDuration? = nil,
-      speechPadDuration: CactusDuration? = nil,
+      minSpeechDuration: Duration? = nil,
+      maxSpeechDuration: Duration? = nil,
+      minSilenceDuration: Duration? = nil,
+      speechPadDuration: Duration? = nil,
       windowSizeSamples: Int? = nil,
       minSilenceAtMaxSpeech: Int? = nil,
       useMaxPossSilAtMaxSpeech: Bool? = nil,
@@ -1653,16 +1653,16 @@ extension CactusLanguageModel.VADOptions: Decodable {
     self.negThreshold = try container.decodeIfPresent(Float.self, forKey: .negThreshold)
     self.minSpeechDuration =
       try container.decodeIfPresent(Int.self, forKey: .minSpeechDuration)
-      .map(CactusDuration.milliseconds)
+      .map(Duration.milliseconds)
     self.maxSpeechDuration =
       try container.decodeIfPresent(Double.self, forKey: .maxSpeechDuration)
-      .map(CactusDuration.seconds)
+      .map(Duration.seconds)
     self.minSilenceDuration =
       try container.decodeIfPresent(Int.self, forKey: .minSilenceDuration)
-      .map(CactusDuration.milliseconds)
+      .map(Duration.milliseconds)
     self.speechPadDuration =
       try container.decodeIfPresent(Int.self, forKey: .speechPadDuration)
-      .map(CactusDuration.milliseconds)
+      .map(Duration.milliseconds)
     self.windowSizeSamples = try container.decodeIfPresent(Int.self, forKey: .windowSizeSamples)
     self.minSilenceAtMaxSpeech =
       try container.decodeIfPresent(Int.self, forKey: .minSilenceAtMaxSpeech)

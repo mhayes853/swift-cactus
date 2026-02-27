@@ -56,10 +56,10 @@ public struct CactusCompletionEntry: Hashable, Sendable, Identifiable {
     public var ramUsageMb: Double
 
     /// The time to first token.
-    public var durationToFirstToken: CactusDuration
+    public var durationToFirstToken: Duration
 
     /// The total generation duration.
-    public var totalDuration: CactusDuration
+    public var totalDuration: Duration
 
     /// Creates generation metrics.
     public init(
@@ -70,8 +70,8 @@ public struct CactusCompletionEntry: Hashable, Sendable, Identifiable {
       prefillTps: Double,
       decodeTps: Double,
       ramUsageMb: Double,
-      durationToFirstToken: CactusDuration,
-      totalDuration: CactusDuration
+      durationToFirstToken: Duration,
+      totalDuration: Duration
     ) {
       self.prefillTokens = prefillTokens
       self.decodeTokens = decodeTokens

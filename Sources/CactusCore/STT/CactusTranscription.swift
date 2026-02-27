@@ -32,10 +32,10 @@ public struct CactusTranscription: Hashable, Sendable, Identifiable {
   public let didHandoffToCloud: Bool
 
   /// The amount of time to generate the first token.
-  public let durationToFirstToken: CactusDuration
+  public let durationToFirstToken: Duration
 
   /// The total generation time.
-  public let totalDuration: CactusDuration
+  public let totalDuration: Duration
 
   /// The parsed transcription content.
   public let content: Content
@@ -65,8 +65,8 @@ public struct CactusTranscription: Hashable, Sendable, Identifiable {
     decodeTps: Double,
     ramUsageMb: Double,
     didHandoffToCloud: Bool,
-    durationToFirstToken: CactusDuration,
-    totalDuration: CactusDuration,
+    durationToFirstToken: Duration,
+    totalDuration: Duration,
     content: Content
   ) {
     self.id = id
@@ -109,8 +109,8 @@ public struct CactusTranscription: Hashable, Sendable, Identifiable {
     decodeTps: Double,
     ramUsageMb: Double,
     didHandoffToCloud: Bool,
-    durationToFirstToken: CactusDuration,
-    totalDuration: CactusDuration
+    durationToFirstToken: Duration,
+    totalDuration: Duration
   ) {
     self.id = id
     self.prefillTokens = prefillTokens
