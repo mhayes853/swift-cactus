@@ -574,16 +574,8 @@ extension CactusAgentSession {
   private func chatOptions(
     from request: CactusUserMessage
   ) -> CactusLanguageModel.Completion.Options {
-    let maxTokens: Int
-    switch request.maxTokens {
-    case .limit(let limit):
-      maxTokens = limit
-    case .engineBehavior:
-      maxTokens = 512
-    }
-
     return CactusLanguageModel.Completion.Options(
-      maxTokens: maxTokens,
+      maxTokens: request.maxTokens,
       temperature: request.temperature,
       topP: request.topP,
       topK: request.topK,

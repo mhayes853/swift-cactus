@@ -14,7 +14,7 @@ extension CactusUserMessage {
   ) {
     self.init(
       content: content,
-      maxTokens: .limit(options.maxTokens),
+      maxTokens: options.maxTokens,
       temperature: options.temperature,
       topP: options.topP,
       topK: options.topK,
@@ -40,7 +40,7 @@ extension CactusUserMessage {
   ) throws {
     try self.init(
       content.promptContent,
-      maxTokens: .limit(options.maxTokens),
+      maxTokens: options.maxTokens,
       temperature: options.temperature,
       topP: options.topP,
       topK: options.topK,

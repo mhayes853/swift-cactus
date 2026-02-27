@@ -1,6 +1,6 @@
 [
   {
-    "id" : "9DD2FB40-92CF-4BC6-82F2-277867B7C763",
+    "id" : "D3AC751E-1F0C-4323-8BA5-129FFC72AE83",
     "message" : {
       "content" : "Say hello in one concise sentence.",
       "images" : [
@@ -10,9 +10,9 @@
     }
   },
   {
-    "id" : "30922CB4-26AF-4AA1-A9DA-58BC7F98F8F4",
+    "id" : "946DD732-F9C1-46E6-A70B-07F2AFF6BDD0",
     "message" : {
-      "content" : "The English language is a beautiful and versatile language. I am curious to learn more about your capabilities! What are you offering?",
+      "content" : "The English language is a beautiful and versatile language. Please let me know if you have any questions in your first message. I am ready to learn!",
       "role" : "assistant"
     }
   }

@@ -528,7 +528,7 @@ struct `CactusAgentSession tests` {
     func `Stop Stops Ongoing Inference Stream`() async throws {
       let session = try await Self.makeSession()
       let stream = try session.stream(
-        to: try CactusUserMessage(maxTokens: .limit(1024)) {
+        to: try CactusUserMessage(maxTokens: 1024) {
           "Write a long, detailed paragraph about cacti and succulents."
         }
       )
@@ -547,7 +547,7 @@ struct `CactusAgentSession tests` {
     func `Stop Sets Is Responding To False`() async throws {
       let session = try await Self.makeSession()
       let stream = try session.stream(
-        to: try CactusUserMessage(maxTokens: .limit(1024)) {
+        to: try CactusUserMessage(maxTokens: 1024) {
           "Write a long, detailed paragraph about cacti and succulents."
         }
       )
@@ -573,7 +573,7 @@ struct `CactusAgentSession tests` {
 
       let responseTask = Task {
         try await session.respond(
-          to: try CactusUserMessage(maxTokens: .limit(1024), forceFunctions: true) {
+          to: try CactusUserMessage(maxTokens: 1024, forceFunctions: true) {
             "Use the slow_echo tool and return its output exactly."
           }
         )
