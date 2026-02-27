@@ -1,16 +1,16 @@
 {
   "cloud_handoff" : false,
-  "confidence" : 0.8525,
-  "decode_tokens" : 112,
-  "decode_tps" : 102.67,
+  "confidence" : 0.8316,
+  "decode_tokens" : 114,
+  "decode_tps" : 109.89,
   "function_calls" : [
 
   ],
   "prefill_tokens" : 314,
-  "prefill_tps" : 325.68,
-  "ram_usage_mb" : 1162.6,
-  "response" : "The image depicts a young man wearing a long-sleeved shirt with a button-down collar. He is holding an open book and smiling at the camera, giving off an inviting and friendly vibe. The man's attire suggests he might be in his early 20s, as indicated by his youthful appearance and the casual yet neat style of his shirt. His expression is warm and approachable, which could imply that he is either excited about the content or looking for some light-hearted entertainment during what appears to be a study session or exam preparation.",
-  "time_to_first_token_ms" : 964.14,
-  "total_time_ms" : 2045.27,
-  "total_tokens" : 426
+  "prefill_tps" : 328.17,
+  "ram_usage_mb" : 1146.82,
+  "response" : "The young man in the image is likely to be a student preparing for his final exam. He's wearing a college-style shirt and has a backpack slash over his shoulder, indicating he might be carrying some materials or supplies for the exam. His attire suggests he's dressed appropriately for an academic setting, and the backpack implies that he may have additional materials or equipment needed for his studies. The overall appearance of the student, with his neatly pressed shirt and backpack, along with the textbook in front of him, all point towards him being an academic preparing for exams.",
+  "time_to_first_token_ms" : 956.82,
+  "total_time_ms" : 1985.11,
+  "total_tokens" : 428
 }

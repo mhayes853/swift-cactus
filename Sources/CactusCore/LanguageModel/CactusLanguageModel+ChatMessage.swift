@@ -41,11 +41,6 @@ extension CactusLanguageModel {
     /// The ``MessageRole`` of the message.
     public var role: MessageRole
 
-    /// Whether this message is a tool/function output message.
-    public var isToolOrFunctionOutput: Bool {
-      self.role == .tool || self.role == .function
-    }
-
     /// The message content.
     public var content: String
 

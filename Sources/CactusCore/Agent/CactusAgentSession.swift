@@ -317,7 +317,7 @@ extension CactusAgentSession {
 
     let collector = ErrorCollector()
 
-    let results = await withTaskGroup(
+    let results = try await withThrowingTaskGroup(
       of: (Int, String, CactusPromptContent.MessageComponents)?.self,
       returning: [(Int, String, CactusPromptContent.MessageComponents)].self
     ) { group in
@@ -327,6 +327,8 @@ extension CactusAgentSession {
             let content = try await functionCall.invoke()
             let components = try content.messageComponents()
             return (index, functionCall.function.name, components)
+          } catch is CancellationError {
+            throw CancellationError()
           } catch {
             await collector.append(
               index: index,
@@ -341,7 +343,7 @@ extension CactusAgentSession {
       }
 
       var results = [(Int, String, CactusPromptContent.MessageComponents)]()
-      for await result in group {
+      for try await result in group {
         if let result {
           results.append(result)
         }

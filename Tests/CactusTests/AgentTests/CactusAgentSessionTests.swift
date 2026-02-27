@@ -834,5 +834,75 @@ struct `CactusAgentSession tests` {
       return value
     }
 
+    @Test
+    func `Execute Parallel Tool Calls Cancellation Propagates To All Running Tools`() async throws {
+      let (stream, continuation) = AsyncStream<Void>.makeStream()
+      var iter = stream.makeAsyncIterator()
+
+      let function = CancellationTrackingFunction(continuation: continuation)
+
+      let functionCalls = [
+        CactusAgentSession.FunctionCall(
+          function: function,
+          arguments: ["id": .string("tool1"), "delayMs": .integer(500)]
+        )
+      ]
+
+      let innerTask = Task {
+        do {
+          _ = try await CactusAgentSession.executeParallelFunctionCalls(functionCalls: functionCalls)
+        } catch is CancellationError {
+          let didCancel = await function.didCancel
+          expectNoDifference(didCancel, true)
+          throw CancellationError()
+        }
+      }
+
+      await iter.next()
+      innerTask.cancel()
+
+      await #expect(throws: CancellationError.self) {
+        try await innerTask.value
+      }
+    }
+
+    actor CancellationTrackingFunction: CactusFunction, Sendable {
+      private let continuation: AsyncStream<Void>.Continuation?
+
+      typealias Output = String
+
+      var didCancel = false
+
+      @JSONSchema
+      struct Input: Codable, Sendable {
+        let id: String
+        let delayMs: Int
+      }
+
+      let name = "cancellation_tracking"
+      let description = "Tracks cancellation"
+
+      init(continuation: AsyncStream<Void>.Continuation?) {
+        self.continuation = continuation
+      }
+
+      func invoke(input: sending Input) async throws -> sending String {
+        continuation?.yield()
+        do {
+          try await Task.sleep(nanoseconds: UInt64(input.delayMs) * 1_000_000)
+        } catch is CancellationError {
+          self.didCancel = true
+          throw CancellationError()
+        }
+        return "completed \(input.id)"
+      }
+    }
+
+  }
+}
+
+extension CactusLanguageModel.ChatMessage {
+  fileprivate var isToolOrFunctionOutput: Bool {
+    self.role == .tool || self.role == .function
   }
 }

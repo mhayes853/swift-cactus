@@ -2,15 +2,15 @@
   "slug" : "whisper-small",
   "transcription" : {
     "cloud_handoff" : false,
-    "confidence" : 0.8787,
+    "confidence" : 0.8811,
     "decode_tokens" : 30,
-    "decode_tps" : 77.25,
+    "decode_tps" : 79.71,
     "prefill_tokens" : 4,
-    "prefill_tps" : 1.94,
-    "ram_usage_mb" : 393.58,
-    "response" : "The power of a god cannot be overcome! The voice, Alvix... How dare you disobey me? But that's impossible.",
-    "time_to_first_token_ms" : 2059.8,
-    "total_time_ms" : 2435.22,
+    "prefill_tps" : 1.84,
+    "ram_usage_mb" : 393.97,
+    "response" : "The power of a god cannot be overcome! The voice, Alvis! How dare you diso baby? But that... That's impossible.",
+    "time_to_first_token_ms" : 2175.28,
+    "total_time_ms" : 2539.11,
     "total_tokens" : 34
   }
 }

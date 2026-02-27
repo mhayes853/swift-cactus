@@ -1,8 +1,8 @@
 {
-  "confidence" : 0.8909,
-  "decodeTokens" : 30,
-  "parsedContent" : "The power of a god cannot be overcome. That voice, Abix how dare you disobey me? But that...that´s impossible",
+  "confidence" : 0.8837,
+  "decodeTokens" : 24,
+  "parsedContent" : "The power of a god cannot be overcome! The voice, Abix? How dare you disobey me?!",
   "prefillTokens" : 4,
-  "streamedText" : " The power of a god cannot be overcome. That voice, Abix how dare you disobey me? But that...that´s impossible<|startoftranscript|>",
-  "totalTokens" : 34
+  "streamedText" : " The power of a god cannot be overcome! The voice, Abix? How dare you disobey me?!<|startoftranscript|>",
+  "totalTokens" : 28
 }

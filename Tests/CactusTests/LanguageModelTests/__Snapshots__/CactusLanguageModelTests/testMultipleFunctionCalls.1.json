@@ -1,13 +1,12 @@
 {
   "cloud_handoff" : false,
-  "confidence" : 0.9827,
-  "decode_tokens" : 54,
-  "decode_tps" : 46.9,
+  "confidence" : 0.9974,
+  "decode_tokens" : 41,
+  "decode_tps" : 55.05,
   "function_calls" : [
     {
       "arguments" : {
-        "location" : "Berkeley",
-        "units" : ""
+        "location" : "Berkeley"
       },
       "name" : "get_weather"
     },
@@ -18,11 +17,11 @@
       "name" : "get_population"
     }
   ],
-  "prefill_tokens" : 234,
-  "prefill_tps" : 302.34,
-  "ram_usage_mb" : 1263.63,
-  "response" : "\n<|endoftext|># Weather and Population in Berkeley\n\n",
-  "time_to_first_token_ms" : 773.97,
-  "total_time_ms" : 1904.14,
-  "total_tokens" : 288
+  "prefill_tokens" : 236,
+  "prefill_tps" : 451.65,
+  "ram_usage_mb" : 1218.77,
+  "response" : "\n",
+  "time_to_first_token_ms" : 522.53,
+  "total_time_ms" : 1249.1,
+  "total_tokens" : 277
 }
