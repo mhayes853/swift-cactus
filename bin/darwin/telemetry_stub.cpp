@@ -8,6 +8,8 @@ void setEnabled(bool) {}
 void setCloudDisabled(bool) {}
 void setTelemetryEnvironment(const char*, const char*) {}
 void setCloudKey(const char*) {}
+void cacheCloudApiKey(const char*) {}
+void* loadCachedCloudApiKey() { return nullptr; }
 void recordInit(const char*, bool, double, const char*) {}
 void recordCompletion(const char*, const CompletionMetrics&) {}
 void recordCompletion(const char*, bool, double, double, double, int, const char*) {}

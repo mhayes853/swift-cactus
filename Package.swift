@@ -6,7 +6,7 @@ import PackageDescription
 
 let package = Package(
   name: "swift-cactus",
-  platforms: [.iOS(.v13), .macOS(.v11), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
+  platforms: [.iOS(.v16), .macOS(.v13), .tvOS(.v16), .watchOS(.v9), .macCatalyst(.v16)],
   products: [
     .library(name: "CactusCore", targets: ["CactusCore"]),
     .library(name: "Cactus", targets: ["Cactus"]),
