@@ -157,6 +157,27 @@ struct `CactusSTTSession tests` {
       try await session.transcribe(request: request)
     }
   }
+
+  #if canImport(AVFoundation)
+    @Test
+    func `Moonshine Buffer Transcription Snapshot`() async throws {
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .moonshineBase())
+      let session = try CactusSTTSession(from: modelURL)
+      let pcmBuffer = try testAudioPCMBuffer()
+      let content = try CactusTranscription.Request.Content.pcm(pcmBuffer)
+      let request = CactusTranscription.Request(prompt: .default, content: content)
+
+      let transcription = try await session.transcribe(request: request)
+
+      withKnownIssue {
+        assertSnapshot(
+          of: TranscriptionSnapshot(transcription: transcription),
+          as: .json,
+          record: true
+        )
+      }
+    }
+  #endif
 }
 
 private struct TranscriptionSnapshot: Codable {
@@ -193,7 +214,7 @@ private struct StreamTranscriptionSnapshot: Codable {
   }
 }
 
-private let audioPrompt = CactusSTTPrompt(language: .english, includeTimestamps: false)
+private let audioPrompt = CactusSTTPrompt.whisper(language: .english, includeTimestamps: false)
 private let testAudioURL = Bundle.module.url(forResource: "test", withExtension: "wav")!
 private let missingAudioURL = FileManager.default.temporaryDirectory
   .appendingPathComponent("missing-audio-\(UUID().uuidString)")

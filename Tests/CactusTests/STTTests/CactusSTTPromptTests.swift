@@ -6,14 +6,22 @@ import Testing
 @Suite
 struct CactusSTTPromptTests {
   @Test
-  func `Prompt With Timestamps`() {
-    let prompt = CactusSTTPrompt(language: .english, includeTimestamps: true)
+  func `Default Prompt Returns Empty String`() {
+    let prompt = CactusSTTPrompt.default
+    expectNoDifference(prompt.description, "")
+  }
+
+  @Test
+  func `Whisper Prompt With Timestamps`() {
+    let whisper = CactusSTTPrompt.Whisper(language: .english, includeTimestamps: true)
+    let prompt = CactusSTTPrompt.whisper(whisper)
     expectNoDifference(prompt.description, "<|startoftranscript|><|en|><|transcribe|>")
   }
 
   @Test
-  func `Prompt Without Timestamps`() {
-    let prompt = CactusSTTPrompt(language: .french, includeTimestamps: false)
+  func `Whisper Prompt Without Timestamps`() {
+    let whisper = CactusSTTPrompt.Whisper(language: .french, includeTimestamps: false)
+    let prompt = CactusSTTPrompt.whisper(whisper)
     expectNoDifference(
       prompt.description,
       "<|startoftranscript|><|fr|><|transcribe|><|notimestamps|>"
@@ -21,78 +29,80 @@ struct CactusSTTPromptTests {
   }
 
   @Test
-  func `Language Getter Extracts Correct Code`() {
+  func `Whisper Language Getter Extracts Correct Code`() {
     let languages: [CactusSTTLanguage] = [
       .english, .french, .german, .spanish, .chinese, .japanese, .arabic
     ]
     for language in languages {
-      let prompt = CactusSTTPrompt(language: language, includeTimestamps: true)
-      expectNoDifference(prompt.language, language, "Failed for \(language)")
+      let whisper = CactusSTTPrompt.Whisper(language: language, includeTimestamps: true)
+      expectNoDifference(whisper.language, language, "Failed for \(language)")
     }
   }
 
   @Test
-  func `Language Setter Updates Prompt`() {
-    var prompt = CactusSTTPrompt(language: .english, includeTimestamps: true)
-    prompt.language = .french
-    expectNoDifference(prompt.language, .french)
-    expectNoDifference(prompt.description, "<|startoftranscript|><|fr|><|transcribe|>")
+  func `Whisper Language Setter Updates Prompt`() {
+    var whisper = CactusSTTPrompt.Whisper(language: .english, includeTimestamps: true)
+    whisper.language = .french
+    expectNoDifference(whisper.language, .french)
+    expectNoDifference(whisper.description, "<|startoftranscript|><|fr|><|transcribe|>")
   }
 
   @Test
-  func `Language Same Value Is No-Op`() {
-    var prompt = CactusSTTPrompt(language: .english, includeTimestamps: true)
-    let originalRawValue = prompt.description
-    prompt.language = .english
-    expectNoDifference(prompt.description, originalRawValue)
-    expectNoDifference(prompt.language, .english)
+  func `Whisper Language Same Value Is No-Op`() {
+    var whisper = CactusSTTPrompt.Whisper(language: .english, includeTimestamps: true)
+    let originalRawValue = whisper.description
+    whisper.language = .english
+    expectNoDifference(whisper.description, originalRawValue)
+    expectNoDifference(whisper.language, .english)
   }
 
   @Test
-  func `Language Change Preserves Timestamps`() {
-    var prompt = CactusSTTPrompt(language: .english, includeTimestamps: true)
-    prompt.language = .french
-    expectNoDifference(prompt.description, "<|startoftranscript|><|fr|><|transcribe|>")
-    expectNoDifference(prompt.includeTimestamps, true)
+  func `Whisper Language Change Preserves Timestamps`() {
+    var whisper = CactusSTTPrompt.Whisper(language: .english, includeTimestamps: true)
+    whisper.language = .french
+    expectNoDifference(whisper.description, "<|startoftranscript|><|fr|><|transcribe|>")
+    expectNoDifference(whisper.includeTimestamps, true)
   }
 
   @Test
-  func `IncludeTimestamps True To True Is No-Op`() {
-    var prompt = CactusSTTPrompt(language: .english, includeTimestamps: true)
-    let originalRawValue = prompt.description
-    prompt.includeTimestamps = true
-    expectNoDifference(prompt.description, originalRawValue)
-    expectNoDifference(prompt.includeTimestamps, true)
+  func `Whisper IncludeTimestamps True To True Is No-Op`() {
+    var whisper = CactusSTTPrompt.Whisper(language: .english, includeTimestamps: true)
+    let originalRawValue = whisper.description
+    whisper.includeTimestamps = true
+    expectNoDifference(whisper.description, originalRawValue)
+    expectNoDifference(whisper.includeTimestamps, true)
   }
 
   @Test
-  func `IncludeTimestamps True To False Removes Timestamps`() {
-    var prompt = CactusSTTPrompt(language: .english, includeTimestamps: true)
-    prompt.includeTimestamps = false
+  func `Whisper IncludeTimestamps True To False Removes Timestamps`() {
+    var whisper = CactusSTTPrompt.Whisper(language: .english, includeTimestamps: true)
+    whisper.includeTimestamps = false
     expectNoDifference(
-      prompt.description,
+      whisper.description,
       "<|startoftranscript|><|en|><|transcribe|><|notimestamps|>"
     )
-    expectNoDifference(prompt.includeTimestamps, false)
+    expectNoDifference(whisper.includeTimestamps, false)
   }
 
   @Test
-  func `IncludeTimestamps False To True Adds Timestamps`() {
-    var prompt = CactusSTTPrompt(language: .english, includeTimestamps: false)
-    prompt.includeTimestamps = true
-    expectNoDifference(prompt.description, "<|startoftranscript|><|en|><|transcribe|>")
-    expectNoDifference(prompt.includeTimestamps, true)
+  func `Whisper IncludeTimestamps False To True Adds Timestamps`() {
+    var whisper = CactusSTTPrompt.Whisper(language: .english, includeTimestamps: false)
+    whisper.includeTimestamps = true
+    expectNoDifference(whisper.description, "<|startoftranscript|><|en|><|transcribe|>")
+    expectNoDifference(whisper.includeTimestamps, true)
   }
 
   @Test
-  func `Description Returns Prompt String`() {
-    let prompt = CactusSTTPrompt(language: .english, includeTimestamps: true)
-    expectNoDifference(prompt.description, prompt.description)
+  func `Whisper Description Returns Prompt String`() {
+    let whisper = CactusSTTPrompt.Whisper(language: .english, includeTimestamps: true)
+    let prompt = CactusSTTPrompt.whisper(whisper)
+    expectNoDifference(prompt.description, whisper.description)
   }
 
   @Test
-  func `Prompt Without Previous Transcript`() {
-    let prompt = CactusSTTPrompt(language: .english, includeTimestamps: true)
+  func `Whisper Without Previous Transcript`() {
+    let whisper = CactusSTTPrompt.Whisper(language: .english, includeTimestamps: true)
+    let prompt = CactusSTTPrompt.whisper(whisper)
     expectNoDifference(
       prompt.description,
       "<|startoftranscript|><|en|><|transcribe|>"
@@ -100,13 +110,13 @@ struct CactusSTTPromptTests {
   }
 
   @Test
-  func `Prompt With fullTranscript Previous Transcript`() {
-    let previousTranscript = CactusTranscription.Content.fullTranscript("Hello world")
-    let prompt = CactusSTTPrompt(
+  func `Whisper With Previous Transcript String`() {
+    let whisper = CactusSTTPrompt.Whisper(
       language: .english,
       includeTimestamps: true,
-      previousTranscript: previousTranscript
+      previousTranscript: "Hello world"
     )
+    let prompt = CactusSTTPrompt.whisper(whisper)
     expectNoDifference(
       prompt.description,
       "<|startofprev|>Hello world<|startoftranscript|><|en|><|transcribe|>"
@@ -114,27 +124,10 @@ struct CactusSTTPromptTests {
   }
 
   @Test
-  func `Prompt With Timestamps Previous Transcript`() {
-    let timestamps = [
-      CactusTranscription.Timestamp(seconds: 0.0, transcript: "Hello"),
-      CactusTranscription.Timestamp(seconds: 1.5, transcript: "world")
-    ]
-    let previousTranscript = CactusTranscription.Content.timestamps(timestamps)
-    let prompt = CactusSTTPrompt(
-      language: .english,
-      includeTimestamps: true,
-      previousTranscript: previousTranscript
-    )
-    expectNoDifference(
-      prompt.description,
-      "<|startofprev|><|0.00|>Hello<|1.50|>world<|startoftranscript|><|en|><|transcribe|>"
-    )
-  }
-
-  @Test
-  func `Setting PreviousTranscript Updates Description`() {
-    var prompt = CactusSTTPrompt(language: .english, includeTimestamps: true)
-    prompt.previousTranscript = .fullTranscript("Test")
+  func `Whisper Setting PreviousTranscript Updates Description`() {
+    var whisper = CactusSTTPrompt.Whisper(language: .english, includeTimestamps: true)
+    whisper.previousTranscript = "Test"
+    let prompt = CactusSTTPrompt.whisper(whisper)
     expectNoDifference(
       prompt.description,
       "<|startofprev|>Test<|startoftranscript|><|en|><|transcribe|>"
@@ -142,13 +135,14 @@ struct CactusSTTPromptTests {
   }
 
   @Test
-  func `Setting PreviousTranscript To Nil Removes Token`() {
-    var prompt = CactusSTTPrompt(
+  func `Whisper Setting PreviousTranscript To Nil Removes Token`() {
+    var whisper = CactusSTTPrompt.Whisper(
       language: .english,
       includeTimestamps: true,
-      previousTranscript: .fullTranscript("Test")
+      previousTranscript: "Test"
     )
-    prompt.previousTranscript = nil
+    whisper.previousTranscript = nil
+    let prompt = CactusSTTPrompt.whisper(whisper)
     expectNoDifference(
       prompt.description,
       "<|startoftranscript|><|en|><|transcribe|>"
@@ -156,94 +150,117 @@ struct CactusSTTPromptTests {
   }
 
   @Test
-  func `Changing PreviousTranscript Preserves Language And Timestamps`() {
-    var prompt = CactusSTTPrompt(
+  func `Whisper Changing PreviousTranscript Preserves Language And Timestamps`() {
+    var whisper = CactusSTTPrompt.Whisper(
       language: .english,
       includeTimestamps: false,
-      previousTranscript: .fullTranscript("First")
+      previousTranscript: "First"
     )
-    prompt.previousTranscript = .fullTranscript("Second")
-    expectNoDifference(prompt.language, .english)
-    expectNoDifference(prompt.includeTimestamps, false)
+    whisper.previousTranscript = "Second"
+    expectNoDifference(whisper.language, .english)
+    expectNoDifference(whisper.includeTimestamps, false)
     expectNoDifference(
-      prompt.description,
+      whisper.description,
       "<|startofprev|>Second<|startoftranscript|><|en|><|transcribe|><|notimestamps|>"
     )
   }
 
   @Test
   func `Is Hashable`() {
-    let prompt1 = CactusSTTPrompt(language: .english, includeTimestamps: true)
-    let prompt2 = CactusSTTPrompt(language: .english, includeTimestamps: true)
-    let prompt3 = CactusSTTPrompt(language: .french, includeTimestamps: true)
+    let whisper1 = CactusSTTPrompt.Whisper(language: .english, includeTimestamps: true)
+    let whisper2 = CactusSTTPrompt.Whisper(language: .english, includeTimestamps: true)
+    let whisper3 = CactusSTTPrompt.Whisper(language: .french, includeTimestamps: true)
+    let prompt1 = CactusSTTPrompt.whisper(whisper1)
+    let prompt2 = CactusSTTPrompt.whisper(whisper2)
+    let prompt3 = CactusSTTPrompt.whisper(whisper3)
     expectNoDifference(prompt1, prompt2)
     #expect(prompt1 != prompt3)
   }
 
   @Test
-  func `Parse Prompt With Startofprev And FullTranscript`() throws {
-    let prompt = try #require(
-      CactusSTTPrompt(
-        description: "<|startofprev|>Hello world<|startoftranscript|><|en|><|transcribe|>"
-      )
-    )
-    expectNoDifference(prompt.language, .english)
-    expectNoDifference(prompt.includeTimestamps, true)
-    expectNoDifference(prompt.previousTranscript, .fullTranscript("Hello world"))
+  func `Default Prompt Is Hashable`() {
+    let prompt1 = CactusSTTPrompt.default
+    let prompt2 = CactusSTTPrompt.default
+    expectNoDifference(prompt1, prompt2)
   }
 
   @Test
-  func `Parse Prompt With Startofprev And Timestamps`() throws {
+  func `Parse Empty Description Returns Default`() {
+    let prompt = CactusSTTPrompt.whisper(prompt: "")
+    #expect(prompt == .default)
+  }
+
+  @Test
+  func `Parse Prompt With Startofprev And Transcript`() throws {
     let prompt = try #require(
-      CactusSTTPrompt(
-        description:
-          "<|startofprev|><|0.00|>Hello<|1.50|>world<|startoftranscript|><|en|><|transcribe|>"
+      CactusSTTPrompt.whisper(
+        prompt: "<|startofprev|>Hello world<|startoftranscript|><|en|><|transcribe|>"
       )
     )
-    expectNoDifference(prompt.language, .english)
-    expectNoDifference(prompt.includeTimestamps, true)
+    guard case .whisper(let whisper) = prompt else {
+      throw TestError("Expected whisper case")
+    }
+    expectNoDifference(whisper.language, .english)
+    expectNoDifference(whisper.includeTimestamps, true)
+    expectNoDifference(whisper.previousTranscript, "Hello world")
+  }
+
+  @Test
+  func `Parse Prompt With Timestamps In Previous Transcript`() throws {
+    let prompt = try #require(
+      CactusSTTPrompt.whisper(
+        prompt: "<|startofprev|><|0.00|>Hello<|1.50|>world<|startoftranscript|><|en|><|transcribe|>"
+      )
+    )
+    guard case .whisper(let whisper) = prompt else {
+      throw TestError("Expected whisper case")
+    }
+    expectNoDifference(whisper.language, .english)
+    expectNoDifference(whisper.includeTimestamps, true)
     expectNoDifference(
-      prompt.previousTranscript,
-      .timestamps([
-        CactusTranscription.Timestamp(seconds: 0.0, transcript: "Hello"),
-        CactusTranscription.Timestamp(seconds: 1.5, transcript: "world")
-      ])
+      whisper.previousTranscript,
+      "<|0.00|>Hello<|1.50|>world"
     )
   }
 
   @Test
   func `Parse Prompt With Startofprev And Notimestamps`() throws {
     let prompt = try #require(
-      CactusSTTPrompt(
-        description:
+      CactusSTTPrompt.whisper(
+        prompt:
           "<|startofprev|>Previous text<|startoftranscript|><|fr|><|transcribe|><|notimestamps|>"
       )
     )
-    expectNoDifference(prompt.language, .french)
-    expectNoDifference(prompt.includeTimestamps, false)
-    expectNoDifference(prompt.previousTranscript, .fullTranscript("Previous text"))
+    guard case .whisper(let whisper) = prompt else {
+      throw TestError("Expected whisper case")
+    }
+    expectNoDifference(whisper.language, .french)
+    expectNoDifference(whisper.includeTimestamps, false)
+    expectNoDifference(whisper.previousTranscript, "Previous text")
   }
 
   @Test
   func `Parse Prompt With Empty Startofprev Content`() throws {
     let prompt = try #require(
-      CactusSTTPrompt(
-        description: "<|startofprev|><|startoftranscript|><|en|><|transcribe|>"
-      )
+      CactusSTTPrompt.whisper(prompt: "<|startofprev|><|startoftranscript|><|en|><|transcribe|>")
     )
-    expectNoDifference(prompt.language, .english)
-    expectNoDifference(prompt.includeTimestamps, true)
-    expectNoDifference(prompt.previousTranscript, .fullTranscript(""))
+    guard case .whisper(let whisper) = prompt else {
+      throw TestError("Expected whisper case")
+    }
+    expectNoDifference(whisper.language, .english)
+    expectNoDifference(whisper.includeTimestamps, true)
+    expectNoDifference(whisper.previousTranscript, "")
   }
 
   @Test
   func `Parse Prompt Without Startofprev Has Nil PreviousTranscript`() throws {
     let prompt = try #require(
-      CactusSTTPrompt(
-        description: "<|startoftranscript|><|en|><|transcribe|>"
-      )
+      CactusSTTPrompt.whisper(prompt: "<|startoftranscript|><|en|><|transcribe|>")
     )
-    expectNoDifference(prompt.previousTranscript, nil)
+    guard case .whisper(let whisper) = prompt else {
+      throw TestError("Expected whisper case")
+    }
+    expectNoDifference(whisper.previousTranscript, nil)
   }
 
   @Test(
@@ -295,14 +312,17 @@ struct CactusSTTPromptTests {
       )
     ]
   )
-  fileprivate func `Init From Description Parses Valid Prompts`(testCase: ParseTestCase) {
+  fileprivate func `Init From Description Parses Valid Prompts`(testCase: ParseTestCase) throws {
     if let expected = testCase.expectedLanguage {
-      let prompt = try! #require(CactusSTTPrompt(description: testCase.input))
-      expectNoDifference(prompt.language, expected)
-      expectNoDifference(prompt.includeTimestamps, testCase.expectedIncludeTimestamps)
+      let prompt = try #require(CactusSTTPrompt.whisper(prompt: testCase.input))
+      guard case .whisper(let whisper) = prompt else {
+        throw TestError("Expected whisper case")
+      }
+      expectNoDifference(whisper.language, expected)
+      expectNoDifference(whisper.includeTimestamps, testCase.expectedIncludeTimestamps)
     } else {
-      let prompt = CactusSTTPrompt(description: testCase.input)
-      #expect(prompt == nil)
+      let prompt = CactusSTTPrompt.whisper(prompt: testCase.input)
+      expectNoDifference(prompt, nil)
     }
   }
 }
@@ -311,4 +331,12 @@ private struct ParseTestCase: Hashable {
   let input: String
   let expectedLanguage: CactusSTTLanguage?
   let expectedIncludeTimestamps: Bool?
+}
+
+private enum TestError: Error {
+  case message(String)
+
+  init(_ message: String) {
+    self = .message(message)
+  }
 }
