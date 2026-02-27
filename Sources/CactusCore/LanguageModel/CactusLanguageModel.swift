@@ -571,7 +571,7 @@ extension CactusLanguageModel {
 
 extension CactusLanguageModel {
   /// A chat completion result.
-  public struct ChatCompletion: Hashable, Sendable {
+  public struct Completion: Hashable, Sendable {
     /// The raw response text from the model.
     public let response: String
 
@@ -619,7 +619,7 @@ extension CactusLanguageModel {
   /// A completed chat turn with canonical continuation messages.
   public struct CompletedChatTurn: Hashable, Sendable {
     /// The raw completion returned by the model.
-    public let completion: ChatCompletion
+    public let completion: Completion
 
     /// Canonical conversation messages that include the generated assistant turn.
     public let messages: [ChatMessage]
@@ -662,7 +662,7 @@ extension CactusLanguageModel {
   /// - Returns: A ``CompletedChatTurn``.
   public func complete(
     messages: [ChatMessage],
-    options: ChatCompletion.Options? = nil,
+    options: Completion.Options? = nil,
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String) -> Void = { _ in }
@@ -700,13 +700,13 @@ extension CactusLanguageModel {
   /// - Returns: A ``CompletedChatTurn``.
   public func complete(
     messages: [ChatMessage],
-    options: ChatCompletion.Options? = nil,
+    options: Completion.Options? = nil,
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String, UInt32) -> Void
   ) throws -> CompletedChatTurn {
     let options =
-      options ?? ChatCompletion.Options(modelType: self.configurationFile.modelType ?? .qwen)
+      options ?? Completion.Options(modelType: self.configurationFile.modelType ?? .qwen)
     let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else {
       throw ChatCompletionError.bufferSizeTooSmall
@@ -751,7 +751,7 @@ extension CactusLanguageModel {
       }
       throw ChatCompletionError.generation(message: response?.error)
     }
-    let completion = try ffiDecoder.decode(ChatCompletion.self, from: responseData)
+    let completion = try ffiDecoder.decode(Completion.self, from: responseData)
     var completedMessages = messages
     completedMessages.append(
       .assistant(
@@ -778,7 +778,7 @@ extension CactusLanguageModel {
   }
 }
 
-extension CactusLanguageModel.ChatCompletion {
+extension CactusLanguageModel.Completion {
   /// Options for generating a ``CactusLanguageModel/ChatCompletion``.
   public struct Options: Hashable, Sendable {
     /// A default array of common stop sequences.
@@ -929,7 +929,7 @@ extension CactusLanguageModel.ChatCompletion {
   }
 }
 
-extension CactusLanguageModel.ChatCompletion.Options: Encodable {
+extension CactusLanguageModel.Completion.Options: Encodable {
   public func encode(to encoder: any Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(self.maxTokens, forKey: .maxTokens)
@@ -951,7 +951,7 @@ extension CactusLanguageModel.ChatCompletion.Options: Encodable {
   }
 }
 
-extension CactusLanguageModel.ChatCompletion.Options: Decodable {
+extension CactusLanguageModel.Completion.Options: Decodable {
   public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.maxTokens = try container.decode(Int.self, forKey: .maxTokens)
@@ -972,7 +972,7 @@ extension CactusLanguageModel.ChatCompletion.Options: Decodable {
   }
 }
 
-extension CactusLanguageModel.ChatCompletion: Decodable {
+extension CactusLanguageModel.Completion: Decodable {
   public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.response = try container.decode(String.self, forKey: .response)
@@ -993,7 +993,7 @@ extension CactusLanguageModel.ChatCompletion: Decodable {
   }
 }
 
-extension CactusLanguageModel.ChatCompletion: Encodable {
+extension CactusLanguageModel.Completion: Encodable {
   public func encode(to encoder: any Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(self.response, forKey: .response)
@@ -1081,16 +1081,6 @@ extension CactusLanguageModel {
     /// The total generation time.
     public var totalDuration: Duration {
       self.totalTime
-    }
-
-    /// The amount of time in seconds to generate the first token.
-    public var timeIntervalToFirstToken: TimeInterval {
-      self.timeToFirstToken.secondsDouble
-    }
-
-    /// The total generation time in seconds.
-    public var totalTimeInterval: TimeInterval {
-      self.totalTime.secondsDouble
     }
   }
 

@@ -9,7 +9,7 @@ extension CactusUserMessage {
   ///   - maxBufferSize: The maximum buffer size used to store the completion.
   public init(
     content: CactusPromptContent,
-    options: CactusLanguageModel.ChatCompletion.Options,
+    options: CactusLanguageModel.Completion.Options,
     maxBufferSize: Int? = nil
   ) {
     self.init(
@@ -35,7 +35,7 @@ extension CactusUserMessage {
   ///   - maxBufferSize: The maximum buffer size used to store the completion.
   public init(
     _ content: some CactusPromptRepresentable,
-    options: CactusLanguageModel.ChatCompletion.Options,
+    options: CactusLanguageModel.Completion.Options,
     maxBufferSize: Int? = nil
   ) throws {
     try self.init(
