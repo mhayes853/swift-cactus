@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - CactusInferenceStream
 
-/// A lightweight async stream for model inference output, token events, and optional partial events.
+/// A lightweight async stream for model inference output and token events.
 public final class CactusInferenceStream<Output: Sendable>: Sendable {
   private let observationRegistrar = _ObservationRegistrar()
   private let state = Lock(State())
@@ -15,7 +15,7 @@ public final class CactusInferenceStream<Output: Sendable>: Sendable {
 
   /// Creates an inference stream from an async producer closure.
   ///
-  /// - Parameter run: A closure that receives a continuation for yielding tokens/partials and
+  /// - Parameter run: A closure that receives a continuation for yielding tokens and
   ///   returns the final output when inference completes.
   public init(run: sending @escaping (Continuation) async throws -> Output) {
     let storage = Storage()
@@ -130,67 +130,6 @@ extension CactusInferenceStream {
   }
 }
 
-// MARK: - Partials
-
-extension CactusInferenceStream where Output: StreamParseable, Output.Partial: Sendable {
-  /// An async sequence of streamed partial values.
-  public struct Partials: AsyncSequence {
-    let storage: Storage
-
-    /// An iterator over streamed partials.
-    public struct AsyncIterator: AsyncIteratorProtocol {
-      var base: AsyncThrowingStream<Output.Partial, any Error>.AsyncIterator
-
-      public mutating func next() async throws -> Output.Partial? {
-        try await self.base.next()
-      }
-
-      @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-      public mutating func next(
-        isolation actor: isolated (any Actor)?
-      ) async throws -> Output.Partial? {
-        try await self.base.next(isolation: actor)
-      }
-    }
-
-    /// Creates an iterator for streamed partials.
-    public func makeAsyncIterator() -> AsyncIterator {
-      let (stream, continuation) = AsyncThrowingStream<Output.Partial, any Error>.makeStream()
-      let subscription = self.storage.addPartialSubscriber { partial in
-        continuation.yield(partial)
-      } onFinished: { error in
-        if let error {
-          continuation.finish(throwing: error)
-        } else {
-          continuation.finish()
-        }
-      }
-      continuation.onTermination = { _ in
-        subscription.cancel()
-      }
-      return AsyncIterator(base: stream.makeAsyncIterator())
-    }
-  }
-
-  /// A partial event stream for this inference stream.
-  public var partials: Partials {
-    Partials(storage: self.storage)
-  }
-
-  /// Subscribes to streamed partial events.
-  ///
-  /// - Parameters:
-  ///   - operation: Called for every streamed partial.
-  ///   - onFinished: Called once when streaming completes or fails.
-  /// - Returns: A subscription that can cancel the callbacks.
-  public func onPartial(
-    perform operation: @escaping @Sendable (Output.Partial) -> Void,
-    onFinished: @escaping @Sendable ((any Error)?) -> Void = { _ in }
-  ) -> CactusSubscription {
-    self.storage.addPartialSubscriber(operation, onFinished: onFinished)
-  }
-}
-
 // MARK: - Continuation
 
 extension CactusInferenceStream {
@@ -207,16 +146,6 @@ extension CactusInferenceStream {
   }
 }
 
-extension CactusInferenceStream.Continuation
-where Output: StreamParseable, Output.Partial: Sendable {
-  /// Emits a partial value to partial subscribers.
-  ///
-  /// - Parameter partial: The partial value to emit.
-  public func yield(partial: Output.Partial) {
-    self.storage.accumulate(partial: partial)
-  }
-}
-
 // MARK: - Storage
 
 extension CactusInferenceStream {
@@ -226,8 +155,6 @@ extension CactusInferenceStream {
       var outputResult: Result<Output, any Error>?
       var streamedTokens = [CactusStreamedToken]()
       var tokenSubscribers = [UUID: TokenSubscriber]()
-      var streamedPartials = [any Sendable]()
-      var partialSubscribers = [UUID: PartialSubscriber]()
       var onStreamFinished: @Sendable () -> Void = {}
     }
 
@@ -256,15 +183,6 @@ extension CactusInferenceStream {
       }
     }
 
-    func accumulate(partial: any Sendable) {
-      self.state.withLock { state in
-        state.streamedPartials.append(partial)
-        for subscriber in state.partialSubscribers.values {
-          subscriber.callback(partial)
-        }
-      }
-    }
-
     func acceptStreamResponse(_ result: Result<Output, any Error>) {
       self.state.withLock { state in
         guard state.outputResult == nil else { return }
@@ -274,12 +192,6 @@ extension CactusInferenceStream {
           subscriber.onFinished(result)
         }
         state.tokenSubscribers.removeAll()
-
-        let partialFinishedError = result.failure
-        for subscriber in state.partialSubscribers.values {
-          subscriber.onFinished(partialFinishedError)
-        }
-        state.partialSubscribers.removeAll()
 
         for continuation in state.outputContinuations {
           continuation.resume(with: result)
@@ -320,43 +232,6 @@ extension CactusInferenceStream {
     private struct TokenSubscriber: Sendable {
       let callback: @Sendable (CactusStreamedToken) -> Void
       let onFinished: @Sendable (Result<Output, any Error>) -> Void
-    }
-
-    private struct PartialSubscriber: Sendable {
-      let callback: @Sendable (any Sendable) -> Void
-      let onFinished: @Sendable ((any Error)?) -> Void
-    }
-  }
-}
-
-extension CactusInferenceStream.Storage where Output: StreamParseable, Output.Partial: Sendable {
-  func addPartialSubscriber(
-    _ callback: @escaping @Sendable (Output.Partial) -> Void,
-    onFinished: @escaping @Sendable ((any Error)?) -> Void = { _ in }
-  ) -> CactusSubscription {
-    let id = UUID()
-
-    self.state.withLock { state in
-      for partial in state.streamedPartials {
-        guard let typedPartial = partial as? Output.Partial else { continue }
-        callback(typedPartial)
-      }
-
-      if let outputResult = state.outputResult {
-        onFinished(outputResult.failure)
-      } else {
-        state.partialSubscribers[id] = PartialSubscriber(
-          callback: { partial in
-            guard let typedPartial = partial as? Output.Partial else { return }
-            callback(typedPartial)
-          },
-          onFinished: onFinished
-        )
-      }
-    }
-
-    return CactusSubscription { [weak self] in
-      self?.state.withLock { _ = $0.partialSubscribers.removeValue(forKey: id) }
     }
   }
 }

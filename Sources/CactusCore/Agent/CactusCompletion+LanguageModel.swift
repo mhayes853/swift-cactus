@@ -10,8 +10,16 @@ extension CactusCompletionEntry {
     transcriptEntry: CactusTranscript.Element,
     completion: CactusLanguageModel.ChatCompletion
   ) {
+    self.init(transcriptEntry: transcriptEntry, metrics: .init(completion: completion))
+  }
+}
+
+extension CactusCompletionEntry.Metrics {
+  /// Creates completion entry metrics from language model chat completion metrics.
+  ///
+  /// - Parameter completion: The chat completion metrics from the language model.
+  public init(completion: CactusLanguageModel.ChatCompletion) {
     self.init(
-      transcriptEntry: transcriptEntry,
       prefillTokens: completion.prefillTokens,
       decodeTokens: completion.decodeTokens,
       totalTokens: completion.totalTokens,

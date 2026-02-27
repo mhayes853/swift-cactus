@@ -1,5 +1,4 @@
 import Foundation
-import StreamParsingCore
 
 // MARK: - JSONSchemaRepresentable
 
@@ -11,9 +10,6 @@ public protocol JSONSchemaRepresentable {
 
 /// A type that can generate a JSON schema and decode itself from a JSON value.
 public typealias JSONGenerable = JSONSchemaRepresentable & Decodable
-
-/// A type that can generate a JSON schema and decode itself incrementally from a JSON payload.
-public typealias JSONStreamGenerable = JSONGenerable & StreamParseable
 
 extension JSONSchemaRepresentable where Self: Decodable {
   /// Creates this type from a JSON schema value.
@@ -27,30 +23,6 @@ extension JSONSchemaRepresentable where Self: Decodable {
     validator: JSONSchema.Validator = .shared,
     decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
   ) throws {
-    try validator.validate(value: jsonValue, with: Self.jsonSchema)
-    self = try decoder.decode(Self.self, from: jsonValue)
-  }
-}
-
-extension JSONSchemaRepresentable
-where
-  Self: Decodable & StreamParseable,
-  Self.Partial: Encodable
-{
-  /// Creates this type from a partial value.
-  ///
-  /// - Parameters:
-  ///   - partial: The partial value to encode, validate, and decode.
-  ///   - encoder: An encoder used to encode `partial` to a JSON schema value.
-  ///   - validator: A validator used to validate the encoded value against ``jsonSchema``.
-  ///   - decoder: A decoder used to decode the validated value.
-  public init(
-    from partial: Self.Partial,
-    encoder: JSONSchema.Value.Encoder = JSONSchema.Value.Encoder(),
-    validator: JSONSchema.Validator = .shared,
-    decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
-  ) throws {
-    let jsonValue = try encoder.encode(partial)
     try validator.validate(value: jsonValue, with: Self.jsonSchema)
     self = try decoder.decode(Self.self, from: jsonValue)
   }
@@ -114,12 +86,12 @@ extension UInt: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .integer(minimum: 0) }
 }
 
-@available(StreamParsing128BitIntegers, *)
+@available(macOS 15.0, iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
 extension Int128: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .integer() }
 }
 
-@available(StreamParsing128BitIntegers, *)
+@available(macOS 15.0, iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
 extension UInt128: JSONSchemaRepresentable {
   public static var jsonSchema: JSONSchema { .integer(minimum: 0) }
 }

@@ -1,25 +1,52 @@
 ▿ CactusCompletion<String>
-  ▿ entries: 1 element
+  ▿ entries: 2 elements
     ▿ CactusCompletionEntry
-      - confidence: 0.9345
-      - decodeTokens: 13
-      - decodeTps: 113.29
-      ▿ durationToFirstToken: 0.02262 seconds
-        - secondsComponent: 0
-        - attosecondsComponent: 22620000000000000
-      - prefillTokens: 16
-      - prefillTps: 707.37
-      - ramUsageMb: 48.24
-      ▿ totalDuration: 0.12855 seconds
-        - secondsComponent: 0
-        - attosecondsComponent: 128550000000000000
-      - totalTokens: 29
+      - metrics: Optional<Metrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 1EFC8BC0-0CD6-4D78-B1CB-269045D15A14
+          - rawValue: ACBB0252-9460-437E-A4E0-31E6B9ECB309
         ▿ message: ChatMessage
-          - content: "Hello! How can I help you? What\'s up?"
+          - content: "Say hello in one concise sentence."
+          ▿ images: Optional<Array<URL>>
+            - some: 0 elements
+          ▿ role: MessageRole
+            - rawValue: "user"
+    ▿ CactusCompletionEntry
+      ▿ metrics: Optional<Metrics>
+        ▿ some: Metrics
+          - confidence: 0.8845
+          - decodeTokens: 147
+          - decodeTps: 105.61
+          ▿ durationToFirstToken: 0.02361 seconds
+            - secondsComponent: 0
+            - attosecondsComponent: 23610000000000000
+          - prefillTokens: 16
+          - prefillTps: 677.56
+          - ramUsageMb: 53.07
+          ▿ totalDuration: 1.40611 seconds
+            - secondsComponent: 1
+            - attosecondsComponent: 406110000000000000
+          - totalTokens: 163
+      ▿ transcriptEntry: Element
+        ▿ id: CactusGenerationID
+          - rawValue: B9D001C2-FC8D-4CE7-BEAE-FD902D6621F2
+        ▿ message: ChatMessage
+          - content: "The English language has evolved significantly over time, so it\'s important to remember its nuances. \n\nWhich of the following sentences is most accurately representing a statement about an abstract concept?\n\n1.  \"All poems are beautiful.\" (This sentence is not meant as an expression of beauty; it\'s more about the overall quality.)\n2.  \"Learning new things every day.\" (This statement reflects a lifestyle and isn’t necessarily tied to any specific skill or knowledge.)\n3。 \"Words have their own meaning.\"(While this does not use the word \"new,\" which comes from the verb \"to be,\" it doesn\'Sense that language has its place, and many can use them in everyday conversations)"
           - images: Optional<Array<URL>>.none
           ▿ role: MessageRole
             - rawValue: "assistant"
-  - output: "Hello! How can I help you? What\'s up?"
+  ▿ metrics: Metrics
+    - confidence: 0.8845
+    - decodeTokens: 147
+    - decodeTps: 105.61
+    ▿ durationToFirstToken: 0.02361 seconds
+      - secondsComponent: 0
+      - attosecondsComponent: 23610000000000000
+    - prefillTokens: 16
+    - prefillTps: 677.56
+    - ramUsageMb: 53.07
+    ▿ totalDuration: 1.40611 seconds
+      - secondsComponent: 1
+      - attosecondsComponent: 406110000000000000
+    - totalTokens: 163
+  - output: "The English language has evolved significantly over time, so it\'s important to remember its nuances. \n\nWhich of the following sentences is most accurately representing a statement about an abstract concept?\n\n1.  \"All poems are beautiful.\" (This sentence is not meant as an expression of beauty; it\'s more about the overall quality.)\n2.  \"Learning new things every day.\" (This statement reflects a lifestyle and isn’t necessarily tied to any specific skill or knowledge.)\n3。 \"Words have their own meaning.\"(While this does not use the word \"new,\" which comes from the verb \"to be,\" it doesn\'Sense that language has its place, and many can use them in everyday conversations)"

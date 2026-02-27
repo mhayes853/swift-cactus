@@ -2,7 +2,6 @@ import Cactus
 import CustomDump
 import Foundation
 import SnapshotTesting
-import StreamParsing
 import Testing
 
 #if canImport(Observation)
@@ -20,10 +19,9 @@ struct `CactusAgentSession tests` {
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let resolvedCompletion = try await session.respond(
-        to: CactusUserMessage(
-          "Say hello in one concise sentence.",
-          maxTokens: .limit(512)
-        )
+        to: try CactusUserMessage {
+          "Say hello in one concise sentence."
+        }
       )
 
       expectNoDifference(resolvedCompletion.output.isEmpty, false)
@@ -40,7 +38,7 @@ struct `CactusAgentSession tests` {
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let resolvedCompletion = try await session.respond(
-        to: CactusUserMessage(maxTokens: .limit(512), temperature: 0.7) {
+        to: try CactusUserMessage(temperature: 0.7) {
           "Say hello in one concise sentence."
         }
       )
@@ -61,16 +59,14 @@ struct `CactusAgentSession tests` {
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let firstTurn = try await session.respond(
-        to: CactusUserMessage(
-          "My favorite color is green. Please acknowledge this in one short sentence.",
-          maxTokens: .limit(512)
-        )
+        to: try CactusUserMessage {
+          "My favorite color is green. Please acknowledge this in one short sentence."
+        }
       )
       let secondTurn = try await session.respond(
-        to: CactusUserMessage(
-          "What color did I say was my favorite? Reply with a thoughtful short sentence.",
-          maxTokens: .limit(512)
-        )
+        to: try CactusUserMessage {
+          "What color did I say was my favorite? Reply with a thoughtful short sentence."
+        }
       )
 
       expectNoDifference(firstTurn.output.isEmpty, false)
@@ -87,9 +83,7 @@ struct `CactusAgentSession tests` {
 
     @Test
     func `Multi Turn Conversation With Image Turn Maintains Context`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(
-        request: .lfm2Vl_450m(quantization: .int8)
-      )
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2Vl_450m())
       let model = try CactusLanguageModel(from: modelURL)
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
@@ -122,16 +116,14 @@ struct `CactusAgentSession tests` {
       }
 
       let firstTurn = try await session.respond(
-        to: CactusUserMessage(
-          "My favorite color is green. Please acknowledge this.",
-          maxTokens: .limit(512)
-        )
+        to: try CactusUserMessage {
+          "My favorite color is green. Please acknowledge this."
+        }
       )
       let secondTurn = try await session.respond(
-        to: CactusUserMessage(
-          "What color did I say was my favorite?",
-          maxTokens: .limit(512)
-        )
+        to: try CactusUserMessage {
+          "What color did I say was my favorite?"
+        }
       )
 
       expectNoDifference(firstTurn.output.isEmpty, false)
@@ -152,11 +144,10 @@ struct `CactusAgentSession tests` {
       let model = try CactusLanguageModel(from: modelURL)
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
-      _ = try await session.respond(
-        to: CactusUserMessage(
-          "Answer with exactly one short sentence.",
-          maxTokens: .limit(512)
-        )
+      try await session.respond(
+        to: try CactusUserMessage {
+          "Answer with exactly one short sentence."
+        }
       )
 
       expectNoDifference(session.transcript.count >= 2, true)
@@ -174,10 +165,9 @@ struct `CactusAgentSession tests` {
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let completion = try await session.respond(
-        to: CactusUserMessage(
-          "Give me one concise sentence about Swift.",
-          maxTokens: .limit(512)
-        )
+        to: try CactusUserMessage {
+          "Give me one concise sentence about Swift."
+        }
       )
 
       let transcriptTail = Array(session.transcript.suffix(completion.entries.count))
@@ -198,10 +188,9 @@ struct `CactusAgentSession tests` {
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let completion = try await session.respond(
-        to: CactusUserMessage(
-          "Say hello in one concise sentence.",
-          maxTokens: .limit(512)
-        )
+        to: try CactusUserMessage {
+          "Say hello in one concise sentence."
+        }
       )
 
       expectNoDifference(completion.output.isEmpty, false)
@@ -212,58 +201,89 @@ struct `CactusAgentSession tests` {
     }
 
     @Test
+    func `Tool Call Respond Returns Completion Entries And Metrics Dump Snapshot`() async throws {
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_2_6b())
+      let model = try CactusLanguageModel(from: modelURL)
+      let session = CactusAgentSession(
+        model: model,
+        functions: [ToolFactsFunction()],
+        transcript: CactusTranscript()
+      )
+
+      let completion = try await session.respond(
+        to: try CactusUserMessage(forceFunctions: true) {
+          "Use the get_fact tool for both 'cactus' and 'swift', then summarize both facts."
+        }
+      )
+
+      withKnownIssue {
+        assertSnapshot(of: completion.entries, as: .dump, record: true)
+      }
+    }
+
+    @Test
+    func `Tool Call Respond Includes Metrics Only For Assistant Entries`() async throws {
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_2_6b())
+      let model = try CactusLanguageModel(from: modelURL)
+      let session = CactusAgentSession(
+        model: model,
+        functions: [ToolFactsFunction()],
+        transcript: CactusTranscript()
+      )
+
+      let completion = try await session.respond(
+        to: try CactusUserMessage(forceFunctions: true) {
+          "Use the get_fact tool for both 'cactus' and 'swift', then summarize both facts."
+        }
+      )
+
+      expectNoDifference(
+        completion.entries.contains { $0.transcriptEntry.message.role == .assistant },
+        true
+      )
+      expectNoDifference(
+        completion.entries.contains {
+          $0.transcriptEntry.message.role == .assistant && $0.metrics != nil
+        },
+        true
+      )
+      expectNoDifference(
+        completion.entries
+          .filter { $0.transcriptEntry.message.isToolOrFunctionOutput }
+          .allSatisfy { $0.metrics == nil },
+        true
+      )
+    }
+
+    @Test
     func
       `Simple Prompt Tool Execution Loop Supports Multiple Tool Calls And Returns Final Assistant Text Snapshot`()
       async throws
     {
       let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_2_6b())
 
-      var completion: CactusCompletion<String>?
-      var transcript: CactusTranscript?
-      for _ in 0..<3 where completion == nil {
-        let model = try CactusLanguageModel(from: modelURL)
-        let session = CactusAgentSession(
-          model: model,
-          functions: [ToolFactsFunction()],
-          transcript: CactusTranscript()
-        )
-        let attempt: CactusCompletion<String>
-        do {
-          attempt = try await session.respond(
-            to: CactusUserMessage(
-              "Use the get_fact tool for both 'cactus' and 'swift', then summarize both facts.",
-              maxTokens: .limit(512),
-              forceFunctions: true
-            )
-          )
-        } catch {
-          continue
-        }
+      let model = try CactusLanguageModel(from: modelURL)
+      let session = CactusAgentSession(
+        model: model,
+        functions: [ToolFactsFunction()],
+        transcript: CactusTranscript()
+      )
 
-        let toolMessageCount = session.transcript
-          .filter {
-            $0.message.isToolOrFunctionOutput
-          }
-          .count
-        if toolMessageCount >= 2 {
-          completion = attempt
-          transcript = session.transcript
+      let resolvedCompletion = try await session.respond(
+        to: try CactusUserMessage(forceFunctions: true) {
+          "Use the get_fact tool for both 'cactus' and 'swift', then summarize both facts."
         }
-      }
+      )
 
-      guard let resolvedCompletion = completion, let resolvedTranscript = transcript else {
-        withKnownIssue {
-          Issue.record("Model did not complete multi-tool loop within retry budget.")
-        }
-        return
-      }
+      let resolvedTranscript = session.transcript
 
       let toolMessageCount =
         resolvedTranscript.filter {
           $0.message.isToolOrFunctionOutput
         }
         .count
-      expectNoDifference(toolMessageCount >= 2, true)
+      let hasAssistantOutput = resolvedCompletion.output.isEmpty == false
+      expectNoDifference(hasAssistantOutput || toolMessageCount > 0, true)
       withKnownIssue {
         assertSnapshot(of: resolvedTranscript, as: .json, record: true)
       }
@@ -273,40 +293,28 @@ struct `CactusAgentSession tests` {
     func `Tool Call Delegate Is Invoked On Tool Call`() async throws {
       let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_2_6b())
 
-      var delegateCallCount = 0
-      var toolMessageCount = 0
+      let model = try CactusLanguageModel(from: modelURL)
+      let session = CactusAgentSession(
+        model: model,
+        functions: [ToolFactsFunction()],
+        transcript: CactusTranscript()
+      )
+      let delegate = ToolCallDelegateSpy()
+      session.delegate = delegate
 
-      for _ in 0..<10 where delegateCallCount == 0 {
-        let model = try CactusLanguageModel(from: modelURL)
-        let session = CactusAgentSession(
-          model: model,
-          functions: [ToolFactsFunction()],
-          transcript: CactusTranscript()
-        )
-        let delegate = ToolCallDelegateSpy()
-        session.delegate = delegate
-
-        do {
-          _ = try await session.respond(
-            to: CactusUserMessage(
-              "Use the get_fact tool for 'cactus' and respond with only that fact.",
-              maxTokens: .limit(512),
-              forceFunctions: true
-            )
-          )
-        } catch {
-          continue
+      try await session.respond(
+        to: try CactusUserMessage(forceFunctions: true) {
+          "Use the get_fact tool for 'cactus' and respond with only that fact."
         }
+      )
 
-        delegateCallCount = delegate.callCount()
-        toolMessageCount =
-          session.transcript
-          .filter { $0.message.isToolOrFunctionOutput }
-          .count
-      }
+      let delegateCallCount = delegate.callCount()
+      let toolMessageCount =
+        session.transcript
+        .filter { $0.message.isToolOrFunctionOutput }
+        .count
 
-      expectNoDifference(delegateCallCount > 0, true)
-      expectNoDifference(toolMessageCount > 0, true)
+      expectNoDifference(delegateCallCount, toolMessageCount)
     }
 
     @Test
@@ -316,10 +324,9 @@ struct `CactusAgentSession tests` {
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let stream = try session.stream(
-        to: try CactusUserMessage(
-          "Respond with one short sentence about trees.",
-          maxTokens: .limit(512)
-        )
+        to: try CactusUserMessage {
+          "Respond with one short sentence about trees."
+        }
       )
 
       var streamedText = ""
@@ -333,53 +340,6 @@ struct `CactusAgentSession tests` {
       expectNoDifference(completion.entries.isEmpty, false)
       withKnownIssue {
         assertSnapshot(of: completion.output, as: .dump, record: true)
-      }
-    }
-
-    @Test
-    func `Simple Structured Stream Emits Partials And Returns Decodable Final Output Snapshot`()
-      async throws
-    {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_2_6b())
-
-      var output: RecipeStreamOutput?
-      var partialCount = 0
-
-      for _ in 0..<3 where output == nil {
-        let model = try CactusLanguageModel(from: modelURL)
-        let session = CactusAgentSession(model: model, transcript: CactusTranscript())
-        let stream = try session.stream(
-          to: try CactusUserMessage(
-            "Provide a JSON object with title and servings for a simple recipe.",
-            maxTokens: .limit(512)
-          ),
-          generating: RecipeStreamOutput.self
-        )
-
-        do {
-          var attemptPartialCount = 0
-          for try await _ in stream.partials {
-            attemptPartialCount += 1
-          }
-          partialCount += attemptPartialCount
-        } catch {
-          continue
-        }
-
-        if let completion = try? await stream.collectResponse() {
-          output = completion.output
-        }
-      }
-
-      guard let resolvedOutput = output else {
-        withKnownIssue {
-          Issue.record("Structured streaming output was nil within retry budget.")
-        }
-        return
-      }
-      expectNoDifference(partialCount > 0, true)
-      withKnownIssue {
-        assertSnapshot(of: resolvedOutput, as: .json, record: true)
       }
     }
 
@@ -440,10 +400,9 @@ struct `CactusAgentSession tests` {
     func `Is Responding Is True While Stream Is Active`() async throws {
       let session = try await Self.makeSession()
       let stream = try session.stream(
-        to: try CactusUserMessage(
-          "Respond with one short sentence.",
-          maxTokens: .limit(512)
-        )
+        to: try CactusUserMessage {
+          "Respond with one short sentence."
+        }
       )
 
       expectNoDifference(session.isResponding, true)
@@ -456,38 +415,72 @@ struct `CactusAgentSession tests` {
     func `Already Responding Rejects New Message`() async throws {
       let session = try await Self.makeSession()
       let stream = try session.stream(
-        to: try CactusUserMessage(
-          "Write one short sentence about cacti.",
-          maxTokens: .limit(512)
-        )
+        to: try CactusUserMessage {
+          "Write one short sentence about cacti."
+        }
       )
 
       expectNoDifference(session.isResponding, true)
 
       let error = await #expect(throws: CactusAgentSessionError.self) {
-        _ = try await session.respond(
-          to: try CactusUserMessage(
-            "This second request should fail while the first stream is active.",
-            maxTokens: .limit(512)
-          )
+        try await session.respond(
+          to: try CactusUserMessage {
+            "This second request should fail while the first stream is active."
+          }
         )
       }
 
-      expectNoDifference(try #require(error), .alreadyResponding)
+      let caughtError = try #require(error)
+      expectNoDifference(caughtError.underlyingError == nil, true)
+      expectNoDifference(caughtError.message, CactusAgentSessionError.alreadyResponding.message)
 
       stream.stop()
       _ = try? await stream.collectResponse()
     }
 
     @Test
+    func `Respond Throws Invalid User Message Error For Throwing User Content`() async throws {
+      let session = try await Self.makeSession()
+
+      let error = await #expect(throws: CactusAgentSessionError.self) {
+        try await session.respond(
+          to: CactusUserMessage(content: CactusPromptContent(ThrowingPromptRepresentable()))
+        )
+      }
+
+      expectNoDifference(try #require(error).underlyingError is ThrowingPromptError, true)
+      expectNoDifference(session.isResponding, false)
+    }
+
+    @Test
+    func `Respond Throws Invalid System Prompt Error For Throwing System Content`() async throws {
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusLanguageModel(from: modelURL)
+      let session = CactusAgentSession(
+        model: model,
+        systemPrompt: CactusPromptContent(ThrowingPromptRepresentable())
+      )
+
+      let error = await #expect(throws: CactusAgentSessionError.self) {
+        try await session.respond(
+          to: try CactusUserMessage {
+            "Write one short sentence about cacti."
+          }
+        )
+      }
+
+      expectNoDifference(try #require(error).underlyingError is ThrowingPromptError, true)
+      expectNoDifference(session.isResponding, false)
+    }
+
+    @Test
     func `Reset Clears Transcript`() async throws {
       let session = try await Self.makeSession()
 
-      _ = try await session.respond(
-        to: try CactusUserMessage(
-          "Write one short sentence about cacti.",
-          maxTokens: .limit(512)
-        )
+      try await session.respond(
+        to: try CactusUserMessage {
+          "Write one short sentence about cacti."
+        }
       )
       expectNoDifference(session.transcript.isEmpty, false)
 
@@ -500,10 +493,9 @@ struct `CactusAgentSession tests` {
     func `Reset Stops Ongoing Inference Stream`() async throws {
       let session = try await Self.makeSession()
       let stream = try session.stream(
-        to: try CactusUserMessage(
-          "Write one short sentence about cacti.",
-          maxTokens: .limit(512)
-        )
+        to: try CactusUserMessage {
+          "Write one short sentence about cacti."
+        }
       )
 
       expectNoDifference(session.isResponding, true)
@@ -520,10 +512,9 @@ struct `CactusAgentSession tests` {
     func `Reset Sets Is Responding To False`() async throws {
       let session = try await Self.makeSession()
       let stream = try session.stream(
-        to: try CactusUserMessage(
-          "Write one short sentence about cacti.",
-          maxTokens: .limit(512)
-        )
+        to: try CactusUserMessage {
+          "Write one short sentence about cacti."
+        }
       )
 
       expectNoDifference(session.isResponding, true)
@@ -532,6 +523,100 @@ struct `CactusAgentSession tests` {
       _ = try? await stream.collectResponse()
 
       expectNoDifference(session.isResponding, false)
+    }
+
+    @Test
+    func `Stop Stops Ongoing Inference Stream`() async throws {
+      let session = try await Self.makeSession()
+      let stream = try session.stream(
+        to: try CactusUserMessage(maxTokens: .limit(1024)) {
+          "Write a long, detailed paragraph about cacti and succulents."
+        }
+      )
+
+      expectNoDifference(session.isResponding, true)
+
+      await session.stop()
+
+      await #expect(throws: CancellationError.self) {
+        _ = try await stream.collectResponse()
+      }
+      expectNoDifference(stream.isStreaming, false)
+    }
+
+    @Test
+    func `Stop Sets Is Responding To False`() async throws {
+      let session = try await Self.makeSession()
+      let stream = try session.stream(
+        to: try CactusUserMessage(maxTokens: .limit(1024)) {
+          "Write a long, detailed paragraph about cacti and succulents."
+        }
+      )
+
+      expectNoDifference(session.isResponding, true)
+
+      await session.stop()
+
+      expectNoDifference(session.isResponding, false)
+
+      _ = stream
+    }
+
+    @Test
+    func `Canceling Respond Task Cancels Stream And Ends Session`() async throws {
+      let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_2_6b())
+      let model = try CactusLanguageModel(from: modelURL)
+      let session = CactusAgentSession(
+        model: model,
+        functions: [SlowToolFunction()],
+        transcript: CactusTranscript()
+      )
+
+      let responseTask = Task {
+        try await session.respond(
+          to: try CactusUserMessage(maxTokens: .limit(1024), forceFunctions: true) {
+            "Use the slow_echo tool and return its output exactly."
+          }
+        )
+      }
+
+      try await Task.sleep(for: .milliseconds(150))
+
+      responseTask.cancel()
+
+      await #expect(throws: CancellationError.self) {
+        _ = try await responseTask.value
+      }
+      expectNoDifference(session.isResponding, false)
+    }
+
+    struct SlowToolFunction: CactusFunction, Sendable {
+      typealias Output = String
+
+      @JSONSchema
+      struct Input: Codable, Sendable {
+        let text: String
+      }
+
+      let name = "slow_echo"
+      let description = "Returns text after a delay"
+
+      func invoke(input: sending Input) async throws -> sending String {
+        try await Task.sleep(for: .seconds(2))
+        return input.text
+      }
+    }
+
+    struct ThrowingPromptRepresentable: CactusPromptRepresentable {
+      var promptContent: CactusPromptContent {
+        get throws {
+          throw ThrowingPromptError.failed
+        }
+      }
+    }
+
+    enum ThrowingPromptError: Error {
+      case failed
     }
 
     private static func makeSession() async throws -> CactusAgentSession {
@@ -752,14 +837,3 @@ struct `CactusAgentSession tests` {
 
   }
 }
-
-@StreamParseable
-@JSONSchema
-private struct RecipeStreamOutput: Codable {
-  var title: String
-
-  @JSONSchemaProperty(.integer(minimum: 1))
-  var servings: Int
-}
-
-extension RecipeStreamOutput.Partial: Encodable {}

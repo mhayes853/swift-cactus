@@ -153,7 +153,6 @@ extension BaseTestSuite {
       } expansion: {
         """
         struct Person {
-          @StreamParseableMember(key: "first_name")
           var firstName: String
 
           static var jsonSchema: CactusCore.JSONSchema {
@@ -187,7 +186,6 @@ extension BaseTestSuite {
       } expansion: {
         """
         struct Payload {
-          @StreamParseableMember(key: "display_name")
           var name: String
 
           static var jsonSchema: CactusCore.JSONSchema {
@@ -221,7 +219,6 @@ extension BaseTestSuite {
       } expansion: {
         """
         struct Payload {
-          @StreamParseableIgnored
           var internalID: String
 
           static var jsonSchema: CactusCore.JSONSchema {

@@ -79,12 +79,6 @@ public final class CactusAgentSession: Sendable {
 // MARK: - Initializers
 
 extension CactusAgentSession {
-  public enum AgentLoopError: Error {
-    case missingFunction(String)
-    case unsupportedFunctionInputSendability(String)
-    case missingAssistantResponse
-    case invalidUserMessage(String)
-  }
   /// Creates a completion session from a language model and explicit transcript.
   ///
   /// - Parameters:
@@ -429,62 +423,8 @@ extension CactusAgentSession {
       try await stream.collectResponse()
     } onCancel: {
       stream.stop()
+      self.endResponding()
     }
-  }
-
-  /// Performs one completion turn and decodes structured output using an explicit schema.
-  ///
-  /// - Parameters:
-  ///   - request: The user message request for this turn.
-  ///   - outputType: The output type to decode.
-  ///   - schema: The JSON schema used to constrain and validate generated output.
-  ///   - validator: The validator used to validate generated JSON values.
-  ///   - decoder: The decoder used to decode the validated JSON value into `Output`.
-  /// - Returns: A completion containing structured output and new entries.
-  @discardableResult
-  nonisolated(nonsending) public func respond<Output: Decodable & Sendable>(
-    to request: CactusUserMessage,
-    generating outputType: Output.Type,
-    schema: JSONSchema,
-    validator: JSONSchema.Validator = .shared,
-    decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
-  ) async throws -> CactusCompletion<Output> {
-    let stream = try self.stream(
-      to: request,
-      generating: outputType,
-      schema: schema,
-      validator: validator,
-      decoder: decoder
-    )
-    return try await withTaskCancellationHandler {
-      try await stream.collectResponse()
-    } onCancel: {
-      stream.stop()
-    }
-  }
-
-  /// Performs one completion turn and decodes structured output for a `JSONGenerable` type.
-  ///
-  /// - Parameters:
-  ///   - request: The user message request for this turn.
-  ///   - outputType: The output type to decode.
-  ///   - validator: The validator used to validate generated JSON values.
-  ///   - decoder: The decoder used to decode the validated JSON value into `Output`.
-  /// - Returns: A completion containing structured output and new entries.
-  @discardableResult
-  nonisolated(nonsending) public func respond<Output: JSONGenerable & Sendable>(
-    to request: CactusUserMessage,
-    generating outputType: Output.Type = Output.self,
-    validator: JSONSchema.Validator = .shared,
-    decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
-  ) async throws -> CactusCompletion<Output> {
-    try await self.respond(
-      to: request,
-      generating: outputType,
-      schema: Output.jsonSchema,
-      validator: validator,
-      decoder: decoder
-    )
   }
 }
 
@@ -502,28 +442,28 @@ extension CactusAgentSession {
       throw CactusAgentSessionError.alreadyResponding
     }
 
-    let context = self.streamRequestContext(from: request)
-
-    self.state.withLock {
-      guard $0.transcript.isEmpty, let prompt = $0.systemPrompt else {
-        return
-      }
-      guard let text = try? prompt.messageComponents().text else {
-        return
-      }
-      let systemMessage = CactusLanguageModel.ChatMessage.system(text)
-      $0.transcript.insert(CactusTranscript.Element(message: systemMessage), at: 0)
+    let context: StreamRequestContext
+    do {
+      context = try self.streamRequestContext(from: request)
+      try self.insertSystemPromptIfNecessary()
+    } catch {
+      self.endResponding()
+      throw error
     }
 
     let stream = CactusInferenceStream<CactusCompletion<String>> { continuation in
       defer { self.endResponding() }
 
-      let userMessage = try context.userMessageResult.get()
-      self.state.withLock { $0.transcript.append(CactusTranscript.Element(message: userMessage)) }
+      var completionEntries = [CactusCompletionEntry]()
+
+      self.appendTranscriptEntry(
+        context.userMessage,
+        metrics: nil,
+        completionEntries: &completionEntries
+      )
 
       var conversationMessages = self.transcript.messages
       var finalResponse = ""
-      var completionEntries = [CactusCompletionEntry]()
       while true {
         let assistantStreamID = CactusGenerationID()
         let completedTurn = try await self.languageModelActor.complete(
@@ -541,20 +481,15 @@ extension CactusAgentSession {
           )
         }
 
-        let appendedMessages = Self.appendedMessages(
+        let appendedMessages = self.appendedMessages(
           in: completedTurn.messages,
           originalMessagesCount: conversationMessages.count
         )
-        for message in appendedMessages {
-          let transcriptEntry = CactusTranscript.Element(message: message)
-          self.state.withLock { $0.transcript.append(transcriptEntry) }
-          completionEntries.append(
-            Self.completionEntry(
-              transcriptEntry: transcriptEntry,
-              completionMetrics: message.role == .assistant ? completedTurn.completion : nil
-            )
-          )
-        }
+        self.appendModelMessages(
+          appendedMessages,
+          completion: completedTurn.completion,
+          completionEntries: &completionEntries
+        )
 
         conversationMessages = self.transcript.messages
         finalResponse = completedTurn.completion.response
@@ -566,198 +501,17 @@ extension CactusAgentSession {
         let resolvedFunctionCalls = try self.resolveFunctionCalls(
           completedTurn.completion.functionCalls
         )
-        let functionReturns: [CactusAgentSession.FunctionReturn]
-        if let delegate = self.delegate {
-          functionReturns = try await delegate.agentFunctionWillExecuteFunctions(
-            self,
-            functionCalls: resolvedFunctionCalls
-          )
-        } else {
-          functionReturns = try await Self.executeParallelFunctionCalls(
-            functionCalls: resolvedFunctionCalls
-          )
-        }
+        let functionReturns = try await self.executeFunctionCalls(resolvedFunctionCalls)
 
-        let role = self.functionOutputRole()
-        for functionReturn in functionReturns {
-          let content = try Self.functionOutputPayload(
-            name: functionReturn.name,
-            content: functionReturn.content
-          )
-          let transcriptEntry = CactusTranscript.Element(
-            message: CactusLanguageModel.ChatMessage(role: role, content: content)
-          )
-          self.state.withLock {
-            $0.transcript.append(transcriptEntry)
-          }
-          completionEntries.append(Self.completionEntry(transcriptEntry: transcriptEntry))
-        }
+        try self.appendFunctionReturns(
+          functionReturns,
+          role: self.functionOutputRole,
+          completionEntries: &completionEntries
+        )
 
         conversationMessages = self.transcript.messages
       }
-
-      guard !completionEntries.isEmpty else {
-        throw AgentLoopError.missingAssistantResponse
-      }
       return CactusCompletion(output: finalResponse, entries: completionEntries)
-    }
-    self.registerActiveStreamStopper(stream)
-    return stream
-  }
-
-  /// Streams structured output tokens and partials, then returns completion entries and output.
-  ///
-  /// - Parameters:
-  ///   - request: The user message request for this turn.
-  ///   - outputType: The structured output type to decode.
-  ///   - configuration: The parser configuration used for structured streaming partials.
-  /// - Returns: A stream whose final response is a completion containing decoded output and entries.
-  public func stream<Output: JSONStreamGenerable & Sendable>(
-    to request: CactusUserMessage,
-    generating outputType: Output.Type = Output.self,
-    configuration: JSONStreamParserConfiguration = JSONStreamParserConfiguration()
-  ) throws -> CactusInferenceStream<CactusCompletion<Output>> where Output.Partial: Sendable {
-    guard self.beginRespondingIfNecessary() else {
-      throw CactusAgentSessionError.alreadyResponding
-    }
-
-    let context = self.streamRequestContext(from: request)
-    let stream = CactusInferenceStream<CactusCompletion<Output>> { continuation in
-      defer { self.endResponding() }
-
-      let userMessage = try context.userMessageResult.get()
-      let userTranscriptEntry = CactusTranscript.Element(message: userMessage)
-      self.state.withLock { $0.transcript.append(userTranscriptEntry) }
-
-      let transcriptCountBeforeTurn = self.transcript.count
-
-      let assistantStreamID = CactusGenerationID()
-      let completedTurn = try await self.languageModelActor.jsonStreamableComplete(
-        messages: self.transcript.messages,
-        as: outputType,
-        configuration: configuration,
-        options: CactusLanguageModel.JSONChatCompletionOptions(
-          chatCompletionOptions: context.options
-        ),
-        maxBufferSize: context.maxBufferSize,
-        functions: context.functionDefinitions
-      ) { token, tokenId, partial in
-        continuation.yield(
-          token: CactusStreamedToken(
-            messageStreamId: assistantStreamID,
-            stringValue: token,
-            tokenId: tokenId
-          )
-        )
-        if let partial {
-          continuation.yield(partial: partial)
-        }
-      }
-
-      let appendedMessages = Self.appendedMessages(
-        in: completedTurn.messages,
-        originalMessagesCount: transcriptCountBeforeTurn
-      )
-      var completionEntries = [CactusCompletionEntry]()
-      for message in appendedMessages {
-        let transcriptEntry = CactusTranscript.Element(message: message)
-        self.state.withLock { $0.transcript.append(transcriptEntry) }
-        completionEntries.append(
-          Self.completionEntry(
-            transcriptEntry: transcriptEntry,
-            completionMetrics: message.role == .assistant ? completedTurn.completion : nil
-          )
-        )
-      }
-
-      guard !completionEntries.isEmpty else {
-        throw AgentLoopError.missingAssistantResponse
-      }
-
-      return CactusCompletion(
-        output: try completedTurn.output.get(),
-        entries: completionEntries
-      )
-    }
-    self.registerActiveStreamStopper(stream)
-    return stream
-  }
-
-  /// Streams structured output tokens and returns completion entries and decoded output.
-  ///
-  /// - Parameters:
-  ///   - request: The user message request for this turn.
-  ///   - outputType: The structured output type to decode.
-  ///   - schema: The JSON schema used to constrain and validate generated output.
-  ///   - validator: The validator used to validate generated JSON values.
-  ///   - decoder: The decoder used to decode the validated JSON value into `Output`.
-  /// - Returns: A stream whose final response is a completion containing decoded output and entries.
-  public func stream<Output: Decodable & Sendable>(
-    to request: CactusUserMessage,
-    generating outputType: Output.Type,
-    schema: JSONSchema,
-    validator: JSONSchema.Validator = .shared,
-    decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder()
-  ) throws -> CactusInferenceStream<CactusCompletion<Output>> {
-    guard self.beginRespondingIfNecessary() else {
-      throw CactusAgentSessionError.alreadyResponding
-    }
-
-    let context = self.streamRequestContext(from: request)
-    let stream = CactusInferenceStream<CactusCompletion<Output>> { continuation in
-      defer { self.endResponding() }
-
-      let userMessage = try context.userMessageResult.get()
-      self.state.withLock { $0.transcript.append(CactusTranscript.Element(message: userMessage)) }
-
-      let transcriptCountBeforeTurn = self.transcript.count
-
-      let assistantStreamID = CactusGenerationID()
-      let completedTurn = try await self.languageModelActor.jsonComplete(
-        messages: self.transcript.messages,
-        as: outputType,
-        schema: schema,
-        options: CactusLanguageModel.JSONChatCompletionOptions(
-          chatCompletionOptions: context.options,
-          validator: validator,
-          decoder: decoder
-        ),
-        maxBufferSize: context.maxBufferSize,
-        functions: context.functionDefinitions
-      ) { token, tokenId in
-        continuation.yield(
-          token: CactusStreamedToken(
-            messageStreamId: assistantStreamID,
-            stringValue: token,
-            tokenId: tokenId
-          )
-        )
-      }
-
-      let appendedMessages = Self.appendedMessages(
-        in: completedTurn.messages,
-        originalMessagesCount: transcriptCountBeforeTurn
-      )
-      var completionEntries = [CactusCompletionEntry]()
-      for message in appendedMessages {
-        let transcriptEntry = CactusTranscript.Element(message: message)
-        self.state.withLock { $0.transcript.append(transcriptEntry) }
-        completionEntries.append(
-          Self.completionEntry(
-            transcriptEntry: transcriptEntry,
-            completionMetrics: message.role == .assistant ? completedTurn.completion : nil
-          )
-        )
-      }
-
-      guard !completionEntries.isEmpty else {
-        throw AgentLoopError.missingAssistantResponse
-      }
-
-      return CactusCompletion(
-        output: try completedTurn.output.get(),
-        entries: completionEntries
-      )
     }
     self.registerActiveStreamStopper(stream)
     return stream
@@ -801,46 +555,13 @@ extension CactusAgentSession {
     }
   }
 
-  private static func completionEntry(
-    transcriptEntry: CactusTranscript.Element,
-    completionMetrics: CactusLanguageModel.ChatCompletion? = nil
-  ) -> CactusCompletionEntry {
-    if let completionMetrics {
-      return CactusCompletionEntry(
-        transcriptEntry: transcriptEntry,
-        prefillTokens: completionMetrics.prefillTokens,
-        decodeTokens: completionMetrics.decodeTokens,
-        totalTokens: completionMetrics.totalTokens,
-        confidence: completionMetrics.confidence,
-        prefillTps: completionMetrics.prefillTps,
-        decodeTps: completionMetrics.decodeTps,
-        ramUsageMb: completionMetrics.ramUsageMb,
-        durationToFirstToken: .seconds(completionMetrics.timeIntervalToFirstToken),
-        totalDuration: .seconds(completionMetrics.totalTimeInterval)
-      )
-    }
-
-    return CactusCompletionEntry(
-      transcriptEntry: transcriptEntry,
-      prefillTokens: 0,
-      decodeTokens: 0,
-      totalTokens: 0,
-      confidence: 0,
-      prefillTps: 0,
-      decodeTps: 0,
-      ramUsageMb: 0,
-      durationToFirstToken: .seconds(0),
-      totalDuration: .seconds(0)
-    )
-  }
-
   private func resolveFunctionCalls(
     _ functionCalls: [CactusLanguageModel.FunctionCall]
   ) throws -> [CactusAgentSession.FunctionCall] {
     let availableFunctions = self.functions
     return try functionCalls.map { functionCall in
       guard let function = availableFunctions.first(where: { $0.name == functionCall.name }) else {
-        throw AgentLoopError.missingFunction(functionCall.name)
+        throw CactusAgentSessionError.missingFunction(functionCall.name)
       }
       return CactusAgentSession.FunctionCall(
         function: function,
@@ -874,16 +595,13 @@ extension CactusAgentSession {
     )
   }
 
-  private func functionOutputRole() -> CactusLanguageModel.MessageRole {
+  private var functionOutputRole: CactusLanguageModel.MessageRole {
     let modelType = self.languageModelActor.configurationFile.modelType
-    if modelType == .qwen {
-      return CactusLanguageModel.MessageRole(rawValue: "function")
-    }
-    return CactusLanguageModel.MessageRole(rawValue: "tool")
+    return modelType == .qwen ? .function : .tool
   }
 
   private struct StreamRequestContext: Sendable {
-    let userMessageResult: Result<CactusLanguageModel.ChatMessage, AgentLoopError>
+    let userMessage: CactusLanguageModel.ChatMessage
     let options: CactusLanguageModel.ChatCompletion.Options
     let maxBufferSize: Int?
     let functionDefinitions: [CactusLanguageModel.FunctionDefinition]
@@ -891,30 +609,109 @@ extension CactusAgentSession {
 
   private func streamRequestContext(
     from request: CactusUserMessage
-  ) -> StreamRequestContext {
-    let userMessageResult: Result<CactusLanguageModel.ChatMessage, AgentLoopError>
+  ) throws -> StreamRequestContext {
+    let userMessage: CactusLanguageModel.ChatMessage
     do {
-      userMessageResult = .success(try Self.userChatMessage(from: request))
+      userMessage = try self.userChatMessage(from: request)
     } catch {
-      userMessageResult = .failure(.invalidUserMessage(String(describing: error)))
+      throw CactusAgentSessionError.invalidUserMessage(error)
     }
-
     return StreamRequestContext(
-      userMessageResult: userMessageResult,
+      userMessage: userMessage,
       options: self.chatOptions(from: request),
       maxBufferSize: request.maxBufferSize,
       functionDefinitions: self.functions.map(\.definition)
     )
   }
 
-  private static func userChatMessage(
+  private func insertSystemPromptIfNecessary() throws {
+    let prompt: CactusPromptContent? = self.state.withLock { state in
+      if state.transcript.isEmpty {
+        return state.systemPrompt
+      }
+      return Optional<CactusPromptContent>.none
+    }
+    guard let prompt else { return }
+
+    let text: String
+    do {
+      let components = try prompt.messageComponents()
+      text = components.text
+    } catch {
+      throw CactusAgentSessionError.invalidSystemPrompt(error)
+    }
+
+    let systemMessage = CactusLanguageModel.ChatMessage.system(text)
+    self.state.withLock { state in
+      guard state.transcript.isEmpty else { return }
+      state.transcript.insert(CactusTranscript.Element(message: systemMessage), at: 0)
+    }
+  }
+
+  private func appendTranscriptEntry(
+    _ message: CactusLanguageModel.ChatMessage,
+    metrics: CactusCompletionEntry.Metrics?,
+    completionEntries: inout [CactusCompletionEntry]
+  ) {
+    let transcriptEntry = CactusTranscript.Element(message: message)
+    self.state.withLock { $0.transcript.append(transcriptEntry) }
+    completionEntries.append(
+      CactusCompletionEntry(transcriptEntry: transcriptEntry, metrics: metrics)
+    )
+  }
+
+  private func appendModelMessages(
+    _ messages: [CactusLanguageModel.ChatMessage],
+    completion: CactusLanguageModel.ChatCompletion,
+    completionEntries: inout [CactusCompletionEntry]
+  ) {
+    for message in messages {
+      self.appendTranscriptEntry(
+        message,
+        metrics: message.role == .assistant ? .init(completion: completion) : nil,
+        completionEntries: &completionEntries
+      )
+    }
+  }
+
+  private func executeFunctionCalls(
+    _ functionCalls: [CactusAgentSession.FunctionCall]
+  ) async throws -> [CactusAgentSession.FunctionReturn] {
+    if let delegate = self.delegate {
+      return try await delegate.agentFunctionWillExecuteFunctions(
+        self,
+        functionCalls: functionCalls
+      )
+    }
+    return try await Self.executeParallelFunctionCalls(functionCalls: functionCalls)
+  }
+
+  private func appendFunctionReturns(
+    _ functionReturns: [CactusAgentSession.FunctionReturn],
+    role: CactusLanguageModel.MessageRole,
+    completionEntries: inout [CactusCompletionEntry]
+  ) throws {
+    for functionReturn in functionReturns {
+      let content = try self.functionOutputPayload(
+        name: functionReturn.name,
+        content: functionReturn.content
+      )
+      self.appendTranscriptEntry(
+        CactusLanguageModel.ChatMessage(role: role, content: content),
+        metrics: nil,
+        completionEntries: &completionEntries
+      )
+    }
+  }
+
+  private func userChatMessage(
     from request: CactusUserMessage
   ) throws -> CactusLanguageModel.ChatMessage {
     let components = try request.content.messageComponents()
     return CactusLanguageModel.ChatMessage.user(components.text, images: components.images)
   }
 
-  private static func appendedMessages(
+  private func appendedMessages(
     in messages: [CactusLanguageModel.ChatMessage],
     originalMessagesCount: Int
   ) -> [CactusLanguageModel.ChatMessage] {
@@ -924,7 +721,7 @@ extension CactusAgentSession {
     return Array(messages.dropFirst(originalMessagesCount))
   }
 
-  private static func functionOutputPayload(
+  private func functionOutputPayload(
     name: String,
     content: CactusPromptContent
   ) throws -> String {
@@ -940,18 +737,53 @@ extension CactusAgentSession {
 }
 
 /// An error thrown by ``CactusAgentSession`` APIs.
-public struct CactusAgentSessionError: Error, Hashable, Sendable {
+public struct CactusAgentSessionError: Error, Sendable {
+  /// The underlying error that caused this error, if any.
+  public let underlyingError: (any Error)?
+
+  private let _message: String?
+
   /// A human-readable description of the failure.
-  public let message: String
+  public var message: String {
+    if let error = self.underlyingError {
+      return error.localizedDescription
+    }
+    return self._message ?? "Unknown error"
+  }
 
   private init(message: String) {
-    self.message = message
+    self.underlyingError = nil
+    self._message = message
+  }
+
+  private init(error: any Error) {
+    self.underlyingError = error
+    self._message = nil
   }
 
   /// A request was sent while another response stream was still active.
   public static let alreadyResponding = Self(
     message: "The agent is already responding to another request."
   )
+
+  /// A model-emitted function call referenced a function that is not registered.
+  public static func missingFunction(_ name: String) -> Self {
+    Self(message: "Missing function for model-emitted call: \(name)")
+  }
+
+  /// User message content could not be converted to a chat message.
+  ///
+  /// - Parameter error: The underlying error that caused the conversion to fail.
+  public static func invalidUserMessage(_ error: any Error) -> Self {
+    Self(error: error)
+  }
+
+  /// System prompt content could not be converted to a chat message.
+  ///
+  /// - Parameter error: The underlying error that caused the conversion to fail.
+  public static func invalidSystemPrompt(_ error: any Error) -> Self {
+    Self(error: error)
+  }
 }
 
 // MARK: - Observable
