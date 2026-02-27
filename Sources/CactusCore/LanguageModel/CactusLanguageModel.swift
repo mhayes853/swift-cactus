@@ -802,8 +802,8 @@ extension CactusLanguageModel.Completion {
     /// Whether to force functions to be used by the model.
     public var forceFunctions: Bool
 
-    /// The minimum confidence threshold for tool selection (0.0-1.0).
-    public var confidenceThreshold: Float
+    /// The minimum confidence threshold for cloud handoff (0.0-1.0).
+    public var cloudHandoffThreshold: Float
 
     /// The number of top results for tool RAG retrieval.
     public var toolRagTopK: Int
@@ -832,7 +832,7 @@ extension CactusLanguageModel.Completion {
     ///   - topK: The k most probable options to limit the next token to.
     ///   - stopSequences: Phrases that stop generation when emitted.
     ///   - forceFunctions: Whether tool calls are forced when tools are provided.
-    ///   - confidenceThreshold: Confidence threshold used for cloud handoff.
+    ///   - cloudHandoffThreshold: Confidence threshold used for cloud handoff.
     ///   - toolRagTopK: Number of top tools to keep after tool-RAG selection.
     ///   - includeStopSequences: Whether stop sequences are kept in final output.
     ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
@@ -846,7 +846,7 @@ extension CactusLanguageModel.Completion {
       topK: Int = 20,
       stopSequences: [String] = Self.defaultStopSequences,
       forceFunctions: Bool = false,
-      confidenceThreshold: Float = 0.7,
+      cloudHandoffThreshold: Float = 0.7,
       toolRagTopK: Int = 2,
       includeStopSequences: Bool = false,
       isTelemetryEnabled: Bool = false,
@@ -860,7 +860,7 @@ extension CactusLanguageModel.Completion {
       self.topK = topK
       self.stopSequences = stopSequences
       self.forceFunctions = forceFunctions
-      self.confidenceThreshold = confidenceThreshold
+      self.cloudHandoffThreshold = cloudHandoffThreshold
       self.toolRagTopK = toolRagTopK
       self.includeStopSequences = includeStopSequences
       self.isTelemetryEnabled = isTelemetryEnabled
@@ -876,7 +876,7 @@ extension CactusLanguageModel.Completion {
     ///   - modelType: Model type used to derive default sampling values.
     ///   - stopSequences: Phrases that stop generation when emitted.
     ///   - forceFunctions: Whether tool calls are forced when tools are provided.
-    ///   - confidenceThreshold: Confidence threshold used for cloud handoff.
+    ///   - cloudHandoffThreshold: Confidence threshold used for cloud handoff.
     ///   - toolRagTopK: Number of top tools to keep after tool-RAG selection.
     ///   - includeStopSequences: Whether stop sequences are kept in final output.
     ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
@@ -888,7 +888,7 @@ extension CactusLanguageModel.Completion {
       modelType: CactusLanguageModel.ModelType,
       stopSequences: [String] = Self.defaultStopSequences,
       forceFunctions: Bool = false,
-      confidenceThreshold: Float = 0.7,
+      cloudHandoffThreshold: Float = 0.7,
       toolRagTopK: Int = 2,
       includeStopSequences: Bool = false,
       isTelemetryEnabled: Bool = false,
@@ -902,7 +902,7 @@ extension CactusLanguageModel.Completion {
       self.topK = modelType.defaultTopK
       self.stopSequences = stopSequences
       self.forceFunctions = forceFunctions
-      self.confidenceThreshold = confidenceThreshold
+      self.cloudHandoffThreshold = cloudHandoffThreshold
       self.toolRagTopK = toolRagTopK
       self.includeStopSequences = includeStopSequences
       self.isTelemetryEnabled = isTelemetryEnabled
@@ -938,7 +938,7 @@ extension CactusLanguageModel.Completion.Options: Encodable {
     try container.encode(self.topK, forKey: .topK)
     try container.encode(self.stopSequences, forKey: .stopSequences)
     try container.encode(self.forceFunctions, forKey: .forceFunctions)
-    try container.encode(self.confidenceThreshold, forKey: .confidenceThreshold)
+    try container.encode(self.cloudHandoffThreshold, forKey: .confidenceThreshold)
     try container.encode(self.toolRagTopK, forKey: .toolRagTopK)
     try container.encode(self.includeStopSequences, forKey: .includeStopSequences)
     try container.encode(self.isTelemetryEnabled, forKey: .isTelemetryEnabled)
