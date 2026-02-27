@@ -1,0 +1,36 @@
+▿ 2 elements
+  ▿ CactusCompletionEntry
+    - metrics: Optional<Metrics>.none
+    ▿ transcriptEntry: Element
+      ▿ id: CactusGenerationID
+        - rawValue: 351423EC-ACE9-4CF0-A0F3-0FD778C19C13
+      ▿ message: ChatMessage
+        - content: "Use the get_fact tool for both \'cactus\' and \'swift\', then summarize both facts."
+        ▿ images: Optional<Array<URL>>
+          - some: 0 elements
+        ▿ role: MessageRole
+          - rawValue: "user"
+  ▿ CactusCompletionEntry
+    ▿ metrics: Optional<Metrics>
+      ▿ some: Metrics
+        - confidence: 0.9231
+        - decodeTokens: 172
+        - decodeTps: 31.13
+        ▿ durationToFirstToken: 1.44092 seconds
+          - secondsComponent: 1
+          - attosecondsComponent: 440920000000000000
+        - prefillTokens: 118
+        - prefillTps: 81.89
+        - ramUsageMb: 255.6
+        ▿ totalDuration: 6.9346499999999995 seconds
+          - secondsComponent: 6
+          - attosecondsComponent: 934649999999999488
+        - totalTokens: 290
+    ▿ transcriptEntry: Element
+      ▿ id: CactusGenerationID
+        - rawValue: 4D653DD5-C147-410A-BFA8-7A535059961B
+      ▿ message: ChatMessage
+        - content: "I\'m sorry, but it seems I don\'t have enough context to determine what specific facts or information you\'re looking for. Could you please provide more details about the topic or question you\'d like me to address? Additionally, if there\'s a particular tool function or service that needs assistance with, let me know how I can help further.\n\nHowever, since your request is generic and doesn\'t specify a topic for \"get_fact\", here are some examples of topics and corresponding facts based on my knowledge:\n\n- Topic: Earth\n  Fact: The Earth is the third planet from the Sun in our solar system.\n  \n- Topic: Space\n  Fact: There are over 1 million asteroids believed to exist within our Solar System.\n\nIf none of these match what you\'re interested in, please provide more details so I can assist you better!"
+        - images: Optional<Array<URL>>.none
+        ▿ role: MessageRole
+          - rawValue: "assistant"

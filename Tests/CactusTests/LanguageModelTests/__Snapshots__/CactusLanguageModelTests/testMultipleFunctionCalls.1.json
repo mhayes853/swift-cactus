@@ -1,8 +1,8 @@
 {
   "cloud_handoff" : false,
-  "confidence" : 0.9952,
+  "confidence" : 0.9953,
   "decode_tokens" : 41,
-  "decode_tps" : 54.46,
+  "decode_tps" : 45.25,
   "function_calls" : [
     {
       "arguments" : {
@@ -17,11 +17,11 @@
       "name" : "get_population"
     }
   ],
-  "prefill_tokens" : 234,
-  "prefill_tps" : 411.74,
-  "ram_usage_mb" : 1226.74,
+  "prefill_tokens" : 225,
+  "prefill_tps" : 379.42,
+  "ram_usage_mb" : 1298.51,
   "response" : "\n",
-  "time_to_first_token_ms" : 568.32,
-  "total_time_ms" : 1302.84,
-  "total_tokens" : 275
+  "time_to_first_token_ms" : 593.01,
+  "total_time_ms" : 1477.04,
+  "total_tokens" : 266
 }

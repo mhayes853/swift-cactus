@@ -1,8 +1,8 @@
 {
   "cloud_handoff" : false,
-  "confidence" : 0.9987,
+  "confidence" : 0.997,
   "decode_tokens" : 20,
-  "decode_tps" : 50.83,
+  "decode_tps" : 50.27,
   "function_calls" : [
     {
       "arguments" : {
@@ -11,11 +11,11 @@
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 165,
-  "prefill_tps" : 387.19,
-  "ram_usage_mb" : 447.86,
+  "prefill_tokens" : 160,
+  "prefill_tps" : 354.21,
+  "ram_usage_mb" : 385.14,
   "response" : "",
-  "time_to_first_token_ms" : 426.15,
-  "total_time_ms" : 799.92,
-  "total_tokens" : 185
+  "time_to_first_token_ms" : 451.71,
+  "total_time_ms" : 829.64,
+  "total_tokens" : 180
 }

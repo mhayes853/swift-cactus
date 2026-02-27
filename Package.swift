@@ -4,9 +4,6 @@
 import CompilerPluginSupport
 import PackageDescription
 
-let StreamParsing128BitIntegers =
-  "AvailabilityMacro=StreamParsing128BitIntegers:macOS 15.0, iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0"
-
 let package = Package(
   name: "swift-cactus",
   platforms: [.iOS(.v13), .macOS(.v11), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
@@ -20,7 +17,6 @@ let package = Package(
     .package(url: "https://github.com/vapor-community/Zip", from: "2.2.7"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.3.3"),
     .package(url: "https://github.com/mhayes853/swift-operation", from: "0.3.1"),
-    .package(url: "https://github.com/mhayes853/swift-stream-parsing", from: "0.3.0"),
     .package(url: "https://github.com/pointfreeco/swift-macro-testing", from: "0.6.4"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.4.3"),
     .package(url: "https://github.com/swiftlang/swift-syntax", "600.0.0"..<"603.0.0"),
@@ -32,17 +28,14 @@ let package = Package(
       dependencies: [
         "CXXCactusShims",
         .product(name: "Zip", package: "Zip"),
-        .product(name: "IssueReporting", package: "xctest-dynamic-overlay"),
-        .product(name: "StreamParsingCore", package: "swift-stream-parsing")
-      ],
-      swiftSettings: [.enableExperimentalFeature(StreamParsing128BitIntegers)]
+        .product(name: "IssueReporting", package: "xctest-dynamic-overlay")
+      ]
     ),
     .target(
       name: "Cactus",
       dependencies: [
         "CactusCore",
-        "CactusMacros",
-        .product(name: "StreamParsing", package: "swift-stream-parsing")
+        "CactusMacros"
       ]
     ),
     .macro(
@@ -65,8 +58,7 @@ let package = Package(
         .product(name: "IssueReportingTestSupport", package: "xctest-dynamic-overlay")
       ],
       exclude: ["LanguageModelTests/__Snapshots__", "JSONSchemaTests/__Snapshots__"],
-      resources: [.copy("Resources")],
-      swiftSettings: [.enableExperimentalFeature(StreamParsing128BitIntegers)]
+      resources: [.copy("Resources")]
     ),
     .testTarget(
       name: "CactusMacrosTests",

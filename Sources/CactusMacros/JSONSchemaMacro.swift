@@ -64,22 +64,7 @@ public enum JSONSchemaMacro: ExtensionMacro, MemberMacro, MemberAttributeMacro {
       return []
     }
 
-    if Self.hasStreamParseableAttribute(in: variableDecl) {
-      return []
-    }
-
-    if Self.jsonSchemaIgnoredAttribute(in: variableDecl) != nil {
-      return ["@StreamParseableIgnored"]
-    }
-
-    guard let propertyAttribute = Self.singleJSONSchemaPropertyAttribute(in: variableDecl),
-      let key = Self.keyArgumentValue(in: propertyAttribute)
-    else {
-      return []
-    }
-
-    let keyLiteral = Self.quotedStringLiteral(key)
-    return [AttributeSyntax(stringLiteral: "@StreamParseableMember(key: \(keyLiteral))")]
+    return []
   }
 
   private static func requireStructDecl(
@@ -1194,16 +1179,6 @@ extension JSONSchemaMacro {
     let attributes = Self.jsonSchemaPropertyAttributes(in: variableDecl)
     guard attributes.count == 1 else { return nil }
     return attributes.first
-  }
-
-  private static func hasStreamParseableAttribute(
-    in variableDecl: VariableDeclSyntax
-  ) -> Bool {
-    variableDecl.attributes
-      .compactMap { $0.as(AttributeSyntax.self) }
-      .contains { attribute in
-        Self.isAttributeNamed(attribute, names: ["StreamParseableMember", "StreamParseableIgnored"])
-      }
   }
 
   private static func isAttributeNamed(

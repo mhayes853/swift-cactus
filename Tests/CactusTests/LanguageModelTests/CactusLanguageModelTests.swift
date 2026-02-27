@@ -311,9 +311,9 @@ struct `CactusLanguageModel tests` {
     expectNoDifference(assistantMessage.contains("<tool_call>"), true)
   }
 
-  @Test
+  @Test(.disabled("Potential deadlock when running all tests."))
   func `Complete Reused Messages Reduce Prefill Tokens Compared To Reset Baseline`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .qwen3_1_7b())
+    let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
     let model = try CactusLanguageModel(from: modelURL)
 
     let first = try model.complete(

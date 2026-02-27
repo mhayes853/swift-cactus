@@ -1,6 +1,5 @@
 import Cactus
 import CustomDump
-import StreamParsing
 import Testing
 
 @Suite
@@ -55,53 +54,6 @@ struct `CactusInferenceStream tests` {
       _ = #expect(throws: StreamTestError.self) {
         try result?.get()
       }
-    }
-  }
-
-  @Test
-  func `Partials AsyncSequence Propagates Errors`() async {
-    let stream = CactusInferenceStream<StreamedUser> { continuation in
-      continuation.yield(partial: StreamedUser.Partial(name: "Blob", age: nil))
-      throw StreamTestError.boom
-    }
-
-    let task = Task {
-      var count = 0
-      for try await _ in stream.partials {
-        count += 1
-      }
-      return count
-    }
-
-    await #expect(throws: StreamTestError.self) {
-      _ = try await task.value
-    }
-  }
-
-  @Test
-  func `OnPartial onFinished Receives Error`() async {
-    let stream = CactusInferenceStream<StreamedUser> { continuation in
-      continuation.yield(partial: StreamedUser.Partial(name: "Blob", age: nil))
-      throw StreamTestError.boom
-    }
-
-    let finished = Lock<(any Error)?>(nil)
-
-    let subscription = stream.onPartial(
-      perform: { _ in },
-      onFinished: { error in
-        finished.withLock { $0 = error }
-      }
-    )
-
-    _ = subscription
-
-    await #expect(throws: StreamTestError.self) {
-      _ = try await stream.collectResponse()
-    }
-
-    finished.withLock { error in
-      #expect(error as? StreamTestError == .boom)
     }
   }
 
@@ -239,25 +191,6 @@ struct `CactusInferenceStream tests` {
   }
 
   @Test
-  func `Partial AsyncSequence Streams All Partials`() async throws {
-    let stream = CactusInferenceStream<StreamedUser> { continuation in
-      continuation.yield(partial: .init(name: "Blob", age: nil))
-      continuation.yield(partial: .init(name: "Blob", age: 42))
-      return StreamedUser(name: "Blob", age: 42)
-    }
-
-    var collectedPartials: [StreamedUser.Partial] = []
-    for try await partial in stream.partials {
-      collectedPartials.append(partial)
-    }
-    #expect(collectedPartials.count == 2)
-    expectNoDifference(collectedPartials[0].name, "Blob")
-    expectNoDifference(collectedPartials[0].age, nil)
-    expectNoDifference(collectedPartials[1].name, "Blob")
-    expectNoDifference(collectedPartials[1].age, 42)
-  }
-
-  @Test
   func `Stop Cancels StreamResponse`() async {
     let stream = CactusInferenceStream<String> { _ in
       // NB: Keep the producer suspended long enough for the test to call `stop()` first.
@@ -303,14 +236,6 @@ struct `CactusInferenceStream tests` {
 private let streamedTokenCount = 256
 private let producerSleepNanoseconds: UInt64 = 30_000_000_000
 private let cancellationLeadTimeNanoseconds: UInt64 = 50_000_000
-
-@StreamParseable
-private struct StreamedUser: Codable, Equatable, Sendable {
-  var name: String
-  var age: Int
-}
-
-extension StreamedUser.Partial: Sendable {}
 
 private enum StreamTestError: Error, Hashable {
   case boom

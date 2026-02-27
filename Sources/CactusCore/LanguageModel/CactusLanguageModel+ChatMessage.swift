@@ -41,6 +41,11 @@ extension CactusLanguageModel {
     /// The ``MessageRole`` of the message.
     public var role: MessageRole
 
+    /// Whether this message is a tool/function output message.
+    public var isToolOrFunctionOutput: Bool {
+      self.role == .tool || self.role == .function
+    }
+
     /// The message content.
     public var content: String
 
@@ -81,6 +86,18 @@ extension CactusLanguageModel {
     ///
     /// Use this role when providing the model with one of its previous responses.
     public static let assistant = MessageRole(rawValue: "assistant")
+
+    /// A tool output role.
+    ///
+    /// This role represents tool/function output messages for most models.
+    /// Some models (eg. Qwen) require ``function`` instead.
+    public static let tool = MessageRole(rawValue: "tool")
+
+    /// A function output role.
+    ///
+    /// This role represents the same tool/function output concept as ``tool``,
+    /// but some models (eg. Qwen) specifically require this role value.
+    public static let function = MessageRole(rawValue: "function")
 
     public var rawValue: String
 

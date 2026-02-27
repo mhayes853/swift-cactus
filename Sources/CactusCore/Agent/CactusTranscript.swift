@@ -93,6 +93,19 @@ public struct CactusTranscript: Hashable, Sendable {
     }
   }
 
+  /// Inserts an element at the specified position.
+  ///
+  /// - Parameters:
+  ///   - element: The element to insert.
+  ///   - index: The position at which to insert the element.
+  /// - Complexity: O(*n*) where *n* is the number of elements after `index`.
+  public mutating func insert(_ element: Element, at index: Int) {
+    self.elements.insert(element, at: index)
+    for i in index..<self.elements.count {
+      self.messageIndicies[self.elements[i].id] = i
+    }
+  }
+
   /// Reserves storage for the specified number of elements.
   ///
   /// Call this method before appending a known number of elements to avoid

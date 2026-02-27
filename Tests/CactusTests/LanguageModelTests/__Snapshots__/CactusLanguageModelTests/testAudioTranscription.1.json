@@ -1,16 +1,16 @@
 {
   "slug" : "whisper-small",
   "transcription" : {
-    "cloud_handoff" : false,
-    "confidence" : 0.8902,
-    "decode_tokens" : 29,
-    "decode_tps" : 75.72,
+    "cloud_handoff" : true,
+    "confidence" : 0.8531,
+    "decode_tokens" : 25,
+    "decode_tps" : 76.07,
     "prefill_tokens" : 4,
-    "prefill_tps" : 1.6,
-    "ram_usage_mb" : 357.64,
-    "response" : "The power of the God can not be overcome. The voice, Abyss how dare you disobey me? But that's impossible.",
-    "time_to_first_token_ms" : 2495.45,
-    "total_time_ms" : 2865.24,
-    "total_tokens" : 33
+    "prefill_tps" : 1.59,
+    "ram_usage_mb" : 360.16,
+    "response" : "The power of a god cannot be overcome! The voice of this Abyss! How dare you disobey me?",
+    "time_to_first_token_ms" : 2512.29,
+    "total_time_ms" : 2827.81,
+    "total_tokens" : 29
   }
 }

@@ -1,0 +1,36 @@
+[
+  {
+    "id" : "57406413-3352-4FD4-A3E1-EB59AAEF442D",
+    "message" : {
+      "content" : "Describe what you see in this image in one short sentence.",
+      "images" : [
+        "file:\/\/\/Users\/matthewhayes\/Developer\/side_projects\/swift-cactus\/.build\/arm64-apple-macosx\/debug\/swift-cactus_CactusTests-tool.bundle\/Resources\/sean_avatar.jpeg"
+      ],
+      "role" : "user"
+    }
+  },
+  {
+    "id" : "4F70BEAF-9EC1-4D93-AB42-ACBF383C78C1",
+    "message" : {
+      "content" : "A smiley face on a dark brown background.",
+      "role" : "assistant"
+    }
+  },
+  {
+    "id" : "F5005A4B-948B-43FC-9943-41713778C848",
+    "message" : {
+      "content" : "What emotion is the smile evoking?",
+      "images" : [
+
+      ],
+      "role" : "user"
+    }
+  },
+  {
+    "id" : "42E1FE20-4E9F-4725-94FC-F16CF4CA4816",
+    "message" : {
+      "content" : "The smile is evoking happiness.",
+      "role" : "assistant"
+    }
+  }
+]

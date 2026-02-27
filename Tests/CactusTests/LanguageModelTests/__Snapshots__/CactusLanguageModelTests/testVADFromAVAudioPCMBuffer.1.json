@@ -1,6 +1,6 @@
 {
   "result" : {
-    "ram_usage_mb" : 1271.01,
+    "ram_usage_mb" : 1399.08,
     "segments" : [
       {
         "end" : 130528,
@@ -135,7 +135,7 @@
         "start" : 1574944
       }
     ],
-    "total_time_ms" : 407.5
+    "total_time_ms" : 415.83
   },
   "slug" : "silero-vad"
 }
