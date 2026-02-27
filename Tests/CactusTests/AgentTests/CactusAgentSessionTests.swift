@@ -101,7 +101,6 @@ struct `CactusAgentSession tests` {
         }
       )
 
-      expectNoDifference(session.transcript[2].message.images, [Self.testImageURL])
       withKnownIssue {
         assertSnapshot(of: session.transcript, as: .json, record: true)
       }

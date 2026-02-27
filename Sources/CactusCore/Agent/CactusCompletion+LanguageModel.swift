@@ -10,25 +10,20 @@ extension CactusCompletionEntry {
     transcriptEntry: CactusTranscript.Element,
     completion: CactusLanguageModel.Completion
   ) {
-    self.init(transcriptEntry: transcriptEntry, metrics: .init(completion: completion))
-  }
-}
-
-extension CactusCompletionEntry.Metrics {
-  /// Creates completion entry metrics from language model chat completion metrics.
-  ///
-  /// - Parameter completion: The chat completion metrics from the language model.
-  public init(completion: CactusLanguageModel.Completion) {
     self.init(
-      prefillTokens: completion.prefillTokens,
-      decodeTokens: completion.decodeTokens,
-      totalTokens: completion.totalTokens,
-      confidence: completion.confidence,
-      prefillTps: completion.prefillTps,
-      decodeTps: completion.decodeTps,
-      ramUsageMb: completion.ramUsageMb,
-      durationToFirstToken: .seconds(completion.timeIntervalToFirstToken),
-      totalDuration: .seconds(completion.totalTimeInterval)
+      transcriptEntry: transcriptEntry,
+      metrics: CactusGenerationMetrics(
+        prefillTokens: completion.prefillTokens,
+        decodeTokens: completion.decodeTokens,
+        totalTokens: completion.totalTokens,
+        confidence: completion.confidence,
+        prefillTps: completion.prefillTps,
+        decodeTps: completion.decodeTps,
+        ramUsageMb: completion.ramUsageMb,
+        didHandoffToCloud: false,
+        durationToFirstToken: .seconds(completion.timeIntervalToFirstToken),
+        totalDuration: .seconds(completion.totalTimeInterval)
+      )
     )
   }
 }

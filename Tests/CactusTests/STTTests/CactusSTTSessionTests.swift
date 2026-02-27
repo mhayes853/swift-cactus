@@ -186,10 +186,10 @@ private struct StreamTranscriptionSnapshot: Codable {
   init(streamedText: String, transcription: CactusTranscription) {
     self.streamedText = streamedText
     self.parsedContent = TranscriptionSnapshot(transcription: transcription).content
-    self.prefillTokens = transcription.prefillTokens
-    self.decodeTokens = transcription.decodeTokens
-    self.totalTokens = transcription.totalTokens
-    self.confidence = transcription.confidence
+    self.prefillTokens = transcription.metrics.prefillTokens
+    self.decodeTokens = transcription.metrics.decodeTokens
+    self.totalTokens = transcription.metrics.totalTokens
+    self.confidence = transcription.metrics.confidence
   }
 }
 

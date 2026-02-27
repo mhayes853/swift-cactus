@@ -7,35 +7,8 @@ public struct CactusTranscription: Hashable, Sendable, Identifiable {
   /// The unique identifier for this transcription.
   public let id: CactusGenerationID
 
-  /// The number of prefilled tokens.
-  public let prefillTokens: Int
-
-  /// The number of tokens decoded.
-  public let decodeTokens: Int
-
-  /// The total amount of tokens that make up the response.
-  public let totalTokens: Int
-
-  /// The model's confidence in its response.
-  public let confidence: Double
-
-  /// The prefill tokens per second.
-  public let prefillTps: Double
-
-  /// The decode tokens per second.
-  public let decodeTps: Double
-
-  /// The current process RAM usage in MB.
-  public let ramUsageMb: Double
-
-  /// Whether this transcription was handed off to cloud inference.
-  public let didHandoffToCloud: Bool
-
-  /// The amount of time to generate the first token.
-  public let durationToFirstToken: Duration
-
-  /// The total generation time.
-  public let totalDuration: Duration
+  /// Generation metrics for this transcription.
+  public let metrics: CactusGenerationMetrics
 
   /// The parsed transcription content.
   public let content: Content
@@ -44,42 +17,15 @@ public struct CactusTranscription: Hashable, Sendable, Identifiable {
   ///
   /// - Parameters:
   ///   - id: The unique identifier for this transcription.
-  ///   - prefillTokens: The number of prefilled tokens.
-  ///   - decodeTokens: The number of tokens decoded.
-  ///   - totalTokens: The total amount of tokens.
-  ///   - confidence: The model's confidence in its response.
-  ///   - prefillTps: The prefill tokens per second.
-  ///   - decodeTps: The decode tokens per second.
-  ///   - ramUsageMb: The current process RAM usage in MB.
-  ///   - didHandoffToCloud: Whether this transcription was handed off to cloud inference.
-  ///   - durationToFirstToken: The amount of time to generate the first token.
-  ///   - totalDuration: The total generation time.
+  ///   - metrics: Generation metrics for this transcription.
   ///   - content: The parsed transcription content.
   public init(
     id: CactusGenerationID,
-    prefillTokens: Int,
-    decodeTokens: Int,
-    totalTokens: Int,
-    confidence: Double,
-    prefillTps: Double,
-    decodeTps: Double,
-    ramUsageMb: Double,
-    didHandoffToCloud: Bool,
-    durationToFirstToken: Duration,
-    totalDuration: Duration,
+    metrics: CactusGenerationMetrics,
     content: Content
   ) {
     self.id = id
-    self.prefillTokens = prefillTokens
-    self.decodeTokens = decodeTokens
-    self.totalTokens = totalTokens
-    self.confidence = confidence
-    self.prefillTps = prefillTps
-    self.decodeTps = decodeTps
-    self.ramUsageMb = ramUsageMb
-    self.didHandoffToCloud = didHandoffToCloud
-    self.durationToFirstToken = durationToFirstToken
-    self.totalDuration = totalDuration
+    self.metrics = metrics
     self.content = content
   }
 
@@ -87,42 +33,15 @@ public struct CactusTranscription: Hashable, Sendable, Identifiable {
   ///
   /// - Parameters:
   ///   - id: The unique identifier for this transcription.
+  ///   - metrics: Generation metrics for this transcription.
   ///   - response: The raw transcription response string.
-  ///   - prefillTokens: The number of prefilled tokens.
-  ///   - decodeTokens: The number of tokens decoded.
-  ///   - totalTokens: The total amount of tokens.
-  ///   - confidence: The model's confidence in its response.
-  ///   - prefillTps: The prefill tokens per second.
-  ///   - decodeTps: The decode tokens per second.
-  ///   - ramUsageMb: The current process RAM usage in MB.
-  ///   - didHandoffToCloud: Whether this transcription was handed off to cloud inference.
-  ///   - durationToFirstToken: The amount of time to generate the first token.
-  ///   - totalDuration: The total generation time.
   public init(
     id: CactusGenerationID,
-    response: String,
-    prefillTokens: Int,
-    decodeTokens: Int,
-    totalTokens: Int,
-    confidence: Double,
-    prefillTps: Double,
-    decodeTps: Double,
-    ramUsageMb: Double,
-    didHandoffToCloud: Bool,
-    durationToFirstToken: Duration,
-    totalDuration: Duration
+    metrics: CactusGenerationMetrics,
+    response: String
   ) {
     self.id = id
-    self.prefillTokens = prefillTokens
-    self.decodeTokens = decodeTokens
-    self.totalTokens = totalTokens
-    self.confidence = confidence
-    self.prefillTps = prefillTps
-    self.decodeTps = decodeTps
-    self.ramUsageMb = ramUsageMb
-    self.didHandoffToCloud = didHandoffToCloud
-    self.durationToFirstToken = durationToFirstToken
-    self.totalDuration = totalDuration
+    self.metrics = metrics
     self.content = Content(response: response)
   }
 

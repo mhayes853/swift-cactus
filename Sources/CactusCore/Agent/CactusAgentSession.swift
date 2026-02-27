@@ -653,7 +653,7 @@ extension CactusAgentSession {
 
   private func appendTranscriptEntry(
     _ message: CactusLanguageModel.ChatMessage,
-    metrics: CactusCompletionEntry.Metrics?,
+    metrics: CactusGenerationMetrics?,
     completionEntries: inout [CactusCompletionEntry]
   ) {
     let transcriptEntry = CactusTranscript.Element(message: message)
@@ -669,9 +669,23 @@ extension CactusAgentSession {
     completionEntries: inout [CactusCompletionEntry]
   ) {
     for message in messages {
+      let metrics: CactusGenerationMetrics? = message.role == .assistant
+        ? CactusGenerationMetrics(
+          prefillTokens: completion.prefillTokens,
+          decodeTokens: completion.decodeTokens,
+          totalTokens: completion.totalTokens,
+          confidence: completion.confidence,
+          prefillTps: completion.prefillTps,
+          decodeTps: completion.decodeTps,
+          ramUsageMb: completion.ramUsageMb,
+          didHandoffToCloud: false,
+          durationToFirstToken: .seconds(completion.timeIntervalToFirstToken),
+          totalDuration: .seconds(completion.totalTimeInterval)
+        )
+        : nil
       self.appendTranscriptEntry(
         message,
-        metrics: message.role == .assistant ? .init(completion: completion) : nil,
+        metrics: metrics,
         completionEntries: &completionEntries
       )
     }

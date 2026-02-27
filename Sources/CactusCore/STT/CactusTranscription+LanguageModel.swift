@@ -30,17 +30,19 @@ extension CactusTranscription {
   public init(id: CactusGenerationID, transcription: CactusLanguageModel.Transcription) {
     self.init(
       id: id,
-      prefillTokens: transcription.prefillTokens,
-      decodeTokens: transcription.decodeTokens,
-      totalTokens: transcription.totalTokens,
-      confidence: transcription.confidence,
-      prefillTps: transcription.prefillTps,
-      decodeTps: transcription.decodeTps,
-      ramUsageMb: transcription.ramUsageMb,
-      didHandoffToCloud: transcription.didHandoffToCloud,
-      durationToFirstToken: transcription.durationToFirstToken,
-      totalDuration: transcription.totalDuration,
-      content: Content(response: transcription.response)
+      metrics: CactusGenerationMetrics(
+        prefillTokens: transcription.prefillTokens,
+        decodeTokens: transcription.decodeTokens,
+        totalTokens: transcription.totalTokens,
+        confidence: transcription.confidence,
+        prefillTps: transcription.prefillTps,
+        decodeTps: transcription.decodeTps,
+        ramUsageMb: transcription.ramUsageMb,
+        didHandoffToCloud: transcription.didHandoffToCloud,
+        durationToFirstToken: transcription.durationToFirstToken,
+        totalDuration: transcription.totalDuration
+      ),
+      response: transcription.response
     )
   }
 }
