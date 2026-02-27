@@ -1,0 +1,21 @@
+{
+  "cloud_handoff" : false,
+  "confidence" : 0.999,
+  "decode_tokens" : 20,
+  "decode_tps" : 46.86,
+  "function_calls" : [
+    {
+      "arguments" : {
+        "location" : "Santa Cruz"
+      },
+      "name" : "get_weather"
+    }
+  ],
+  "prefill_tokens" : 166,
+  "prefill_tps" : 320.17,
+  "ram_usage_mb" : 393.8,
+  "response" : "",
+  "time_to_first_token_ms" : 518.47,
+  "total_time_ms" : 923.97,
+  "total_tokens" : 186
+}

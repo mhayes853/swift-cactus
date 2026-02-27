@@ -57,7 +57,7 @@ let package = Package(
         .product(name: "Operation", package: "swift-operation"),
         .product(name: "IssueReportingTestSupport", package: "xctest-dynamic-overlay")
       ],
-      exclude: ["LanguageModelTests/__Snapshots__", "JSONSchemaTests/__Snapshots__"],
+      exclude: ["ModelTests/__Snapshots__", "JSONSchemaTests/__Snapshots__"],
       resources: [.copy("Resources")]
     ),
     .testTarget(

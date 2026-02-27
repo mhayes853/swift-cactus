@@ -5,7 +5,7 @@ import Foundation
 
 /// A concurrency-safe session for speech-to-text transcription.
 ///
-/// This type serializes access to an underlying ``CactusLanguageModel`` and exposes
+/// This type serializes access to an underlying ``CactusModel`` and exposes
 /// modern stream and async/await APIs built on top of ``CactusInferenceStream``.
 ///
 /// ```swift
@@ -22,19 +22,19 @@ import Foundation
 /// ```
 public final class CactusSTTSession: Sendable {
   /// The underlying language model actor.
-  public let languageModelActor: CactusLanguageModelActor
+  public let languageModelActor: CactusModelActor
 
   /// Creates a transcription session from an existing language model.
   ///
   /// - Parameter model: The underlying language model.
-  public init(model: consuming sending CactusLanguageModel) {
-    self.languageModelActor = CactusLanguageModelActor(model: model)
+  public init(model: consuming sending CactusModel) {
+    self.languageModelActor = CactusModelActor(model: model)
   }
 
   /// Creates a transcription session from an existing language model actor.
   ///
   /// - Parameter actor: The underlying language model actor.
-  public init(model: CactusLanguageModelActor) {
+  public init(model: CactusModelActor) {
     self.languageModelActor = model
   }
 
@@ -44,7 +44,7 @@ public final class CactusSTTSession: Sendable {
   ///   - url: The local model URL.
   ///   - modelSlug: An optional model slug override.
   public convenience init(from url: URL, modelSlug: String? = nil) throws {
-    let languageModelActor = try CactusLanguageModelActor(from: url, modelSlug: modelSlug)
+    let languageModelActor = try CactusModelActor(from: url, modelSlug: modelSlug)
     self.init(model: languageModelActor)
   }
 
@@ -59,9 +59,9 @@ public final class CactusSTTSession: Sendable {
     modelURL: URL,
     modelSlug: String? = nil
   ) throws {
-    let languageModelActor = try CactusLanguageModelActor(
+    let languageModelActor = try CactusModelActor(
       model: model,
-      configuration: CactusLanguageModel.Configuration(modelURL: modelURL, modelSlug: modelSlug)
+      configuration: CactusModel.Configuration(modelURL: modelURL, modelSlug: modelSlug)
     )
     self.init(model: languageModelActor)
   }
@@ -90,14 +90,14 @@ extension CactusSTTSession {
   ) throws -> CactusInferenceStream<CactusTranscription> {
     let messageStreamID = CactusGenerationID()
     let languageModelActor = self.languageModelActor
-    let options = CactusLanguageModel.Transcription.Options(request: request)
+    let options = CactusModel.Transcription.Options(request: request)
     let maxBufferSize = request.maxBufferSize
 
     let stream = CactusInferenceStream<CactusTranscription> { [weak self] continuation in
       guard self != nil else { throw CancellationError() }
 
       let modelStopper = await languageModelActor.withModelPointer {
-        CactusLanguageModelStopper(modelPointer: $0)
+        CactusModelStopper(modelPointer: $0)
       }
 
       let modelTranscription = try await withTaskCancellationHandler {

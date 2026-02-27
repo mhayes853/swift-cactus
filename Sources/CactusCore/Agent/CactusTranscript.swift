@@ -51,11 +51,11 @@ public struct CactusTranscript: Hashable, Sendable {
 
   /// An array of all messages in the transcript, in order.
   ///
-  /// Use this property to extract just the ``CactusLanguageModel/ChatMessage`` instances
+  /// Use this property to extract just the ``CactusModel/ChatMessage`` instances
   /// for passing to inference APIs.
   ///
   /// - Complexity: O(*n*) where *n* is the number of elements.
-  public var messages: [CactusLanguageModel.ChatMessage] {
+  public var messages: [CactusModel.ChatMessage] {
     self.elements.map(\.message)
   }
 
@@ -175,28 +175,28 @@ public struct CactusTranscript: Hashable, Sendable {
 
   /// Returns a new transcript containing only elements whose message has the given role.
   ///
-  /// - Parameter role: The ``CactusLanguageModel/MessageRole`` to filter by.
+  /// - Parameter role: The ``CactusModel/MessageRole`` to filter by.
   /// - Returns: A new transcript containing only matching elements.
   /// - Complexity: O(*n*) where *n* is the number of elements.
-  public func filter(byRole role: CactusLanguageModel.MessageRole) -> Self {
+  public func filter(byRole role: CactusModel.MessageRole) -> Self {
     Self(elements: self.elements.filter { $0.message.role == role })
   }
 
   /// Returns the first element whose message has the given role.
   ///
-  /// - Parameter role: The ``CactusLanguageModel/MessageRole`` to search for.
+  /// - Parameter role: The ``CactusModel/MessageRole`` to search for.
   /// - Returns: The first matching element, or `nil` if no such element exists.
   /// - Complexity: O(*n*) where *n* is the number of elements.
-  public func firstMessage(forRole role: CactusLanguageModel.MessageRole) -> Element? {
+  public func firstMessage(forRole role: CactusModel.MessageRole) -> Element? {
     self.elements.first { $0.message.role == role }
   }
 
   /// Returns the last element whose message has the given role.
   ///
-  /// - Parameter role: The ``CactusLanguageModel/MessageRole`` to search for.
+  /// - Parameter role: The ``CactusModel/MessageRole`` to search for.
   /// - Returns: The last matching element, or `nil` if no such element exists.
   /// - Complexity: O(*n*) where *n* is the number of elements.
-  public func lastMessage(forRole role: CactusLanguageModel.MessageRole) -> Element? {
+  public func lastMessage(forRole role: CactusModel.MessageRole) -> Element? {
     self.elements.last { $0.message.role == role }
   }
 }
@@ -248,7 +248,7 @@ extension CactusTranscript {
     public let id: CactusGenerationID
 
     /// The chat message.
-    public var message: CactusLanguageModel.ChatMessage
+    public var message: CactusModel.ChatMessage
 
     /// Creates a new transcript element.
     ///
@@ -257,7 +257,7 @@ extension CactusTranscript {
     ///   - message: The chat message.
     public init(
       id: CactusGenerationID = CactusGenerationID(),
-      message: CactusLanguageModel.ChatMessage
+      message: CactusModel.ChatMessage
     ) {
       self.id = id
       self.message = message

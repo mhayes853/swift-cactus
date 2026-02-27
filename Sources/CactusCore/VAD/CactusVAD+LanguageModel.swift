@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - VADOptions
 
-extension CactusLanguageModel.VADOptions {
+extension CactusModel.VADOptions {
   /// Creates VAD options from a ``CactusVAD/Request``.
   ///
   /// - Parameter request: The VAD request that carries option values.
@@ -30,7 +30,7 @@ extension CactusVAD {
   /// - Parameters:
   ///   - rawResult: The language-model VAD result.
   ///   - samplingRate: Sampling rate in Hz used to interpret sample-index timestamps.
-  public init(rawResult: CactusLanguageModel.VADResult, samplingRate: Int? = nil) {
+  public init(rawResult: CactusModel.VADResult, samplingRate: Int? = nil) {
     self.init(
       segments: rawResult.segments.map {
         CactusVAD.Segment(

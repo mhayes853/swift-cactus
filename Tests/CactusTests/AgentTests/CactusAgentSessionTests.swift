@@ -14,8 +14,8 @@ struct `CactusAgentSession tests` {
   struct `AgentLoop tests` {
     @Test
     func `Simple Prompt Respond Returns Assistant Text Snapshot`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
-      let model = try CactusLanguageModel(from: modelURL)
+      let modelURL = try await CactusModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusModel(from: modelURL)
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let resolvedCompletion = try await session.respond(
@@ -33,8 +33,8 @@ struct `CactusAgentSession tests` {
     @Test
     func `Simple Prompt Respond With Trailing Closure Message Returns Assistant Text`() async throws
     {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
-      let model = try CactusLanguageModel(from: modelURL)
+      let modelURL = try await CactusModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusModel(from: modelURL)
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let resolvedCompletion = try await session.respond(
@@ -45,17 +45,17 @@ struct `CactusAgentSession tests` {
 
       expectNoDifference(resolvedCompletion.output.isEmpty, false)
       expectNoDifference(session.transcript.count == 2, true)
-      expectNoDifference(session.transcript[0].message.role, CactusLanguageModel.MessageRole.user)
+      expectNoDifference(session.transcript[0].message.role, CactusModel.MessageRole.user)
       expectNoDifference(
         session.transcript.last?.message.role,
-        CactusLanguageModel.MessageRole.assistant
+        CactusModel.MessageRole.assistant
       )
     }
 
     @Test
     func `Multi Turn Conversation Maintains Context`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
-      let model = try CactusLanguageModel(from: modelURL)
+      let modelURL = try await CactusModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusModel(from: modelURL)
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let firstTurn = try await session.respond(
@@ -83,8 +83,8 @@ struct `CactusAgentSession tests` {
 
     @Test
     func `Multi Turn Conversation With Image Turn Maintains Context`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2Vl_450m())
-      let model = try CactusLanguageModel(from: modelURL)
+      let modelURL = try await CactusModel.testModelURL(request: .lfm2Vl_450m())
+      let model = try CactusModel(from: modelURL)
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       try await session.respond(
@@ -108,8 +108,8 @@ struct `CactusAgentSession tests` {
 
     @Test
     func `Multi Turn Conversation With System Prompt Maintains Context`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
-      let model = try CactusLanguageModel(from: modelURL)
+      let modelURL = try await CactusModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusModel(from: modelURL)
       let session = CactusAgentSession(model: model) {
         "You are a helpful assistant that always responds in short, concise sentences."
       }
@@ -139,8 +139,8 @@ struct `CactusAgentSession tests` {
 
     @Test
     func `Respond Appends User And Assistant Messages To Transcript`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
-      let model = try CactusLanguageModel(from: modelURL)
+      let modelURL = try await CactusModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusModel(from: modelURL)
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       try await session.respond(
@@ -150,17 +150,17 @@ struct `CactusAgentSession tests` {
       )
 
       expectNoDifference(session.transcript.count >= 2, true)
-      expectNoDifference(session.transcript[0].message.role, CactusLanguageModel.MessageRole.user)
+      expectNoDifference(session.transcript[0].message.role, CactusModel.MessageRole.user)
       expectNoDifference(
         session.transcript.last?.message.role,
-        CactusLanguageModel.MessageRole.assistant
+        CactusModel.MessageRole.assistant
       )
     }
 
     @Test
     func `Respond Appends All Completion Entries To Transcript In Order`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
-      let model = try CactusLanguageModel(from: modelURL)
+      let modelURL = try await CactusModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusModel(from: modelURL)
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let completion = try await session.respond(
@@ -182,8 +182,8 @@ struct `CactusAgentSession tests` {
 
     @Test
     func `Simple Prompt Respond Returns Completion Dump Snapshot`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
-      let model = try CactusLanguageModel(from: modelURL)
+      let modelURL = try await CactusModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusModel(from: modelURL)
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let completion = try await session.respond(
@@ -201,8 +201,8 @@ struct `CactusAgentSession tests` {
 
     @Test
     func `Tool Call Respond Returns Completion Entries And Metrics Dump Snapshot`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_2_6b())
-      let model = try CactusLanguageModel(from: modelURL)
+      let modelURL = try await CactusModel.testModelURL(request: .lfm2_2_6b())
+      let model = try CactusModel(from: modelURL)
       let session = CactusAgentSession(
         model: model,
         functions: [ToolFactsFunction()],
@@ -222,8 +222,8 @@ struct `CactusAgentSession tests` {
 
     @Test
     func `Tool Call Respond Includes Metrics Only For Assistant Entries`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_2_6b())
-      let model = try CactusLanguageModel(from: modelURL)
+      let modelURL = try await CactusModel.testModelURL(request: .lfm2_2_6b())
+      let model = try CactusModel(from: modelURL)
       let session = CactusAgentSession(
         model: model,
         functions: [ToolFactsFunction()],
@@ -259,9 +259,9 @@ struct `CactusAgentSession tests` {
       `Simple Prompt Tool Execution Loop Supports Multiple Tool Calls And Returns Final Assistant Text Snapshot`()
       async throws
     {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_2_6b())
+      let modelURL = try await CactusModel.testModelURL(request: .lfm2_2_6b())
 
-      let model = try CactusLanguageModel(from: modelURL)
+      let model = try CactusModel(from: modelURL)
       let session = CactusAgentSession(
         model: model,
         functions: [ToolFactsFunction()],
@@ -290,9 +290,9 @@ struct `CactusAgentSession tests` {
 
     @Test
     func `Tool Call Delegate Is Invoked On Tool Call`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_2_6b())
+      let modelURL = try await CactusModel.testModelURL(request: .lfm2_2_6b())
 
-      let model = try CactusLanguageModel(from: modelURL)
+      let model = try CactusModel(from: modelURL)
       let session = CactusAgentSession(
         model: model,
         functions: [ToolFactsFunction()],
@@ -318,8 +318,8 @@ struct `CactusAgentSession tests` {
 
     @Test
     func `Simple Response Stream Emits Tokens In Order`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
-      let model = try CactusLanguageModel(from: modelURL)
+      let modelURL = try await CactusModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusModel(from: modelURL)
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let stream = try session.stream(
@@ -453,8 +453,8 @@ struct `CactusAgentSession tests` {
 
     @Test
     func `Respond Throws Invalid System Prompt Error For Throwing System Content`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
-      let model = try CactusLanguageModel(from: modelURL)
+      let modelURL = try await CactusModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusModel(from: modelURL)
       let session = CactusAgentSession(
         model: model,
         systemPrompt: CactusPromptContent(ThrowingPromptRepresentable())
@@ -563,8 +563,8 @@ struct `CactusAgentSession tests` {
 
     @Test
     func `Canceling Respond Task Cancels Stream And Ends Session`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .lfm2_2_6b())
-      let model = try CactusLanguageModel(from: modelURL)
+      let modelURL = try await CactusModel.testModelURL(request: .lfm2_2_6b())
+      let model = try CactusModel(from: modelURL)
       let session = CactusAgentSession(
         model: model,
         functions: [SlowToolFunction()],
@@ -619,8 +619,8 @@ struct `CactusAgentSession tests` {
     }
 
     private static func makeSession() async throws -> CactusAgentSession {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .gemma3_270mIt())
-      let model = try CactusLanguageModel(from: modelURL)
+      let modelURL = try await CactusModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusModel(from: modelURL)
       return CactusAgentSession(model: model, transcript: CactusTranscript())
     }
 
@@ -901,7 +901,7 @@ struct `CactusAgentSession tests` {
   }
 }
 
-extension CactusLanguageModel.ChatMessage {
+extension CactusModel.ChatMessage {
   fileprivate var isToolOrFunctionOutput: Bool {
     self.role == .tool || self.role == .function
   }

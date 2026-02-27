@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Options
 
-extension CactusLanguageModel.Transcription.Options {
+extension CactusModel.Transcription.Options {
   /// Creates transcription options from a transcription request.
   ///
   /// - Parameter request: The ``CactusTranscription/Request``.
@@ -27,7 +27,7 @@ extension CactusTranscription {
   /// - Parameters:
   ///   - id: The unique identifier for this transcription.
   ///   - transcription: The language model transcription containing raw response and metrics.
-  public init(id: CactusGenerationID, transcription: CactusLanguageModel.Transcription) {
+  public init(id: CactusGenerationID, transcription: CactusModel.Transcription) {
     self.init(
       id: id,
       metrics: CactusGenerationMetrics(

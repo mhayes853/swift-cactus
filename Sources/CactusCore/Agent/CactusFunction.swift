@@ -28,8 +28,8 @@ extension CactusFunction where Input: JSONSchemaRepresentable {
 
 extension CactusFunction {
   /// A language model function definition derived from this function.
-  public var definition: CactusLanguageModel.FunctionDefinition {
-    CactusLanguageModel.FunctionDefinition(
+  public var definition: CactusModel.FunctionDefinition {
+    CactusModel.FunctionDefinition(
       name: self.name,
       description: self.description,
       parameters: self.parametersSchema

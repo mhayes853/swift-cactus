@@ -16,7 +16,7 @@ struct `CactusTranscript tests` {
   func `Append Element And Access By ID`() {
     var transcript = CactusTranscript()
     let id = CactusGenerationID()
-    let message = CactusLanguageModel.ChatMessage.user("Hello")
+    let message = CactusModel.ChatMessage.user("Hello")
     let element = CactusTranscript.Element(id: id, message: message)
 
     transcript.append(element)
@@ -238,7 +238,7 @@ struct `CactusTranscript tests` {
     let id = CactusGenerationID()
     transcript.append(CactusTranscript.Element(id: id, message: .user("Hello")))
 
-    transcript[0].message = CactusLanguageModel.ChatMessage.user("Hello, world!")
+    transcript[0].message = CactusModel.ChatMessage.user("Hello, world!")
 
     expectNoDifference(transcript.count, 1)
     expectNoDifference(transcript[0].message.content, "Hello, world!")

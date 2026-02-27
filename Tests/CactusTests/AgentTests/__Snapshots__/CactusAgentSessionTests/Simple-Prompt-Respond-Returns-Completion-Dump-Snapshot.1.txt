@@ -4,7 +4,7 @@
       - metrics: Optional<CactusGenerationMetrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: A7D72A38-66AC-4B54-95B1-73C6611FE14A
+          - rawValue: E20111ED-51AC-4EFE-B1F3-D19765C0A55E
         ▿ message: ChatMessage
           - content: "Say hello in one concise sentence."
           ▿ images: Optional<Array<URL>>
@@ -14,41 +14,41 @@
     ▿ CactusCompletionEntry
       ▿ metrics: Optional<CactusGenerationMetrics>
         ▿ some: CactusGenerationMetrics
-          - confidence: 0.9037
-          - decodeTokens: 28
-          - decodeTps: 112.33
+          - confidence: 0.9143
+          - decodeTokens: 10
+          - decodeTps: 96.9
           - didHandoffToCloud: false
-          ▿ durationToFirstToken: 0.02388 seconds
-            - _low: 23880000000000000
+          ▿ durationToFirstToken: 0.02755 seconds
+            - _low: 27550000000000000
             - _high: 0
           - prefillTokens: 16
-          - prefillTps: 670.04
-          - ramUsageMb: 47.82
-          ▿ totalDuration: 0.26425 seconds
-            - _low: 264250000000000000
+          - prefillTps: 580.74
+          - ramUsageMb: 54.69
+          ▿ totalDuration: 0.12043000000000001 seconds
+            - _low: 120430000000000016
             - _high: 0
-          - totalTokens: 44
+          - totalTokens: 26
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: CCFB514D-2F3B-43A0-B4C9-9ED6740E59FD
+          - rawValue: 1D300A5E-A603-479C-895D-95029264DACC
         ▿ message: ChatMessage
-          - content: "The English language is a beautiful art! Let\'s all learn to speak its beauty, one word at a time. Have fun!\n"
+          - content: "That\'s welcome! What should I do?"
           - images: Optional<Array<URL>>.none
           ▿ role: MessageRole
             - rawValue: "assistant"
   ▿ metrics: CactusGenerationMetrics
-    - confidence: 0.9037
-    - decodeTokens: 28
-    - decodeTps: 112.33
+    - confidence: 0.9143
+    - decodeTokens: 10
+    - decodeTps: 96.9
     - didHandoffToCloud: false
-    ▿ durationToFirstToken: 0.02388 seconds
-      - _low: 23880000000000000
+    ▿ durationToFirstToken: 0.02755 seconds
+      - _low: 27550000000000000
       - _high: 0
     - prefillTokens: 16
-    - prefillTps: 670.04
-    - ramUsageMb: 47.82
-    ▿ totalDuration: 0.26425 seconds
-      - _low: 264250000000000000
+    - prefillTps: 580.74
+    - ramUsageMb: 54.69
+    ▿ totalDuration: 0.12043000000000001 seconds
+      - _low: 120430000000000016
       - _high: 0
-    - totalTokens: 44
-  - output: "The English language is a beautiful art! Let\'s all learn to speak its beauty, one word at a time. Have fun!\n"
+    - totalTokens: 26
+  - output: "That\'s welcome! What should I do?"

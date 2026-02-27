@@ -9,7 +9,7 @@ import Testing
 struct `CactusSTTSession tests` {
   @Test
   func `File Transcription Snapshot`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+    let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
     let session = try CactusSTTSession(from: modelURL)
     let request = CactusTranscription.Request(prompt: audioPrompt, content: .audio(testAudioURL))
 
@@ -26,7 +26,7 @@ struct `CactusSTTSession tests` {
 
   @Test
   func `File Stream Snapshot`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+    let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
     let session = try CactusSTTSession(from: modelURL)
     let request = CactusTranscription.Request(prompt: audioPrompt, content: .audio(testAudioURL))
 
@@ -53,7 +53,7 @@ struct `CactusSTTSession tests` {
   @Test
   func `PCM Buffer Transcription Snapshot`() async throws {
     #if canImport(AVFoundation)
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+      let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
       let session = try CactusSTTSession(from: modelURL)
       let pcmBuffer = try testAudioPCMBuffer()
       let content = try CactusTranscription.Request.Content.pcm(pcmBuffer)
@@ -77,7 +77,7 @@ struct `CactusSTTSession tests` {
   @Test
   func `File Transcription With Timestamps Snapshot`() async throws {
     #if canImport(AVFoundation)
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+      let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
       let session = try CactusSTTSession(from: modelURL)
       let pcmBuffer = try testAudioPCMBuffer()
       let content = try CactusTranscription.Request.Content.pcm(pcmBuffer)
@@ -101,7 +101,7 @@ struct `CactusSTTSession tests` {
 
   @Test
   func `Stop Mid Stream Cancels And Calls Through To Model Stop`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+    let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
     let session = try CactusSTTSession(from: modelURL)
     let request = CactusTranscription.Request(
       prompt: audioPrompt,
@@ -124,7 +124,7 @@ struct `CactusSTTSession tests` {
 
   @Test
   func `Canceling Transcribe Cancels Stream And Ends Session`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+    let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
     let session = try CactusSTTSession(from: modelURL)
     let request = CactusTranscription.Request(
       prompt: audioPrompt,
@@ -145,8 +145,8 @@ struct `CactusSTTSession tests` {
 
   @Test
   func `Custom Executor Transcription Succeeds`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-    let model = try CactusLanguageModelActor(
+    let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
+    let model = try CactusModelActor(
       executor: DispatchQueueSerialExecutor(),
       from: modelURL
     )
@@ -161,7 +161,7 @@ struct `CactusSTTSession tests` {
   #if canImport(AVFoundation)
     @Test
     func `Moonshine Buffer Transcription Snapshot`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .moonshineBase())
+      let modelURL = try await CactusModel.testModelURL(request: .moonshineBase())
       let session = try CactusSTTSession(from: modelURL)
       let pcmBuffer = try testAudioPCMBuffer()
       let content = try CactusTranscription.Request.Content.pcm(pcmBuffer)

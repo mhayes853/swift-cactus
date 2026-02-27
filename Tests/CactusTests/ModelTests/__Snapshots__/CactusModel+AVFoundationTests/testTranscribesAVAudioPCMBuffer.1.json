@@ -1,0 +1,16 @@
+{
+  "slug" : "whisper-small",
+  "transcription" : {
+    "cloud_handoff" : false,
+    "confidence" : 0.8695,
+    "decode_tokens" : 23,
+    "decode_tps" : 72.08,
+    "prefill_tokens" : 4,
+    "prefill_tps" : 1.77,
+    "ram_usage_mb" : 382,
+    "response" : "The power of a god cannot be overcome! The voice! Alvis, how dare you diso baby?",
+    "time_to_first_token_ms" : 2260.24,
+    "total_time_ms" : 2565.47,
+    "total_tokens" : 27
+  }
+}

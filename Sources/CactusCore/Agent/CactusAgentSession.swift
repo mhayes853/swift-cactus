@@ -7,7 +7,7 @@ public final class CactusAgentSession: Sendable {
   private let state: Lock<State>
 
   /// The underlying language model actor.
-  public let languageModelActor: CactusLanguageModelActor
+  public let languageModelActor: CactusModelActor
 
   private struct State {
     var transcript: CactusTranscript
@@ -57,7 +57,7 @@ public final class CactusAgentSession: Sendable {
   }
 
   private init(
-    languageModelActor: CactusLanguageModelActor,
+    languageModelActor: CactusModelActor,
     functions: [any CactusFunction],
     transcript: CactusTranscript,
     systemPrompt: sending CactusPromptContent?
@@ -86,12 +86,12 @@ extension CactusAgentSession {
   ///   - functions: Tool functions available to the session.
   ///   - transcript: The initial transcript to seed the session.
   public convenience init(
-    model: consuming sending CactusLanguageModel,
+    model: consuming sending CactusModel,
     functions: [any CactusFunction] = [],
     transcript: CactusTranscript
   ) {
     self.init(
-      languageModelActor: CactusLanguageModelActor(model: model),
+      languageModelActor: CactusModelActor(model: model),
       functions: functions,
       transcript: transcript,
       systemPrompt: nil
@@ -105,7 +105,7 @@ extension CactusAgentSession {
   ///   - functions: Tool functions available to the session.
   ///   - transcript: The initial transcript to seed the session.
   public convenience init(
-    model: CactusLanguageModelActor,
+    model: CactusModelActor,
     functions: [any CactusFunction] = [],
     transcript: CactusTranscript
   ) {
@@ -124,12 +124,12 @@ extension CactusAgentSession {
   ///   - functions: Tool functions available to the session.
   ///   - systemPrompt: The system prompt injected for the session.
   public convenience init(
-    model: consuming sending CactusLanguageModel,
+    model: consuming sending CactusModel,
     functions: [any CactusFunction] = [],
     systemPrompt: sending CactusPromptContent
   ) {
     self.init(
-      languageModelActor: CactusLanguageModelActor(model: model),
+      languageModelActor: CactusModelActor(model: model),
       functions: functions,
       transcript: CactusTranscript(),
       systemPrompt: systemPrompt
@@ -143,7 +143,7 @@ extension CactusAgentSession {
   ///   - functions: Tool functions available to the session.
   ///   - systemPrompt: The system prompt injected for the session.
   public convenience init(
-    model: CactusLanguageModelActor,
+    model: CactusModelActor,
     functions: [any CactusFunction] = [],
     systemPrompt: sending CactusPromptContent
   ) {
@@ -162,7 +162,7 @@ extension CactusAgentSession {
   ///   - functions: Tool functions available to the session.
   ///   - systemPrompt: A builder that produces the session's system prompt content.
   public convenience init(
-    model: consuming sending CactusLanguageModel,
+    model: consuming sending CactusModel,
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: @Sendable () -> some CactusPromptRepresentable
   ) {
@@ -176,7 +176,7 @@ extension CactusAgentSession {
   ///   - functions: Tool functions available to the session.
   ///   - systemPrompt: A builder that produces the session's system prompt content.
   public convenience init(
-    model: CactusLanguageModelActor,
+    model: CactusModelActor,
     functions: [any CactusFunction] = [],
     @CactusPromptBuilder systemPrompt: @Sendable () -> some CactusPromptRepresentable
   ) {
@@ -559,7 +559,7 @@ extension CactusAgentSession {
   }
 
   private func resolveFunctionCalls(
-    _ functionCalls: [CactusLanguageModel.FunctionCall],
+    _ functionCalls: [CactusModel.FunctionCall],
     using functions: [any CactusFunction]
   ) throws -> [CactusAgentSession.FunctionCall] {
     return try functionCalls.map { functionCall in
@@ -575,38 +575,37 @@ extension CactusAgentSession {
 
   private func chatOptions(
     from request: CactusUserMessage
-  ) -> CactusLanguageModel.Completion.Options {
-    return CactusLanguageModel.Completion.Options(
+  ) -> CactusModel.Completion.Options {
+    return CactusModel.Completion.Options(
       maxTokens: request.maxTokens,
       temperature: request.temperature,
       topP: request.topP,
       topK: request.topK,
       stopSequences: request.stopSequences,
       forceFunctions: request.forceFunctions,
-      confidenceThreshold: 0,  // TODO: Support cloud handoff in delegate.
       toolRagTopK: request.toolRagTopK,
       includeStopSequences: request.includeStopSequences,
       isTelemetryEnabled: request.isTelemetryEnabled
     )
   }
 
-  private var functionOutputRole: CactusLanguageModel.MessageRole {
+  private var functionOutputRole: CactusModel.MessageRole {
     let modelType = self.languageModelActor.configurationFile.modelType
     return modelType == .qwen ? .function : .tool
   }
 
   private struct StreamRequestContext: Sendable {
-    let userMessage: CactusLanguageModel.ChatMessage
-    let options: CactusLanguageModel.Completion.Options
+    let userMessage: CactusModel.ChatMessage
+    let options: CactusModel.Completion.Options
     let maxBufferSize: Int?
-    let functionDefinitions: [CactusLanguageModel.FunctionDefinition]
+    let functionDefinitions: [CactusModel.FunctionDefinition]
     let functions: [any CactusFunction]
   }
 
   private func streamRequestContext(
     from request: CactusUserMessage
   ) throws -> StreamRequestContext {
-    let userMessage: CactusLanguageModel.ChatMessage
+    let userMessage: CactusModel.ChatMessage
     do {
       userMessage = try self.userChatMessage(from: request)
     } catch {
@@ -638,7 +637,7 @@ extension CactusAgentSession {
       throw CactusAgentSessionError.invalidSystemPrompt(error)
     }
 
-    let systemMessage = CactusLanguageModel.ChatMessage.system(text)
+    let systemMessage = CactusModel.ChatMessage.system(text)
     self.state.withLock { state in
       guard state.transcript.isEmpty else { return }
       state.transcript.insert(CactusTranscript.Element(message: systemMessage), at: 0)
@@ -646,7 +645,7 @@ extension CactusAgentSession {
   }
 
   private func appendTranscriptEntry(
-    _ message: CactusLanguageModel.ChatMessage,
+    _ message: CactusModel.ChatMessage,
     metrics: CactusGenerationMetrics?,
     completionEntries: inout [CactusCompletionEntry]
   ) {
@@ -658,8 +657,8 @@ extension CactusAgentSession {
   }
 
   private func appendModelMessages(
-    _ messages: [CactusLanguageModel.ChatMessage],
-    completion: CactusLanguageModel.Completion,
+    _ messages: [CactusModel.ChatMessage],
+    completion: CactusModel.Completion,
     completionEntries: inout [CactusCompletionEntry]
   ) {
     for message in messages {
@@ -699,7 +698,7 @@ extension CactusAgentSession {
 
   private func appendFunctionReturns(
     _ functionReturns: [CactusAgentSession.FunctionReturn],
-    role: CactusLanguageModel.MessageRole,
+    role: CactusModel.MessageRole,
     completionEntries: inout [CactusCompletionEntry]
   ) throws {
     for functionReturn in functionReturns {
@@ -708,7 +707,7 @@ extension CactusAgentSession {
         content: functionReturn.content
       )
       self.appendTranscriptEntry(
-        CactusLanguageModel.ChatMessage(role: role, content: content),
+        CactusModel.ChatMessage(role: role, content: content),
         metrics: nil,
         completionEntries: &completionEntries
       )
@@ -717,15 +716,15 @@ extension CactusAgentSession {
 
   private func userChatMessage(
     from request: CactusUserMessage
-  ) throws -> CactusLanguageModel.ChatMessage {
+  ) throws -> CactusModel.ChatMessage {
     let components = try request.content.messageComponents()
-    return CactusLanguageModel.ChatMessage.user(components.text, images: components.images)
+    return CactusModel.ChatMessage.user(components.text, images: components.images)
   }
 
   private func appendedMessages(
-    in messages: [CactusLanguageModel.ChatMessage],
+    in messages: [CactusModel.ChatMessage],
     originalMessagesCount: Int
-  ) -> [CactusLanguageModel.ChatMessage] {
+  ) -> [CactusModel.ChatMessage] {
     if messages.count <= originalMessagesCount {
       return []
     }

@@ -1,0 +1,16 @@
+{
+  "slug" : "whisper-small",
+  "transcription" : {
+    "cloud_handoff" : false,
+    "confidence" : 0.9224,
+    "decode_tokens" : 32,
+    "decode_tps" : 77.75,
+    "prefill_tokens" : 4,
+    "prefill_tps" : 1.43,
+    "ram_usage_mb" : 354.74,
+    "response" : "The power of a god cannot be overcome. Even gods are merely beings restricted to the limited power determined by purpose and powers, although great is not unlimited!",
+    "time_to_first_token_ms" : 2802.45,
+    "total_time_ms" : 3201.15,
+    "total_tokens" : 36
+  }
+}

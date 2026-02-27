@@ -26,7 +26,7 @@
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
       directory.delegate = CallbackDelegate()
 
-      let request = CactusLanguageModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
+      let request = CactusModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
       let url = try await directory.modelURL(
         for: request,
         configuration: self.configuration
@@ -41,7 +41,7 @@
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
       directory.delegate = CallbackDelegate()
 
-      let request = CactusLanguageModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
+      let request = CactusModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
       _ = try await directory.modelURL(
         for: request,
         configuration: self.configuration
@@ -57,8 +57,8 @@
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
       directory.delegate = CallbackDelegate()
 
-      let request1 = CactusLanguageModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
-      let request2 = CactusLanguageModel.PlatformDownloadRequest.lfm2Vl_450m()
+      let request1 = CactusModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
+      let request2 = CactusModel.PlatformDownloadRequest.lfm2Vl_450m()
       _ = try await directory.modelURL(for: request1, configuration: self.configuration)
       _ = try await directory.modelURL(for: request2, configuration: self.configuration)
 
@@ -72,7 +72,7 @@
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
       directory.delegate = CallbackDelegate()
 
-      let request = CactusLanguageModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
+      let request = CactusModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
       let t1 = try directory.modelDownloadTask(
         for: request,
         configuration: self.configuration
@@ -91,12 +91,12 @@
 
       expectNoDifference(directory.activeDownloadTasks.isEmpty, true)
 
-      let request = CactusLanguageModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
+      let request = CactusModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
       let t1 = try directory.modelDownloadTask(
         for: request,
         configuration: self.configuration
       )
-      let vlmRequest = CactusLanguageModel.PlatformDownloadRequest.lfm2Vl_450m()
+      let vlmRequest = CactusModel.PlatformDownloadRequest.lfm2Vl_450m()
       let t2 = try directory.modelDownloadTask(
         for: vlmRequest,
         configuration: self.configuration
@@ -119,13 +119,13 @@
         directory.delegate = CallbackDelegate()
 
         let tasks = Lock(
-          [[CactusLanguageModel.PlatformDownloadRequest: CactusLanguageModel.DownloadTask]]()
+          [[CactusModel.PlatformDownloadRequest: CactusModel.DownloadTask]]()
         )
         let token = observe {
           tasks.withLock { $0.append(directory.activeDownloadTasks) }
         }
 
-        let request = CactusLanguageModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
+        let request = CactusModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
         let t1 = try directory.modelDownloadTask(
           for: request,
           configuration: self.configuration
@@ -149,7 +149,7 @@
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
       directory.delegate = CallbackDelegate()
 
-      let request = CactusLanguageModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
+      let request = CactusModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
       let t1 = try directory.modelDownloadTask(
         for: request,
         configuration: self.configuration
@@ -167,31 +167,31 @@
     @Test
     func `Invokes Download Delegate Before Creation And After Completion`() async throws {
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
-      let request = CactusLanguageModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
+      let request = CactusModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
 
       let didCallDid = Lock(false)
-      let didRequest = Lock<CactusLanguageModel.PlatformDownloadRequest?>(nil)
+      let didRequest = Lock<CactusModel.PlatformDownloadRequest?>(nil)
       let didSucceed = Lock(false)
       let didFinishURL = Lock<URL?>(nil)
-      let didTask = Lock<CactusLanguageModel.DownloadTask?>(nil)
+      let didTask = Lock<CactusModel.DownloadTask?>(nil)
 
       final class TestDelegate: CactusModelsDirectory.Delegate, @unchecked Sendable {
         var onDidCompleteDownloadTask:
           (
             @Sendable (
-              CactusModelsDirectory, CactusLanguageModel.PlatformDownloadRequest,
-              CactusLanguageModel.DownloadTask,
+              CactusModelsDirectory, CactusModel.PlatformDownloadRequest,
+              CactusModel.DownloadTask,
               Result<URL, any Error>
             ) -> Void
           )?
 
         func modelsDirectoryWillCreateDownloadTask(
           _ directory: CactusModelsDirectory,
-          request: CactusLanguageModel.PlatformDownloadRequest,
+          request: CactusModel.PlatformDownloadRequest,
           to destination: URL,
           configuration: URLSessionConfiguration
-        ) -> CactusLanguageModel.DownloadTask {
-          CactusLanguageModel.downloadModelTask(
+        ) -> CactusModel.DownloadTask {
+          CactusModel.downloadModelTask(
             request: request,
             to: destination,
             configuration: configuration
@@ -200,8 +200,8 @@
 
         func modelsDirectoryDidCompleteDownloadTask(
           _ directory: CactusModelsDirectory,
-          request: CactusLanguageModel.PlatformDownloadRequest,
-          task: CactusLanguageModel.DownloadTask,
+          request: CactusModel.PlatformDownloadRequest,
+          task: CactusModel.DownloadTask,
           result: Result<URL, any Error>
         ) {
           onDidCompleteDownloadTask?(directory, request, task, result)
@@ -235,7 +235,7 @@
       let delegate = CallbackDelegate()
       directory.delegate = delegate
 
-      let request = CactusLanguageModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
+      let request = CactusModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
       let url = try await directory.modelURL(
         for: request,
         configuration: self.configuration
@@ -253,7 +253,7 @@
       let directory = CactusModelsDirectory(baseURL: temporaryModelDirectory())
       directory.delegate = CallbackDelegate()
 
-      let request = CactusLanguageModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
+      let request = CactusModel.PlatformDownloadRequest.lfm2_5_1_2bThinking()
       _ = try await directory.modelURL(for: request, configuration: self.configuration)
 
       let didCallWill = Lock(false)
@@ -325,26 +325,26 @@
 
   private final class CallbackDelegate: CactusModelsDirectory.Delegate, @unchecked Sendable {
     var onWillRemoveModel:
-      (@Sendable (CactusModelsDirectory, CactusLanguageModel.PlatformDownloadRequest) -> Void)?
+      (@Sendable (CactusModelsDirectory, CactusModel.PlatformDownloadRequest) -> Void)?
     var onDidRemoveModel:
       (
         @Sendable (
-          CactusModelsDirectory, CactusLanguageModel.PlatformDownloadRequest,
+          CactusModelsDirectory, CactusModel.PlatformDownloadRequest,
           Result<Void, any Error>
         ) -> Void
       )?
     var onWillCreateDownloadTask:
       (
         @Sendable (
-          CactusModelsDirectory, CactusLanguageModel.PlatformDownloadRequest,
-          CactusLanguageModel.DownloadTask
+          CactusModelsDirectory, CactusModel.PlatformDownloadRequest,
+          CactusModel.DownloadTask
         ) -> Void
       )?
     var onDidCompleteDownloadTask:
       (
         @Sendable (
-          CactusModelsDirectory, CactusLanguageModel.PlatformDownloadRequest,
-          CactusLanguageModel.DownloadTask,
+          CactusModelsDirectory, CactusModel.PlatformDownloadRequest,
+          CactusModel.DownloadTask,
           Result<URL, any Error>
         ) -> Void
       )?
@@ -352,14 +352,14 @@
 
     func modelsDirectoryWillRemoveModel(
       _ directory: CactusModelsDirectory,
-      request: CactusLanguageModel.PlatformDownloadRequest
+      request: CactusModel.PlatformDownloadRequest
     ) {
       self.onWillRemoveModel?(directory, request)
     }
 
     func modelsDirectoryDidRemoveModel(
       _ directory: CactusModelsDirectory,
-      request: CactusLanguageModel.PlatformDownloadRequest,
+      request: CactusModel.PlatformDownloadRequest,
       result: Result<Void, any Error>
     ) {
       self.onDidRemoveModel?(directory, request, result)
@@ -367,16 +367,16 @@
 
     func modelsDirectoryDidCreateDownloadTask(
       _ directory: CactusModelsDirectory,
-      request: CactusLanguageModel.PlatformDownloadRequest,
-      task: CactusLanguageModel.DownloadTask
+      request: CactusModel.PlatformDownloadRequest,
+      task: CactusModel.DownloadTask
     ) {
       self.onWillCreateDownloadTask?(directory, request, task)
     }
 
     func modelsDirectoryDidCompleteDownloadTask(
       _ directory: CactusModelsDirectory,
-      request: CactusLanguageModel.PlatformDownloadRequest,
-      task: CactusLanguageModel.DownloadTask,
+      request: CactusModel.PlatformDownloadRequest,
+      task: CactusModel.DownloadTask,
       result: Result<URL, any Error>
     ) {
       self.onDidCompleteDownloadTask?(directory, request, task, result)
@@ -384,12 +384,12 @@
 
     func modelsDirectoryWillCreateDownloadTask(
       _ directory: CactusModelsDirectory,
-      request: CactusLanguageModel.PlatformDownloadRequest,
+      request: CactusModel.PlatformDownloadRequest,
       to destination: URL,
       configuration: URLSessionConfiguration
-    ) -> CactusLanguageModel.DownloadTask {
+    ) -> CactusModel.DownloadTask {
       self.downloadTaskCount.withLock { $0 += 1 }
-      return CactusLanguageModel.downloadModelTask(
+      return CactusModel.downloadModelTask(
         request: request,
         to: destination,
         configuration: configuration
