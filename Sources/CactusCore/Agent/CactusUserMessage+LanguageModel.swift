@@ -1,55 +1,28 @@
-// MARK: - Language Model Conversion
-
-extension CactusUserMessage {
-  /// Creates a message from prompt content and language model options.
+extension CactusModel.Completion.Options {
+  /// Creates completion options from a user message.
   ///
-  /// - Parameters:
-  ///   - content: The prompt content for this user message.
-  ///   - options: The language model options.
-  ///   - maxBufferSize: The maximum buffer size used to store the completion.
-  public init(
-    content: CactusPromptContent,
-    options: CactusModel.Completion.Options,
-    maxBufferSize: Int? = nil
-  ) {
+  /// - Parameter message: The user message request.
+  public init(message: CactusUserMessage) {
+    let cloudHandoffThreshold = message.cloudHandoff?.cloudHandoffThreshold ?? 0
+    let cloudTimeoutDuration =
+      message.cloudHandoff?.cloudTimeoutDuration
+      ?? .milliseconds(15000)
+    let handoffWithImages = message.cloudHandoff?.handoffWithImages ?? false
+
     self.init(
-      content: content,
-      maxTokens: options.maxTokens,
-      temperature: options.temperature,
-      topP: options.topP,
-      topK: options.topK,
-      stopSequences: options.stopSequences,
-      forceFunctions: options.forceFunctions,
-      toolRagTopK: options.toolRagTopK,
-      includeStopSequences: options.includeStopSequences,
-      isTelemetryEnabled: options.isTelemetryEnabled,
-      maxBufferSize: maxBufferSize
-    )
-  }
-
-  /// Creates a message from representable prompt content and language model options.
-  ///
-  /// - Parameters:
-  ///   - content: The prompt content for this user message.
-  ///   - options: The language model options.
-  ///   - maxBufferSize: The maximum buffer size used to store the completion.
-  public init(
-    _ content: some CactusPromptRepresentable,
-    options: CactusModel.Completion.Options,
-    maxBufferSize: Int? = nil
-  ) throws {
-    try self.init(
-      content.promptContent,
-      maxTokens: options.maxTokens,
-      temperature: options.temperature,
-      topP: options.topP,
-      topK: options.topK,
-      stopSequences: options.stopSequences,
-      forceFunctions: options.forceFunctions,
-      toolRagTopK: options.toolRagTopK,
-      includeStopSequences: options.includeStopSequences,
-      isTelemetryEnabled: options.isTelemetryEnabled,
-      maxBufferSize: maxBufferSize
+      maxTokens: message.maxTokens,
+      temperature: message.temperature,
+      topP: message.topP,
+      topK: message.topK,
+      stopSequences: message.stopSequences,
+      forceFunctions: message.forceFunctions,
+      cloudHandoffThreshold: cloudHandoffThreshold,
+      toolRagTopK: message.toolRagTopK,
+      includeStopSequences: message.includeStopSequences,
+      isTelemetryEnabled: message.isTelemetryEnabled,
+      autoHandoff: message.cloudHandoff != nil,
+      cloudTimeoutDuration: cloudTimeoutDuration,
+      handoffWithImages: handoffWithImages
     )
   }
 }

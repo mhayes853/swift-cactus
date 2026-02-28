@@ -573,22 +573,6 @@ extension CactusAgentSession {
     }
   }
 
-  private func chatOptions(
-    from request: CactusUserMessage
-  ) -> CactusModel.Completion.Options {
-    return CactusModel.Completion.Options(
-      maxTokens: request.maxTokens,
-      temperature: request.temperature,
-      topP: request.topP,
-      topK: request.topK,
-      stopSequences: request.stopSequences,
-      forceFunctions: request.forceFunctions,
-      toolRagTopK: request.toolRagTopK,
-      includeStopSequences: request.includeStopSequences,
-      isTelemetryEnabled: request.isTelemetryEnabled
-    )
-  }
-
   private var functionOutputRole: CactusModel.MessageRole {
     let modelType = self.languageModelActor.configurationFile.modelType
     return modelType == .qwen ? .function : .tool
@@ -613,7 +597,7 @@ extension CactusAgentSession {
     }
     return StreamRequestContext(
       userMessage: userMessage,
-      options: self.chatOptions(from: request),
+      options: CactusModel.Completion.Options(message: request),
       maxBufferSize: request.maxBufferSize,
       functionDefinitions: self.functions.map(\.definition),
       functions: self.functions
