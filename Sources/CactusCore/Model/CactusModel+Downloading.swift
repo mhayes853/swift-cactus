@@ -416,6 +416,34 @@ extension CactusModel {
       Self(slug: "moonshine-base", quantization: quantization, version: version, pro: pro)
     }
 
+    /// Creates a download request for the `parakeet-ctc-0.6b` model.
+    ///
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - pro: The pro version configuration for the model.
+    ///   - version: The library version of the model.
+    public static func parakeetCtc_0_6b(
+      quantization: Quantization = .int4,
+      pro: Pro? = .apple,
+      version: Version = .v1_9
+    ) -> Self {
+      Self(slug: "parakeet-ctc-0.6b", quantization: quantization, version: version, pro: pro)
+    }
+
+    /// Creates a download request for the `parakeet-ctc-1.1b` model.
+    ///
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - pro: The pro version configuration for the model.
+    ///   - version: The library version of the model.
+    public static func parakeetCtc_1_1b(
+      quantization: Quantization = .int4,
+      pro: Pro? = .apple,
+      version: Version = .v1_9
+    ) -> Self {
+      Self(slug: "parakeet-ctc-1.1b", quantization: quantization, version: version, pro: pro)
+    }
+
     /// Creates a download request for the `silero-vad` model.
     ///
     /// - Parameters:
