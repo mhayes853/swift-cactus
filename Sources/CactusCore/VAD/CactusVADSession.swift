@@ -38,15 +38,8 @@ public final class CactusVADSession: Sendable {
   ///
   /// - Parameters:
   ///   - model: The raw model pointer.
-  ///   - modelURL: The model URL used to locate supporting model files.
-  public convenience init(
-    model: consuming sending cactus_model_t,
-    modelURL: URL
-  ) throws {
-    let languageModelActor = try CactusModelActor(
-      model: model,
-      modelURL: modelURL
-    )
+  public convenience init(model: consuming sending cactus_model_t) {
+    let languageModelActor = CactusModelActor(model: model)
     self.init(model: languageModelActor)
   }
 }

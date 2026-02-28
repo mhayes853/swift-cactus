@@ -903,6 +903,6 @@ struct `CactusAgentSession tests` {
 
 extension CactusModel.ChatMessage {
   fileprivate var isToolOrFunctionOutput: Bool {
-    self.role == .tool || self.role == .function
+    self.role == .tool
   }
 }

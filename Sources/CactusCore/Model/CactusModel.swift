@@ -14,9 +14,6 @@ public struct CactusModel: ~Copyable {
   private static let bufferNotBigEnoughErrorMessage = "buffer too small"
   private static let unavailableModelPointerMessage = "CactusModel pointer is unavailable."
 
-  /// The ``ConfigurationFile`` for this model.
-  public let configurationFile: ConfigurationFile
-
   /// The underlying model pointer.
   private var modelPointer: cactus_model_t?
 
@@ -44,26 +41,14 @@ public struct CactusModel: ~Copyable {
         cacheIndex: cacheIndex
       )
     }
-    let configurationFile = try ConfigurationFile(
-      contentsOf: url.appendingPathComponent("config.txt")
-    )
-    self.configurationFile = configurationFile
     self.modelPointer = modelPointer
   }
 
-  /// Creates a language model from the specified model pointer and model URL.
+  /// Creates a language model from the specified model pointer.
   ///
   /// - Parameters:
   ///   - model: The model pointer.
-  ///   - modelURL: The model URL used to locate supporting model files.
-  public init(
-    model: consuming cactus_model_t,
-    modelURL: URL
-  ) throws {
-    let configurationFile = try ConfigurationFile(
-      contentsOf: modelURL.appendingPathComponent("config.txt")
-    )
-    self.configurationFile = configurationFile
+  public init(model: consuming cactus_model_t) {
     self.modelPointer = model
   }
 
@@ -507,7 +492,7 @@ extension CactusModel {
   }
 
   private var defaultEmbeddingsBufferSize: Int {
-    self.configurationFile.hiddenDimensions ?? 1024
+    8192
   }
 }
 
@@ -606,7 +591,7 @@ extension CactusModel {
   /// - Returns: A ``CompletedChatTurn``.
   public func complete(
     messages: [ChatMessage],
-    options: Completion.Options? = nil,
+    options: Completion.Options = Completion.Options(),
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String) -> Void = { _ in }
@@ -644,13 +629,11 @@ extension CactusModel {
   /// - Returns: A ``CompletedChatTurn``.
   public func complete(
     messages: [ChatMessage],
-    options: Completion.Options? = nil,
+    options: Completion.Options = Completion.Options(),
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
     onToken: (String, UInt32) -> Void
   ) throws -> CompletedChatTurn {
-    let options =
-      options ?? Completion.Options(modelType: self.configurationFile.modelType ?? .qwen)
     let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else {
       throw ChatCompletionError.bufferSizeTooSmall
@@ -1040,7 +1023,7 @@ extension CactusModel {
   public func transcribe(
     buffer: [UInt8],
     prompt: String,
-    options: Transcription.Options? = nil,
+    options: Transcription.Options = Transcription.Options(),
     transcriptionMaxBufferSize: Int? = nil,
     onToken: (String) -> Void = { _ in }
   ) throws -> Transcription {
@@ -1066,7 +1049,7 @@ extension CactusModel {
   public func transcribe(
     buffer: [UInt8],
     prompt: String,
-    options: Transcription.Options? = nil,
+    options: Transcription.Options = Transcription.Options(),
     transcriptionMaxBufferSize: Int? = nil,
     onToken: (String, UInt32) -> Void
   ) throws -> Transcription {
@@ -1091,7 +1074,7 @@ extension CactusModel {
   public func transcribe(
     audio: URL,
     prompt: String,
-    options: Transcription.Options? = nil,
+    options: Transcription.Options = Transcription.Options(),
     maxBufferSize: Int? = nil,
     onToken: (String) -> Void = { _ in }
   ) throws -> Transcription {
@@ -1117,7 +1100,7 @@ extension CactusModel {
   public func transcribe(
     audio: URL,
     prompt: String,
-    options: Transcription.Options? = nil,
+    options: Transcription.Options = Transcription.Options(),
     maxBufferSize: Int? = nil,
     onToken: (String, UInt32) -> Void
   ) throws -> Transcription {
@@ -1140,13 +1123,10 @@ extension CactusModel {
   private func transcribe(
     for request: TranscriptionRequest,
     prompt: String,
-    options: Transcription.Options? = nil,
+    options: Transcription.Options = Transcription.Options(),
     maxBufferSize: Int? = nil,
     onToken: (String, UInt32) -> Void
   ) throws -> Transcription {
-    guard self.isTranscriptionModel else { throw TranscriptionError.notSupported }
-
-    let options = options ?? Transcription.Options()
     let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else {
       throw TranscriptionError.bufferSizeTooSmall
@@ -1201,10 +1181,6 @@ extension CactusModel {
     }
     let transcription = try ffiDecoder.decode(Transcription.self, from: responseData)
     return transcription
-  }
-
-  private var isTranscriptionModel: Bool {
-    self.configurationFile.modelType == .whisper || self.configurationFile.modelType == .moonshine
   }
 }
 

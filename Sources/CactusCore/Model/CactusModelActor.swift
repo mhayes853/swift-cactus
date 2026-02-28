@@ -23,9 +23,6 @@ public actor CactusModelActor {
   /// The underlying language model.
   public let model: CactusModel
 
-  /// The ``CactusModel/ConfigurationFile`` for this model.
-  public let configurationFile: CactusModel.ConfigurationFile
-
   /// The custom `SerialExecutor` used by this actor, if provided.
   public let executor: (any SerialExecutor)?
 
@@ -44,10 +41,8 @@ public actor CactusModelActor {
   ///   - executor: A custom `SerialExecutor` to use for this actor.
   ///   - model: The underlying language model.
   public init(executor: (any SerialExecutor)? = nil, model: consuming sending CactusModel) {
-    let configurationFile = model.configurationFile
     self.executor = executor
     self.model = consume model
-    self.configurationFile = configurationFile
     self.defaultExecutor = DefaultActorExecutor()
   }
 
@@ -72,20 +67,18 @@ public actor CactusModelActor {
     self.init(executor: executor, model: model)
   }
 
-  /// Creates a language model from the specified model pointer and model URL.
+  /// Creates a language model from the specified model pointer.
   ///
   /// The memory for the model pointer is managed by the language model.
   ///
   /// - Parameters:
   ///   - executor: A custom serial executor to use for this actor. If `nil`, uses the default.
   ///   - model: The model pointer.
-  ///   - modelURL: The model URL used to locate supporting model files.
   public init(
     executor: (any SerialExecutor)? = nil,
-    model: consuming sending cactus_model_t,
-    modelURL: URL
-  ) throws {
-    let languageModel = try CactusModel(model: model, modelURL: modelURL)
+    model: consuming sending cactus_model_t
+  ) {
+    let languageModel = CactusModel(model: model)
     self.init(executor: executor, model: languageModel)
   }
 }
@@ -263,7 +256,7 @@ extension CactusModelActor {
   /// - Returns: A ``CactusModel/CompletedChatTurn``.
   public func complete(
     messages: [CactusModel.ChatMessage],
-    options: CactusModel.Completion.Options? = nil,
+    options: CactusModel.Completion.Options = CactusModel.Completion.Options(),
     maxBufferSize: Int? = nil,
     functions: [CactusModel.FunctionDefinition] = [],
     onToken: @escaping @Sendable (String) -> Void = { _ in }
@@ -300,7 +293,7 @@ extension CactusModelActor {
   /// - Returns: A ``CactusModel/CompletedChatTurn``.
   public func complete(
     messages: [CactusModel.ChatMessage],
-    options: CactusModel.Completion.Options? = nil,
+    options: CactusModel.Completion.Options = CactusModel.Completion.Options(),
     maxBufferSize: Int? = nil,
     functions: [CactusModel.FunctionDefinition] = [],
     onToken: @escaping @Sendable (String, UInt32) -> Void
@@ -330,7 +323,7 @@ extension CactusModelActor {
   public func transcribe(
     buffer: [UInt8],
     prompt: String,
-    options: CactusModel.Transcription.Options? = nil,
+    options: CactusModel.Transcription.Options = CactusModel.Transcription.Options(),
     transcriptionMaxBufferSize: Int? = nil,
     onToken: @escaping @Sendable (String) -> Void = { _ in }
   ) async throws -> CactusModel.Transcription {
@@ -355,7 +348,7 @@ extension CactusModelActor {
   public func transcribe(
     buffer: [UInt8],
     prompt: String,
-    options: CactusModel.Transcription.Options? = nil,
+    options: CactusModel.Transcription.Options = CactusModel.Transcription.Options(),
     transcriptionMaxBufferSize: Int? = nil,
     onToken: @escaping @Sendable (String, UInt32) -> Void
   ) async throws -> CactusModel.Transcription {
@@ -380,7 +373,7 @@ extension CactusModelActor {
   public func transcribe(
     audio: URL,
     prompt: String,
-    options: CactusModel.Transcription.Options? = nil,
+    options: CactusModel.Transcription.Options = CactusModel.Transcription.Options(),
     maxBufferSize: Int? = nil,
     onToken: @escaping @Sendable (String) -> Void = { _ in }
   ) async throws -> CactusModel.Transcription {
@@ -405,7 +398,7 @@ extension CactusModelActor {
   public func transcribe(
     audio: URL,
     prompt: String,
-    options: CactusModel.Transcription.Options? = nil,
+    options: CactusModel.Transcription.Options = CactusModel.Transcription.Options(),
     maxBufferSize: Int? = nil,
     onToken: @escaping @Sendable (String, UInt32) -> Void
   ) async throws -> CactusModel.Transcription {

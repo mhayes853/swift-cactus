@@ -84,15 +84,13 @@ extension CactusModel {
 
     /// A tool output role.
     ///
-    /// This role represents tool/function output messages for most models.
-    /// Some models (eg. Qwen) require ``function`` instead.
+    /// This role represents tool/function output messages.
     public static let tool = MessageRole(rawValue: "tool")
 
     /// A function output role.
     ///
-    /// This role represents the same tool/function output concept as ``tool``,
-    /// but some models (eg. Qwen) specifically require this role value.
-    public static let function = MessageRole(rawValue: "function")
+    /// This role aliases ``tool``.
+    public static let function = MessageRole.tool
 
     public var rawValue: String
 

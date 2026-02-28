@@ -228,8 +228,7 @@ struct `CactusModel tests` {
         .user("What is the meaning of life?")
       ],
       options: CactusModel.Completion.Options(
-        maxTokens: 1024,
-        modelType: model.configurationFile.modelType ?? .qwen
+        maxTokens: 1024
       ),
       onToken: { token, _ in
         stream.append(token)
@@ -259,8 +258,7 @@ struct `CactusModel tests` {
     let modelURL = try await CactusModel.testModelURL(request: .qwen3_1_7b())
     let model = try CactusModel(from: modelURL)
     let options = CactusModel.Completion.Options(
-      maxTokens: 128,
-      modelType: model.configurationFile.modelType ?? .qwen
+      maxTokens: 128
     )
 
     let first = try model.complete(
@@ -292,7 +290,6 @@ struct `CactusModel tests` {
       ],
       options: CactusModel.Completion.Options(
         maxTokens: 256,
-        modelType: model.configurationFile.modelType ?? .qwen,
         forceFunctions: true
       ),
       functions: [self.weatherFunction]
@@ -405,24 +402,11 @@ struct `CactusModel tests` {
   }
 
   @Test
-  func `Throws Transcription Error When Model Does Not Support Audio`() async throws {
-    let modelURL = try await CactusModel.testModelURL(request: .lfm2_5_1_2bThinking())
-    let model = try CactusModel(from: modelURL)
-
-    #expect(throws: CactusModel.TranscriptionError.notSupported) {
-      try model.transcribe(audio: testAudioURL, prompt: audioPrompt)
-    }
-  }
-
-  @Test
   func `Embeddings From Model With Raw Pointer`() async throws {
     let modelURL = try await CactusModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let modelPtr = try #require(cactus_init(modelURL.nativePath, nil, false))
 
-    let model = try CactusModel(
-      model: modelPtr,
-      modelURL: modelURL
-    )
+    let model = CactusModel(model: modelPtr)
 
     let embeddings = try model.embeddings(for: "Some Text")
     expectNoDifference(embeddings.isEmpty, false)
@@ -537,7 +521,6 @@ final class CactusModelGenerationSnapshotTests: XCTestCase {
         .user("What is the weather in Santa Cruz?")
       ],
       options: CactusModel.Completion.Options(
-        modelType: model.configurationFile.modelType ?? .qwen,
         forceFunctions: true
       ),
       functions: [

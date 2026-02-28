@@ -508,7 +508,7 @@ extension CactusAgentSession {
 
         try self.appendFunctionReturns(
           functionReturns,
-          role: self.functionOutputRole,
+          role: .tool,
           completionEntries: &completionEntries
         )
 
@@ -571,11 +571,6 @@ extension CactusAgentSession {
         arguments: functionCall.arguments
       )
     }
-  }
-
-  private var functionOutputRole: CactusModel.MessageRole {
-    let modelType = self.languageModelActor.configurationFile.modelType
-    return modelType == .qwen ? .function : .tool
   }
 
   private struct StreamRequestContext: Sendable {

@@ -14,7 +14,7 @@
     public func transcribe(
       buffer: AVAudioPCMBuffer,
       prompt: String,
-      options: Transcription.Options? = nil,
+      options: Transcription.Options = Transcription.Options(),
       transcriptionMaxBufferSize: Int? = nil,
       onToken: (String) -> Void = { _ in }
     ) throws -> Transcription {
@@ -39,7 +39,7 @@
     public func transcribe(
       buffer: AVAudioPCMBuffer,
       prompt: String,
-      options: Transcription.Options? = nil,
+      options: Transcription.Options = Transcription.Options(),
       transcriptionMaxBufferSize: Int? = nil,
       onToken: (String, UInt32) -> Void
     ) throws -> Transcription {

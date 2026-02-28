@@ -16,7 +16,7 @@
     public func transcribe(
       buffer: sending AVAudioPCMBuffer,
       prompt: String,
-      options: CactusModel.Transcription.Options? = nil,
+      options: CactusModel.Transcription.Options = CactusModel.Transcription.Options(),
       transcriptionMaxBufferSize: Int? = nil,
       onToken: @escaping @Sendable (String) -> Void = { _ in }
     ) async throws -> CactusModel.Transcription {
@@ -41,7 +41,7 @@
     public func transcribe(
       buffer: sending AVAudioPCMBuffer,
       prompt: String,
-      options: CactusModel.Transcription.Options? = nil,
+      options: CactusModel.Transcription.Options = CactusModel.Transcription.Options(),
       transcriptionMaxBufferSize: Int? = nil,
       onToken: @escaping @Sendable (String, UInt32) -> Void
     ) async throws -> CactusModel.Transcription {
