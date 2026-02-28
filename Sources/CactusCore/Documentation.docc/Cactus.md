@@ -363,9 +363,7 @@ class MainActivity : ComponentActivity() {
 - ``CactusLanguageModel/Properties``
 - ``CactusLanguageModel/ConfigurationFile``
 - ``CactusLanguageModel/Configuration``
-- ``CactusLanguageModel/ModelType``
-- ``CactusLanguageModel/ModelVariant``
-- ``CactusLanguageModel/Precision``
+- ``CactusLanguageModel/ModelIdentifier``
 
 ### Chat Completions
 - ``CactusLanguageModel/ChatCompletion``

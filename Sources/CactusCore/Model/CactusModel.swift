@@ -796,48 +796,6 @@ extension CactusModel.Completion {
       self.handoffWithImages = handoffWithImages
     }
 
-    /// Creates options for generating chat completions.
-    ///
-    /// - Parameters:
-    ///   - maxTokens: The maximum number of tokens for the completion.
-    ///   - modelType: Model type used to derive default sampling values.
-    ///   - stopSequences: Phrases that stop generation when emitted.
-    ///   - forceFunctions: Whether tool calls are forced when tools are provided.
-    ///   - cloudHandoffThreshold: Confidence threshold used for cloud handoff.
-    ///   - toolRagTopK: Number of top tools to keep after tool-RAG selection.
-    ///   - includeStopSequences: Whether stop sequences are kept in final output.
-    ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
-    ///   - autoHandoff: Whether to automatically handoff to cloud when confidence is below threshold.
-    ///   - cloudTimeoutDuration: Timeout duration for cloud handoff.
-    ///   - handoffWithImages: Whether to include images when handing off to cloud.
-    public init(
-      maxTokens: Int = 512,
-      modelType: CactusModel.ModelType,
-      stopSequences: [String] = Self.defaultStopSequences,
-      forceFunctions: Bool = false,
-      cloudHandoffThreshold: Float = 0.7,
-      toolRagTopK: Int = 2,
-      includeStopSequences: Bool = false,
-      isTelemetryEnabled: Bool = false,
-      autoHandoff: Bool = true,
-      cloudTimeoutDuration: Duration = .milliseconds(15000),
-      handoffWithImages: Bool = true
-    ) {
-      self.maxTokens = maxTokens
-      self.temperature = modelType.defaultTemperature
-      self.topP = modelType.defaultTopP
-      self.topK = modelType.defaultTopK
-      self.stopSequences = stopSequences
-      self.forceFunctions = forceFunctions
-      self.cloudHandoffThreshold = cloudHandoffThreshold
-      self.toolRagTopK = toolRagTopK
-      self.includeStopSequences = includeStopSequences
-      self.isTelemetryEnabled = isTelemetryEnabled
-      self.autoHandoff = autoHandoff
-      self.cloudTimeoutDuration = cloudTimeoutDuration
-      self.handoffWithImages = handoffWithImages
-    }
-
     private enum CodingKeys: String, CodingKey {
       case maxTokens = "max_tokens"
       case temperature
