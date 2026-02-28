@@ -35,7 +35,7 @@ public struct CactusModel: ~Copyable {
         cacheIndex
       )
     else {
-      throw ModelCreationError(
+      throw CreationError(
         modelURL: url,
         corpusDirectoryURL: corpusDirectoryURL,
         cacheIndex: cacheIndex
@@ -96,7 +96,7 @@ public struct CactusModel: ~Copyable {
 
 extension CactusModel {
   /// An error thrown when trying to create a model.
-  public struct ModelCreationError: Error, Hashable {
+  public struct CreationError: Error, Hashable {
     /// The error message.
     public let message: String
 
@@ -119,12 +119,18 @@ extension CactusModel {
 
 extension CactusModel {
   /// An error thrown when trying to tokenize text.
-  public enum TokenizeError: Error, Hashable {
+  public struct TokenizeError: Error, Hashable, Sendable {
+    public let kind: String
+
+    public init(kind: String) {
+      self.kind = kind
+    }
+
     /// The buffer size for the tokenized output was too small.
-    case bufferTooSmall
+    public static let bufferTooSmall = Self(kind: "bufferTooSmall")
 
     /// An error occurred during tokenization.
-    case invalidTokenization
+    public static let invalidTokenization = Self(kind: "invalidTokenization")
   }
 
   /// Tokenizes the specified `text`.
@@ -280,18 +286,28 @@ extension CactusModel {
 
 extension CactusModel {
   /// An error thrown when trying to generate embeddings.
-  public enum EmbeddingsError: Error, Hashable {
+  public struct EmbeddingsError: Error, Hashable, Sendable {
+    public let kind: String
+    public let message: String?
+
+    public init(kind: String, message: String? = nil) {
+      self.kind = kind
+      self.message = message
+    }
+
     /// The buffer size for the generated embeddings was too small.
-    case bufferTooSmall
+    public static let bufferTooSmall = Self(kind: "bufferTooSmall")
 
     /// The model doesn't support image embeddings.
-    case imageNotSupported
+    public static let imageNotSupported = Self(kind: "imageNotSupported")
 
     /// The model doesn't support audio embeddings.
-    case audioNotSupported
+    public static let audioNotSupported = Self(kind: "audioNotSupported")
 
     /// A generation error.
-    case generation(message: String?)
+    public static func generation(message: String?) -> Self {
+      Self(kind: "generation", message: message)
+    }
   }
 
   /// Generates embeddings for the specified `text`.
@@ -555,12 +571,22 @@ extension CactusModel {
   }
 
   /// An error thrown when trying to generate a ``ChatCompletion``.
-  public enum ChatCompletionError: Error, Hashable {
+  public struct ChatCompletionError: Error, Hashable, Sendable {
+    public let kind: String
+    public let message: String?
+
+    public init(kind: String, message: String? = nil) {
+      self.kind = kind
+      self.message = message
+    }
+
     /// The buffer size for the completion was too small.
-    case bufferSizeTooSmall
+    public static let bufferSizeTooSmall = Self(kind: "bufferSizeTooSmall")
 
     /// A generation error.
-    case generation(message: String?)
+    public static func generation(message: String?) -> Self {
+      Self(kind: "generation", message: message)
+    }
   }
 
   /// Generates a completed chat turn with reusable continuation messages.
@@ -915,15 +941,25 @@ extension CactusModel.Completion: Encodable {
 
 extension CactusModel {
   /// An error thrown when trying to generate a ``Transcription``.
-  public enum TranscriptionError: Error, Hashable {
+  public struct TranscriptionError: Error, Hashable, Sendable {
+    public let kind: String
+    public let message: String?
+
+    public init(kind: String, message: String? = nil) {
+      self.kind = kind
+      self.message = message
+    }
+
     /// The buffer size for the completion was too small.
-    case bufferSizeTooSmall
+    public static let bufferSizeTooSmall = Self(kind: "bufferSizeTooSmall")
 
     /// The model does not support transcription.
-    case notSupported
+    public static let notSupported = Self(kind: "notSupported")
 
     /// A generation error.
-    case generation(message: String?)
+    public static func generation(message: String?) -> Self {
+      Self(kind: "generation", message: message)
+    }
   }
 
   /// A transcription result.
@@ -1263,15 +1299,25 @@ extension CactusModel.Transcription: Encodable {
 
 extension CactusModel {
   /// An error thrown when trying to run voice activity detection.
-  public enum VADError: Error, Hashable {
+  public struct VADError: Error, Hashable, Sendable {
+    public let kind: String
+    public let message: String?
+
+    public init(kind: String, message: String? = nil) {
+      self.kind = kind
+      self.message = message
+    }
+
     /// The buffer size for the response was too small.
-    case bufferSizeTooSmall
+    public static let bufferSizeTooSmall = Self(kind: "bufferSizeTooSmall")
 
     /// The model does not support voice activity detection.
-    case notSupported
+    public static let notSupported = Self(kind: "notSupported")
 
     /// A generation error.
-    case generation(message: String?)
+    public static func generation(message: String?) -> Self {
+      Self(kind: "generation", message: message)
+    }
   }
 
   /// A detected speech segment.
@@ -1604,15 +1650,25 @@ extension CactusModel {
   }
 
   /// An error thrown when querying a RAG corpus.
-  public enum RAGQueryError: Error, Hashable {
+  public struct RAGQueryError: Error, Hashable, Sendable {
+    public let kind: String
+    public let message: String?
+
+    public init(kind: String, message: String? = nil) {
+      self.kind = kind
+      self.message = message
+    }
+
     /// The response buffer was too small to contain the full results.
-    case bufferSizeTooSmall
+    public static let bufferSizeTooSmall = Self(kind: "bufferSizeTooSmall")
 
     /// The model does not have a corpus index loaded.
-    case ragNotSupported
+    public static let ragNotSupported = Self(kind: "ragNotSupported")
 
     /// An error occurred during RAG retrieval.
-    case generation(message: String?)
+    public static func generation(message: String?) -> Self {
+      Self(kind: "generation", message: message)
+    }
   }
 
   /// Queries the RAG corpus for documents relevant to the query.

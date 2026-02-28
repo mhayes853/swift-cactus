@@ -2,15 +2,15 @@
   "slug" : "whisper-small",
   "transcription" : {
     "cloud_handoff" : false,
-    "confidence" : 0.885,
-    "decode_tokens" : 27,
-    "decode_tps" : 73.13,
+    "confidence" : 0.9192,
+    "decode_tokens" : 10,
+    "decode_tps" : 68.64,
     "prefill_tokens" : 4,
-    "prefill_tps" : 1.66,
-    "ram_usage_mb" : 330.75,
-    "response" : "The power of the God cannot be overcome! The voice! Abix how dare you diso baby?! But that is impossible!!",
-    "time_to_first_token_ms" : 2410.7,
-    "total_time_ms" : 2766.22,
-    "total_tokens" : 31
+    "prefill_tps" : 1.71,
+    "ram_usage_mb" : 369.71,
+    "response" : "The power of the God cannot be overcome!",
+    "time_to_first_token_ms" : 2344.65,
+    "total_time_ms" : 2475.77,
+    "total_tokens" : 14
   }
 }
