@@ -11,7 +11,7 @@ public enum CactusSTTPrompt: Hashable, Sendable, CustomStringConvertible {
   case whisper(Whisper)
 
   /// Whisper-specific prompt configuration.
-  public struct Whisper: Hashable, Sendable {
+  public struct Whisper: Hashable, Sendable, RawRepresentable, CustomStringConvertible {
     /// The language code for the transcription.
     public var language: CactusSTTLanguage
 
@@ -21,8 +21,7 @@ public enum CactusSTTPrompt: Hashable, Sendable, CustomStringConvertible {
     /// Previous transcript text to include as context.
     public var previousTranscript: String?
 
-    /// The raw prompt text.
-    public var description: String {
+    public var rawValue: String {
       var prompt = ""
       if let previousTranscript = previousTranscript, !previousTranscript.isEmpty {
         prompt += "<|startofprev|>\(previousTranscript)"
@@ -32,6 +31,10 @@ public enum CactusSTTPrompt: Hashable, Sendable, CustomStringConvertible {
         prompt += "<|notimestamps|>"
       }
       return prompt
+    }
+
+    public var description: String {
+      self.rawValue
     }
 
     /// Creates a Whisper prompt from language and timestamp configuration.
@@ -89,12 +92,7 @@ public enum CactusSTTPrompt: Hashable, Sendable, CustomStringConvertible {
     if prompt.isEmpty {
       return .default
     }
-
-    guard let whisper = Whisper(description: prompt) else {
-      return nil
-    }
-
-    return .whisper(whisper)
+    return Whisper(rawValue: prompt).flatMap { .whisper($0) }
   }
 }
 
@@ -107,33 +105,33 @@ extension CactusSTTPrompt.Whisper {
   /// Valid format: `[<|startofprev|>{content}]<|startoftranscript|><|{language}|><|transcribe|>[<|notimestamps|>]`
   ///
   /// - Parameter description: The prompt string to parse.
-  public init?(description: String) {
-    guard !description.isEmpty else { return nil }
+  public init?(rawValue: String) {
+    guard !rawValue.isEmpty else { return nil }
 
-    guard promptRegex.matches(description) else { return nil }
+    guard promptRegex.matches(rawValue) else { return nil }
 
-    let groups = promptRegex.matchGroups(from: description)
+    let groups = promptRegex.matchGroups(from: rawValue)
     guard groups.count >= 1 else { return nil }
 
     let rawLanguage = String(groups[0])
     let language = CactusSTTLanguage(rawValue: rawLanguage.lowercased())
 
     let previousTranscript: String?
-    if let startOfPrev = description.range(of: startOfPrevToken, options: [.caseInsensitive]),
-      let startOfTranscript = description.range(
+    if let startOfPrev = rawValue.range(of: startOfPrevToken, options: [.caseInsensitive]),
+      let startOfTranscript = rawValue.range(
         of: startOfTranscriptToken,
         options: [.caseInsensitive]
       ),
       startOfPrev.lowerBound < startOfTranscript.lowerBound
     {
       previousTranscript = String(
-        description[startOfPrev.upperBound..<startOfTranscript.lowerBound]
+        rawValue[startOfPrev.upperBound..<startOfTranscript.lowerBound]
       )
     } else {
       previousTranscript = nil
     }
 
-    let includeTimestamps = !description.lowercased().hasSuffix(notimestampsToken)
+    let includeTimestamps = !rawValue.lowercased().hasSuffix(notimestampsToken)
 
     self.init(
       language: language,
