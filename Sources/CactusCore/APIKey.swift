@@ -4,7 +4,7 @@ import Foundation
 ///
 /// This value is stored in the `CACTUS_CLOUD_KEY` environment variable.
 ///
-/// > Warning: Avoid hardcoding credentials on a client-side app that's widely distributed.
+/// > Warning: Avoid hardcoding credentials on a client-side app that's publicly distributed.
 /// > Attackers can inspect your binary or app's network traffic through a debugger to extract
 /// > the key.
 public var cactusCloudAPIKey: String? {
