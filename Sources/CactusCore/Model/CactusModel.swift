@@ -605,14 +605,14 @@ extension CactusModel {
     private let timeToFirstTokenMs: Double
     private let totalTimeMs: Double
 
-    /// The amount of time in seconds to generate the first token.
-    public var timeIntervalToFirstToken: TimeInterval {
-      self.timeToFirstTokenMs / 1000
+    /// The amount of time to generate the first token.
+    public var durationToFirstToken: Duration {
+      .milliseconds(self.timeToFirstTokenMs)
     }
 
-    /// The total generation time in seconds.
-    public var totalTimeInterval: TimeInterval {
-      self.totalTimeMs / 1000
+    /// The total generation time.
+    public var totalDuration: Duration {
+      .milliseconds(self.totalTimeMs)
     }
   }
 
@@ -1420,17 +1420,8 @@ extension CactusModel {
     /// The current process RAM usage in MB.
     public let ramUsageMb: Double
 
-    private let totalDurationValue: Duration
-
     /// The total processing duration.
-    public var totalDuration: Duration {
-      self.totalDurationValue
-    }
-
-    /// The total processing time in seconds.
-    public var totalTime: TimeInterval {
-      self.totalDurationValue.secondsDouble
-    }
+    public let totalDuration: Duration
   }
 
   /// Options for voice activity detection.
@@ -1614,7 +1605,7 @@ extension CactusModel.VADResult: Decodable {
   public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.segments = try container.decode([CactusModel.VADSegment].self, forKey: .segments)
-    self.totalDurationValue = .milliseconds(
+    self.totalDuration = .milliseconds(
       try container.decode(Double.self, forKey: .totalTimeMs)
     )
     self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
@@ -1625,7 +1616,7 @@ extension CactusModel.VADResult: Encodable {
   public func encode(to encoder: any Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(self.segments, forKey: .segments)
-    try container.encode(self.totalDurationValue.secondsDouble * 1000, forKey: .totalTimeMs)
+    try container.encode(self.totalDuration.secondsDouble * 1000, forKey: .totalTimeMs)
     try container.encode(self.ramUsageMb, forKey: .ramUsageMb)
   }
 

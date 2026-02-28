@@ -47,8 +47,8 @@ public struct CactusTranscription: Hashable, Sendable, Identifiable {
 
   /// A single timestamped transcription segment.
   public struct Timestamp: Hashable, Sendable {
-    /// The start time in seconds for this segment.
-    public let seconds: TimeInterval
+    /// The start time for this segment.
+    public let startDuration: Duration
 
     /// The transcript text associated with this timestamp.
     public let transcript: String
@@ -56,10 +56,10 @@ public struct CactusTranscription: Hashable, Sendable, Identifiable {
     /// Creates a timestamped segment.
     ///
     /// - Parameters:
-    ///   - seconds: The segment start time in seconds.
+    ///   - startDuration: The segment start time.
     ///   - transcript: The segment transcript text.
-    public init(seconds: TimeInterval, transcript: String) {
-      self.seconds = seconds
+    public init(startDuration: Duration, transcript: String) {
+      self.startDuration = startDuration
       self.transcript = transcript
     }
   }
@@ -85,15 +85,16 @@ public struct CactusTranscription: Hashable, Sendable, Identifiable {
           stride(from: 0, to: matchGroups.count, by: 2)
             .compactMap { i in
               guard i + 1 < matchGroups.count,
-                let seconds = TimeInterval(matchGroups[i])
+                let secondsDouble = Double(matchGroups[i])
               else {
                 return nil
               }
+              let seconds = Duration.seconds(secondsDouble)
               var transcript = String(matchGroups[i + 1])
               if transcript.first == " " {
                 transcript.removeFirst()
               }
-              return Timestamp(seconds: seconds, transcript: transcript)
+              return Timestamp(startDuration: seconds, transcript: transcript)
             }
         )
       }
@@ -107,7 +108,7 @@ public struct CactusTranscription: Hashable, Sendable, Identifiable {
       case .timestamps(let timestamps):
         return
           timestamps.map { timestamp in
-            let secondsString = String(format: "%.2f", timestamp.seconds)
+            let secondsString = String(format: "%.2f", timestamp.startDuration.secondsDouble)
             return "<|\(secondsString)|>\(timestamp.transcript)"
           }
           .joined()

@@ -190,7 +190,7 @@ private struct TranscriptionSnapshot: Codable {
     case .timestamps(let timestamps):
       self.content =
         timestamps
-        .map { "\($0.seconds):\($0.transcript)" }
+        .map { "\($0.startDuration.secondsDouble):\($0.transcript)" }
         .joined(separator: "\n")
     }
   }

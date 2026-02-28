@@ -656,8 +656,8 @@ extension CactusAgentSession {
           decodeTps: completion.decodeTps,
           ramUsageMb: completion.ramUsageMb,
           didHandoffToCloud: false,
-          durationToFirstToken: .seconds(completion.timeIntervalToFirstToken),
-          totalDuration: .seconds(completion.totalTimeInterval)
+          durationToFirstToken: completion.durationToFirstToken,
+          totalDuration: completion.totalDuration
         )
         : nil
       self.appendTranscriptEntry(
