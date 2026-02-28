@@ -14,9 +14,6 @@ public struct CactusModel: ~Copyable {
   private static let bufferNotBigEnoughErrorMessage = "buffer too small"
   private static let unavailableModelPointerMessage = "CactusModel pointer is unavailable."
 
-  /// The ``Configuration`` for this model.
-  public let configuration: Configuration
-
   /// The ``ConfigurationFile`` for this model.
   public let configurationFile: ConfigurationFile
 
@@ -27,60 +24,45 @@ public struct CactusModel: ~Copyable {
   ///
   /// - Parameters:
   ///   - url: The local `URL` of the model.
-  ///   - modelSlug: The model slug.
   ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
   ///   - cacheIndex: Whether to load a cached RAG index if available.
   public init(
     from url: URL,
-    modelSlug: String? = nil,
     corpusDirectoryURL: URL? = nil,
     cacheIndex: Bool = false
   ) throws {
-    let configuration = Configuration(
-      modelURL: url,
-      modelSlug: modelSlug,
-      corpusDirectoryURL: corpusDirectoryURL,
-      cacheIndex: cacheIndex
-    )
-    try self.init(configuration: configuration)
-  }
-
-  /// Loads a model from the specified ``Configuration``.
-  ///
-  /// - Parameter configuration: The ``Configuration``.
-  public init(configuration: Configuration) throws {
     guard
       let modelPointer = cactus_init(
-        configuration.modelURL.nativePath,
-        configuration.corpusDirectoryURL?.nativePath,
-        configuration.cacheIndex
+        url.nativePath,
+        corpusDirectoryURL?.nativePath,
+        cacheIndex
       )
     else {
-      throw ModelCreationError(configuration: configuration)
+      throw ModelCreationError(
+        modelURL: url,
+        corpusDirectoryURL: corpusDirectoryURL,
+        cacheIndex: cacheIndex
+      )
     }
     let configurationFile = try ConfigurationFile(
-      contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
+      contentsOf: url.appendingPathComponent("config.txt")
     )
-    self.configuration = configuration
     self.configurationFile = configurationFile
     self.modelPointer = modelPointer
   }
 
-  /// Creates a language model from the specified model pointer and configuration.
-  ///
-  /// The configuration must accurately represent the underlying properties of the model pointer.
+  /// Creates a language model from the specified model pointer and model URL.
   ///
   /// - Parameters:
   ///   - model: The model pointer.
-  ///   - configuration: A ``Configuration`` that must accurately represent the model.
+  ///   - modelURL: The model URL used to locate supporting model files.
   public init(
     model: consuming cactus_model_t,
-    configuration: Configuration
+    modelURL: URL
   ) throws {
     let configurationFile = try ConfigurationFile(
-      contentsOf: configuration.modelURL.appendingPathComponent("config.txt")
+      contentsOf: modelURL.appendingPathComponent("config.txt")
     )
-    self.configuration = configuration
     self.configurationFile = configurationFile
     self.modelPointer = model
   }
@@ -125,49 +107,6 @@ public struct CactusModel: ~Copyable {
   }
 }
 
-// MARK: - Configuration
-
-extension CactusModel {
-  /// A configuration for loading a ``CactusModel``.
-  public struct Configuration: Hashable, Sendable {
-    /// The local `URL` of the model.
-    public var modelURL: URL
-
-    /// The model slug.
-    public var modelSlug: String
-
-    /// A `URL` to a corpus directory of documents for RAG models.
-    public var corpusDirectoryURL: URL?
-
-    /// Whether to load a cached RAG index if available.
-    public var cacheIndex: Bool
-
-    /// Creates a configuration.
-    ///
-    /// - Parameters:
-    ///   - modelURL: The local `URL` of the model.
-    ///   - modelSlug: The model slug.
-    ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
-    ///   - cacheIndex: Whether to load a cached RAG index if available.
-    public init(
-      modelURL: URL,
-      modelSlug: String? = nil,
-      corpusDirectoryURL: URL? = nil,
-      cacheIndex: Bool = false
-    ) {
-      self.modelURL = modelURL
-      if let modelSlug {
-        self.modelSlug = modelSlug
-      } else {
-        let splits = modelURL.lastPathComponent.components(separatedBy: "--")
-        self.modelSlug = splits.isEmpty ? modelURL.lastPathComponent : splits[0]
-      }
-      self.corpusDirectoryURL = corpusDirectoryURL
-      self.cacheIndex = cacheIndex
-    }
-  }
-}
-
 // MARK: - Creation Error
 
 extension CactusModel {
@@ -176,11 +115,16 @@ extension CactusModel {
     /// The error message.
     public let message: String
 
-    init(configuration: Configuration) {
+    init(
+      modelURL: URL,
+      corpusDirectoryURL: URL?,
+      cacheIndex: Bool
+    ) {
       if let message = cactus_get_last_error() {
         self.message = String(cString: message)
       } else {
-        self.message = "Failed to create model with configuration: \(configuration)"
+        self.message =
+          "Failed to create model with modelURL: \(modelURL), corpusDirectoryURL: \(String(describing: corpusDirectoryURL)), cacheIndex: \(cacheIndex)"
       }
     }
   }

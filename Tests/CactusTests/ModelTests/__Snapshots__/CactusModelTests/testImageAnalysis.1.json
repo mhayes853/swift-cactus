@@ -1,16 +1,16 @@
 {
   "cloud_handoff" : false,
-  "confidence" : 0.851,
-  "decode_tokens" : 61,
-  "decode_tps" : 103.89,
+  "confidence" : 0.8718,
+  "decode_tokens" : 79,
+  "decode_tps" : 92.43,
   "function_calls" : [
 
   ],
-  "prefill_tokens" : 314,
-  "prefill_tps" : 249.14,
-  "ram_usage_mb" : 1148.8,
-  "response" : "The image depicts a young man wearing a long-sleeved shirt, holding a book in his left hand and smiling at the camera. He is holding a black book with an orange cover, and he has short hair. The man's expression is cheerful, suggesting he is happy or excited about something.",
-  "time_to_first_token_ms" : 1260.35,
-  "total_time_ms" : 1837.9,
-  "total_tokens" : 375
+  "prefill_tokens" : 272,
+  "prefill_tps" : 271.48,
+  "ram_usage_mb" : 911.35,
+  "response" : "The image depicts a person holding a book and a backpack. The person is wearing a long-sleeved shirt, and the book is placed on their lap. The backpack appears to be made of leather, giving it an elegant look. The person's hands are visible on both sides of the book, indicating that they are holding it in their right hand while reading or presenting it to someone else.",
+  "time_to_first_token_ms" : 1001.92,
+  "total_time_ms" : 1845.83,
+  "total_tokens" : 351
 }

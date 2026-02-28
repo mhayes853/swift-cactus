@@ -163,13 +163,12 @@ struct `CactusModel tests` {
 
   @Test
   func `Image Embeddings`() async throws {
-    let modelURL = try await CactusModel.testModelURL(
-      request: .lfm2Vl_450m()
-    )
+    let request = CactusModel.PlatformDownloadRequest.lfm2Vl_450m()
+    let modelURL = try await CactusModel.testModelURL(request: request)
     let model = try CactusModel(from: modelURL)
 
     let embeddings = try model.imageEmbeddings(for: testImageURL)
-    let embedding = Embedding(slug: model.configuration.modelSlug, vector: embeddings)
+    let embedding = Embedding(slug: request.slug, vector: embeddings)
 
     withExpectedIssue {
       assertSnapshot(of: embedding, as: .json, record: true)
@@ -188,13 +187,12 @@ struct `CactusModel tests` {
 
   @Test
   func `Audio Embeddings`() async throws {
-    let modelURL = try await CactusModel.testModelURL(
-      request: .whisperSmall()
-    )
+    let request = CactusModel.PlatformDownloadRequest.whisperSmall()
+    let modelURL = try await CactusModel.testModelURL(request: request)
     let model = try CactusModel(from: modelURL)
 
     let embeddings = try model.audioEmbeddings(for: testAudioURL)
-    let embedding = Embedding(slug: model.configuration.modelSlug, vector: embeddings)
+    let embedding = Embedding(slug: request.slug, vector: embeddings)
 
     withKnownIssue {
       assertSnapshot(of: embedding, as: .json, record: true)
@@ -417,33 +415,13 @@ struct `CactusModel tests` {
   }
 
   @Test
-  func `Derives Model Slug From Model URL If Not Provided`() async throws {
-    let modelURL = try await CactusModel.testModelURL(request: .lfm2_5_1_2bThinking())
-    let configuration = CactusModel.Configuration(modelURL: modelURL)
-    expectNoDifference(
-      configuration.modelSlug,
-      CactusModel.PlatformDownloadRequest.lfm2_5_1_2bThinking().slug
-    )
-  }
-
-  @Test
-  func `Overrides Default Model Slug`() async throws {
-    let modelURL = try await CactusModel.testModelURL(request: .lfm2_5_1_2bThinking())
-    let configuration = CactusModel.Configuration(
-      modelURL: modelURL,
-      modelSlug: "custom-model"
-    )
-    expectNoDifference(configuration.modelSlug, "custom-model")
-  }
-
-  @Test
   func `Embeddings From Model With Raw Pointer`() async throws {
     let modelURL = try await CactusModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let modelPtr = try #require(cactus_init(modelURL.nativePath, nil, false))
 
     let model = try CactusModel(
       model: modelPtr,
-      configuration: CactusModel.Configuration(modelURL: modelURL)
+      modelURL: modelURL
     )
 
     let embeddings = try model.embeddings(for: "Some Text")
@@ -663,16 +641,15 @@ final class CactusModelGenerationSnapshotTests: XCTestCase {
       let transcription: CactusModel.Transcription
     }
 
-    let url = try await CactusModel.testModelURL(
-      request: .whisperSmall()
-    )
+    let request = CactusModel.PlatformDownloadRequest.whisperSmall()
+    let url = try await CactusModel.testModelURL(request: request)
     let model = try CactusModel(from: url)
 
     let transcription = try model.transcribe(audio: testAudioURL, prompt: audioPrompt)
 
     withExpectedIssue {
       assertSnapshot(
-        of: Transcription(slug: model.configuration.modelSlug, transcription: transcription),
+        of: Transcription(slug: request.slug, transcription: transcription),
         as: .json,
         record: true
       )
@@ -685,13 +662,14 @@ final class CactusModelGenerationSnapshotTests: XCTestCase {
       let result: CactusModel.VADResult
     }
 
-    let url = try await CactusModel.testModelURL(request: .sileroVad())
+    let request = CactusModel.PlatformDownloadRequest.sileroVad()
+    let url = try await CactusModel.testModelURL(request: request)
     let model = try CactusModel(from: url)
     let result = try model.vad(audio: testAudioURL)
 
     withExpectedIssue {
       assertSnapshot(
-        of: VADSnapshot(slug: model.configuration.modelSlug, result: result),
+        of: VADSnapshot(slug: request.slug, result: result),
         as: .json,
         record: true
       )
@@ -705,14 +683,15 @@ final class CactusModelGenerationSnapshotTests: XCTestCase {
         let result: CactusModel.VADResult
       }
 
-      let url = try await CactusModel.testModelURL(request: .sileroVad())
+      let request = CactusModel.PlatformDownloadRequest.sileroVad()
+      let url = try await CactusModel.testModelURL(request: request)
       let model = try CactusModel(from: url)
       let pcmBuffer = try testAudioPCMBuffer()
       let result = try model.vad(buffer: pcmBuffer)
 
       withExpectedIssue {
         assertSnapshot(
-          of: VADSnapshot(slug: model.configuration.modelSlug, result: result),
+          of: VADSnapshot(slug: request.slug, result: result),
           as: .json,
           record: true
         )
@@ -727,16 +706,15 @@ final class CactusModelGenerationSnapshotTests: XCTestCase {
     }
 
     let corpusURL = Bundle.module.url(forResource: "RAGCorpus", withExtension: nil)!
-    let url = try await CactusModel.testModelURL(
-      request: .lfm2_5_1_2bInstruct()
-    )
+    let request = CactusModel.PlatformDownloadRequest.lfm2_5_1_2bInstruct()
+    let url = try await CactusModel.testModelURL(request: request)
     let model = try CactusModel(from: url, corpusDirectoryURL: corpusURL)
 
     let result = try model.ragQuery(query: "What is async/await?")
 
     withExpectedIssue {
       assertSnapshot(
-        of: RAGResult(slug: model.configuration.modelSlug, result: result),
+        of: RAGResult(slug: request.slug, result: result),
         as: .json,
         record: true
       )

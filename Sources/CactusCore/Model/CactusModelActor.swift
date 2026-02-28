@@ -23,9 +23,6 @@ public actor CactusModelActor {
   /// The underlying language model.
   public let model: CactusModel
 
-  /// The ``CactusModel/Configuration`` for this model.
-  public let configuration: CactusModel.Configuration
-
   /// The ``CactusModel/ConfigurationFile`` for this model.
   public let configurationFile: CactusModel.ConfigurationFile
 
@@ -47,11 +44,9 @@ public actor CactusModelActor {
   ///   - executor: A custom `SerialExecutor` to use for this actor.
   ///   - model: The underlying language model.
   public init(executor: (any SerialExecutor)? = nil, model: consuming sending CactusModel) {
-    let configuration = model.configuration
     let configurationFile = model.configurationFile
     self.executor = executor
     self.model = consume model
-    self.configuration = configuration
     self.configurationFile = configurationFile
     self.defaultExecutor = DefaultActorExecutor()
   }
@@ -61,54 +56,36 @@ public actor CactusModelActor {
   /// - Parameters:
   ///   - executor: A custom `SerialExecutor` to use for this actor.
   ///   - url: The local `URL` of the model.
-  ///   - modelSlug: The model slug.
   ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
   ///   - cacheIndex: Whether to load a cached RAG index if available.
   public init(
     executor: (any SerialExecutor)? = nil,
     from url: URL,
-    modelSlug: String? = nil,
     corpusDirectoryURL: URL? = nil,
     cacheIndex: Bool = false
   ) throws {
     let model = try CactusModel(
       from: url,
-      modelSlug: modelSlug,
       corpusDirectoryURL: corpusDirectoryURL,
       cacheIndex: cacheIndex
     )
     self.init(executor: executor, model: model)
   }
 
-  /// Loads a model from the specified ``CactusModel/Configuration``.
-  ///
-  /// - Parameters:
-  ///   - executor: A custom serial executor to use for this actor. If `nil`, uses the default.
-  ///   - configuration: The ``Configuration``.
-  public init(
-    executor: (any SerialExecutor)? = nil,
-    configuration: CactusModel.Configuration
-  ) throws {
-    let model = try CactusModel(configuration: configuration)
-    self.init(executor: executor, model: model)
-  }
-
-  /// Creates a language model from the specified model pointer and configuration.
-  ///
-  /// The configuration must accurately represent the underlying properties of the model pointer.
+  /// Creates a language model from the specified model pointer and model URL.
   ///
   /// The memory for the model pointer is managed by the language model.
   ///
   /// - Parameters:
   ///   - executor: A custom serial executor to use for this actor. If `nil`, uses the default.
   ///   - model: The model pointer.
-  ///   - configuration: A ``Configuration`` that must accurately represent the model.
+  ///   - modelURL: The model URL used to locate supporting model files.
   public init(
     executor: (any SerialExecutor)? = nil,
     model: consuming sending cactus_model_t,
-    configuration: CactusModel.Configuration
+    modelURL: URL
   ) throws {
-    let languageModel = try CactusModel(model: model, configuration: configuration)
+    let languageModel = try CactusModel(model: model, modelURL: modelURL)
     self.init(executor: executor, model: languageModel)
   }
 }

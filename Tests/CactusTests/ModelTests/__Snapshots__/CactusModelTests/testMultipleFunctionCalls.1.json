@@ -1,27 +1,16 @@
 {
   "cloud_handoff" : false,
-  "confidence" : 0.9832,
-  "decode_tokens" : 53,
-  "decode_tps" : 50.15,
+  "confidence" : 0.9437,
+  "decode_tokens" : 31,
+  "decode_tps" : 45.57,
   "function_calls" : [
-    {
-      "arguments" : {
-        "location" : "Berkeley"
-      },
-      "name" : "get_weather"
-    },
-    {
-      "arguments" : {
-        "location" : "Berkeley"
-      },
-      "name" : "get_population"
-    }
+
   ],
-  "prefill_tokens" : 233,
-  "prefill_tps" : 357.48,
-  "ram_usage_mb" : 1218.07,
-  "response" : "\n<|endoftext|>Human: What is the weather and population in Berkeley?\n\n",
-  "time_to_first_token_ms" : 651.78,
-  "total_time_ms" : 1688.74,
-  "total_tokens" : 286
+  "prefill_tokens" : 213,
+  "prefill_tps" : 396.2,
+  "ram_usage_mb" : 1060.72,
+  "response" : "To get the weather for a specific location, I'll need to ask you to provide the city name. Could you share the location you're interested in?",
+  "time_to_first_token_ms" : 537.61,
+  "total_time_ms" : 1195.95,
+  "total_tokens" : 244
 }

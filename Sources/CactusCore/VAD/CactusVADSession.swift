@@ -29,9 +29,8 @@ public final class CactusVADSession: Sendable {
   ///
   /// - Parameters:
   ///   - url: The local model URL.
-  ///   - modelSlug: An optional model slug override.
-  public convenience init(from url: URL, modelSlug: String? = nil) throws {
-    let languageModelActor = try CactusModelActor(from: url, modelSlug: modelSlug)
+  public convenience init(from url: URL) throws {
+    let languageModelActor = try CactusModelActor(from: url)
     self.init(model: languageModelActor)
   }
 
@@ -39,16 +38,14 @@ public final class CactusVADSession: Sendable {
   ///
   /// - Parameters:
   ///   - model: The raw model pointer.
-  ///   - modelURL: The model URL used to construct model configuration.
-  ///   - modelSlug: An optional model slug override.
+  ///   - modelURL: The model URL used to locate supporting model files.
   public convenience init(
     model: consuming sending cactus_model_t,
-    modelURL: URL,
-    modelSlug: String? = nil
+    modelURL: URL
   ) throws {
     let languageModelActor = try CactusModelActor(
       model: model,
-      configuration: CactusModel.Configuration(modelURL: modelURL, modelSlug: modelSlug)
+      modelURL: modelURL
     )
     self.init(model: languageModelActor)
   }

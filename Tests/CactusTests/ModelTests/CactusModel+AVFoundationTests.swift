@@ -13,7 +13,8 @@
         let transcription: CactusModel.Transcription
       }
 
-      let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
+      let request = CactusModel.PlatformDownloadRequest.whisperSmall()
+      let modelURL = try await CactusModel.testModelURL(request: request)
       let model = try CactusModel(from: modelURL)
 
       let buffer = try testAudioPCMBuffer()
@@ -22,7 +23,7 @@
 
       withExpectedIssue {
         assertSnapshot(
-          of: Transcription(slug: model.configuration.modelSlug, transcription: transcription),
+          of: Transcription(slug: request.slug, transcription: transcription),
           as: .json,
           record: true
         )

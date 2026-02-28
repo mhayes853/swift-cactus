@@ -1,21 +1,21 @@
 {
   "cloud_handoff" : false,
-  "confidence" : 0.999,
+  "confidence" : 0.9794,
   "decode_tokens" : 20,
-  "decode_tps" : 46.86,
+  "decode_tps" : 46.79,
   "function_calls" : [
     {
       "arguments" : {
-        "location" : "Santa Cruz"
+        "location" : "New York"
       },
       "name" : "get_weather"
     }
   ],
-  "prefill_tokens" : 166,
-  "prefill_tps" : 320.17,
-  "ram_usage_mb" : 393.8,
+  "prefill_tokens" : 147,
+  "prefill_tps" : 390.03,
+  "ram_usage_mb" : 362.74,
   "response" : "",
-  "time_to_first_token_ms" : 518.47,
-  "total_time_ms" : 923.97,
-  "total_tokens" : 186
+  "time_to_first_token_ms" : 376.89,
+  "total_time_ms" : 782.92,
+  "total_tokens" : 167
 }
