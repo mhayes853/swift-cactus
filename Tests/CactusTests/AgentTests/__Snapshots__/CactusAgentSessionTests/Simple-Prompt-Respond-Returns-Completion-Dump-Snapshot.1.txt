@@ -1,10 +1,10 @@
 ▿ CactusCompletion<String>
   ▿ entries: 2 elements
     ▿ CactusCompletionEntry
-      - metrics: Optional<Metrics>.none
+      - metrics: Optional<CactusGenerationMetrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 47466B05-2B8E-4EF9-948B-AC50C0407DFD
+          - rawValue: E20111ED-51AC-4EFE-B1F3-D19765C0A55E
         ▿ message: ChatMessage
           - content: "Say hello in one concise sentence."
           ▿ images: Optional<Array<URL>>
@@ -12,41 +12,43 @@
           ▿ role: MessageRole
             - rawValue: "user"
     ▿ CactusCompletionEntry
-      ▿ metrics: Optional<Metrics>
-        ▿ some: Metrics
-          - confidence: 0.9266
-          - decodeTokens: 55
-          - decodeTps: 64.81
-          ▿ durationToFirstToken: 0.03954 seconds
-            - _low: 39540000000000000
+      ▿ metrics: Optional<CactusGenerationMetrics>
+        ▿ some: CactusGenerationMetrics
+          - confidence: 0.9143
+          - decodeTokens: 10
+          - decodeTps: 96.9
+          - didHandoffToCloud: false
+          ▿ durationToFirstToken: 0.02755 seconds
+            - _low: 27550000000000000
             - _high: 0
           - prefillTokens: 16
-          - prefillTps: 404.65
-          - ramUsageMb: 960.98
-          ▿ totalDuration: 0.8726900000000001 seconds
-            - _low: 872690000000000128
+          - prefillTps: 580.74
+          - ramUsageMb: 54.69
+          ▿ totalDuration: 0.12043000000000001 seconds
+            - _low: 120430000000000016
             - _high: 0
-          - totalTokens: 71
+          - totalTokens: 26
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: EB6ABEEB-D284-42CB-ABA3-DC28122850D9
+          - rawValue: 1D300A5E-A603-479C-895D-95029264DACC
         ▿ message: ChatMessage
-          - content: "There are many ways in which you can say \"Hello\" in one concise sentence. Whether it\'s a greeting, formal greetings, or simply wishing someone well, there are different ways to express yourself based on your relationship with the person. What is most meaningful to you?"
+          - content: "That\'s welcome! What should I do?"
           - images: Optional<Array<URL>>.none
           ▿ role: MessageRole
             - rawValue: "assistant"
-  ▿ metrics: Metrics
-    - confidence: 0.9266
-    - decodeTokens: 55
-    - decodeTps: 64.81
-    ▿ durationToFirstToken: 0.03954 seconds
-      - _low: 39540000000000000
+  ▿ metrics: CactusGenerationMetrics
+    - confidence: 0.9143
+    - decodeTokens: 10
+    - decodeTps: 96.9
+    - didHandoffToCloud: false
+    ▿ durationToFirstToken: 0.02755 seconds
+      - _low: 27550000000000000
       - _high: 0
     - prefillTokens: 16
-    - prefillTps: 404.65
-    - ramUsageMb: 960.98
-    ▿ totalDuration: 0.8726900000000001 seconds
-      - _low: 872690000000000128
+    - prefillTps: 580.74
+    - ramUsageMb: 54.69
+    ▿ totalDuration: 0.12043000000000001 seconds
+      - _low: 120430000000000016
       - _high: 0
-    - totalTokens: 71
-  - output: "There are many ways in which you can say \"Hello\" in one concise sentence. Whether it\'s a greeting, formal greetings, or simply wishing someone well, there are different ways to express yourself based on your relationship with the person. What is most meaningful to you?"
+    - totalTokens: 26
+  - output: "That\'s welcome! What should I do?"

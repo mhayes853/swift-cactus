@@ -1,5 +1,5 @@
 ▿ CactusVAD
-  - ramUsageMb: 214.74
+  - ramUsageMb: 1121.95
   - samplingRate: 16000
   ▿ segments: 33 elements
     ▿ Segment
@@ -299,6 +299,6 @@
         - _low: 6200279631452239424
         - _high: 5
       - startSampleIndex: 1574944
-  ▿ totalDuration: 0.49457 seconds
-    - _low: 494569999999999993
+  ▿ totalDuration: 1.11607 seconds
+    - _low: 1116069999999999936
     - _high: 0

@@ -73,11 +73,6 @@ public struct CactusVAD: Hashable, Sendable {
   /// Sampling rate in Hz used to interpret segment sample-index timestamps.
   public let samplingRate: Int
 
-  /// The total processing time in seconds.
-  public var totalTime: TimeInterval {
-    self.totalDuration.secondsDouble
-  }
-
   /// Creates a voice activity detection output.
   ///
   /// - Parameters:

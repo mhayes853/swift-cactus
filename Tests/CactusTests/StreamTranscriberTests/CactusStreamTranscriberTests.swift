@@ -25,7 +25,7 @@ struct `CactusStreamTranscriber tests` {
   #if canImport(AVFoundation)
     @Test
     func `Process Snapshot From Audio Slice`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+      let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
       let transcriber = try CactusStreamTranscriber(modelURL: modelURL)
 
       let fullBuffer = try testAudioPCMBuffer()
@@ -42,7 +42,7 @@ struct `CactusStreamTranscriber tests` {
 
     @Test
     func `Finalize Snapshot After Chunked Inserts`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+      let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
       let transcriber = try CactusStreamTranscriber(modelURL: modelURL)
 
       let fullBuffer = try testAudioPCMBuffer()
@@ -70,7 +70,7 @@ struct `CactusStreamTranscriber tests` {
 
     @Test
     func `Disallow Operations After Finalize`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+      let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
       let actor = try CactusStreamTranscriberActor(modelURL: modelURL)
 
       let fullBuffer = try testAudioPCMBuffer()
@@ -99,7 +99,7 @@ struct `CactusStreamTranscriber tests` {
 
     @Test
     func `Stop Is Idempotent Through Deinit Cleanup`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+      let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
       let transcriber = try CactusStreamTranscriber(modelURL: modelURL)
 
       let fullBuffer = try testAudioPCMBuffer()

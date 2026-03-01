@@ -9,7 +9,7 @@ import Testing
 struct `CactusSTTSession tests` {
   @Test
   func `File Transcription Snapshot`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+    let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
     let session = try CactusSTTSession(from: modelURL)
     let request = CactusTranscription.Request(prompt: audioPrompt, content: .audio(testAudioURL))
 
@@ -26,7 +26,7 @@ struct `CactusSTTSession tests` {
 
   @Test
   func `File Stream Snapshot`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+    let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
     let session = try CactusSTTSession(from: modelURL)
     let request = CactusTranscription.Request(prompt: audioPrompt, content: .audio(testAudioURL))
 
@@ -53,7 +53,7 @@ struct `CactusSTTSession tests` {
   @Test
   func `PCM Buffer Transcription Snapshot`() async throws {
     #if canImport(AVFoundation)
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+      let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
       let session = try CactusSTTSession(from: modelURL)
       let pcmBuffer = try testAudioPCMBuffer()
       let content = try CactusTranscription.Request.Content.pcm(pcmBuffer)
@@ -77,7 +77,7 @@ struct `CactusSTTSession tests` {
   @Test
   func `File Transcription With Timestamps Snapshot`() async throws {
     #if canImport(AVFoundation)
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+      let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
       let session = try CactusSTTSession(from: modelURL)
       let pcmBuffer = try testAudioPCMBuffer()
       let content = try CactusTranscription.Request.Content.pcm(pcmBuffer)
@@ -101,7 +101,7 @@ struct `CactusSTTSession tests` {
 
   @Test
   func `Stop Mid Stream Cancels And Calls Through To Model Stop`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+    let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
     let session = try CactusSTTSession(from: modelURL)
     let request = CactusTranscription.Request(
       prompt: audioPrompt,
@@ -124,7 +124,7 @@ struct `CactusSTTSession tests` {
 
   @Test
   func `Canceling Transcribe Cancels Stream And Ends Session`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
+    let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
     let session = try CactusSTTSession(from: modelURL)
     let request = CactusTranscription.Request(
       prompt: audioPrompt,
@@ -145,8 +145,8 @@ struct `CactusSTTSession tests` {
 
   @Test
   func `Custom Executor Transcription Succeeds`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .whisperSmall())
-    let model = try CactusLanguageModelActor(
+    let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
+    let model = try CactusModelActor(
       executor: DispatchQueueSerialExecutor(),
       from: modelURL
     )
@@ -157,6 +157,46 @@ struct `CactusSTTSession tests` {
       try await session.transcribe(request: request)
     }
   }
+
+  #if canImport(AVFoundation)
+    @Test
+    func `Moonshine Buffer Transcription Snapshot`() async throws {
+      let modelURL = try await CactusModel.testModelURL(request: .moonshineBase())
+      let session = try CactusSTTSession(from: modelURL)
+      let pcmBuffer = try testAudioPCMBuffer()
+      let content = try CactusTranscription.Request.Content.pcm(pcmBuffer)
+      let request = CactusTranscription.Request(prompt: .default, content: content)
+
+      let transcription = try await session.transcribe(request: request)
+
+      withKnownIssue {
+        assertSnapshot(
+          of: TranscriptionSnapshot(transcription: transcription),
+          as: .json,
+          record: true
+        )
+      }
+    }
+
+    @Test
+    func `Parakeet Buffer Transcription Snapshot`() async throws {
+      let modelURL = try await CactusModel.testModelURL(request: .parakeetCtc_1_1b())
+      let session = try CactusSTTSession(from: modelURL)
+      let pcmBuffer = try testAudioPCMBuffer()
+      let content = try CactusTranscription.Request.Content.pcm(pcmBuffer)
+      let request = CactusTranscription.Request(prompt: .default, content: content)
+
+      let transcription = try await session.transcribe(request: request)
+
+      withKnownIssue {
+        assertSnapshot(
+          of: TranscriptionSnapshot(transcription: transcription),
+          as: .json,
+          record: true
+        )
+      }
+    }
+  #endif
 }
 
 private struct TranscriptionSnapshot: Codable {
@@ -169,7 +209,7 @@ private struct TranscriptionSnapshot: Codable {
     case .timestamps(let timestamps):
       self.content =
         timestamps
-        .map { "\($0.seconds):\($0.transcript)" }
+        .map { "\($0.startDuration.secondsDouble):\($0.transcript)" }
         .joined(separator: "\n")
     }
   }
@@ -186,14 +226,14 @@ private struct StreamTranscriptionSnapshot: Codable {
   init(streamedText: String, transcription: CactusTranscription) {
     self.streamedText = streamedText
     self.parsedContent = TranscriptionSnapshot(transcription: transcription).content
-    self.prefillTokens = transcription.prefillTokens
-    self.decodeTokens = transcription.decodeTokens
-    self.totalTokens = transcription.totalTokens
-    self.confidence = transcription.confidence
+    self.prefillTokens = transcription.metrics.prefillTokens
+    self.decodeTokens = transcription.metrics.decodeTokens
+    self.totalTokens = transcription.metrics.totalTokens
+    self.confidence = transcription.metrics.confidence
   }
 }
 
-private let audioPrompt = CactusSTTPrompt(language: .english, includeTimestamps: false)
+private let audioPrompt = CactusSTTPrompt.whisper(language: .english, includeTimestamps: false)
 private let testAudioURL = Bundle.module.url(forResource: "test", withExtension: "wav")!
 private let missingAudioURL = FileManager.default.temporaryDirectory
   .appendingPathComponent("missing-audio-\(UUID().uuidString)")

@@ -7,12 +7,12 @@
   "confidence" : 0.9358,
   "confirmed" : "",
   "decode_tokens" : 45,
-  "decode_tps" : 26.42,
+  "decode_tps" : 26.18,
   "pending" : "The power of a god cannot be overcome. Zanzer, this is the providence of the world. Even gods are merely beings restricted to the limited power determined by profit and power. Although great is not unlimited.",
   "prefill_tokens" : 4,
-  "prefill_tps" : 1.61,
-  "ram_usage_mb" : 1854.49,
-  "time_to_first_token_ms" : 2491.3800000000006,
-  "total_time_ms" : 4157.09,
+  "prefill_tps" : 1.01,
+  "ram_usage_mb" : 2050.9,
+  "time_to_first_token_ms" : 3954.81,
+  "total_time_ms" : 5635.51,
   "total_tokens" : 49
 }

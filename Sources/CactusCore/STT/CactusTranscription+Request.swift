@@ -11,7 +11,7 @@ extension CactusTranscription {
     /// The transcription prompt encoding language and timestamp configuration.
     public var prompt: CactusSTTPrompt {
       didSet {
-        if prompt.includeTimestamps && useVad == nil {
+        if case .whisper(let whisper) = prompt, whisper.includeTimestamps, useVad == nil {
           useVad = true
         }
       }
@@ -41,8 +41,8 @@ extension CactusTranscription {
     /// - `true`: Explicitly enable VAD.
     /// - `false`: Explicitly disable VAD.
     ///
-    /// When ``includeTimestamps`` is set to `true` and this property is `nil`,
-    /// it will automatically be set to `true` to ensure timestamps work correctly.
+    /// When the prompt is a whisper-style prompt with timestamps included. This property is
+    /// automatically set to true when the value is nil.
     public var useVad: Bool?
 
     /// Threshold for triggering cloud handoff based on confidence.
@@ -93,7 +93,7 @@ extension CactusTranscription {
 
       if let useVad {
         self.useVad = useVad
-      } else if prompt.includeTimestamps {
+      } else if case .whisper(let whisper) = prompt, whisper.includeTimestamps {
         self.useVad = true
       } else {
         self.useVad = nil
@@ -133,7 +133,7 @@ extension CactusTranscription {
       cloudHandoffThreshold: Float? = nil,
       maxBufferSize: Int? = nil
     ) {
-      let prompt = CactusSTTPrompt(language: language, includeTimestamps: includeTimestamps)
+      let prompt = CactusSTTPrompt.whisper(language: language, includeTimestamps: includeTimestamps)
       self.init(
         prompt: prompt,
         content: content,

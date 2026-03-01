@@ -2,22 +2,11 @@
 
 /// A user turn payload for completion sessions.
 public struct CactusUserMessage {
-  /// Specifies the maximum token limit for completion generation.
-  public enum MaxTokenLimit: Hashable, Sendable, Codable {
-    /// A user-defined maximum token count.
-    case limit(Int)
-
-    /// Uses the Cactus engine's behavior for no explicit maximum token count.
-    ///
-    /// Currently, this defaults to the sliding window attention size in the engine (512 tokens).
-    case engineBehavior
-  }
-
   /// The prompt content for this user message.
   public var content: CactusPromptContent
 
   /// The maximum number of tokens for the completion.
-  public var maxTokens: MaxTokenLimit
+  public var maxTokens: Int
 
   /// The sampling temperature.
   public var temperature: Float
@@ -48,6 +37,11 @@ public struct CactusUserMessage {
   /// `nil` uses the engine default.
   public var maxBufferSize: Int?
 
+  /// Built-in cloud-handoff behavior for this message.
+  ///
+  /// `nil` disables cloud handoff.
+  public var cloudHandoff: CloudHandoff?
+
   /// Creates a user message.
   ///
   /// - Parameters:
@@ -62,18 +56,20 @@ public struct CactusUserMessage {
   ///   - includeStopSequences: Whether stop sequences are kept in final output.
   ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
   ///   - maxBufferSize: The maximum buffer size used to store the completion.
+  ///   - cloudHandoff: Built-in cloud-handoff settings for this request.
   public init(
     content: CactusPromptContent,
-    maxTokens: MaxTokenLimit = .engineBehavior,
+    maxTokens: Int = 512,
     temperature: Float = 0.6,
     topP: Float = 0.95,
     topK: Int = 20,
-    stopSequences: [String] = CactusLanguageModel.Completion.Options.defaultStopSequences,
+    stopSequences: [String] = CactusModel.Completion.Options.defaultStopSequences,
     forceFunctions: Bool = false,
     toolRagTopK: Int = 2,
     includeStopSequences: Bool = false,
     isTelemetryEnabled: Bool = false,
-    maxBufferSize: Int? = nil
+    maxBufferSize: Int? = nil,
+    cloudHandoff: CloudHandoff? = CloudHandoff()
   ) {
     self.content = content
     self.maxTokens = maxTokens
@@ -86,6 +82,7 @@ public struct CactusUserMessage {
     self.includeStopSequences = includeStopSequences
     self.isTelemetryEnabled = isTelemetryEnabled
     self.maxBufferSize = maxBufferSize
+    self.cloudHandoff = cloudHandoff
   }
 
   /// Creates a user message from prompt representable content.
@@ -102,18 +99,20 @@ public struct CactusUserMessage {
   ///   - includeStopSequences: Whether stop sequences are kept in final output.
   ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
   ///   - maxBufferSize: The maximum buffer size used to store the completion.
+  ///   - cloudHandoff: Built-in cloud-handoff settings for this request.
   public init(
     _ content: some CactusPromptRepresentable,
-    maxTokens: MaxTokenLimit = .engineBehavior,
+    maxTokens: Int = 512,
     temperature: Float = 0.6,
     topP: Float = 0.95,
     topK: Int = 20,
-    stopSequences: [String] = CactusLanguageModel.Completion.Options.defaultStopSequences,
+    stopSequences: [String] = CactusModel.Completion.Options.defaultStopSequences,
     forceFunctions: Bool = false,
     toolRagTopK: Int = 2,
     includeStopSequences: Bool = false,
     isTelemetryEnabled: Bool = false,
-    maxBufferSize: Int? = nil
+    maxBufferSize: Int? = nil,
+    cloudHandoff: CloudHandoff? = CloudHandoff()
   ) throws {
     self.content = try content.promptContent
     self.maxTokens = maxTokens
@@ -126,6 +125,7 @@ public struct CactusUserMessage {
     self.includeStopSequences = includeStopSequences
     self.isTelemetryEnabled = isTelemetryEnabled
     self.maxBufferSize = maxBufferSize
+    self.cloudHandoff = cloudHandoff
   }
 
   /// Creates a user message from a prompt builder trailing closure.
@@ -141,18 +141,20 @@ public struct CactusUserMessage {
   ///   - includeStopSequences: Whether stop sequences are kept in final output.
   ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
   ///   - maxBufferSize: The maximum buffer size used to store the completion.
+  ///   - cloudHandoff: Built-in cloud-handoff settings for this request.
   ///   - content: The prompt content for this user message.
   public init(
-    maxTokens: MaxTokenLimit = .engineBehavior,
+    maxTokens: Int = 512,
     temperature: Float = 0.6,
     topP: Float = 0.95,
     topK: Int = 20,
-    stopSequences: [String] = CactusLanguageModel.Completion.Options.defaultStopSequences,
+    stopSequences: [String] = CactusModel.Completion.Options.defaultStopSequences,
     forceFunctions: Bool = false,
     toolRagTopK: Int = 2,
     includeStopSequences: Bool = false,
     isTelemetryEnabled: Bool = false,
     maxBufferSize: Int? = nil,
+    cloudHandoff: CloudHandoff? = CloudHandoff(),
     @CactusPromptBuilder content: @Sendable () -> some CactusPromptRepresentable
   ) throws {
     self.content = try content().promptContent
@@ -166,5 +168,38 @@ public struct CactusUserMessage {
     self.includeStopSequences = includeStopSequences
     self.isTelemetryEnabled = isTelemetryEnabled
     self.maxBufferSize = maxBufferSize
+    self.cloudHandoff = cloudHandoff
+  }
+}
+
+// MARK: - CloudHandoff
+
+extension CactusUserMessage {
+  /// Built-in engine cloud-handoff settings for this message.
+  public struct CloudHandoff: Hashable, Sendable {
+    /// Whether to include images when handing off to cloud.
+    public var handoffWithImages: Bool
+
+    /// Confidence threshold used to trigger cloud handoff.
+    public var cloudHandoffThreshold: Float
+
+    /// Timeout duration for cloud handoff.
+    public var cloudTimeoutDuration: Duration
+
+    /// Creates auto cloud-handoff settings for a user message.
+    ///
+    /// - Parameters:
+    ///   - handoffWithImages: Whether to include images when handing off to cloud.
+    ///   - cloudHandoffThreshold: Confidence threshold used to trigger cloud handoff.
+    ///   - cloudTimeoutDuration: Timeout duration for cloud handoff.
+    public init(
+      handoffWithImages: Bool = true,
+      cloudHandoffThreshold: Float = 0.7,
+      cloudTimeoutDuration: Duration = .milliseconds(15000)
+    ) {
+      self.handoffWithImages = handoffWithImages
+      self.cloudHandoffThreshold = cloudHandoffThreshold
+      self.cloudTimeoutDuration = cloudTimeoutDuration
+    }
   }
 }

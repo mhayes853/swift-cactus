@@ -1,0 +1,16 @@
+{
+  "cloud_handoff" : false,
+  "confidence" : 0.8674,
+  "decode_tokens" : 88,
+  "decode_tps" : 88.18,
+  "function_calls" : [
+
+  ],
+  "prefill_tokens" : 272,
+  "prefill_tps" : 270.41,
+  "ram_usage_mb" : 931.9,
+  "response" : "The image depicts a young man wearing a long-sleeved shirt with the top part of the shirt visible. The shirt features a prominent pocket on the chest, and the sleeves are rolled up to indicate it's worn during warmer weather. The man is holding an open book in his hand, which has a visible cover on his back. He is smiling and looking directly at the camera, giving off an inviting and friendly demeanor.",
+  "time_to_first_token_ms" : 1005.89,
+  "total_time_ms" : 1992.52,
+  "total_tokens" : 360
+}

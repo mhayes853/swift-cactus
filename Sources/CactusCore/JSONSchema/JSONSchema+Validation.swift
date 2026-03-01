@@ -3,9 +3,9 @@
 extension JSONSchema {
   /// A class for validating JSON values against a ``JSONSchema``.
   ///
-  /// You can use this to validate tool parameter output from a ``CactusLanguageModel``.
+  /// You can use this to validate tool parameter output from a ``CactusModel``.
   /// ```swift
-  /// let functionDefinition = CactusLanguageModel.FunctionDefinition(
+  /// let functionDefinition = CactusModel.FunctionDefinition(
   ///   name: "search",
   ///   description: "Find something",
   ///   parameters: .object(
@@ -14,7 +14,7 @@ extension JSONSchema {
   ///     ]
   ///   )
   /// )
-  /// let completion = try model.chatCompletion(
+  /// let completion = try model.complete(
   ///   messages: messages,
   ///   functions: [functionDefinition]
   /// )

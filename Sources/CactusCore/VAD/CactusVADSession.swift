@@ -5,23 +5,23 @@ import Foundation
 
 /// A concurrency-safe session for voice activity detection.
 ///
-/// This type serializes access to an underlying ``CactusLanguageModel`` actor and exposes a
+/// This type serializes access to an underlying ``CactusModel`` actor and exposes a
 /// one-shot async API for VAD inference.
 public final class CactusVADSession: Sendable {
   /// The underlying language model actor.
-  public let languageModelActor: CactusLanguageModelActor
+  public let languageModelActor: CactusModelActor
 
   /// Creates a VAD session from an existing language model.
   ///
   /// - Parameter model: The underlying language model.
-  public init(model: consuming sending CactusLanguageModel) {
-    self.languageModelActor = CactusLanguageModelActor(model: model)
+  public init(model: consuming sending CactusModel) {
+    self.languageModelActor = CactusModelActor(model: model)
   }
 
   /// Creates a VAD session from an existing language model actor.
   ///
   /// - Parameter model: The underlying language model actor.
-  public init(model: CactusLanguageModelActor) {
+  public init(model: CactusModelActor) {
     self.languageModelActor = model
   }
 
@@ -29,9 +29,8 @@ public final class CactusVADSession: Sendable {
   ///
   /// - Parameters:
   ///   - url: The local model URL.
-  ///   - modelSlug: An optional model slug override.
-  public convenience init(from url: URL, modelSlug: String? = nil) throws {
-    let languageModelActor = try CactusLanguageModelActor(from: url, modelSlug: modelSlug)
+  public convenience init(from url: URL) throws {
+    let languageModelActor = try CactusModelActor(from: url)
     self.init(model: languageModelActor)
   }
 
@@ -39,17 +38,8 @@ public final class CactusVADSession: Sendable {
   ///
   /// - Parameters:
   ///   - model: The raw model pointer.
-  ///   - modelURL: The model URL used to construct model configuration.
-  ///   - modelSlug: An optional model slug override.
-  public convenience init(
-    model: consuming sending cactus_model_t,
-    modelURL: URL,
-    modelSlug: String? = nil
-  ) throws {
-    let languageModelActor = try CactusLanguageModelActor(
-      model: model,
-      configuration: CactusLanguageModel.Configuration(modelURL: modelURL, modelSlug: modelSlug)
-    )
+  public convenience init(model: consuming sending cactus_model_t) {
+    let languageModelActor = CactusModelActor(model: model)
     self.init(model: languageModelActor)
   }
 }
@@ -66,7 +56,7 @@ extension CactusVADSession {
       precondition(samplingRate > 0, "Sampling rate must be greater than 0.")
     }
     let state = VADContinuationState()
-    let options = CactusLanguageModel.VADOptions(request: request)
+    let options = CactusModel.VADOptions(request: request)
 
     return try await withTaskCancellationHandler {
       try await withUnsafeThrowingContinuation { continuation in
@@ -153,8 +143,8 @@ extension CactusVADSession {
 
   private func performVAD(
     request: CactusVAD.Request,
-    options: CactusLanguageModel.VADOptions
-  ) async throws -> CactusLanguageModel.VADResult {
+    options: CactusModel.VADOptions
+  ) async throws -> CactusModel.VADResult {
     if let audioURL = request.content.audioURL {
       return try await languageModelActor.vad(
         audio: audioURL,

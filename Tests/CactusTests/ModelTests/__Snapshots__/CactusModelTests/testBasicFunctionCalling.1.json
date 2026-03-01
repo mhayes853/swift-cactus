@@ -1,0 +1,16 @@
+{
+  "cloud_handoff" : false,
+  "confidence" : 0.9365,
+  "decode_tokens" : 24,
+  "decode_tps" : 48.98,
+  "function_calls" : [
+
+  ],
+  "prefill_tokens" : 142,
+  "prefill_tps" : 338.4,
+  "ram_usage_mb" : 397.16,
+  "response" : "None of the provided functions are applicable to this query. Let me know if there's anything else I can assist with!",
+  "time_to_first_token_ms" : 419.62,
+  "total_time_ms" : 889.24,
+  "total_tokens" : 166
+}

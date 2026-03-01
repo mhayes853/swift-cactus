@@ -15,9 +15,9 @@ import struct Foundation.URL
 /// You can use this class to load models in your application without worrying about managing
 /// model storage manually.
 /// ```swift
-/// let request = CactusLanguageModel.PlatformDownloadRequest.qwen3_0_6b()
+/// let request = CactusModel.PlatformDownloadRequest.qwen3_0_6b()
 /// let modelURL = try await CactusModelsDirectory.shared.modelURL(for: request)
-/// let model = try CactusLanguageModel(from: modelURL)
+/// let model = try CactusModel(from: modelURL)
 ///
 /// // ...
 /// ```
@@ -33,12 +33,12 @@ public final class CactusModelsDirectory: Sendable {
   #endif
 
   private struct State {
-    var downloadTasks = [CactusLanguageModel.PlatformDownloadRequest: DownloadTaskEntry]()
+    var downloadTasks = [CactusModel.PlatformDownloadRequest: DownloadTaskEntry]()
     var delegate: (any Delegate)?
   }
 
   private struct DownloadTaskEntry {
-    let task: CactusLanguageModel.DownloadTask
+    let task: CactusModel.DownloadTask
     let subscription: CactusSubscription
   }
 
@@ -73,7 +73,7 @@ extension CactusModelsDirectory {
     ///   - request: The request identifying the model to remove.
     func modelsDirectoryWillRemoveModel(
       _ directory: CactusModelsDirectory,
-      request: CactusLanguageModel.PlatformDownloadRequest
+      request: CactusModel.PlatformDownloadRequest
     )
 
     /// Called when a model removal finishes, either successfully or with an
@@ -85,7 +85,7 @@ extension CactusModelsDirectory {
     ///   - result: `success(())` on success, or the failure error.
     func modelsDirectoryDidRemoveModel(
       _ directory: CactusModelsDirectory,
-      request: CactusLanguageModel.PlatformDownloadRequest,
+      request: CactusModel.PlatformDownloadRequest,
       result: Result<Void, any Error>
     )
 
@@ -97,8 +97,8 @@ extension CactusModelsDirectory {
     ///   - task: The download task that was created.
     func modelsDirectoryDidCreateDownloadTask(
       _ directory: CactusModelsDirectory,
-      request: CactusLanguageModel.PlatformDownloadRequest,
-      task: CactusLanguageModel.DownloadTask
+      request: CactusModel.PlatformDownloadRequest,
+      task: CactusModel.DownloadTask
     )
 
     /// Called when a download task finishes, either successfully or with an
@@ -111,8 +111,8 @@ extension CactusModelsDirectory {
     ///   - result: `success(URL)` on success, or the failure error.
     func modelsDirectoryDidCompleteDownloadTask(
       _ directory: CactusModelsDirectory,
-      request: CactusLanguageModel.PlatformDownloadRequest,
-      task: CactusLanguageModel.DownloadTask,
+      request: CactusModel.PlatformDownloadRequest,
+      task: CactusModel.DownloadTask,
       result: Result<URL, any Error>
     )
 
@@ -126,10 +126,10 @@ extension CactusModelsDirectory {
     /// - Returns: The download task to use for downloading the model.
     func modelsDirectoryWillCreateDownloadTask(
       _ directory: CactusModelsDirectory,
-      request: CactusLanguageModel.PlatformDownloadRequest,
+      request: CactusModel.PlatformDownloadRequest,
       to destination: URL,
       configuration: URLSessionConfiguration
-    ) -> CactusLanguageModel.DownloadTask
+    ) -> CactusModel.DownloadTask
   }
 
   public var delegate: (any Delegate)? {
@@ -141,35 +141,35 @@ extension CactusModelsDirectory {
 extension CactusModelsDirectory.Delegate {
   public func modelsDirectoryWillRemoveModel(
     _ directory: CactusModelsDirectory,
-    request: CactusLanguageModel.PlatformDownloadRequest
+    request: CactusModel.PlatformDownloadRequest
   ) {}
 
   public func modelsDirectoryDidRemoveModel(
     _ directory: CactusModelsDirectory,
-    request: CactusLanguageModel.PlatformDownloadRequest,
+    request: CactusModel.PlatformDownloadRequest,
     result: Result<Void, any Error>
   ) {}
 
   public func modelsDirectoryDidCreateDownloadTask(
     _ directory: CactusModelsDirectory,
-    request: CactusLanguageModel.PlatformDownloadRequest,
-    task: CactusLanguageModel.DownloadTask
+    request: CactusModel.PlatformDownloadRequest,
+    task: CactusModel.DownloadTask
   ) {}
 
   public func modelsDirectoryDidCompleteDownloadTask(
     _ directory: CactusModelsDirectory,
-    request: CactusLanguageModel.PlatformDownloadRequest,
-    task: CactusLanguageModel.DownloadTask,
+    request: CactusModel.PlatformDownloadRequest,
+    task: CactusModel.DownloadTask,
     result: Result<URL, any Error>
   ) {}
 
   public func modelsDirectoryWillCreateDownloadTask(
     _ directory: CactusModelsDirectory,
-    request: CactusLanguageModel.PlatformDownloadRequest,
+    request: CactusModel.PlatformDownloadRequest,
     to destination: URL,
     configuration: URLSessionConfiguration
-  ) -> CactusLanguageModel.DownloadTask {
-    CactusLanguageModel.downloadModelTask(
+  ) -> CactusModel.DownloadTask {
+    CactusModel.downloadModelTask(
       request: request,
       to: destination,
       configuration: configuration
@@ -190,10 +190,10 @@ extension CactusModelsDirectory {
   ///   - configuration: A `URLSessionConfiguration` to use for downloading.
   ///   - onDownloadProgress: A callback for download progress.
   public func modelURL(
-    for request: CactusLanguageModel.PlatformDownloadRequest,
+    for request: CactusModel.PlatformDownloadRequest,
     configuration: URLSessionConfiguration = .default,
     onDownloadProgress:
-      @escaping @Sendable (Result<CactusLanguageModel.DownloadProgress, any Error>) -> Void = { _ in
+      @escaping @Sendable (Result<CactusModel.DownloadProgress, any Error>) -> Void = { _ in
       }
   ) async throws -> URL {
     try await self.modelURL(
@@ -205,14 +205,14 @@ extension CactusModelsDirectory {
   }
 
   private func modelURL(
-    for request: CactusLanguageModel.PlatformDownloadRequest,
+    for request: CactusModel.PlatformDownloadRequest,
     configuration: URLSessionConfiguration = .default,
     createTask: (
-      CactusLanguageModel.PlatformDownloadRequest,
+      CactusModel.PlatformDownloadRequest,
       URLSessionConfiguration
-    ) throws -> CactusLanguageModel.DownloadTask,
+    ) throws -> CactusModel.DownloadTask,
     onDownloadProgress:
-      @escaping @Sendable (Result<CactusLanguageModel.DownloadProgress, any Error>) -> Void = { _ in
+      @escaping @Sendable (Result<CactusModel.DownloadProgress, any Error>) -> Void = { _ in
       }
   ) async throws -> URL {
     if let url = self.storedModelURL(for: request) {
@@ -229,7 +229,7 @@ extension CactusModelsDirectory {
     }
   }
 
-  /// Returns a ``CactusLanguageModel/DownloadTask`` for the model with the specified request.
+  /// Returns a ``CactusModel/DownloadTask`` for the model with the specified request.
   ///
   /// If another download task is in progress, then this method will return the in-progress download task.
   ///
@@ -237,9 +237,9 @@ extension CactusModelsDirectory {
   ///   - request: The platform download request for the model.
   ///   - configuration: A `URLSessionConfiguration` to use for downloading.
   public func modelDownloadTask(
-    for request: CactusLanguageModel.PlatformDownloadRequest,
+    for request: CactusModel.PlatformDownloadRequest,
     configuration: URLSessionConfiguration = .default
-  ) throws -> CactusLanguageModel.DownloadTask {
+  ) throws -> CactusModel.DownloadTask {
     try self.state.withLock { state in
       if let entry = state.downloadTasks[request] {
         return entry.task
@@ -247,7 +247,7 @@ extension CactusModelsDirectory {
       try self.ensureDirectory()
       let destinationURL = self.destinationURL(for: request)
       try self.ensureParentDirectory(for: destinationURL)
-      let task: CactusLanguageModel.DownloadTask
+      let task: CactusModel.DownloadTask
       if let delegate = state.delegate {
         task = delegate.modelsDirectoryWillCreateDownloadTask(
           self,
@@ -256,7 +256,7 @@ extension CactusModelsDirectory {
           configuration: configuration
         )
       } else {
-        task = CactusLanguageModel.downloadModelTask(
+        task = CactusModel.downloadModelTask(
           request: request,
           to: destinationURL,
           configuration: configuration
@@ -282,8 +282,8 @@ extension CactusModelsDirectory {
   }
 
   private func handleDownloadTaskCompletion(
-    for request: CactusLanguageModel.PlatformDownloadRequest,
-    task: CactusLanguageModel.DownloadTask,
+    for request: CactusModel.PlatformDownloadRequest,
+    task: CactusModel.DownloadTask,
     result: Result<URL, any Error>
   ) {
     let completion = self.completeDownloadTaskEntry(for: request)
@@ -297,10 +297,10 @@ extension CactusModelsDirectory {
       )
   }
 
-  /// All active ``CactusLanguageModel/DownloadTask`` instances currently managed by this
+  /// All active ``CactusModel/DownloadTask`` instances currently managed by this
   /// directory.
   public var activeDownloadTasks:
-    [CactusLanguageModel.PlatformDownloadRequest: CactusLanguageModel.DownloadTask]
+    [CactusModel.PlatformDownloadRequest: CactusModel.DownloadTask]
   {
     self.observationRegistrar.access(self, keyPath: \.activeDownloadTasks)
     return self.state.withLock { state in state.downloadTasks.mapValues(\.task) }
@@ -314,7 +314,7 @@ extension CactusModelsDirectory {
   /// A model stored inside a ``CactusModelsDirectory``.
   public struct StoredModel: Hashable, Sendable {
     /// The platform download request used for this model.
-    public let request: CactusLanguageModel.PlatformDownloadRequest
+    public let request: CactusModel.PlatformDownloadRequest
 
     /// The `URL` of the model inside the directory.
     public let url: URL
@@ -324,7 +324,7 @@ extension CactusModelsDirectory {
   ///
   /// - Parameter request: The platform download request for the model.
   public func storedModelURL(
-    for request: CactusLanguageModel.PlatformDownloadRequest
+    for request: CactusModel.PlatformDownloadRequest
   ) -> URL? {
     self.state.withLock { _ in
       let destinationURL = self.destinationURL(for: request)
@@ -364,7 +364,7 @@ extension CactusModelsDirectory {
     else {
       return []
     }
-    let version = CactusLanguageModel.PlatformDownloadRequest.Version(
+    let version = CactusModel.PlatformDownloadRequest.Version(
       rawValue: versionDirectory.lastPathComponent
     )
     guard
@@ -383,7 +383,7 @@ extension CactusModelsDirectory {
 
   private func storedModels(
     inQuantizationDirectory quantizationDirectory: URL,
-    version: CactusLanguageModel.PlatformDownloadRequest.Version
+    version: CactusModel.PlatformDownloadRequest.Version
   ) -> [StoredModel] {
     guard
       let isQuantizationDirectory =
@@ -393,7 +393,7 @@ extension CactusModelsDirectory {
     else {
       return []
     }
-    let quantization = CactusLanguageModel.PlatformDownloadRequest.Quantization(
+    let quantization = CactusModel.PlatformDownloadRequest.Quantization(
       rawValue: quantizationDirectory.lastPathComponent
     )
     guard
@@ -416,8 +416,8 @@ extension CactusModelsDirectory {
 
   private func storedModels(
     inChannelDirectory channelDirectory: URL,
-    version: CactusLanguageModel.PlatformDownloadRequest.Version,
-    quantization: CactusLanguageModel.PlatformDownloadRequest.Quantization
+    version: CactusModel.PlatformDownloadRequest.Version,
+    quantization: CactusModel.PlatformDownloadRequest.Quantization
   ) -> [StoredModel] {
     guard
       let isChannelDirectory =
@@ -427,10 +427,10 @@ extension CactusModelsDirectory {
     else {
       return []
     }
-    let pro: CactusLanguageModel.PlatformDownloadRequest.Pro? =
+    let pro: CactusModel.PlatformDownloadRequest.Pro? =
       channelDirectory.lastPathComponent == Self.ordinaryDirectoryName
       ? nil
-      : CactusLanguageModel.PlatformDownloadRequest.Pro(
+      : CactusModel.PlatformDownloadRequest.Pro(
         rawValue: channelDirectory.lastPathComponent
       )
     guard
@@ -454,9 +454,9 @@ extension CactusModelsDirectory {
 
   private func storedModel(
     inModelDirectory modelDirectory: URL,
-    version: CactusLanguageModel.PlatformDownloadRequest.Version,
-    quantization: CactusLanguageModel.PlatformDownloadRequest.Quantization,
-    pro: CactusLanguageModel.PlatformDownloadRequest.Pro?
+    version: CactusModel.PlatformDownloadRequest.Version,
+    quantization: CactusModel.PlatformDownloadRequest.Quantization,
+    pro: CactusModel.PlatformDownloadRequest.Pro?
   ) -> StoredModel? {
     guard
       let isModelDirectory =
@@ -466,7 +466,7 @@ extension CactusModelsDirectory {
     else {
       return nil
     }
-    let request = CactusLanguageModel.PlatformDownloadRequest(
+    let request = CactusModel.PlatformDownloadRequest(
       slug: modelDirectory.lastPathComponent,
       quantization: quantization,
       version: version,
@@ -483,7 +483,7 @@ extension CactusModelsDirectory {
   ///
   /// - Parameter request: The platform download request for the model.
   public func removeModel(
-    with request: CactusLanguageModel.PlatformDownloadRequest
+    with request: CactusModel.PlatformDownloadRequest
   ) throws {
     try self.state.withLock { state in
       try self._removeModel(request: request, state: state)
@@ -514,7 +514,7 @@ extension CactusModelsDirectory {
   }
 
   private func _removeModel(
-    request: CactusLanguageModel.PlatformDownloadRequest,
+    request: CactusModel.PlatformDownloadRequest,
     state: sending State
   ) throws {
     let delegate = state.delegate
@@ -570,7 +570,7 @@ extension CactusModelsDirectory {
   static let ordinaryDirectoryName = "__ordinary__"
 
   private func destinationURL(
-    for request: CactusLanguageModel.PlatformDownloadRequest
+    for request: CactusModel.PlatformDownloadRequest
   ) -> URL {
     let proDirectoryName = request.pro?.rawValue ?? Self.ordinaryDirectoryName
     return self.baseURL
@@ -592,7 +592,7 @@ extension CactusModelsDirectory {
   }
 
   private func completeDownloadTaskEntry(
-    for request: CactusLanguageModel.PlatformDownloadRequest
+    for request: CactusModel.PlatformDownloadRequest
   ) -> (delegate: (any Delegate)?, didRemoveTask: Bool) {
     self.state.withLock { state in
       var didRemoveTask = false

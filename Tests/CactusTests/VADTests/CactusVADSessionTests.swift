@@ -9,7 +9,7 @@ import Testing
 struct `CactusVADSession tests` {
   @Test
   func `File VAD Snapshot`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .sileroVad())
+    let modelURL = try await CactusModel.testModelURL(request: .sileroVad())
     let session = try CactusVADSession(from: modelURL)
     let request = CactusVAD.Request(content: .audio(testAudioURL))
 
@@ -22,7 +22,7 @@ struct `CactusVADSession tests` {
 
   @Test
   func `Canceling VAD Throws Immediate Cancellation Error`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .sileroVad())
+    let modelURL = try await CactusModel.testModelURL(request: .sileroVad())
     let session = try CactusVADSession(from: modelURL)
     let request = CactusVAD.Request(content: .pcm(longSilencePCMBytes))
 
@@ -40,7 +40,7 @@ struct `CactusVADSession tests` {
 
   @Test
   func `Canceling VAD Immediately Throws Cancellation Error`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .sileroVad())
+    let modelURL = try await CactusModel.testModelURL(request: .sileroVad())
     let session = try CactusVADSession(from: modelURL)
     let request = CactusVAD.Request(content: .pcm(longSilencePCMBytes))
 
@@ -56,8 +56,8 @@ struct `CactusVADSession tests` {
 
   @Test
   func `VAD With Custom Executor Succeeds`() async throws {
-    let modelURL = try await CactusLanguageModel.testModelURL(request: .sileroVad())
-    let model = try CactusLanguageModelActor(
+    let modelURL = try await CactusModel.testModelURL(request: .sileroVad())
+    let model = try CactusModelActor(
       executor: DispatchQueueSerialExecutor(),
       from: modelURL
     )
@@ -72,7 +72,7 @@ struct `CactusVADSession tests` {
   #if canImport(AVFoundation)
     @Test
     func `PCM Buffer VAD Snapshot`() async throws {
-      let modelURL = try await CactusLanguageModel.testModelURL(request: .sileroVad())
+      let modelURL = try await CactusModel.testModelURL(request: .sileroVad())
       let session = try CactusVADSession(from: modelURL)
       let pcmBuffer = try testAudioPCMBuffer()
       let content = try CactusVAD.Request.Content.pcm(pcmBuffer)

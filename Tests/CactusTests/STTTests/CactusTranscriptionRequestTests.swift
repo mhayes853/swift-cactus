@@ -51,19 +51,23 @@ struct `CactusTranscriptionRequest tests` {
   }
 
   @Test
-  func `prompt includeTimestamps modification triggers useVad when nil`() {
+  func `prompt includeTimestamps modification triggers useVad when nil`() throws {
     var request = CactusTranscription.Request(
       language: .english,
       includeTimestamps: false,
       content: .audio(testAudioURL)
     )
     expectNoDifference(request.useVad, nil)
-    request.prompt.includeTimestamps = true
+    guard case .whisper(var whisper) = request.prompt else {
+      throw TestError("Expected whisper case")
+    }
+    whisper.includeTimestamps = true
+    request.prompt = .whisper(whisper)
     expectNoDifference(request.useVad, true)
   }
 
   @Test
-  func `prompt includeTimestamps modification preserves explicit false useVad`() {
+  func `prompt includeTimestamps modification preserves explicit false useVad`() throws {
     var request = CactusTranscription.Request(
       language: .english,
       includeTimestamps: false,
@@ -71,21 +75,36 @@ struct `CactusTranscriptionRequest tests` {
       useVad: false
     )
     expectNoDifference(request.useVad, false)
-    request.prompt.includeTimestamps = true
+    guard case .whisper(var whisper) = request.prompt else {
+      throw TestError("Expected whisper case")
+    }
+    whisper.includeTimestamps = true
+    request.prompt = .whisper(whisper)
     expectNoDifference(request.useVad, false)
   }
 
   @Test
-  func `prompt language modification updates prompt description`() {
+  func `prompt language modification updates prompt description`() throws {
     var request = CactusTranscription.Request(
       language: .english,
       includeTimestamps: true,
       content: .audio(testAudioURL)
     )
-    request.prompt.language = .french
-    expectNoDifference(request.prompt.language, .french)
+    guard case .whisper(var whisper) = request.prompt else {
+      throw TestError("Expected whisper case")
+    }
+    whisper.language = .french
+    request.prompt = .whisper(whisper)
     expectNoDifference(request.prompt.description, "<|startoftranscript|><|fr|><|transcribe|>")
   }
 }
 
 private let testAudioURL = Bundle.module.url(forResource: "test", withExtension: "wav")!
+
+private enum TestError: Error {
+  case message(String)
+  
+  init(_ message: String) {
+    self = .message(message)
+  }
+}

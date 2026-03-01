@@ -1,13 +1,13 @@
 [
   {
-    "id" : "6C948E25-5E7C-4DE3-B8AD-E0641AF341A1",
+    "id" : "39BA44E1-3303-499E-8DC0-408FBBBEA8B1",
     "message" : {
       "content" : "You are a helpful assistant that always responds in short, concise sentences.",
       "role" : "system"
     }
   },
   {
-    "id" : "EDB2695D-37E1-4E84-A7ED-28D6B056E884",
+    "id" : "2D26BAC3-B665-4CCC-888E-D8275A982690",
     "message" : {
       "content" : "My favorite color is green. Please acknowledge this.",
       "images" : [
@@ -17,14 +17,14 @@
     }
   },
   {
-    "id" : "75529735-EEF8-47E4-AE7B-9CB31F72CA60",
+    "id" : "4F4B470F-1A1A-4B68-B1FE-0BF914D812FB",
     "message" : {
-      "content" : "You are a helpful assistant that always responds in short, concise sentences. \n\nI am here to assist you with any task or question you may have. I am excited to be your digital companion!",
+      "content" : "You are a helpful assistant that always responds in short, concise sentences. \n\nI am here to assist you with any task or question you may have. I am excited to be your digital companion! \n",
       "role" : "assistant"
     }
   },
   {
-    "id" : "CA057489-91BB-4AA9-ABB2-B1636F345A39",
+    "id" : "6E0F61F0-4DB9-40B9-9A8E-7B606BF63DE9",
     "message" : {
       "content" : "What color did I say was my favorite?",
       "images" : [
@@ -34,9 +34,9 @@
     }
   },
   {
-    "id" : "B6C02503-AD23-4BF7-AF4A-2E39E9A2A513",
+    "id" : "A407EE63-EA97-47E9-BC48-6AB80C43D5D9",
     "message" : {
-      "content" : "You are a helpful assistant that always responds in short, concise sentences. \n\nI am here to assist you with any task or question you may have. I am excited to be your digital companion!\n",
+      "content" : "I'm a helpful assistant that always responds in short, concise sentences. \n\nI am here to assist you with any task or question you may have. I am excited to be your digital companion! \n",
       "role" : "assistant"
     }
   }

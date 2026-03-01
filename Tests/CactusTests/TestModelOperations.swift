@@ -6,9 +6,9 @@ let nanosecondsPerSecond = UInt64(1_000_000_000)
 
 // MARK: - TestModelDownloadQuery
 
-extension CactusLanguageModel {
+extension CactusModel {
   static func testModelURL(
-    request: CactusLanguageModel.PlatformDownloadRequest
+    request: CactusModel.PlatformDownloadRequest
   ) async throws -> URL {
     try await client.store(for: TestModelDownloadOperations.$downloadQuery(for: request)).fetch()
   }
@@ -17,7 +17,7 @@ extension CactusLanguageModel {
 private enum TestModelDownloadOperations {
   @QueryRequest
   static func downloadQuery(
-    for request: CactusLanguageModel.PlatformDownloadRequest
+    for request: CactusModel.PlatformDownloadRequest
   ) async throws -> URL {
     if let url = CactusModelsDirectory.testModels.storedModelURL(for: request) {
       return url
