@@ -11,7 +11,7 @@ import Foundation
 ///
 /// let modelURL = try await CactusModelsDirectory.shared
 ///   .modelURL(for: .whisperSmall())
-/// let stream = try CactusTranscriptionStream(modelURL: modelURL)
+/// let stream = try CactusTranscriptionStream(from: modelURL)
 ///
 /// let task = Task {
 ///   for try await chunk in stream {
@@ -77,7 +77,7 @@ public final class CactusTranscriptionStream: Sendable {
   /// Creates a transcription stream from a model URL.
   ///
   /// - Parameter modelURL: The URL of the model.
-  public init(modelURL: URL) throws {
+  public init(from modelURL: URL) throws {
     let streamTranscriber = try CactusStreamTranscriber(modelURL: modelURL)
     self.streamTranscriberActor = CactusStreamTranscriberActor(
       streamTranscriber: consume streamTranscriber

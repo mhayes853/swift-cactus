@@ -14,7 +14,7 @@ struct `CactusTranscriptionStream tests` {
     @Test
     func `Async Sequence Snapshot From Stream Inserts`() async throws {
       let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
-      let stream = try CactusTranscriptionStream(modelURL: modelURL)
+      let stream = try CactusTranscriptionStream(from: modelURL)
 
       let recordingTask = Task {
         var chunks = [CactusStreamTranscriber.ProcessedTranscription]()
