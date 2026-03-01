@@ -136,7 +136,91 @@ extension CactusAgentSession {
     )
   }
 
-  /// Creates a completion session from a language model actor and system prompt.
+  /// Creates a completion session from a model URL.
+  ///
+  /// - Parameters:
+  ///   - url: The local `URL` of the model.
+  ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
+  ///   - cacheIndex: Whether to load a cached RAG index if available.
+  ///   - functions: Tool functions available to the session.
+  ///   - transcript: The initial transcript to seed the session.
+  public convenience init(
+    from url: URL,
+    corpusDirectoryURL: URL? = nil,
+    cacheIndex: Bool = false,
+    functions: [any CactusFunction] = [],
+    transcript: CactusTranscript = CactusTranscript()
+  ) throws {
+    let model = try CactusModel(
+      from: url,
+      corpusDirectoryURL: corpusDirectoryURL,
+      cacheIndex: cacheIndex
+    )
+    self.init(
+      model: model,
+      functions: functions,
+      transcript: transcript
+    )
+  }
+
+  /// Creates a completion session from a model URL with a system prompt.
+  ///
+  /// - Parameters:
+  ///   - url: The local `URL` of the model.
+  ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
+  ///   - cacheIndex: Whether to load a cached RAG index if available.
+  ///   - functions: Tool functions available to the session.
+  ///   - systemPrompt: The system prompt injected for the session.
+  public convenience init(
+    from url: URL,
+    corpusDirectoryURL: URL? = nil,
+    cacheIndex: Bool = false,
+    functions: [any CactusFunction] = [],
+    systemPrompt: sending CactusPromptContent
+  ) throws {
+    let model = try CactusModel(
+      from: url,
+      corpusDirectoryURL: corpusDirectoryURL,
+      cacheIndex: cacheIndex
+    )
+    self.init(
+      model: model,
+      functions: functions,
+      systemPrompt: systemPrompt
+    )
+  }
+
+  /// Creates a completion session from a model URL and prompt builder.
+  ///
+  /// - Parameters:
+  ///   - url: The local `URL` of the model.
+  ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
+  ///   - cacheIndex: Whether to load a cached RAG index if available.
+  ///   - functions: Tool functions available to the session.
+  ///   - transcript: The initial transcript to seed the session.
+  ///   - systemPrompt: A builder that produces the session's system prompt content.
+  public convenience init(
+    from url: URL,
+    corpusDirectoryURL: URL? = nil,
+    cacheIndex: Bool = false,
+    functions: [any CactusFunction] = [],
+    transcript: CactusTranscript = CactusTranscript(),
+    @CactusPromptBuilder systemPrompt: @Sendable () -> some CactusPromptRepresentable
+  ) throws {
+    let model = try CactusModel(
+      from: url,
+      corpusDirectoryURL: corpusDirectoryURL,
+      cacheIndex: cacheIndex
+    )
+    self.init(
+      languageModelActor: CactusModelActor(model: model),
+      functions: functions,
+      transcript: transcript,
+      systemPrompt: CactusPromptContent(systemPrompt())
+    )
+  }
+
+  /// Creates a completion session from a model URL and prompt builder.
   ///
   /// - Parameters:
   ///   - model: The underlying language model actor.
