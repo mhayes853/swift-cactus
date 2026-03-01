@@ -394,7 +394,7 @@ class MainActivity : ComponentActivity() {
 - ``CactusLanguageModel/RAGQueryResult``
 - ``CactusLanguageModel/RAGChunk``
 - ``CactusLanguageModel/ragQuery(query:topK:maxBufferSize:)``
-- ``CactusLanguageModel/RAGQueryError``
+- ``CactusModelError``
 
 ### Function Calling
 - ``CactusLanguageModel/FunctionDefinition``

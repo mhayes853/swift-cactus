@@ -115,24 +115,151 @@ extension CactusModel {
   }
 }
 
+// MARK: - CactusModel Error
+
+/// An error thrown by ``CactusModel`` operations.
+public struct CactusModelError: Error, Hashable, Sendable {
+  /// A stable machine-readable error code.
+  public struct Code: RawRepresentable, Hashable, Sendable {
+    public let rawValue: String
+
+    public init(rawValue: String) {
+      self.rawValue = rawValue
+    }
+
+    /// The buffer size for tokenized output was too small.
+    public static let tokenizeBufferTooSmall = Self(rawValue: "tokenizeBufferTooSmall")
+
+    /// An error occurred during tokenization.
+    public static let tokenizeInvalidTokenization = Self(rawValue: "tokenizeInvalidTokenization")
+
+    /// The buffer size for generated embeddings was too small.
+    public static let embeddingsBufferTooSmall = Self(rawValue: "embeddingsBufferTooSmall")
+
+    /// The model does not support image embeddings.
+    public static let embeddingsImageNotSupported = Self(rawValue: "embeddingsImageNotSupported")
+
+    /// The model does not support audio embeddings.
+    public static let embeddingsAudioNotSupported = Self(rawValue: "embeddingsAudioNotSupported")
+
+    /// An embeddings generation error.
+    public static let embeddingsGeneration = Self(rawValue: "embeddingsGeneration")
+
+    /// The buffer size for completion was too small.
+    public static let completionBufferTooSmall = Self(rawValue: "completionBufferTooSmall")
+
+    /// A completion generation error.
+    public static let completionGeneration = Self(rawValue: "completionGeneration")
+
+    /// The buffer size for transcription was too small.
+    public static let transcriptionBufferTooSmall = Self(rawValue: "transcriptionBufferTooSmall")
+
+    /// The model does not support transcription.
+    public static let transcriptionNotSupported = Self(rawValue: "transcriptionNotSupported")
+
+    /// A transcription generation error.
+    public static let transcriptionGeneration = Self(rawValue: "transcriptionGeneration")
+
+    /// The buffer size for voice activity detection was too small.
+    public static let vadBufferTooSmall = Self(rawValue: "vadBufferTooSmall")
+
+    /// The model does not support voice activity detection.
+    public static let vadNotSupported = Self(rawValue: "vadNotSupported")
+
+    /// A voice activity detection generation error.
+    public static let vadGeneration = Self(rawValue: "vadGeneration")
+
+    /// The response buffer for RAG query was too small.
+    public static let ragQueryBufferTooSmall = Self(rawValue: "ragQueryBufferTooSmall")
+
+    /// The model does not have a corpus index loaded.
+    public static let ragQueryNotSupported = Self(rawValue: "ragQueryNotSupported")
+
+    /// A RAG query generation error.
+    public static let ragQueryGeneration = Self(rawValue: "ragQueryGeneration")
+  }
+
+  /// A stable machine-readable error code.
+  public let code: Code
+
+  /// Additional context for the error, when available.
+  public let message: String?
+
+  /// Creates a model error with a stable code and optional context message.
+  ///
+  /// - Parameters:
+   ///   - code: A stable machine-readable error code.
+  ///   - message: Optional additional context describing the failure.
+  public init(code: Code, message: String? = nil) {
+    self.code = code
+    self.message = message
+  }
+
+  /// The buffer size for tokenized output was too small.
+  public static let tokenizeBufferTooSmall = Self(code: .tokenizeBufferTooSmall)
+
+  /// An error occurred during tokenization.
+  public static let tokenizeInvalidTokenization = Self(code: .tokenizeInvalidTokenization)
+
+  /// The buffer size for generated embeddings was too small.
+  public static let embeddingsBufferTooSmall = Self(code: .embeddingsBufferTooSmall)
+
+  /// The model does not support image embeddings.
+  public static let embeddingsImageNotSupported = Self(code: .embeddingsImageNotSupported)
+
+  /// The model does not support audio embeddings.
+  public static let embeddingsAudioNotSupported = Self(code: .embeddingsAudioNotSupported)
+
+  /// An embeddings generation error.
+  public static func embeddingsGeneration(message: String?) -> Self {
+    Self(code: .embeddingsGeneration, message: message)
+  }
+
+  /// The buffer size for completion was too small.
+  public static let completionBufferTooSmall = Self(code: .completionBufferTooSmall)
+
+  /// A completion generation error.
+  public static func completionGeneration(message: String?) -> Self {
+    Self(code: .completionGeneration, message: message)
+  }
+
+  /// The buffer size for transcription was too small.
+  public static let transcriptionBufferTooSmall = Self(code: .transcriptionBufferTooSmall)
+
+  /// The model does not support transcription.
+  public static let transcriptionNotSupported = Self(code: .transcriptionNotSupported)
+
+  /// A transcription generation error.
+  public static func transcriptionGeneration(message: String?) -> Self {
+    Self(code: .transcriptionGeneration, message: message)
+  }
+
+  /// The buffer size for voice activity detection was too small.
+  public static let vadBufferTooSmall = Self(code: .vadBufferTooSmall)
+
+  /// The model does not support voice activity detection.
+  public static let vadNotSupported = Self(code: .vadNotSupported)
+
+  /// A voice activity detection generation error.
+  public static func vadGeneration(message: String?) -> Self {
+    Self(code: .vadGeneration, message: message)
+  }
+
+  /// The response buffer for RAG query was too small.
+  public static let ragQueryBufferTooSmall = Self(code: .ragQueryBufferTooSmall)
+
+  /// The model does not have a corpus index loaded.
+  public static let ragQueryNotSupported = Self(code: .ragQueryNotSupported)
+
+  /// A RAG query generation error.
+  public static func ragQueryGeneration(message: String?) -> Self {
+    Self(code: .ragQueryGeneration, message: message)
+  }
+}
+
 // MARK: - Tokenize
 
 extension CactusModel {
-  /// An error thrown when trying to tokenize text.
-  public struct TokenizeError: Error, Hashable, Sendable {
-    public let kind: String
-
-    public init(kind: String) {
-      self.kind = kind
-    }
-
-    /// The buffer size for the tokenized output was too small.
-    public static let bufferTooSmall = Self(kind: "bufferTooSmall")
-
-    /// An error occurred during tokenization.
-    public static let invalidTokenization = Self(kind: "invalidTokenization")
-  }
-
   /// Tokenizes the specified `text`.
   ///
   /// - Parameters:
@@ -175,9 +302,9 @@ extension CactusModel {
     )
     switch resultCode {
     case -1:
-      throw TokenizeError.invalidTokenization
+      throw CactusModelError.tokenizeInvalidTokenization
     case -2:
-      throw TokenizeError.bufferTooSmall
+      throw CactusModelError.tokenizeBufferTooSmall
     default:
       return tokenLength
     }
@@ -285,31 +412,6 @@ extension CactusModel {
 // MARK: - Embeddings
 
 extension CactusModel {
-  /// An error thrown when trying to generate embeddings.
-  public struct EmbeddingsError: Error, Hashable, Sendable {
-    public let kind: String
-    public let message: String?
-
-    public init(kind: String, message: String? = nil) {
-      self.kind = kind
-      self.message = message
-    }
-
-    /// The buffer size for the generated embeddings was too small.
-    public static let bufferTooSmall = Self(kind: "bufferTooSmall")
-
-    /// The model doesn't support image embeddings.
-    public static let imageNotSupported = Self(kind: "imageNotSupported")
-
-    /// The model doesn't support audio embeddings.
-    public static let audioNotSupported = Self(kind: "audioNotSupported")
-
-    /// A generation error.
-    public static func generation(message: String?) -> Self {
-      Self(kind: "generation", message: message)
-    }
-  }
-
   /// Generates embeddings for the specified `text`.
   ///
   /// - Parameters:
@@ -449,7 +551,7 @@ extension CactusModel {
   ) throws -> Int {
     let size = buffer.count
     guard size > 0 else {
-      throw EmbeddingsError.bufferTooSmall
+      throw CactusModelError.embeddingsBufferTooSmall
     }
     var dimensions = 0
     let rawBufferSize = size * MemoryLayout<Float>.stride
@@ -488,14 +590,14 @@ extension CactusModel {
       let message = cactus_get_last_error().map { String(cString: $0) }
 
       if message?.contains("Image embeddings") == true {
-        throw EmbeddingsError.imageNotSupported
+        throw CactusModelError.embeddingsImageNotSupported
       } else if message?.contains("Audio embeddings") == true {
-        throw EmbeddingsError.audioNotSupported
+        throw CactusModelError.embeddingsAudioNotSupported
       } else {
-        throw EmbeddingsError.generation(message: message)
+        throw CactusModelError.embeddingsGeneration(message: message)
       }
     case -2:
-      throw EmbeddingsError.bufferTooSmall
+      throw CactusModelError.embeddingsBufferTooSmall
     default:
       return dimensions
     }
@@ -568,25 +670,6 @@ extension CactusModel {
 
     /// Canonical conversation messages that include the generated assistant turn.
     public let messages: [ChatMessage]
-  }
-
-  /// An error thrown when trying to generate a ``ChatCompletion``.
-  public struct ChatCompletionError: Error, Hashable, Sendable {
-    public let kind: String
-    public let message: String?
-
-    public init(kind: String, message: String? = nil) {
-      self.kind = kind
-      self.message = message
-    }
-
-    /// The buffer size for the completion was too small.
-    public static let bufferSizeTooSmall = Self(kind: "bufferSizeTooSmall")
-
-    /// A generation error.
-    public static func generation(message: String?) -> Self {
-      Self(kind: "generation", message: message)
-    }
   }
 
   /// Generates a completed chat turn with reusable continuation messages.
@@ -662,7 +745,7 @@ extension CactusModel {
   ) throws -> CompletedChatTurn {
     let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else {
-      throw ChatCompletionError.bufferSizeTooSmall
+      throw CactusModelError.completionBufferTooSmall
     }
 
     let functions = functions.map { FFIFunctionDefinition(function: $0) }
@@ -700,9 +783,9 @@ extension CactusModel {
         from: responseData
       )
       if response?.error.contains(Self.bufferNotBigEnoughErrorMessage) == true {
-        throw ChatCompletionError.bufferSizeTooSmall
+        throw CactusModelError.completionBufferTooSmall
       }
-      throw ChatCompletionError.generation(message: response?.error)
+      throw CactusModelError.completionGeneration(message: response?.error)
     }
     let completion = try ffiDecoder.decode(Completion.self, from: responseData)
     var completedMessages = messages
@@ -940,28 +1023,6 @@ extension CactusModel.Completion: Encodable {
 // MARK: - Transcribe
 
 extension CactusModel {
-  /// An error thrown when trying to generate a ``Transcription``.
-  public struct TranscriptionError: Error, Hashable, Sendable {
-    public let kind: String
-    public let message: String?
-
-    public init(kind: String, message: String? = nil) {
-      self.kind = kind
-      self.message = message
-    }
-
-    /// The buffer size for the completion was too small.
-    public static let bufferSizeTooSmall = Self(kind: "bufferSizeTooSmall")
-
-    /// The model does not support transcription.
-    public static let notSupported = Self(kind: "notSupported")
-
-    /// A generation error.
-    public static func generation(message: String?) -> Self {
-      Self(kind: "generation", message: message)
-    }
-  }
-
   /// A transcription result.
   public struct Transcription: Hashable, Sendable {
     /// The raw response text from the model.
@@ -1123,7 +1184,7 @@ extension CactusModel {
   ) throws -> Transcription {
     let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else {
-      throw TranscriptionError.bufferSizeTooSmall
+      throw CactusModelError.transcriptionBufferTooSmall
     }
 
     let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) {
@@ -1169,9 +1230,9 @@ extension CactusModel {
         from: responseData
       )
       if response?.error.contains(Self.bufferNotBigEnoughErrorMessage) == true {
-        throw TranscriptionError.bufferSizeTooSmall
+        throw CactusModelError.transcriptionBufferTooSmall
       }
-      throw TranscriptionError.generation(message: response?.error)
+      throw CactusModelError.transcriptionGeneration(message: response?.error)
     }
     let transcription = try ffiDecoder.decode(Transcription.self, from: responseData)
     return transcription
@@ -1298,28 +1359,6 @@ extension CactusModel.Transcription: Encodable {
 // MARK: - VAD
 
 extension CactusModel {
-  /// An error thrown when trying to run voice activity detection.
-  public struct VADError: Error, Hashable, Sendable {
-    public let kind: String
-    public let message: String?
-
-    public init(kind: String, message: String? = nil) {
-      self.kind = kind
-      self.message = message
-    }
-
-    /// The buffer size for the response was too small.
-    public static let bufferSizeTooSmall = Self(kind: "bufferSizeTooSmall")
-
-    /// The model does not support voice activity detection.
-    public static let notSupported = Self(kind: "notSupported")
-
-    /// A generation error.
-    public static func generation(message: String?) -> Self {
-      Self(kind: "generation", message: message)
-    }
-  }
-
   /// A detected speech segment.
   ///
   /// Indices are sample offsets in the sampling domain used by VAD.
@@ -1476,7 +1515,7 @@ extension CactusModel {
   ) throws -> VADResult {
     let maxBufferSize = maxBufferSize ?? 8192
     guard maxBufferSize > 0 else {
-      throw VADError.bufferSizeTooSmall
+      throw CactusModelError.vadBufferTooSmall
     }
 
     let optionsJSON = try options.map { try String(decoding: ffiEncoder.encode($0), as: UTF8.self) }
@@ -1513,12 +1552,12 @@ extension CactusModel {
     guard result != -1 else {
       let response = try? ffiDecoder.decode(FFIErrorResponse.self, from: responseData)
       if response?.error.contains(Self.bufferNotBigEnoughErrorMessage) == true {
-        throw VADError.bufferSizeTooSmall
+        throw CactusModelError.vadBufferTooSmall
       }
       if response?.error.localizedCaseInsensitiveContains("not supported") == true {
-        throw VADError.notSupported
+        throw CactusModelError.vadNotSupported
       }
-      throw VADError.generation(message: response?.error)
+      throw CactusModelError.vadGeneration(message: response?.error)
     }
 
     return try ffiDecoder.decode(VADResult.self, from: responseData)
@@ -1649,28 +1688,6 @@ extension CactusModel {
     public let content: String
   }
 
-  /// An error thrown when querying a RAG corpus.
-  public struct RAGQueryError: Error, Hashable, Sendable {
-    public let kind: String
-    public let message: String?
-
-    public init(kind: String, message: String? = nil) {
-      self.kind = kind
-      self.message = message
-    }
-
-    /// The response buffer was too small to contain the full results.
-    public static let bufferSizeTooSmall = Self(kind: "bufferSizeTooSmall")
-
-    /// The model does not have a corpus index loaded.
-    public static let ragNotSupported = Self(kind: "ragNotSupported")
-
-    /// An error occurred during RAG retrieval.
-    public static func generation(message: String?) -> Self {
-      Self(kind: "generation", message: message)
-    }
-  }
-
   /// Queries the RAG corpus for documents relevant to the query.
   ///
   /// This method is only supported on models initialized with a corpus directory.
@@ -1689,7 +1706,7 @@ extension CactusModel {
     maxBufferSize: Int? = nil
   ) throws -> RAGQueryResult {
     let maxBufferSize = maxBufferSize ?? 8192
-    guard maxBufferSize > 0 else { throw RAGQueryError.bufferSizeTooSmall }
+    guard maxBufferSize > 0 else { throw CactusModelError.ragQueryBufferTooSmall }
 
     let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) {
       buffer,
@@ -1710,10 +1727,10 @@ extension CactusModel {
       )
 
       if response?.error.contains("No corpus") == true {
-        throw RAGQueryError.ragNotSupported
+        throw CactusModelError.ragQueryNotSupported
       }
 
-      throw RAGQueryError.bufferSizeTooSmall
+      throw CactusModelError.ragQueryBufferTooSmall
     }
 
     return try ffiDecoder.decode(RAGQueryResult.self, from: responseData)

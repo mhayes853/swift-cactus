@@ -13,7 +13,7 @@ struct `CactusModel tests` {
   func `Throws Buffer Too Small Error When Buffer Size Zero`() async throws {
     let modelURL = try await CactusModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusModel(from: modelURL)
-    #expect(throws: CactusModel.EmbeddingsError.bufferTooSmall) {
+    #expect(throws: CactusModelError.embeddingsBufferTooSmall) {
       try model.embeddings(for: "This is some text.", maxBufferSize: 0)
     }
   }
@@ -54,7 +54,7 @@ struct `CactusModel tests` {
   func `Throws Buffer Too Small Error When Buffer Size Too Small`() async throws {
     let modelURL = try await CactusModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusModel(from: modelURL)
-    #expect(throws: CactusModel.EmbeddingsError.bufferTooSmall) {
+    #expect(throws: CactusModelError.embeddingsBufferTooSmall) {
       try model.embeddings(for: "This is some text.", maxBufferSize: 20)
     }
   }
@@ -92,7 +92,7 @@ struct `CactusModel tests` {
     let modelURL = try await CactusModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusModel(from: modelURL)
 
-    #expect(throws: CactusModel.TokenizeError.bufferTooSmall) {
+    #expect(throws: CactusModelError.tokenizeBufferTooSmall) {
       try model.tokenize(text: "This text will not fit.", maxBufferSize: 1)
     }
   }
@@ -180,7 +180,7 @@ struct `CactusModel tests` {
     let modelURL = try await CactusModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusModel(from: modelURL)
 
-    #expect(throws: CactusModel.EmbeddingsError.imageNotSupported) {
+    #expect(throws: CactusModelError.embeddingsImageNotSupported) {
       try model.imageEmbeddings(for: testImageURL)
     }
   }
@@ -204,7 +204,7 @@ struct `CactusModel tests` {
     let modelURL = try await CactusModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusModel(from: modelURL)
 
-    #expect(throws: CactusModel.EmbeddingsError.audioNotSupported) {
+    #expect(throws: CactusModelError.embeddingsAudioNotSupported) {
       try model.audioEmbeddings(for: testAudioURL)
     }
   }
@@ -332,7 +332,7 @@ struct `CactusModel tests` {
     let modelURL = try await CactusModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusModel(from: modelURL)
 
-    #expect(throws: CactusModel.ChatCompletionError.bufferSizeTooSmall) {
+    #expect(throws: CactusModelError.completionBufferTooSmall) {
       try model.complete(
         messages: [
           CactusModel.ChatMessage(
@@ -364,7 +364,7 @@ struct `CactusModel tests` {
     let modelURL = try await CactusModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusModel(from: modelURL)
 
-    #expect(throws: CactusModel.ChatCompletionError.bufferSizeTooSmall) {
+    #expect(throws: CactusModelError.completionBufferTooSmall) {
       try model.complete(
         messages: [
           .system("You are a philosopher, philosophize about any questions you are asked."),
@@ -396,7 +396,7 @@ struct `CactusModel tests` {
     )
     let model = try CactusModel(from: modelURL)
 
-    #expect(throws: CactusModel.TranscriptionError.bufferSizeTooSmall) {
+    #expect(throws: CactusModelError.transcriptionBufferTooSmall) {
       try model.transcribe(audio: testAudioURL, prompt: audioPrompt, maxBufferSize: 0)
     }
   }
@@ -417,7 +417,7 @@ struct `CactusModel tests` {
     let modelURL = try await CactusModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let model = try CactusModel(from: modelURL)
 
-    #expect(throws: CactusModel.RAGQueryError.ragNotSupported) {
+    #expect(throws: CactusModelError.ragQueryNotSupported) {
       try model.ragQuery(query: "What is Swift?")
     }
   }
@@ -433,7 +433,7 @@ struct `CactusModel tests` {
       corpusDirectoryURL: corpusURL
     )
 
-    #expect(throws: CactusModel.RAGQueryError.bufferSizeTooSmall) {
+    #expect(throws: CactusModelError.ragQueryBufferTooSmall) {
       try model.ragQuery(query: "What is async/await?", maxBufferSize: 100)
     }
   }
@@ -449,7 +449,7 @@ struct `CactusModel tests` {
       corpusDirectoryURL: corpusURL
     )
 
-    #expect(throws: CactusModel.RAGQueryError.bufferSizeTooSmall) {
+    #expect(throws: CactusModelError.ragQueryBufferTooSmall) {
       try model.ragQuery(query: "What is async/await?", maxBufferSize: 0)
     }
   }
