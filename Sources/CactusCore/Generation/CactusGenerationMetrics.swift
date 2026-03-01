@@ -70,4 +70,40 @@ public struct CactusGenerationMetrics: Hashable, Sendable {
     self.durationToFirstToken = durationToFirstToken
     self.totalDuration = totalDuration
   }
+
+  /// Creates generation metrics from a model completion.
+  ///
+  /// - Parameter completion: The completion response containing generation metrics.
+  public init(completion: CactusModel.Completion) {
+    self.init(
+      prefillTokens: completion.prefillTokens,
+      decodeTokens: completion.decodeTokens,
+      totalTokens: completion.totalTokens,
+      confidence: completion.confidence,
+      prefillTps: completion.prefillTps,
+      decodeTps: completion.decodeTps,
+      ramUsageMb: completion.ramUsageMb,
+      didHandoffToCloud: completion.didHandoffToCloud,
+      durationToFirstToken: completion.durationToFirstToken,
+      totalDuration: completion.totalDuration
+    )
+  }
+
+  /// Creates generation metrics from a model transcription.
+  ///
+  /// - Parameter transcription: The transcription response containing generation metrics.
+  public init(transcription: CactusModel.Transcription) {
+    self.init(
+      prefillTokens: transcription.prefillTokens,
+      decodeTokens: transcription.decodeTokens,
+      totalTokens: transcription.totalTokens,
+      confidence: transcription.confidence,
+      prefillTps: transcription.prefillTps,
+      decodeTps: transcription.decodeTps,
+      ramUsageMb: transcription.ramUsageMb,
+      didHandoffToCloud: transcription.didHandoffToCloud,
+      durationToFirstToken: transcription.durationToFirstToken,
+      totalDuration: transcription.totalDuration
+    )
+  }
 }

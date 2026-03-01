@@ -642,18 +642,7 @@ extension CactusAgentSession {
   ) {
     for message in messages {
       let metrics: CactusGenerationMetrics? = message.role == .assistant
-        ? CactusGenerationMetrics(
-          prefillTokens: completion.prefillTokens,
-          decodeTokens: completion.decodeTokens,
-          totalTokens: completion.totalTokens,
-          confidence: completion.confidence,
-          prefillTps: completion.prefillTps,
-          decodeTps: completion.decodeTps,
-          ramUsageMb: completion.ramUsageMb,
-          didHandoffToCloud: false,
-          durationToFirstToken: completion.durationToFirstToken,
-          totalDuration: completion.totalDuration
-        )
+        ? CactusGenerationMetrics(completion: completion)
         : nil
       self.appendTranscriptEntry(
         message,

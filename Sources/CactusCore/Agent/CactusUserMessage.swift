@@ -69,7 +69,7 @@ public struct CactusUserMessage {
     includeStopSequences: Bool = false,
     isTelemetryEnabled: Bool = false,
     maxBufferSize: Int? = nil,
-    cloudHandoff: CloudHandoff? = nil
+    cloudHandoff: CloudHandoff? = CloudHandoff()
   ) {
     self.content = content
     self.maxTokens = maxTokens
@@ -112,7 +112,7 @@ public struct CactusUserMessage {
     includeStopSequences: Bool = false,
     isTelemetryEnabled: Bool = false,
     maxBufferSize: Int? = nil,
-    cloudHandoff: CloudHandoff? = nil
+    cloudHandoff: CloudHandoff? = CloudHandoff()
   ) throws {
     self.content = try content.promptContent
     self.maxTokens = maxTokens

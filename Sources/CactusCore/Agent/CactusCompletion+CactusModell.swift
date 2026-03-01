@@ -12,18 +12,7 @@ extension CactusCompletionEntry {
   ) {
     self.init(
       transcriptEntry: transcriptEntry,
-      metrics: CactusGenerationMetrics(
-        prefillTokens: completion.prefillTokens,
-        decodeTokens: completion.decodeTokens,
-        totalTokens: completion.totalTokens,
-        confidence: completion.confidence,
-        prefillTps: completion.prefillTps,
-        decodeTps: completion.decodeTps,
-        ramUsageMb: completion.ramUsageMb,
-        didHandoffToCloud: false,
-        durationToFirstToken: completion.durationToFirstToken,
-        totalDuration: completion.totalDuration
-      )
+      metrics: CactusGenerationMetrics(completion: completion)
     )
   }
 }

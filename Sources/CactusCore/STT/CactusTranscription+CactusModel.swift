@@ -30,18 +30,7 @@ extension CactusTranscription {
   public init(id: CactusGenerationID, transcription: CactusModel.Transcription) {
     self.init(
       id: id,
-      metrics: CactusGenerationMetrics(
-        prefillTokens: transcription.prefillTokens,
-        decodeTokens: transcription.decodeTokens,
-        totalTokens: transcription.totalTokens,
-        confidence: transcription.confidence,
-        prefillTps: transcription.prefillTps,
-        decodeTps: transcription.decodeTps,
-        ramUsageMb: transcription.ramUsageMb,
-        didHandoffToCloud: transcription.didHandoffToCloud,
-        durationToFirstToken: transcription.durationToFirstToken,
-        totalDuration: transcription.totalDuration
-      ),
+      metrics: CactusGenerationMetrics(transcription: transcription),
       response: transcription.response
     )
   }
