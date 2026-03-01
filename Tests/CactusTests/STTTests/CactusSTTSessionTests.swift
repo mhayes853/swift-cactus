@@ -177,6 +177,25 @@ struct `CactusSTTSession tests` {
         )
       }
     }
+
+    @Test
+    func `Parakeet Buffer Transcription Snapshot`() async throws {
+      let modelURL = try await CactusModel.testModelURL(request: .parakeetCtc_1_1b())
+      let session = try CactusSTTSession(from: modelURL)
+      let pcmBuffer = try testAudioPCMBuffer()
+      let content = try CactusTranscription.Request.Content.pcm(pcmBuffer)
+      let request = CactusTranscription.Request(prompt: .default, content: content)
+
+      let transcription = try await session.transcribe(request: request)
+
+      withKnownIssue {
+        assertSnapshot(
+          of: TranscriptionSnapshot(transcription: transcription),
+          as: .json,
+          record: true
+        )
+      }
+    }
   #endif
 }
 

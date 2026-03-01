@@ -424,7 +424,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func parakeetCtc_0_6b(
       quantization: Quantization = .int4,
-      pro: Pro? = .apple,
+      pro: Pro? = nil,
       version: Version = .v1_9
     ) -> Self {
       Self(slug: "parakeet-ctc-0.6b", quantization: quantization, version: version, pro: pro)
@@ -438,7 +438,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func parakeetCtc_1_1b(
       quantization: Quantization = .int4,
-      pro: Pro? = .apple,
+      pro: Pro? = nil,
       version: Version = .v1_9
     ) -> Self {
       Self(slug: "parakeet-ctc-1.1b", quantization: quantization, version: version, pro: pro)
