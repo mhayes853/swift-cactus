@@ -123,6 +123,30 @@ struct `CactusSTTSession tests` {
   }
 
   @Test
+  func `Session Stop Stops Ongoing Inference Stream`() async throws {
+    let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
+    let session = try CactusSTTSession(from: modelURL)
+    let request = CactusTranscription.Request(
+      prompt: audioPrompt,
+      content: .pcm(longSilencePCMBytes)
+    )
+
+    let stream = try session.transcriptionStream(request: request)
+
+    let responseTask = Task {
+      try await stream.collectResponse()
+    }
+
+    try await Task.sleep(for: .milliseconds(50))
+    await session.stop()
+
+    await #expect(throws: CancellationError.self) {
+      _ = try await responseTask.value
+    }
+    expectNoDifference(stream.isStreaming, false)
+  }
+
+  @Test
   func `Canceling Transcribe Cancels Stream And Ends Session`() async throws {
     let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
     let session = try CactusSTTSession(from: modelURL)

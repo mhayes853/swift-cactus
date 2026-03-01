@@ -21,6 +21,12 @@ import Foundation
 /// let transcription = try await session.transcribe(request: request)
 /// ```
 public final class CactusSTTSession: Sendable {
+  private let state: Lock<State>
+
+  private struct State {
+    var activeStreamStopper: (@Sendable () -> Void)?
+  }
+
   /// The underlying language model actor.
   public let languageModelActor: CactusModelActor
 
@@ -28,6 +34,7 @@ public final class CactusSTTSession: Sendable {
   ///
   /// - Parameter model: The underlying language model.
   public init(model: consuming sending CactusModel) {
+    self.state = Lock(State(activeStreamStopper: nil))
     self.languageModelActor = CactusModelActor(model: model)
   }
 
@@ -35,6 +42,7 @@ public final class CactusSTTSession: Sendable {
   ///
   /// - Parameter actor: The underlying language model actor.
   public init(model: CactusModelActor) {
+    self.state = Lock(State(activeStreamStopper: nil))
     self.languageModelActor = model
   }
 
@@ -60,6 +68,12 @@ public final class CactusSTTSession: Sendable {
 // MARK: - Public API
 
 extension CactusSTTSession {
+  /// Stops any active transcription on the underlying language model.
+  nonisolated(nonsending) public func stop() async {
+    self.stopActiveStreamIfNecessary()
+    await self.languageModelActor.stop()
+  }
+
   /// Creates a transcription stream for the provided request.
   ///
   /// ```swift
@@ -84,7 +98,8 @@ extension CactusSTTSession {
     let maxBufferSize = request.maxBufferSize
 
     let stream = CactusInferenceStream<CactusTranscription> { [weak self] continuation in
-      guard self != nil else { throw CancellationError() }
+      guard let self else { throw CancellationError() }
+      defer { self.endStreaming() }
 
       let modelStopper = await languageModelActor.withModelPointer {
         CactusModelStopper(modelPointer: $0)
@@ -146,6 +161,7 @@ extension CactusSTTSession {
       return CactusTranscription(id: messageStreamID, transcription: modelTranscription)
     }
 
+    self.registerActiveStreamStopper(stream)
     return stream
   }
 
@@ -157,7 +173,7 @@ extension CactusSTTSession {
   ///
   /// - Parameter request: The transcription request.
   /// - Returns: The final parsed transcription.
-  public func transcribe(
+  nonisolated(nonsending) public func transcribe(
     request: CactusTranscription.Request
   ) async throws -> CactusTranscription {
     let stream = try self.transcriptionStream(request: request)
@@ -169,12 +185,24 @@ extension CactusSTTSession {
   }
 }
 
-/// An error thrown by ``CactusSTTSession`` stream APIs.
-public struct CactusTranscriptionStreamError: Error, Hashable, Sendable {
-  /// A human-readable description of the failure.
-  public let message: String
+// MARK: - Helpers
 
-  private init(message: String) {
-    self.message = message
+extension CactusSTTSession {
+  private func registerActiveStreamStopper<Output>(_ stream: CactusInferenceStream<Output>)
+  where Output: Sendable {
+    self.state.withLock { $0.activeStreamStopper = { stream.stop() } }
+  }
+
+  private func stopActiveStreamIfNecessary() {
+    let activeStreamStopper = self.state.withLock { state in
+      let stopper = state.activeStreamStopper
+      state.activeStreamStopper = nil
+      return stopper
+    }
+    activeStreamStopper?()
+  }
+
+  private func endStreaming() {
+    self.state.withLock { $0.activeStreamStopper = nil }
   }
 }
