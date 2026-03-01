@@ -113,8 +113,8 @@ public struct CactusUserMessage {
     isTelemetryEnabled: Bool = false,
     maxBufferSize: Int? = nil,
     cloudHandoff: CloudHandoff? = CloudHandoff()
-  ) throws {
-    self.content = try content.promptContent
+  ) {
+    self.content = CactusPromptContent(content)
     self.maxTokens = maxTokens
     self.temperature = temperature
     self.topP = topP
@@ -156,8 +156,8 @@ public struct CactusUserMessage {
     maxBufferSize: Int? = nil,
     cloudHandoff: CloudHandoff? = CloudHandoff(),
     @CactusPromptBuilder content: @Sendable () -> some CactusPromptRepresentable
-  ) throws {
-    self.content = try content().promptContent
+  ) {
+    self.content = CactusPromptContent(content())
     self.maxTokens = maxTokens
     self.temperature = temperature
     self.topP = topP
