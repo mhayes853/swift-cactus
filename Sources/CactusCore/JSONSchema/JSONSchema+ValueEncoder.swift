@@ -5,6 +5,8 @@ import Foundation
 extension JSONSchema.Value {
   /// Encodes `Encodable` values into ``JSONSchema/Value``.
   ///
+  /// This behaves like `JSONEncoder` from Foundation, but for ``JSONSchema/Value`` instances.
+  ///
   /// ```swift
   /// struct Payload: Codable {
   ///   let userID: Int
@@ -108,6 +110,7 @@ extension JSONSchema.Value {
       set { self.state.withLock { $0.userInfo = newValue } }
     }
 
+    /// Creates a value encoder with default encoding strategies.
     public init() {}
 
     /// Encodes a value into a ``JSONSchema/Value`` tree.
@@ -782,14 +785,6 @@ private struct _IndexCodingKey: CodingKey {
     self.stringValue = String(intValue)
     self.intValue = intValue
   }
-}
-
-private struct _SuperCodingKey: CodingKey {
-  var stringValue: String { "super" }
-  var intValue: Int? { nil }
-  init?(stringValue: String) { return nil }
-  init?(intValue: Int) { return nil }
-  init() {}
 }
 
 private func _convertToSnakeCase(_ stringKey: String) -> String {

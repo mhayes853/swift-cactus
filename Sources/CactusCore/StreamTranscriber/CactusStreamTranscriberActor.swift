@@ -94,7 +94,8 @@ public actor CactusStreamTranscriberActor {
 extension CactusStreamTranscriberActor {
   /// Processes a PCM audio buffer and returns interim transcription result.
   ///
-  /// - Parameter buffer: The PCM audio buffer to process.
+  /// - Parameter buffer: The PCM audio buffer to process in 16 kHz mono signed 16-bit byte
+  ///   format.
   /// - Returns: A ``CactusStreamTranscriber/ProcessedTranscription``.
   public func process(buffer: [UInt8]) async throws
     -> CactusStreamTranscriber.ProcessedTranscription

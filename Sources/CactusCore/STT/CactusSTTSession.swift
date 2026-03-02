@@ -5,37 +5,59 @@ import Foundation
 
 /// A concurrency-safe session for speech-to-text transcription.
 ///
-/// This type serializes access to an underlying ``CactusModel`` and exposes
-/// modern stream and async/await APIs built on top of ``CactusInferenceStream``.
-///
 /// ```swift
-/// let modelURL = try await CactusModelsDirectory.shared.modelURL(for: .whisperSmall())
-/// let session = try CactusSTTSession(from: modelURL)
+/// import Cactus
 ///
-/// let request = CactusTranscription.Request(
-///   language: .english,
-///   includeTimestamps: false,
-///   content: .audio(audioURL)
+/// let modelURL = try await CactusModelsDirectory.shared.modelURL(
+///   for: .parakeetCtc_1_1b()
 /// )
 ///
+/// let session = try CactusSTTSession(from: modelURL)
+///
+/// // WAV File
+/// let request = CactusTranscription.Request(
+///   prompt: .default,
+///   content: .audio(.documentsDirectory.appending(path: "audio.wav"))
+/// )
 /// let transcription = try await session.transcribe(request: request)
+/// print(transcription.content)
+///
+/// // PCM Buffer
+/// let pcmBytes: [UInt8] = [...]
+/// let request = CactusTranscription.Request(
+///   prompt: .default,
+///   content: .pcm(pcmBytes)
+/// )
+/// let transcription = try await session.transcribe(request: request)
+/// print(transcription.content)
+///
+/// // AVFoundation (Apple Platforms Only)
+/// import AVFoundation
+///
+/// let buffer: AVAudioPCMBuffer = ...
+/// let request = CactusTranscription.Request(
+///   prompt: .default,
+///   content: try .pcm(buffer)
+/// )
+/// let transcription = try await session.transcribe(request: request)
+/// print(transcription.content)
 /// ```
 public final class CactusSTTSession: Sendable {
-  /// The underlying language model actor.
-  public let languageModelActor: CactusModelActor
+  /// The underlying model actor.
+  public let modelActor: CactusModelActor
 
   /// Creates a transcription session from an existing language model.
   ///
   /// - Parameter model: The underlying language model.
   public init(model: consuming sending CactusModel) {
-    self.languageModelActor = CactusModelActor(model: model)
+    self.modelActor = CactusModelActor(model: model)
   }
 
   /// Creates a transcription session from an existing language model actor.
   ///
-  /// - Parameter actor: The underlying language model actor.
+  /// - Parameter model: The underlying language model actor.
   public init(model: CactusModelActor) {
-    self.languageModelActor = model
+    self.modelActor = model
   }
 
   /// Creates a transcription session from a model URL.
@@ -43,8 +65,8 @@ public final class CactusSTTSession: Sendable {
   /// - Parameters:
   ///   - url: The local model URL.
   public convenience init(from url: URL) throws {
-    let languageModelActor = try CactusModelActor(from: url)
-    self.init(model: languageModelActor)
+    let modelActor = try CactusModelActor(from: url)
+    self.init(model: modelActor)
   }
 
   /// Creates a transcription session from a raw model pointer.
@@ -52,8 +74,8 @@ public final class CactusSTTSession: Sendable {
   /// - Parameters:
   ///   - model: The raw model pointer.
   public convenience init(model: consuming sending cactus_model_t) {
-    let languageModelActor = CactusModelActor(model: model)
-    self.init(model: languageModelActor)
+    let modelActor = CactusModelActor(model: model)
+    self.init(model: modelActor)
   }
 }
 
@@ -63,14 +85,19 @@ extension CactusSTTSession {
   /// Creates a transcription stream for the provided request.
   ///
   /// ```swift
-  /// let stream = try session.transcriptionStream(request: request)
+  /// let session = try CactusSTTSession(from: modelURL)
   ///
-  /// var tokenText = ""
-  /// for try await token in stream.tokens {
-  ///   tokenText += token.stringValue
+  /// let request = CactusTranscription.Request(
+  ///   prompt: .default,
+  ///   content: .audio(.documentsDirectory.appending(path: "audio.wav"))
+  /// )
+  /// let stream = try session.transcriptionStream(request: request)
+  /// for await token in stream.tokens {
+  ///   print(token.stringValue, token.tokenId, token.generationStreamId)
   /// }
   ///
   /// let transcription = try await stream.collectResponse()
+  /// print(transcription.content)
   /// ```
   ///
   /// - Parameter request: The transcription request.
@@ -79,20 +106,20 @@ extension CactusSTTSession {
     request: CactusTranscription.Request
   ) throws -> CactusInferenceStream<CactusTranscription> {
     let messageStreamID = CactusGenerationID()
-    let languageModelActor = self.languageModelActor
+    let modelActor = self.modelActor
     let options = CactusModel.Transcription.Options(request: request)
     let maxBufferSize = request.maxBufferSize
 
     let stream = CactusInferenceStream<CactusTranscription> { [weak self] continuation in
       guard self != nil else { throw CancellationError() }
 
-      let modelStopper = await languageModelActor.withModelPointer {
+      let modelStopper = await modelActor.withModelPointer {
         CactusModelStopper(modelPointer: $0)
       }
 
       let modelTranscription = try await withTaskCancellationHandler {
         if let audioURL = request.content.audioURL {
-          return try await languageModelActor.transcribe(
+          return try await modelActor.transcribe(
             audio: audioURL,
             prompt: request.prompt.description,
             options: options,
@@ -100,7 +127,7 @@ extension CactusSTTSession {
           ) { stringValue, tokenId in
             continuation.yield(
               token: CactusStreamedToken(
-                messageStreamId: messageStreamID,
+                generationStreamId: messageStreamID,
                 stringValue: stringValue,
                 tokenId: tokenId
               )
@@ -109,7 +136,7 @@ extension CactusSTTSession {
         }
 
         if let pcmBytes = request.content.pcmBytes {
-          return try await languageModelActor.transcribe(
+          return try await modelActor.transcribe(
             buffer: pcmBytes,
             prompt: request.prompt.description,
             options: options,
@@ -117,7 +144,7 @@ extension CactusSTTSession {
           ) { stringValue, tokenId in
             continuation.yield(
               token: CactusStreamedToken(
-                messageStreamId: messageStreamID,
+                generationStreamId: messageStreamID,
                 stringValue: stringValue,
                 tokenId: tokenId
               )
@@ -125,7 +152,7 @@ extension CactusSTTSession {
           }
         }
 
-        return try await languageModelActor.transcribe(
+        return try await modelActor.transcribe(
           buffer: [],
           prompt: request.prompt.description,
           options: options,
@@ -133,7 +160,7 @@ extension CactusSTTSession {
         ) { stringValue, tokenId in
           continuation.yield(
             token: CactusStreamedToken(
-              messageStreamId: messageStreamID,
+              generationStreamId: messageStreamID,
               stringValue: stringValue,
               tokenId: tokenId
             )
@@ -157,7 +184,7 @@ extension CactusSTTSession {
   ///
   /// - Parameter request: The transcription request.
   /// - Returns: The final parsed transcription.
-  public func transcribe(
+  nonisolated(nonsending) public func transcribe(
     request: CactusTranscription.Request
   ) async throws -> CactusTranscription {
     let stream = try self.transcriptionStream(request: request)
@@ -166,15 +193,5 @@ extension CactusSTTSession {
     } onCancel: {
       stream.stop()
     }
-  }
-}
-
-/// An error thrown by ``CactusSTTSession`` stream APIs.
-public struct CactusTranscriptionStreamError: Error, Hashable, Sendable {
-  /// A human-readable description of the failure.
-  public let message: String
-
-  private init(message: String) {
-    self.message = message
   }
 }

@@ -21,7 +21,7 @@ struct `CactusTranscriptionRequest tests` {
 
   @Test
   func `useVad defaults to true when timestamps included`() {
-    let request = CactusTranscription.Request(
+    let request = CactusTranscription.Request.whisper(
       language: .english,
       includeTimestamps: true,
       content: .audio(testAudioURL)
@@ -31,7 +31,7 @@ struct `CactusTranscriptionRequest tests` {
 
   @Test
   func `useVad defaults to nil when timestamps excluded`() {
-    let request = CactusTranscription.Request(
+    let request = CactusTranscription.Request.whisper(
       language: .english,
       includeTimestamps: false,
       content: .audio(testAudioURL)
@@ -41,7 +41,7 @@ struct `CactusTranscriptionRequest tests` {
 
   @Test
   func `useVad respects explicit false when timestamps included`() {
-    var request = CactusTranscription.Request(
+    var request = CactusTranscription.Request.whisper(
       language: .english,
       includeTimestamps: true,
       content: .audio(testAudioURL)
@@ -52,7 +52,7 @@ struct `CactusTranscriptionRequest tests` {
 
   @Test
   func `prompt includeTimestamps modification triggers useVad when nil`() throws {
-    var request = CactusTranscription.Request(
+    var request = CactusTranscription.Request.whisper(
       language: .english,
       includeTimestamps: false,
       content: .audio(testAudioURL)
@@ -68,7 +68,7 @@ struct `CactusTranscriptionRequest tests` {
 
   @Test
   func `prompt includeTimestamps modification preserves explicit false useVad`() throws {
-    var request = CactusTranscription.Request(
+    var request = CactusTranscription.Request.whisper(
       language: .english,
       includeTimestamps: false,
       content: .audio(testAudioURL),
@@ -85,7 +85,7 @@ struct `CactusTranscriptionRequest tests` {
 
   @Test
   func `prompt language modification updates prompt description`() throws {
-    var request = CactusTranscription.Request(
+    var request = CactusTranscription.Request.whisper(
       language: .english,
       includeTimestamps: true,
       content: .audio(testAudioURL)

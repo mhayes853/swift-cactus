@@ -2,9 +2,9 @@ import Foundation
 
 // MARK: - CactusCompletion
 
-/// The result produced by one completion turn.
+/// The result produced by one completion turn from a ``CactusAgentSession``.
 ///
-/// This value only contains entries appended during the turn that produced it.
+/// This type only contains entries appended during the turn that produced it.
 /// It does not represent the session's full transcript.
 public struct CactusCompletion<Output: Sendable>: Sendable {
   /// The parsed output for the completion turn.

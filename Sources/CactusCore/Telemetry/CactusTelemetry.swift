@@ -3,6 +3,13 @@ import Foundation
 import IssueReporting
 
 /// Utilities for configuring Cactus telemetry.
+///
+/// ```swift
+/// import Cactus
+///
+/// CactusTelemetry.setup()
+/// await CactusTelemetry.disable()
+/// ```
 public enum CactusTelemetry {
   private static let isSetup = Lock(false)
 

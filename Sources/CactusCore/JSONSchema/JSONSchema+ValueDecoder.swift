@@ -5,6 +5,8 @@ import Foundation
 extension JSONSchema.Value {
   /// Decodes `Decodable` values from ``JSONSchema/Value``.
   ///
+  /// This behaves like `JSONDecoder` from Foundation, but for ``JSONSchema/Value`` instances.
+  ///
   /// ```swift
   /// struct Payload: Codable {
   ///   let userID: Int
@@ -109,6 +111,7 @@ extension JSONSchema.Value {
       set { self.state.withLock { $0.userInfo = newValue } }
     }
 
+    /// Creates a value decoder with default decoding strategies.
     public init() {}
 
     /// Decodes a value of the requested type from a ``JSONSchema/Value`` tree.
@@ -1056,12 +1059,4 @@ private struct _IndexCodingKey: CodingKey {
     self.stringValue = String(intValue)
     self.intValue = intValue
   }
-}
-
-private struct _SuperCodingKey: CodingKey {
-  var stringValue: String { "super" }
-  var intValue: Int? { nil }
-  init?(stringValue: String) { return nil }
-  init?(intValue: Int) { return nil }
-  init() {}
 }

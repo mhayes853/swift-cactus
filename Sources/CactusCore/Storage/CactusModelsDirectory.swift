@@ -14,12 +14,27 @@ import struct Foundation.URL
 ///
 /// You can use this class to load models in your application without worrying about managing
 /// model storage manually.
-/// ```swift
-/// let request = CactusModel.PlatformDownloadRequest.qwen3_0_6b()
-/// let modelURL = try await CactusModelsDirectory.shared.modelURL(for: request)
-/// let model = try CactusModel(from: modelURL)
 ///
-/// // ...
+/// ```swift
+/// let directory = CactusModelsDirectory(
+///   baseURL: .applicationSupportDirectory.appending(path: "models")
+/// )
+///
+/// // Downloading
+///
+/// // directory.modelURL will only download if it cannot find the
+/// // model in the directory.
+/// let modelURL = try await directory.modelURL(for: .whisperSmall())
+///
+/// let downloadTask = try await directory.downloadTask(for: .whisperSmall())
+/// downloadTask.onProgress = { progress in
+///   print(progress)
+/// }
+///
+/// // Removing
+///
+/// try directory.removeModel(with: .whisperSmall())
+/// try directory.removeModels { $0.request == .whisperSmall() }
 /// ```
 public final class CactusModelsDirectory: Sendable {
   #if canImport(Darwin)

@@ -19,7 +19,7 @@ struct `CactusAgentSession tests` {
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let resolvedCompletion = try await session.respond(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           "Say hello in one concise sentence."
         }
       )
@@ -38,17 +38,17 @@ struct `CactusAgentSession tests` {
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let resolvedCompletion = try await session.respond(
-        to: try CactusUserMessage(temperature: 0.7) {
+        to: CactusUserMessage(temperature: 0.7) {
           "Say hello in one concise sentence."
         }
       )
 
       expectNoDifference(resolvedCompletion.output.isEmpty, false)
       expectNoDifference(session.transcript.count == 2, true)
-      expectNoDifference(session.transcript[0].message.role, CactusModel.MessageRole.user)
+      expectNoDifference(session.transcript[0].message.role, CactusModel.Message.Role.user)
       expectNoDifference(
         session.transcript.last?.message.role,
-        CactusModel.MessageRole.assistant
+        CactusModel.Message.Role.assistant
       )
     }
 
@@ -59,12 +59,12 @@ struct `CactusAgentSession tests` {
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let firstTurn = try await session.respond(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           "My favorite color is green. Please acknowledge this in one short sentence."
         }
       )
       let secondTurn = try await session.respond(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           "What color did I say was my favorite? Reply with a thoughtful short sentence."
         }
       )
@@ -88,7 +88,7 @@ struct `CactusAgentSession tests` {
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       try await session.respond(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           CactusPromptContent {
             "Describe what you see in this image in one short sentence."
             CactusPromptContent(images: [Self.testImageURL])
@@ -96,7 +96,7 @@ struct `CactusAgentSession tests` {
         }
       )
       try await session.respond(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           "What emotion is the smile evoking?"
         }
       )
@@ -115,12 +115,12 @@ struct `CactusAgentSession tests` {
       }
 
       let firstTurn = try await session.respond(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           "My favorite color is green. Please acknowledge this."
         }
       )
       let secondTurn = try await session.respond(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           "What color did I say was my favorite?"
         }
       )
@@ -144,16 +144,16 @@ struct `CactusAgentSession tests` {
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       try await session.respond(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           "Answer with exactly one short sentence."
         }
       )
 
       expectNoDifference(session.transcript.count >= 2, true)
-      expectNoDifference(session.transcript[0].message.role, CactusModel.MessageRole.user)
+      expectNoDifference(session.transcript[0].message.role, CactusModel.Message.Role.user)
       expectNoDifference(
         session.transcript.last?.message.role,
-        CactusModel.MessageRole.assistant
+        CactusModel.Message.Role.assistant
       )
     }
 
@@ -164,7 +164,7 @@ struct `CactusAgentSession tests` {
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let completion = try await session.respond(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           "Give me one concise sentence about Swift."
         }
       )
@@ -187,7 +187,7 @@ struct `CactusAgentSession tests` {
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let completion = try await session.respond(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           "Say hello in one concise sentence."
         }
       )
@@ -210,7 +210,7 @@ struct `CactusAgentSession tests` {
       )
 
       let completion = try await session.respond(
-        to: try CactusUserMessage(forceFunctions: true) {
+        to: CactusUserMessage(forceFunctions: true) {
           "Use the get_fact tool for both 'cactus' and 'swift', then summarize both facts."
         }
       )
@@ -231,7 +231,7 @@ struct `CactusAgentSession tests` {
       )
 
       let completion = try await session.respond(
-        to: try CactusUserMessage(forceFunctions: true) {
+        to: CactusUserMessage(forceFunctions: true) {
           "Use the get_fact tool for both 'cactus' and 'swift', then summarize both facts."
         }
       )
@@ -269,7 +269,7 @@ struct `CactusAgentSession tests` {
       )
 
       let resolvedCompletion = try await session.respond(
-        to: try CactusUserMessage(forceFunctions: true) {
+        to: CactusUserMessage(forceFunctions: true) {
           "Use the get_fact tool for both 'cactus' and 'swift', then summarize both facts."
         }
       )
@@ -302,7 +302,7 @@ struct `CactusAgentSession tests` {
       session.delegate = delegate
 
       try await session.respond(
-        to: try CactusUserMessage(forceFunctions: true) {
+        to: CactusUserMessage(forceFunctions: true) {
           "Use the get_fact tool for 'cactus' and respond with only that fact."
         }
       )
@@ -323,7 +323,7 @@ struct `CactusAgentSession tests` {
       let session = CactusAgentSession(model: model, transcript: CactusTranscript())
 
       let stream = try session.stream(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           "Respond with one short sentence about trees."
         }
       )
@@ -399,7 +399,7 @@ struct `CactusAgentSession tests` {
     func `Is Responding Is True While Stream Is Active`() async throws {
       let session = try await Self.makeSession()
       let stream = try session.stream(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           "Respond with one short sentence."
         }
       )
@@ -414,7 +414,7 @@ struct `CactusAgentSession tests` {
     func `Already Responding Rejects New Message`() async throws {
       let session = try await Self.makeSession()
       let stream = try session.stream(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           "Write one short sentence about cacti."
         }
       )
@@ -423,7 +423,7 @@ struct `CactusAgentSession tests` {
 
       let error = await #expect(throws: CactusAgentSessionError.self) {
         try await session.respond(
-          to: try CactusUserMessage {
+          to: CactusUserMessage {
             "This second request should fail while the first stream is active."
           }
         )
@@ -432,6 +432,25 @@ struct `CactusAgentSession tests` {
       let caughtError = try #require(error)
       expectNoDifference(caughtError.underlyingError == nil, true)
       expectNoDifference(caughtError.message, CactusAgentSessionError.alreadyResponding.message)
+
+      stream.stop()
+      _ = try? await stream.collectResponse()
+    }
+
+    @Test
+    func `Setting Transcript While Responding Reports Issue`() async throws {
+      let session = try await Self.makeSession()
+      let stream = try session.stream(
+        to: CactusUserMessage {
+          "Write one short sentence about cacti."
+        }
+      )
+
+      expectNoDifference(session.isResponding, true)
+
+      withKnownIssue {
+        session.transcript = CactusTranscript()
+      }
 
       stream.stop()
       _ = try? await stream.collectResponse()
@@ -462,7 +481,7 @@ struct `CactusAgentSession tests` {
 
       let error = await #expect(throws: CactusAgentSessionError.self) {
         try await session.respond(
-          to: try CactusUserMessage {
+          to: CactusUserMessage {
             "Write one short sentence about cacti."
           }
         )
@@ -473,11 +492,48 @@ struct `CactusAgentSession tests` {
     }
 
     @Test
+    func `Function Error Prevents User Message From Being Added To Transcript`() async throws {
+      let modelURL = try await CactusModel.testModelURL(request: .lfm2_2_6b())
+      let model = try CactusModel(from: modelURL)
+
+      final class ThrowingDelegate: CactusAgentSession.Delegate, Sendable {
+        func agentFunctionWillExecuteFunctions(
+          _ session: CactusAgentSession,
+          functionCalls: sending [CactusAgentSession.FunctionCall]
+        ) async throws -> sending [CactusAgentSession.FunctionReturn] {
+          struct SomeError: Error {}
+          throw SomeError()
+        }
+      }
+
+      let session = CactusAgentSession(
+        model: model,
+        functions: [ToolFactsFunction()]
+      ) {
+        "You are a helpful assistant that can get facts about cool things. Use the get_fact tool to do so."
+      }
+      session.delegate = ThrowingDelegate()
+      
+      let response = try? await session.respond(
+        to: CactusUserMessage(forceFunctions: true) {
+          "Use the get_fact tool for 'cactus' and respond with only that fact."
+        }
+      )
+
+      if response == nil {
+        expectNoDifference(session.transcript.count, 1)
+        expectNoDifference(session.transcript.first?.message.role, .system)
+      } else {
+        withKnownIssue { Issue.record("Model did not invoke get_fact tool.") }
+      }
+    }
+
+    @Test
     func `Reset Clears Transcript`() async throws {
       let session = try await Self.makeSession()
 
       try await session.respond(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           "Write one short sentence about cacti."
         }
       )
@@ -492,7 +548,7 @@ struct `CactusAgentSession tests` {
     func `Reset Stops Ongoing Inference Stream`() async throws {
       let session = try await Self.makeSession()
       let stream = try session.stream(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           "Write one short sentence about cacti."
         }
       )
@@ -511,7 +567,7 @@ struct `CactusAgentSession tests` {
     func `Reset Sets Is Responding To False`() async throws {
       let session = try await Self.makeSession()
       let stream = try session.stream(
-        to: try CactusUserMessage {
+        to: CactusUserMessage {
           "Write one short sentence about cacti."
         }
       )
@@ -528,7 +584,7 @@ struct `CactusAgentSession tests` {
     func `Stop Stops Ongoing Inference Stream`() async throws {
       let session = try await Self.makeSession()
       let stream = try session.stream(
-        to: try CactusUserMessage(maxTokens: 1024) {
+        to: CactusUserMessage(maxTokens: 1024) {
           "Write a long, detailed paragraph about cacti and succulents."
         }
       )
@@ -547,7 +603,7 @@ struct `CactusAgentSession tests` {
     func `Stop Sets Is Responding To False`() async throws {
       let session = try await Self.makeSession()
       let stream = try session.stream(
-        to: try CactusUserMessage(maxTokens: 1024) {
+        to: CactusUserMessage(maxTokens: 1024) {
           "Write a long, detailed paragraph about cacti and succulents."
         }
       )
@@ -573,7 +629,7 @@ struct `CactusAgentSession tests` {
 
       let responseTask = Task {
         try await session.respond(
-          to: try CactusUserMessage(maxTokens: 1024, forceFunctions: true) {
+          to: CactusUserMessage(maxTokens: 1024, forceFunctions: true) {
             "Use the slow_echo tool and return its output exactly."
           }
         )
@@ -901,7 +957,7 @@ struct `CactusAgentSession tests` {
   }
 }
 
-extension CactusModel.ChatMessage {
+extension CactusModel.Message {
   fileprivate var isToolOrFunctionOutput: Bool {
     self.role == .tool
   }

@@ -1,27 +1,29 @@
-# Swift Cactus
-[![CI](https://github.com/mhayes853/swift-cactus/actions/workflows/ci.yml/badge.svg)](https://github.com/mhayes853/swift-cactus/actions/workflows/ci.yml)
-[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmhayes853%2Fswift-cactus%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/mhayes853/swift-cactus)
-[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fmhayes853%2Fswift-cactus%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/mhayes853/swift-cactus)
+# ``CactusCore``
 
-Cross-platform Swift SDK for [Cactus](https://github.com/cactus-compute/cactus?tab=readme-ov-file) inference.
+Cross-platform Swift SDK for [Cactus](https://github.com/cactus-compute/cactus) inference.
 
 ## Overview
-Cactus is a low-latency inference engine for mobile devices and wearables, allowing you to run high-performance AI locally in your app. Additionally, the engine supports hybrid cloud inference for when local inference isn’t sufficient, and the engine itself will automatically perform this behavior.
+
+Cactus is a low-latency inference engine for mobile devices and wearables, allowing you to run high-performance AI locally in your app. Additionally, the engine supports hybrid cloud inference for when local inference isn't sufficient, and the engine itself will automatically perform this behavior.
 
 This package supports all Apple platforms, Android, and Linux on ARM.
 
 **Supported Engine Version:** 1.9
 
 ### Package Structure
+
 This package exports 3 products.
-- `Cacus` - The main library product.
+
+- `Cactus` - The main library product.
   - This product exports `CactusCore`.
 - `CactusCore` - The core of the library without macros bundled in.
   - This product exports `CXXCactusShims`.
 - `CXXCactusShims` - A direct export of the Cactus FFI.
 
-### Quick Start
-To get started, you’ll need to have URL to a model in Cactus format. This means you can either side-load a model yourself, or you can use `CactusModelsDirectory` to download a model. Afterwards, you can create a `CactusAgentSession` to begin conversing with the model.
+## Quick Start
+
+To get started, you'll need to have URL to a model in Cactus format. This means you can either side-load a model yourself, or you can use ``CactusModelsDirectory`` to download a model. Afterwards, you can create a ``CactusAgentSession`` to begin conversing with the model.
+
 ```swift
 import Cactus
 
@@ -41,8 +43,10 @@ let completion = try await session.respond(to: message)
 print(completion.output)
 ```
 
-### Function Calling
-Function calling is supported through the `CactusFunction` protocol, which can be passed to a `CactusAgentSession`. 
+## Function Calling
+
+Function calling is supported through the ``CactusFunction`` protocol, which can be passed to a ``CactusAgentSession``.
+
 ```swift
 import Cactus
 
@@ -74,12 +78,15 @@ let message = CactusUserMessage {
 let completion = try await session.respond(to: message)
 print(completion.output)
 ```
-The input type of the function must conform to `Decodable`, and the function must have a JSON Schema desccription for its parameters. You can use the `@JSONSchema` macro as shown in the above example to autosynthesize the schema.
+
+The input type of the function must conform to `Decodable`, and the function must have a JSON Schema description for its parameters. You can use the `@JSONSchema` macro as shown in the above example to autosynthesize the schema.
 
 If a model makes multiple function calls in a single prompt, they are executed in parallel by default (this is configurable), and the results are passed back to the model in the same order that the model invoked the functions in.
 
-### Vision
-Certain models also support vision through images. You can analyze images by passing them into the prompt via `CactusPromptContent`.
+## Image Analysis
+
+Certain models also support image analysis. You can analyze images by passing them into the prompt via ``CactusPromptContent``.
+
 ```swift
 import Cactus
 
@@ -98,8 +105,10 @@ let completion = try await session.respond(to: message)
 print(completion.output)
 ```
 
-### Speech to Text Transcription (STT)
-Audio transcription is supported through the `CactusSTTSession` class. You can transcribe both audio files (WAV), and PCM buffers (16khz 16-bit mono).
+## Speech to Text Transcription (STT)
+
+Audio transcription is supported through the ``CactusSTTSession`` class. You can transcribe both audio files (WAV), and PCM buffers (16khz 16-bit mono).
+
 ```swift
 let modelURL = try await CactusModelsDirectory.shared.modelURL(
   for: .parakeetCtc_1_1b()
@@ -136,8 +145,10 @@ let transcription = try await session.transcribe(request: request)
 print(transcription.content)
 ```
 
-#### Whisper Prompts
+### Whisper Prompts
+
 For whisper models, you can rely on a special prompt constructor for whisper-style prompts.
+
 ```swift
 import Cactus
 
@@ -154,8 +165,10 @@ let transcription = try await session.transcribe(request: request)
 print(transcription.content)
 ```
 
-### Streaming
-Both `CactusAgentSession` and `CactusSTTSession` support streaming via `CactusInferenceStream`.
+## Streaming
+
+Both ``CactusAgentSession`` and ``CactusSTTSession`` support streaming via ``CactusInferenceStream``.
+
 ```swift
 // Agent Session
 
@@ -191,8 +204,10 @@ let transcription = try await stream.collectResponse()
 print(transcription.content)
 ```
 
-### Live Transcription
-You can also do live transcription through the `CactusTranscriptionStream` class, and by passing chunks of audio to transcribe to the stream.
+## Live Transcription
+
+You can also do live transcription through the ``CactusTranscriptionStream`` class, and by passing chunks of audio to transcribe to the stream.
+
 ```swift
 let modelURL = try await CactusModelsDirectory.shared.modelURL(
   for: .parakeetCtc_1_1b()
@@ -214,8 +229,10 @@ try await stream.finish()
 _ = try await recordingTask.value
 ```
 
-### Voice Activity Detection (VAD)
-VAD is supported through the `CactusVADSession` class, and supports the same audio formats as `CactusSTTSession`.
+## Voice Activity Detection (VAD)
+
+VAD is supported through the ``CactusVADSession`` class, and supports the same audio formats as ``CactusSTTSession``.
+
 ```swift
 let modelURL = try await CactusModelsDirectory.shared.modelURL(
   for: .sileroVad()
@@ -245,8 +262,10 @@ let vad = try await session.vad(request: request)
 print(vad.segments)
 ```
 
-### NPU Acceleration
+## NPU Acceleration
+
 Certain models also have a pro version on Apple platforms, which enable NPU acceleration through ANE. For models that support NPU acceleration, you can indicate the pro version you want inside the model download request.
+
 ```swift
 let modelURL = try await CactusModelsDirectory.shared.modelURL(
   for: .lfm2Vl_450m(pro: .apple)
@@ -257,8 +276,10 @@ let modelURL = try await CactusModelsDirectory.shared.modelURL(
 )
 ```
 
-### Model Storage
-The `CactusModelsDirectory` class manages access to all models stored locally in your app, and it can even download and remove models directly on device.
+## Model Storage
+
+The ``CactusModelsDirectory`` class manages access to all models stored locally in your app, and it can even download and remove models directly on device.
+
 ```swift
 let directory = CactusModelsDirectory(
   baseURL: .applicationSupportDirectory.appending(path: "models")
@@ -281,8 +302,10 @@ try directory.removeModel(with: .whisperSmall())
 try directory.removeModels { $0.request == .whisperSmall() }
 ```
 
-### Low Level FFI Wrapper
-The `CactusModel` class is a non-Copyable, non-Sendable struct that provides a synchronous wrapper around the `cactus_model_t` pointer and C FFI. All higher level APIs in the SDK are built entirely off of this struct.
+## Low Level FFI Wrapper
+
+The ``CactusModel`` class is a non-Copyable, non-Sendable struct that provides a synchronous wrapper around the `cactus_model_t` pointer and C FFI. All higher level APIs in the SDK are built entirely off of this struct.
+
 ```swift
 let model = try CactusModel(from: modelURL)
 
@@ -304,10 +327,11 @@ let transcription = try model.transcribe(
 }
 print(transcription.response)
 ```
-> [!NOTE] 
-> Since the struct is non-copyable, it therefore uses ownership semantics to manage the memory of the underlying model pointer. You can read the Swift Evolution [proposal](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0390-noncopyable-structs-and-enums.md) for non-Copyable types to understand how they function at a deeper level.
 
-The `CactusModelActor` is an actor variant of `CactusModel` which is properly Sendable, and supports background thread execution.
+> Note: Since the struct is non-copyable, it therefore uses ownership semantics to manage the memory of the underlying model pointer. You can read the Swift Evolution [proposal](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0390-noncopyable-structs-and-enums.md) for non-Copyable types to understand how they function at a deeper level.
+
+The ``CactusModelActor`` is an actor variant of ``CactusModel`` which is properly Sendable, and supports background thread execution.
+
 ```swift
 let model = try CactusModelActor(from: modelURL)
 
@@ -330,8 +354,10 @@ let transcription = try await model.transcribe(
 print(transcription.response)
 ```
 
-### Vector Embeddings
-You can get embeddings for text, audio, and images through either `CactusModel` or `CactusModelActor`.
+## Vector Embeddings
+
+You can get embeddings for text, audio, and images through either ``CactusModel`` or ``CactusModelActor``.
+
 ```swift
 // Synchronous
 
@@ -356,8 +382,10 @@ try await model.imageEmbeddings(for: imageURL, buffer: &span)
 try await model.audioEmbeddings(for: audioFileURL, buffer: &span)
 ```
 
-### Vector Indexing
-You can use the low-level `CactusIndex` struct for vector indexing. `CactusIndex` is also a non-Copyable and non-Sendable struct like `CactusModel`, which means that it uses ownership semantics to manage the memory to its underlying `cactus_model_t` pointer.
+## Vector Indexing
+
+You can use the low-level ``CactusIndex`` struct for vector indexing. ``CactusIndex`` is also a non-Copyable and non-Sendable struct like ``CactusModel``, which means that it uses ownership semantics to manage the memory to its underlying `cactus_model_t` pointer.
+
 ```swift
 import Cactus
 
@@ -384,8 +412,10 @@ for result in results {
 }
 ```
 
-### Telemetry
+## Telemetry
+
 You can enable and disable inference telemetry like so.
+
 ```swift
 import Cactus
 
@@ -393,8 +423,10 @@ CactusTelemetry.setup()
 await CactusTelemetry.disable()
 ```
 
-### Observation
-Many types in the library, such as `CactusAgentSession`, `CactusInferenceStream`, and `CactusModel.DownloadTask` conform to the `Observable` protocol from the Observation framework such that you can use them for live UI updates in SwiftUI views.
+## Observation
+
+Many types in the library, such as ``CactusAgentSession``, ``CactusInferenceStream``, and ``CactusModel/DownloadTask`` conform to the `Observable` protocol from the Observation framework such that you can use them for live UI updates in SwiftUI views.
+
 ```swift
 import SwiftUI
 import Cactus
@@ -415,10 +447,12 @@ struct MyChatView: View {
 }
 ```
 
-### JSON Schema
-The library ships with a built-in `JSONSchema` strong type including support for both validation and Codable types. You can easily generate a JSON schema for a struct through the `@JSONSchema` macro.
+## JSON Schema
 
-Additionally, the library supports encoding and decoding Codable values from an intermediate JSON representation. 
+The library ships with a built-in ``JSONSchema`` strong type including support for both validation and Codable types. You can easily generate a JSON schema for a struct through the `@JSONSchema` macro.
+
+Additionally, the library supports encoding and decoding Codable values from an intermediate JSON representation.
+
 ```swift
 @JSONSchema
 struct MyValue: Codable {
@@ -451,7 +485,7 @@ let encoded: JSONSchema.Value = try JSONSchema.Value.Encoder()
 ```
 
 ### Checking For Supported Engine Version
-This library uses it's own versioning scheme separate from the upstream engine (eg. Version X.Y.Z of this library != Cactus Version X.Y.Z). You can check the supported engine version through the `cactusEngineVersion` constant.
+This library uses it's own versioning scheme separate from the upstream engine (eg. Version X.Y.Z of this library != Cactus Version X.Y.Z). You can check the supported engine version through the ``cactusEngineVersion`` constant.
 ```swift
 import Cactus
 
@@ -460,34 +494,3 @@ print(Cactus.cactusEngineVersion)
 ```
 
 The supported engine version is also displayed at the top of README.
-
-## Future Roadmap
-In no particular order.
-- [`AnyLangauageModel`](https://github.com/mattt/AnyLanguageModel) backend via package trait.
-- Reliable structured generation using the `@JSONSchema` macro and any EBNF grammar.
-  - This requires CFG support in the upstream engine.
-  - This would also support incremental structured streaming for [JSON-complete formats](https://lemire.me/blog/2025/12/20/json-complete-data-format-and-programming-languages/) via [`StreamParsing`](https://github.com/mhayes853/swift-stream-parsing). 
-- Higher-Level vector index abstractions.
-- Integrations with more Apple native frameworks (eg. CoreAudio).
-- Prefill API to reduce decode latency.
-  - This requires engine support for separating prefill step from decode step at FFI level.
-- Example apps.
-
-## Installation
-You can add Swift Cactus to an Xcode project by adding it to your project as a package.
-> https://github.com/mhayes853/swift-cactus
-
-If you want to use Swift Cactus in a [SwiftPM](https://swift.org/package-manager/) project, it's as simple as adding it to your `Package.swift`.
-``` swift
-dependencies: [
-  .package(url: "https://github.com/mhayes853/swift-cactus", from: "2.0.0")
-]
-```
-
-And then adding the product to any target that needs access to the library.
-```swift
-.product(name: "Cactus", package: "swift-cactus")
-```
-
-## License
-This library is licensed under an MIT License. See [LICENSE](https://github.com/mhayes853/swift-cactus/blob/main/LICENSE) for details.

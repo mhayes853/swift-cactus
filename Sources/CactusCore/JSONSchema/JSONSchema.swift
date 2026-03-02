@@ -3,6 +3,37 @@
 /// An enun defining a JSON Schema.
 ///
 /// A valid json schema is either an object or a boolean.
+///
+/// ```swift
+/// @JSONSchema
+/// struct MyValue: Codable {
+///   @JSONSchemaProperty(.string(pattern: /[0-9A-Za-z]+/))
+///   var property: String
+///
+///   @JSONSchemaProperty(.integer(minimum: 10))
+///   var num: Int
+/// }
+///
+/// let jsonValue = JSONSchema.Value.object([
+///   "property": "this is a string",
+///   "num": 10
+/// ])
+///
+/// // Validation
+///
+/// try JSONSchema.Validator.shared.validate(
+///   value: jsonValue,
+///   with: MyValue.jsonSchema
+/// )
+///
+/// // Codable Support
+///
+/// let decoded = try JSONSchema.Value.Decoder()
+///   .decode(MyValue.self, from: jsonValue)
+///
+/// let encoded: JSONSchema.Value = try JSONSchema.Value.Encoder()
+///   .encode(MyValue(property: "blob", num: 20))
+/// ```
 public indirect enum JSONSchema: Hashable, Sendable {
   /// A boolean schema.
   case boolean(Bool)

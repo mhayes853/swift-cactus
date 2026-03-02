@@ -81,7 +81,7 @@ struct `CactusSTTSession tests` {
       let session = try CactusSTTSession(from: modelURL)
       let pcmBuffer = try testAudioPCMBuffer()
       let content = try CactusTranscription.Request.Content.pcm(pcmBuffer)
-      let request = CactusTranscription.Request(
+      let request = CactusTranscription.Request.whisper(
         language: .english,
         includeTimestamps: true,
         content: content

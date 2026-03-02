@@ -1,13 +1,92 @@
 import Foundation
+import IssueReporting
 
 // MARK: - CactusAgentSession
 
+/// A class for agent workflows using Cactus inference.
+///
+/// Basic usage:
+///
+/// ```swift
+/// import Cactus
+///
+/// let modelURL = try await CactusModelsDirectory.shared.modelURL(
+///   for: .lfm2_5_1_2bThinking()
+/// )
+///
+/// let session = try CactusAgentSession(from: modelURL) {
+///   "You are a helpful assistant who can answer questions."
+/// }
+/// let message = CactusUserMessage {
+///   "What is the meaning of time?"
+/// }
+/// let completion = try await session.respond(to: message)
+/// print(completion.output)
+/// ```
+///
+/// You can attach ``CactusFunction`` instances to the session which can be invoked directly by the
+/// model.
+///
+/// ```swift
+/// import Cactus
+///
+/// struct GetWeather: CactusFunction {
+///   @JSONSchema
+///   struct Input: Codable, Sendable {
+///     @JSONSchemaProperty(description: "The city to load the weather for.")
+///     let city: String
+///   }
+///
+///   let name = "get_weather"
+///   let description = "Loads the weather for a city."
+///
+///   func invoke(input: Input) async throws -> sending String {
+///     let weatherCondition = try await weather(for: city)
+///     return "The current weather for \(input.city) is: \(weatherCondition)"
+///   }
+/// }
+///
+/// let session = try CactusAgentSession(
+///   from: modelURL,
+///   functions: [GetWeather()]
+/// ) {
+///   "You are a weather assistant who can get the current weather."
+/// }
+/// let message = CactusUserMessage {
+///   "What is the weather in San Francisco?"
+/// }
+/// let completion = try await session.respond(to: message)
+/// print(completion.output)
+/// ```
+///
+/// The session also conforms to the `Observable` protocol, allowing you to observe realtime UI
+/// updates for inference in SwiftUI views.
+///
+/// ```swift
+/// import SwiftUI
+/// import Cactus
+///
+/// struct MyChatView: View {
+///   @State var session: CactusAgentSession
+///
+///   var body: some View {
+///     VStack {
+///       ForEach(self.session.transcript) { entry in
+///         Text(entry.message.content)
+///       }
+///       if self.session.isResponding {
+///         ProgressView()
+///       }
+///     }
+///   }
+/// }
+/// ```
 public final class CactusAgentSession: Sendable {
   private let observationRegistrar = _ObservationRegistrar()
   private let state: Lock<State>
 
-  /// The underlying language model actor.
-  public let languageModelActor: CactusModelActor
+  /// The underlying model actor.
+  public let modelActor: CactusModelActor
 
   private struct State {
     var transcript: CactusTranscript
@@ -19,13 +98,41 @@ public final class CactusAgentSession: Sendable {
   }
 
   /// The full history of interactions for this session.
+  ///
+  /// Do not set this value while ``isResponding`` is `true`, since the in-flight response mutates
+  /// the transcript.
+  ///
+  /// If a system prompt is configured, it is injected lazily when the first user message is sent
+  /// to the model (rather than at initialization time).
+  ///
+  /// Mutating this value can invalidate the model's underlying KV-cache, which may increase
+  /// latency for subsequent responses.
   public var transcript: CactusTranscript {
+    get { self._transcript }
+    set {
+      if self.isResponding {
+        reportIssue(
+          """
+          Attempted to set the transcript while the session was actively responding to a user \
+          message.
+
+          This is generally considered an application logic error, because the transcript will be \
+          mutated by appending the model's response, as well as any function calls the model \
+          invokes.
+          """
+        )
+      }
+      self._transcript = newValue
+    }
+  }
+
+  private var _transcript: CactusTranscript {
     get {
-      self.observationRegistrar.access(self, keyPath: \CactusAgentSession.transcript)
+      self.observationRegistrar.access(self, keyPath: \.transcript)
       return self.state.withLock { $0.transcript }
     }
     set {
-      self.observationRegistrar.withMutation(of: self, keyPath: \CactusAgentSession.transcript) {
+      self.observationRegistrar.withMutation(of: self, keyPath: \.transcript) {
         self.state.withLock { $0.transcript = newValue }
       }
     }
@@ -38,6 +145,9 @@ public final class CactusAgentSession: Sendable {
   }
 
   /// Functions available for tool-calling during completion.
+  ///
+  /// Mutating this value can invalidate the model's underlying KV-cache, which may increase
+  /// latency for subsequent responses.
   public var functions: [any CactusFunction] {
     get {
       self.observationRegistrar.access(self, keyPath: \CactusAgentSession.functions)
@@ -57,12 +167,12 @@ public final class CactusAgentSession: Sendable {
   }
 
   private init(
-    languageModelActor: CactusModelActor,
+    modelActor: CactusModelActor,
     functions: [any CactusFunction],
     transcript: CactusTranscript,
     systemPrompt: sending CactusPromptContent?
   ) {
-    self.languageModelActor = languageModelActor
+    self.modelActor = modelActor
     self.state = Lock(
       State(
         transcript: transcript,
@@ -81,6 +191,9 @@ public final class CactusAgentSession: Sendable {
 extension CactusAgentSession {
   /// Creates a completion session from a language model and explicit transcript.
   ///
+  /// If a system prompt is configured for this session, it is injected lazily when the first user
+  /// message is sent to the model.
+  ///
   /// - Parameters:
   ///   - model: The underlying language model.
   ///   - functions: Tool functions available to the session.
@@ -91,7 +204,7 @@ extension CactusAgentSession {
     transcript: CactusTranscript
   ) {
     self.init(
-      languageModelActor: CactusModelActor(model: model),
+      modelActor: CactusModelActor(model: model),
       functions: functions,
       transcript: transcript,
       systemPrompt: nil
@@ -100,6 +213,9 @@ extension CactusAgentSession {
 
   /// Creates a completion session from a language model actor and explicit transcript.
   ///
+  /// If a system prompt is configured for this session, it is injected lazily when the first user
+  /// message is sent to the model.
+  ///
   /// - Parameters:
   ///   - model: The underlying language model actor.
   ///   - functions: Tool functions available to the session.
@@ -110,7 +226,7 @@ extension CactusAgentSession {
     transcript: CactusTranscript
   ) {
     self.init(
-      languageModelActor: model,
+      modelActor: model,
       functions: functions,
       transcript: transcript,
       systemPrompt: nil
@@ -118,6 +234,8 @@ extension CactusAgentSession {
   }
 
   /// Creates a completion session from a language model and system prompt.
+  ///
+  /// The system prompt is injected lazily when the first user message is sent to the model.
   ///
   /// - Parameters:
   ///   - model: The underlying language model.
@@ -129,14 +247,107 @@ extension CactusAgentSession {
     systemPrompt: sending CactusPromptContent
   ) {
     self.init(
-      languageModelActor: CactusModelActor(model: model),
+      modelActor: CactusModelActor(model: model),
       functions: functions,
       transcript: CactusTranscript(),
       systemPrompt: systemPrompt
     )
   }
 
-  /// Creates a completion session from a language model actor and system prompt.
+  /// Creates a completion session from a model URL.
+  ///
+  /// If a system prompt is configured for this session, it is injected lazily when the first user
+  /// message is sent to the model.
+  ///
+  /// - Parameters:
+  ///   - url: The local `URL` of the model.
+  ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
+  ///   - cacheIndex: Whether to load a cached RAG index if available.
+  ///   - functions: Tool functions available to the session.
+  ///   - transcript: The initial transcript to seed the session.
+  public convenience init(
+    from url: URL,
+    corpusDirectoryURL: URL? = nil,
+    cacheIndex: Bool = false,
+    functions: [any CactusFunction] = [],
+    transcript: CactusTranscript = CactusTranscript()
+  ) throws {
+    let model = try CactusModel(
+      from: url,
+      corpusDirectoryURL: corpusDirectoryURL,
+      cacheIndex: cacheIndex
+    )
+    self.init(
+      model: model,
+      functions: functions,
+      transcript: transcript
+    )
+  }
+
+  /// Creates a completion session from a model URL with a system prompt.
+  ///
+  /// The system prompt is injected lazily when the first user message is sent to the model.
+  ///
+  /// - Parameters:
+  ///   - url: The local `URL` of the model.
+  ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
+  ///   - cacheIndex: Whether to load a cached RAG index if available.
+  ///   - functions: Tool functions available to the session.
+  ///   - systemPrompt: The system prompt injected for the session.
+  public convenience init(
+    from url: URL,
+    corpusDirectoryURL: URL? = nil,
+    cacheIndex: Bool = false,
+    functions: [any CactusFunction] = [],
+    systemPrompt: sending CactusPromptContent
+  ) throws {
+    let model = try CactusModel(
+      from: url,
+      corpusDirectoryURL: corpusDirectoryURL,
+      cacheIndex: cacheIndex
+    )
+    self.init(
+      model: model,
+      functions: functions,
+      systemPrompt: systemPrompt
+    )
+  }
+
+  /// Creates a completion session from a model URL and prompt builder.
+  ///
+  /// The system prompt is injected lazily when the first user message is sent to the model.
+  ///
+  /// - Parameters:
+  ///   - url: The local `URL` of the model.
+  ///   - corpusDirectoryURL: A `URL` to a corpus directory of documents for RAG models.
+  ///   - cacheIndex: Whether to load a cached RAG index if available.
+  ///   - functions: Tool functions available to the session.
+  ///   - transcript: The initial transcript to seed the session.
+  ///   - systemPrompt: A builder that produces the session's system prompt content.
+  public convenience init(
+    from url: URL,
+    corpusDirectoryURL: URL? = nil,
+    cacheIndex: Bool = false,
+    functions: [any CactusFunction] = [],
+    transcript: CactusTranscript = CactusTranscript(),
+    @CactusPromptBuilder systemPrompt: @Sendable () -> some CactusPromptRepresentable
+  ) throws {
+    let model = try CactusModel(
+      from: url,
+      corpusDirectoryURL: corpusDirectoryURL,
+      cacheIndex: cacheIndex
+    )
+    self.init(
+      modelActor: CactusModelActor(model: model),
+      functions: functions,
+      transcript: transcript,
+      systemPrompt: CactusPromptContent(systemPrompt())
+    )
+  }
+
+  /// Creates a completion session from a model URL and prompt builder.
+  ///
+  /// The system prompt is injected lazily when the first user message is sent to the model.
   ///
   /// - Parameters:
   ///   - model: The underlying language model actor.
@@ -148,7 +359,7 @@ extension CactusAgentSession {
     systemPrompt: sending CactusPromptContent
   ) {
     self.init(
-      languageModelActor: model,
+      modelActor: model,
       functions: functions,
       transcript: CactusTranscript(),
       systemPrompt: systemPrompt
@@ -156,6 +367,8 @@ extension CactusAgentSession {
   }
 
   /// Creates a completion session from a language model and prompt builder.
+  ///
+  /// The system prompt is injected lazily when the first user message is sent to the model.
   ///
   /// - Parameters:
   ///   - model: The underlying language model.
@@ -170,6 +383,8 @@ extension CactusAgentSession {
   }
 
   /// Creates a completion session from a language model actor and prompt builder.
+  ///
+  /// The system prompt is injected lazily when the first user message is sent to the model.
   ///
   /// - Parameters:
   ///   - model: The underlying language model actor.
@@ -196,6 +411,10 @@ extension CactusAgentSession {
     public let error: any Error
 
     /// Creates a function throw wrapper.
+    ///
+    /// - Parameters:
+    ///   - functionCall: The function call that failed.
+    ///   - error: The underlying thrown error.
     public init(functionCall: CactusAgentSession.FunctionCall, error: any Error) {
       self.functionCall = functionCall
       self.error = error
@@ -211,6 +430,10 @@ extension CactusAgentSession {
     public let content: CactusPromptContent
 
     /// Creates a function return value.
+    ///
+    /// - Parameters:
+    ///   - name: The function name.
+    ///   - content: The function output content.
     public init(name: String, content: CactusPromptContent) {
       self.name = name
       self.content = content
@@ -226,6 +449,10 @@ extension CactusAgentSession {
     public let arguments: [String: JSONSchema.Value]
 
     /// Creates a resolved function call.
+    ///
+    /// - Parameters:
+    ///   - function: The matched function instance.
+    ///   - arguments: Raw arguments emitted by the model for this function call.
     public init(
       function: any CactusFunction,
       arguments: [String: JSONSchema.Value]
@@ -235,6 +462,11 @@ extension CactusAgentSession {
     }
 
     /// Decodes arguments from the raw function call payload.
+    ///
+    /// - Parameters:
+    ///   - decoder: A decoder used to convert schema values into the concrete argument type.
+    ///   - validator: A validator used to validate raw arguments against the function schema.
+    /// - Returns: The decoded argument value.
     public func arguments<Arguments: Decodable>(
       decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder(),
       validator: JSONSchema.Validator = .shared
@@ -248,6 +480,11 @@ extension CactusAgentSession {
     }
 
     /// Invokes the underlying function and returns prompt content output.
+    ///
+    /// - Parameters:
+    ///   - decoder: A decoder used to convert schema values into the function input type.
+    ///   - validator: A validator used to validate raw arguments against the function schema.
+    /// - Returns: The function output encoded as prompt content.
     public func invoke(
       decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder(),
       validator: JSONSchema.Validator = .shared
@@ -292,6 +529,12 @@ extension CactusAgentSession {
 }
 
 extension CactusAgentSession.Delegate {
+  /// Executes resolved function calls and returns outputs in matching array order.
+  ///
+  /// - Parameters:
+  ///   - session: The active session.
+  ///   - functionCalls: The resolved function calls for the current model turn.
+  /// - Returns: Function return outputs in the same order as `functionCalls`.
   public func agentFunctionWillExecuteFunctions(
     _ session: CactusAgentSession,
     functionCalls: sending [CactusAgentSession.FunctionCall]
@@ -310,6 +553,9 @@ extension CactusAgentSession {
   }
 
   /// Executes function calls in parallel and returns ordered function outputs.
+  ///
+  /// - Parameter functionCalls: The resolved function calls to execute.
+  /// - Returns: Function return outputs in the same order as `functionCalls`.
   public static func executeParallelFunctionCalls(
     functionCalls: sending [CactusAgentSession.FunctionCall]
   ) async throws -> sending [CactusAgentSession.FunctionReturn] {
@@ -391,21 +637,20 @@ extension CactusAgentSession {
 // MARK: - Control
 
 extension CactusAgentSession {
-
   /// Stops any active generation on the underlying language model.
   nonisolated(nonsending) public func stop() async {
     self.stopActiveStreamIfNecessary()
     self.endResponding()
-    await self.languageModelActor.stop()
+    await self.modelActor.stop()
   }
 
   /// Stops active generation, clears transcript state, and resets model context.
   nonisolated(nonsending) public func reset() async {
     self.stopActiveStreamIfNecessary()
     self.endResponding()
-    await self.languageModelActor.stop()
-    await self.languageModelActor.reset()
-    self.transcript = CactusTranscript()
+    await self.modelActor.stop()
+    await self.modelActor.reset()
+    self._transcript = CactusTranscript()
   }
 }
 
@@ -435,6 +680,23 @@ extension CactusAgentSession {
 extension CactusAgentSession {
   /// Streams plain-text tokens and returns completion entries and the final assistant response.
   ///
+  /// ```swift
+  /// let session = try CactusAgentSession(from: modelURL) {
+  ///   "You are a helpful assistant."
+  /// }
+  ///
+  /// let message = CactusUserMessage {
+  ///   "What is the weather in San Francisco?"
+  /// }
+  /// let stream = try session.stream(to: message)
+  /// for await token in stream.tokens {
+  ///   print(token.stringValue, token.tokenId, token.generationStreamId)
+  /// }
+  ///
+  /// let completion = try await stream.collectResponse()
+  /// print(completion.output)
+  /// ```
+  ///
   /// - Parameter request: The user message request for this turn.
   /// - Returns: A stream whose final response is a completion containing generated text and entries.
   public func stream(
@@ -458,61 +720,70 @@ extension CactusAgentSession {
 
       var completionEntries = [CactusCompletionEntry]()
 
-      self.appendTranscriptEntry(
-        context.userMessage,
-        metrics: nil,
-        completionEntries: &completionEntries
-      )
+      let initialTranscriptCount = self.transcript.count
 
-      var conversationMessages = self.transcript.messages
+      if let lastMessage = context.transcript.last {
+        self.appendTranscriptEntry(
+          lastMessage,
+          metrics: nil,
+          completionEntries: &completionEntries
+        )
+      }
+
+      var conversationMessages = context.transcript
       var finalResponse = ""
-      while true {
-        let assistantStreamID = CactusGenerationID()
-        let completedTurn = try await self.languageModelActor.complete(
-          messages: conversationMessages,
-          options: context.options,
-          maxBufferSize: context.maxBufferSize,
-          functions: context.functionDefinitions
-        ) { token, tokenId in
-          continuation.yield(
-            token: CactusStreamedToken(
-              messageStreamId: assistantStreamID,
-              stringValue: token,
-              tokenId: tokenId
+      do {
+        while true {
+          let assistantStreamID = CactusGenerationID()
+          let completedTurn = try await self.modelActor.complete(
+            messages: conversationMessages,
+            options: context.options,
+            maxBufferSize: context.maxBufferSize,
+            functions: context.functionDefinitions
+          ) { token, tokenId in
+            continuation.yield(
+              token: CactusStreamedToken(
+                generationStreamId: assistantStreamID,
+                stringValue: token,
+                tokenId: tokenId
+              )
             )
+          }
+
+          let appendedMessages = self.appendedMessages(
+            in: completedTurn.messages,
+            originalMessagesCount: conversationMessages.count
           )
+          self.appendModelMessages(
+            appendedMessages,
+            completion: completedTurn.completion,
+            completionEntries: &completionEntries
+          )
+
+          conversationMessages = context.transcript
+          finalResponse = completedTurn.completion.response
+
+          if completedTurn.completion.functionCalls.isEmpty {
+            break
+          }
+
+          let resolvedFunctionCalls = try self.resolveFunctionCalls(
+            completedTurn.completion.functionCalls,
+            using: context.functions
+          )
+          let functionReturns = try await self.executeFunctionCalls(resolvedFunctionCalls)
+
+          try self.appendFunctionReturns(
+            functionReturns,
+            role: .tool,
+            completionEntries: &completionEntries
+          )
+
+          conversationMessages = context.transcript
         }
-
-        let appendedMessages = self.appendedMessages(
-          in: completedTurn.messages,
-          originalMessagesCount: conversationMessages.count
-        )
-        self.appendModelMessages(
-          appendedMessages,
-          completion: completedTurn.completion,
-          completionEntries: &completionEntries
-        )
-
-        conversationMessages = self.transcript.messages
-        finalResponse = completedTurn.completion.response
-
-        if completedTurn.completion.functionCalls.isEmpty {
-          break
-        }
-
-        let resolvedFunctionCalls = try self.resolveFunctionCalls(
-          completedTurn.completion.functionCalls,
-          using: context.functions
-        )
-        let functionReturns = try await self.executeFunctionCalls(resolvedFunctionCalls)
-
-        try self.appendFunctionReturns(
-          functionReturns,
-          role: .tool,
-          completionEntries: &completionEntries
-        )
-
-        conversationMessages = self.transcript.messages
+      } catch {
+        self.removeTranscriptEntriesSince(initialCount: initialTranscriptCount)
+        throw error
       }
       return CactusCompletion(output: finalResponse, entries: completionEntries)
     }
@@ -574,7 +845,7 @@ extension CactusAgentSession {
   }
 
   private struct StreamRequestContext: Sendable {
-    let userMessage: CactusModel.ChatMessage
+    let transcript: [CactusModel.Message]
     let options: CactusModel.Completion.Options
     let maxBufferSize: Int?
     let functionDefinitions: [CactusModel.FunctionDefinition]
@@ -584,14 +855,18 @@ extension CactusAgentSession {
   private func streamRequestContext(
     from request: CactusUserMessage
   ) throws -> StreamRequestContext {
-    let userMessage: CactusModel.ChatMessage
+    let userMessage: CactusModel.Message
     do {
       userMessage = try self.userChatMessage(from: request)
     } catch {
       throw CactusAgentSessionError.invalidUserMessage(error)
     }
+
+    var transcript = self.transcript.messages
+    transcript.append(userMessage)
+
     return StreamRequestContext(
-      userMessage: userMessage,
+      transcript: transcript,
       options: CactusModel.Completion.Options(message: request),
       maxBufferSize: request.maxBufferSize,
       functionDefinitions: self.functions.map(\.definition),
@@ -616,7 +891,7 @@ extension CactusAgentSession {
       throw CactusAgentSessionError.invalidSystemPrompt(error)
     }
 
-    let systemMessage = CactusModel.ChatMessage.system(text)
+    let systemMessage = CactusModel.Message.system(text)
     self.state.withLock { state in
       guard state.transcript.isEmpty else { return }
       state.transcript.insert(CactusTranscript.Element(message: systemMessage), at: 0)
@@ -624,19 +899,25 @@ extension CactusAgentSession {
   }
 
   private func appendTranscriptEntry(
-    _ message: CactusModel.ChatMessage,
+    _ message: CactusModel.Message,
     metrics: CactusGenerationMetrics?,
     completionEntries: inout [CactusCompletionEntry]
   ) {
     let transcriptEntry = CactusTranscript.Element(message: message)
-    self.transcript.append(transcriptEntry)
+    self._transcript.append(transcriptEntry)
     completionEntries.append(
       CactusCompletionEntry(transcriptEntry: transcriptEntry, metrics: metrics)
     )
   }
 
+  private func removeTranscriptEntriesSince(initialCount: Int) {
+    for index in stride(from: self._transcript.count - 1, through: initialCount, by: -1) {
+      _ = self._transcript.removeElement(at: index)
+    }
+  }
+
   private func appendModelMessages(
-    _ messages: [CactusModel.ChatMessage],
+    _ messages: [CactusModel.Message],
     completion: CactusModel.Completion,
     completionEntries: inout [CactusCompletionEntry]
   ) {
@@ -666,7 +947,7 @@ extension CactusAgentSession {
 
   private func appendFunctionReturns(
     _ functionReturns: [CactusAgentSession.FunctionReturn],
-    role: CactusModel.MessageRole,
+    role: CactusModel.Message.Role,
     completionEntries: inout [CactusCompletionEntry]
   ) throws {
     for functionReturn in functionReturns {
@@ -675,7 +956,7 @@ extension CactusAgentSession {
         content: functionReturn.content
       )
       self.appendTranscriptEntry(
-        CactusModel.ChatMessage(role: role, content: content),
+        CactusModel.Message(role: role, content: content),
         metrics: nil,
         completionEntries: &completionEntries
       )
@@ -684,15 +965,15 @@ extension CactusAgentSession {
 
   private func userChatMessage(
     from request: CactusUserMessage
-  ) throws -> CactusModel.ChatMessage {
+  ) throws -> CactusModel.Message {
     let components = try request.content.messageComponents()
-    return CactusModel.ChatMessage.user(components.text, images: components.images)
+    return CactusModel.Message.user(components.text, images: components.images)
   }
 
   private func appendedMessages(
-    in messages: [CactusModel.ChatMessage],
+    in messages: [CactusModel.Message],
     originalMessagesCount: Int
-  ) -> [CactusModel.ChatMessage] {
+  ) -> [CactusModel.Message] {
     if messages.count <= originalMessagesCount {
       return []
     }
@@ -745,6 +1026,9 @@ public struct CactusAgentSessionError: Error, Sendable {
   )
 
   /// A model-emitted function call referenced a function that is not registered.
+  ///
+  /// - Parameter name: The missing function name emitted by the model.
+  /// - Returns: A ``CactusAgentSessionError`` describing the missing function.
   public static func missingFunction(_ name: String) -> Self {
     Self(message: "Missing function for model-emitted call: \(name)")
   }
@@ -752,6 +1036,7 @@ public struct CactusAgentSessionError: Error, Sendable {
   /// User message content could not be converted to a chat message.
   ///
   /// - Parameter error: The underlying error that caused the conversion to fail.
+  /// - Returns: A ``CactusAgentSessionError`` wrapping the provided error.
   public static func invalidUserMessage(_ error: any Error) -> Self {
     Self(error: error)
   }
@@ -759,6 +1044,7 @@ public struct CactusAgentSessionError: Error, Sendable {
   /// System prompt content could not be converted to a chat message.
   ///
   /// - Parameter error: The underlying error that caused the conversion to fail.
+  /// - Returns: A ``CactusAgentSessionError`` wrapping the provided error.
   public static func invalidSystemPrompt(_ error: any Error) -> Self {
     Self(error: error)
   }

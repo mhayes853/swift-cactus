@@ -4,6 +4,33 @@ import Foundation
 // MARK: - CactusIndex
 
 /// An index for storing and querying document embeddings.
+///
+/// ```swift
+/// import Cactus
+///
+/// let model = try CactusModel(from: modelURL)
+/// let index = try CactusIndex(
+///   directory: .applicationSupportDirectory.appending(path: "my-index"),
+///   embeddingDimensions: 2048
+/// )
+///
+/// let embeddings = try model.embeddings(for: "Some text")
+///
+/// let document = CactusIndex.Document(
+///   id: 0,
+///   embedding: embeddings,
+///   content: "Some text"
+/// )
+/// try index.add(document: document)
+///
+/// let queryEmbeddings = try model.embeddings(for: "Another text")
+/// let query = CactusIndex.Query(embeddings: queryEmbeddings)
+/// let results = try index.query(query)
+///
+/// for result in results {
+///   print(result.documentId, result.score)
+/// }
+/// ```
 public struct CactusIndex: ~Copyable {
   /// The maximum buffer size for a document's content or metadata.
   public static let maxBufferSize = 65535
@@ -264,6 +291,7 @@ extension CactusIndex {
     public var scoreThreshold: Float
 
     /// Creates a query.
+    ///
     /// - Parameters:
     ///   - embeddings: The embeddings to compare against.
     ///   - topK: The maximum number of similar documents to retrieve.
@@ -282,7 +310,7 @@ extension CactusIndex {
 
   /// Runs the specified ``Query`` instances and returns the results.
   ///
-  /// - Returns: An array of arrays of ``Query.Result`` instances, in the same order as the queries.
+  /// - Returns: An array of arrays of ``Query/Result`` instances, in the same order as the queries.
   public func query(_ queries: [Query]) throws -> [[Query.Result]] {
     guard !queries.isEmpty else { return [] }
     var indexedBatches = [FFIOptions: [(index: Int, query: Query)]]()

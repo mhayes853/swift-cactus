@@ -4,7 +4,7 @@
       - metrics: Optional<CactusGenerationMetrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: E20111ED-51AC-4EFE-B1F3-D19765C0A55E
+          - rawValue: E770EE50-3C7A-4C27-9E8E-D7DA3E560506
         ▿ message: ChatMessage
           - content: "Say hello in one concise sentence."
           ▿ images: Optional<Array<URL>>
@@ -14,41 +14,41 @@
     ▿ CactusCompletionEntry
       ▿ metrics: Optional<CactusGenerationMetrics>
         ▿ some: CactusGenerationMetrics
-          - confidence: 0.9143
-          - decodeTokens: 10
-          - decodeTps: 96.9
+          - confidence: 0.8913
+          - decodeTokens: 136
+          - decodeTps: 108.32
           - didHandoffToCloud: false
-          ▿ durationToFirstToken: 0.02755 seconds
-            - _low: 27550000000000000
+          ▿ durationToFirstToken: 0.0204 seconds
+            - _low: 20399999999999999
             - _high: 0
-          - prefillTokens: 16
-          - prefillTps: 580.74
-          - ramUsageMb: 54.69
-          ▿ totalDuration: 0.12043000000000001 seconds
-            - _low: 120430000000000016
+          - prefillTokens: 9
+          - prefillTps: 441.26
+          - ramUsageMb: 47.55
+          ▿ totalDuration: 1.26673 seconds
+            - _low: 1266730000000000018
             - _high: 0
-          - totalTokens: 26
+          - totalTokens: 145
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 1D300A5E-A603-479C-895D-95029264DACC
+          - rawValue: 29809FED-8D73-47B8-885A-6FDD7796DBCF
         ▿ message: ChatMessage
-          - content: "That\'s welcome! What should I do?"
+          - content: "The concept of \"Hello there!\" seems quite concise! I am curious about your response and how it is structured. Is there anything specific you would like me to consider? Are you asking for information on any topic?\n\nFor example:\n\n*   \"What is the meaning of life?\"\n*   \"How do people greet strangers?\"\n*   \"Can I use the word \'hello\'?\"\n\nI am ready to receive your questions and respond as if it were a simple, direct question.  Perhaps we can be used together for a conversation about life, humanity, or even just sharing our thoughts in general! What are you hoping to learn from this new language?"
           - images: Optional<Array<URL>>.none
           ▿ role: MessageRole
             - rawValue: "assistant"
   ▿ metrics: CactusGenerationMetrics
-    - confidence: 0.9143
-    - decodeTokens: 10
-    - decodeTps: 96.9
+    - confidence: 0.8913
+    - decodeTokens: 136
+    - decodeTps: 108.32
     - didHandoffToCloud: false
-    ▿ durationToFirstToken: 0.02755 seconds
-      - _low: 27550000000000000
+    ▿ durationToFirstToken: 0.0204 seconds
+      - _low: 20399999999999999
       - _high: 0
-    - prefillTokens: 16
-    - prefillTps: 580.74
-    - ramUsageMb: 54.69
-    ▿ totalDuration: 0.12043000000000001 seconds
-      - _low: 120430000000000016
+    - prefillTokens: 9
+    - prefillTps: 441.26
+    - ramUsageMb: 47.55
+    ▿ totalDuration: 1.26673 seconds
+      - _low: 1266730000000000018
       - _high: 0
-    - totalTokens: 26
-  - output: "That\'s welcome! What should I do?"
+    - totalTokens: 145
+  - output: "The concept of \"Hello there!\" seems quite concise! I am curious about your response and how it is structured. Is there anything specific you would like me to consider? Are you asking for information on any topic?\n\nFor example:\n\n*   \"What is the meaning of life?\"\n*   \"How do people greet strangers?\"\n*   \"Can I use the word \'hello\'?\"\n\nI am ready to receive your questions and respond as if it were a simple, direct question.  Perhaps we can be used together for a conversation about life, humanity, or even just sharing our thoughts in general! What are you hoping to learn from this new language?"
