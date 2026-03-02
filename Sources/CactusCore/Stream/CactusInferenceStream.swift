@@ -3,6 +3,43 @@ import Foundation
 // MARK: - CactusInferenceStream
 
 /// A lightweight async stream for model inference output and token events.
+///
+/// ``CactusAgentSession`` streaming.
+///
+/// ```swift
+/// let session = try CactusAgentSession(from: modelURL) {
+///   "You are a helpful assistant."
+/// }
+///
+/// let message = CactusUserMessage {
+///   "What is the weather in San Francisco?"
+/// }
+/// let stream = try session.stream(to: message)
+/// for await token in stream.tokens {
+///   print(token.stringValue, token.tokenId, token.generationStreamId)
+/// }
+///
+/// let completion = try await stream.collectResponse()
+/// print(completion.output)
+/// ```
+///
+/// ``CactusSTTSession`` streaming.
+///
+/// ```swift
+/// let session = try CactusSTTSession(from: modelURL)
+///
+/// let request = CactusTranscription.Request(
+///   prompt: .default,
+///   content: .audio(.documentsDirectory.appending(path: "audio.wav"))
+/// )
+/// let stream = try session.transcriptionStream(request: request)
+/// for await token in stream.tokens {
+///   print(token.stringValue, token.tokenId, token.generationStreamId)
+/// }
+///
+/// let transcription = try await stream.collectResponse()
+/// print(transcription.content)
+/// ```
 public final class CactusInferenceStream<Output: Sendable>: Sendable {
   private let observationRegistrar = _ObservationRegistrar()
   private let state = Lock(State())

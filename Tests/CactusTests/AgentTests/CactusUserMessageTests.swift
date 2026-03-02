@@ -11,7 +11,7 @@ struct `CactusUserMessage tests` {
       cloudHandoffThreshold: 0.42,
       cloudTimeoutDuration: Duration.seconds(9)
     )
-    let request = try CactusUserMessage(
+    let request = CactusUserMessage(
       maxTokens: 256,
       temperature: 0.2,
       topP: 0.5,

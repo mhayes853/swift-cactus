@@ -9,15 +9,25 @@ import Foundation
 /// language model.
 ///
 /// ```swift
-/// let actor = try await CactusModelActor(from: modelURL)
+/// let model = try CactusModelActor(from: modelURL)
 ///
-/// let completion = try await actor.complete(
+/// let turn = try await model.complete(
 ///   messages: [
 ///     .system("You are a helpful assistant."),
-///     .user("What is Swift?")
+///     .user("What is the meaning of life?")
 ///   ]
-/// )
-/// print(completion.completion.response)
+/// ) { token, tokenId in
+///   print(token, tokenId) // Streaming
+/// }
+/// print(turn.response)
+///
+/// let transcription = try await model.transcribe(
+///   audio: wavURL,
+///   prompt: ""
+/// ) { token, tokenId in
+///   print(token, tokenId) // Streaming
+/// }
+/// print(transcription.response)
 /// ```
 public actor CactusModelActor {
   /// The underlying language model.
@@ -248,14 +258,14 @@ extension CactusModelActor {
   /// ```
   ///
   /// - Parameters:
-  ///   - messages: The list of ``CactusModel/ChatMessage`` instances.
-  ///   - options: The ``CactusModel/ChatCompletion/Options``.
+  ///   - messages: The list of ``CactusModel/Message`` instances.
+  ///   - options: The ``CactusModel/Completion/Options``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``CactusModel/FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
   /// - Returns: A ``CactusModel/CompletedChatTurn``.
   public func complete(
-    messages: [CactusModel.ChatMessage],
+    messages: [CactusModel.Message],
     options: CactusModel.Completion.Options = CactusModel.Completion.Options(),
     maxBufferSize: Int? = nil,
     functions: [CactusModel.FunctionDefinition] = [],
@@ -285,14 +295,14 @@ extension CactusModelActor {
   /// ```
   ///
   /// - Parameters:
-  ///   - messages: The list of ``CactusModel/ChatMessage`` instances.
-  ///   - options: The ``CactusModel/ChatCompletion/Options``.
+  ///   - messages: The list of ``CactusModel/Message`` instances.
+  ///   - options: The ``CactusModel/Completion/Options``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``CactusModel/FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
   /// - Returns: A ``CactusModel/CompletedChatTurn``.
   public func complete(
-    messages: [CactusModel.ChatMessage],
+    messages: [CactusModel.Message],
     options: CactusModel.Completion.Options = CactusModel.Completion.Options(),
     maxBufferSize: Int? = nil,
     functions: [CactusModel.FunctionDefinition] = [],
@@ -314,7 +324,7 @@ extension CactusModelActor {
   /// Transcribes the specified audio buffer.
   ///
   /// - Parameters:
-  ///   - buffer: The audio buffer to transcribe.
+  ///   - buffer: The audio buffer to transcribe in 16 kHz mono signed 16-bit PCM byte format.
   ///   - prompt: The prompt to use for transcription.
   ///   - options: The ``CactusModel/Transcription/Options``.
   ///   - transcriptionMaxBufferSize: The maximum buffer size to store the completion.
@@ -339,7 +349,7 @@ extension CactusModelActor {
   /// Transcribes the specified audio buffer.
   ///
   /// - Parameters:
-  ///   - buffer: The audio buffer to transcribe.
+  ///   - buffer: The audio buffer to transcribe in 16 kHz mono signed 16-bit PCM byte format.
   ///   - prompt: The prompt to use for transcription.
   ///   - options: The ``CactusModel/Transcription/Options``.
   ///   - transcriptionMaxBufferSize: The maximum buffer size to store the completion.
@@ -433,7 +443,7 @@ extension CactusModelActor {
   /// Runs voice activity detection on a PCM byte buffer.
   ///
   /// - Parameters:
-  ///   - pcmBuffer: The PCM byte buffer to analyze.
+  ///   - pcmBuffer: The PCM byte buffer to analyze in 16 kHz mono signed 16-bit format.
   ///   - options: The ``CactusModel/VADOptions``.
   ///   - maxBufferSize: The maximum buffer size to store the result.
   /// - Returns: A ``CactusModel/VADResult``.

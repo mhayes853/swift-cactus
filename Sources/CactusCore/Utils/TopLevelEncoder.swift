@@ -18,6 +18,7 @@ public protocol TopLevelEncoder<Output> {
 
 extension JSONEncoder: TopLevelEncoder {}
 extension PropertyListEncoder: TopLevelEncoder {}
+extension JSONSchema.Value.Encoder: TopLevelEncoder {}
 
 // MARK: - AnyTopLevelEncoder
 

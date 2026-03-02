@@ -3,6 +3,24 @@ import Foundation
 // MARK: - JSONSchemaRepresentable
 
 /// A type that can generate a JSON schema description of itself.
+///
+/// You typically do not conform to this protocol directly. Instead, use the
+/// `@JSONSchema` macro, which synthesizes the conformance and `jsonSchema` for you.
+///
+/// ```swift
+/// import Cactus
+///
+/// @JSONSchema
+/// struct UserProfile: Codable {
+///   @JSONSchemaProperty(.string(minLength: 1), description: "Display name")
+///   var name: String
+///
+///   @JSONSchemaProperty(.integer(minimum: 13))
+///   var age: Int
+/// }
+///
+/// let schema = UserProfile.jsonSchema
+/// ```
 public protocol JSONSchemaRepresentable {
   /// The JSON schema describing this type.
   static var jsonSchema: JSONSchema { get }

@@ -13,22 +13,22 @@ extension CactusPromptRepresentable {
   ///
   /// - Parameter role: The role to assign to the generated message.
   /// - Returns: A chat message with text and optional images.
-  public func chatMessage(
-    role: CactusModel.MessageRole
-  ) throws -> CactusModel.ChatMessage {
+  public func modelMessage(
+    role: CactusModel.Message.Role
+  ) throws -> CactusModel.Message {
     let components = try self.promptContent.messageComponents()
-    return CactusModel.ChatMessage(role: role, components: components)
+    return CactusModel.Message(role: role, components: components)
   }
 }
 
-extension CactusModel.ChatMessage {
+extension CactusModel.Message {
   /// Creates a chat message from prompt message components.
   ///
   /// - Parameters:
   ///   - role: The message role.
   ///   - components: Prompt-derived message components.
   public init(
-    role: CactusModel.MessageRole,
+    role: CactusModel.Message.Role,
     components: CactusPromptContent.MessageComponents
   ) {
     self.init(

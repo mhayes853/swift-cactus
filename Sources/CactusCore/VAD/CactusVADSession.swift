@@ -4,25 +4,22 @@ import Foundation
 // MARK: - CactusVADSession
 
 /// A concurrency-safe session for voice activity detection.
-///
-/// This type serializes access to an underlying ``CactusModel`` actor and exposes a
-/// one-shot async API for VAD inference.
 public final class CactusVADSession: Sendable {
-  /// The underlying language model actor.
-  public let languageModelActor: CactusModelActor
+  /// The underlying model actor.
+  public let modelActor: CactusModelActor
 
   /// Creates a VAD session from an existing language model.
   ///
   /// - Parameter model: The underlying language model.
   public init(model: consuming sending CactusModel) {
-    self.languageModelActor = CactusModelActor(model: model)
+    self.modelActor = CactusModelActor(model: model)
   }
 
   /// Creates a VAD session from an existing language model actor.
   ///
   /// - Parameter model: The underlying language model actor.
   public init(model: CactusModelActor) {
-    self.languageModelActor = model
+    self.modelActor = model
   }
 
   /// Creates a VAD session from a model URL.
@@ -30,8 +27,8 @@ public final class CactusVADSession: Sendable {
   /// - Parameters:
   ///   - url: The local model URL.
   public convenience init(from url: URL) throws {
-    let languageModelActor = try CactusModelActor(from: url)
-    self.init(model: languageModelActor)
+    let modelActor = try CactusModelActor(from: url)
+    self.init(model: modelActor)
   }
 
   /// Creates a VAD session from a raw model pointer.
@@ -39,8 +36,8 @@ public final class CactusVADSession: Sendable {
   /// - Parameters:
   ///   - model: The raw model pointer.
   public convenience init(model: consuming sending cactus_model_t) {
-    let languageModelActor = CactusModelActor(model: model)
-    self.init(model: languageModelActor)
+    let modelActor = CactusModelActor(model: model)
+    self.init(model: modelActor)
   }
 }
 
@@ -52,9 +49,6 @@ extension CactusVADSession {
   /// - Parameter request: The voice activity detection request.
   /// - Returns: The parsed VAD output.
   public func vad(request: CactusVAD.Request) async throws -> CactusVAD {
-    if let samplingRate = request.samplingRate {
-      precondition(samplingRate > 0, "Sampling rate must be greater than 0.")
-    }
     let state = VADContinuationState()
     let options = CactusModel.VADOptions(request: request)
 
@@ -146,7 +140,7 @@ extension CactusVADSession {
     options: CactusModel.VADOptions
   ) async throws -> CactusModel.VADResult {
     if let audioURL = request.content.audioURL {
-      return try await languageModelActor.vad(
+      return try await modelActor.vad(
         audio: audioURL,
         options: options,
         maxBufferSize: request.maxBufferSize
@@ -154,14 +148,14 @@ extension CactusVADSession {
     }
 
     if let pcmBytes = request.content.pcmBytes {
-      return try await languageModelActor.vad(
+      return try await modelActor.vad(
         pcmBuffer: pcmBytes,
         options: options,
         maxBufferSize: request.maxBufferSize
       )
     }
 
-    return try await languageModelActor.vad(
+    return try await modelActor.vad(
       pcmBuffer: [],
       options: options,
       maxBufferSize: request.maxBufferSize

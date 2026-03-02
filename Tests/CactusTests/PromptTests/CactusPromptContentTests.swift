@@ -208,11 +208,11 @@ struct `CactusPromptContent tests` {
   }
 
   @Test
-  func `Think Mode Modifier Prepends Think Command`() throws {
+  func `Reasoning Mode Modifier Prepends Think Command`() throws {
     let content = try CactusPromptContent {
       "Hello world"
     }
-    .thinkMode(.think)
+    .reasoningMode(.think)
     .promptContent
 
     let components = try content.defaultMessageComponents()
@@ -221,11 +221,11 @@ struct `CactusPromptContent tests` {
   }
 
   @Test
-  func `Think Mode Modifier Prepends No Think Command`() throws {
+  func `Reasoning Mode Modifier Prepends No Think Command`() throws {
     let content = try CactusPromptContent {
       "Hello world"
     }
-    .thinkMode(.noThink)
+    .reasoningMode(.noThink)
     .promptContent
 
     let components = try content.defaultMessageComponents()

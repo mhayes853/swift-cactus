@@ -4,51 +4,51 @@
       - metrics: Optional<CactusGenerationMetrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: E20111ED-51AC-4EFE-B1F3-D19765C0A55E
-        ▿ message: ChatMessage
+          - rawValue: 47725032-515D-48AD-A56D-25AB6DCB946B
+        ▿ message: Message
           - content: "Say hello in one concise sentence."
           ▿ images: Optional<Array<URL>>
             - some: 0 elements
-          ▿ role: MessageRole
+          ▿ role: Role
             - rawValue: "user"
     ▿ CactusCompletionEntry
       ▿ metrics: Optional<CactusGenerationMetrics>
         ▿ some: CactusGenerationMetrics
-          - confidence: 0.9143
-          - decodeTokens: 10
-          - decodeTps: 96.9
+          - confidence: 0.9152
+          - decodeTokens: 28
+          - decodeTps: 111.6
           - didHandoffToCloud: false
-          ▿ durationToFirstToken: 0.02755 seconds
-            - _low: 27550000000000000
+          ▿ durationToFirstToken: 0.02377 seconds
+            - _low: 23770000000000000
             - _high: 0
           - prefillTokens: 16
-          - prefillTps: 580.74
-          - ramUsageMb: 54.69
-          ▿ totalDuration: 0.12043000000000001 seconds
-            - _low: 120430000000000016
+          - prefillTps: 673.15
+          - ramUsageMb: 49.74
+          ▿ totalDuration: 0.2657 seconds
+            - _low: 265699999999999989
             - _high: 0
-          - totalTokens: 26
+          - totalTokens: 44
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 1D300A5E-A603-479C-895D-95029264DACC
-        ▿ message: ChatMessage
-          - content: "That\'s welcome! What should I do?"
+          - rawValue: 183BDBBD-0EE0-4878-A5F0-ECA778D524F1
+        ▿ message: Message
+          - content: "That\'s welcome! What do you want to say? I am learning and eager to assist. How can I help you with something?"
           - images: Optional<Array<URL>>.none
-          ▿ role: MessageRole
+          ▿ role: Role
             - rawValue: "assistant"
   ▿ metrics: CactusGenerationMetrics
-    - confidence: 0.9143
-    - decodeTokens: 10
-    - decodeTps: 96.9
+    - confidence: 0.9152
+    - decodeTokens: 28
+    - decodeTps: 111.6
     - didHandoffToCloud: false
-    ▿ durationToFirstToken: 0.02755 seconds
-      - _low: 27550000000000000
+    ▿ durationToFirstToken: 0.02377 seconds
+      - _low: 23770000000000000
       - _high: 0
     - prefillTokens: 16
-    - prefillTps: 580.74
-    - ramUsageMb: 54.69
-    ▿ totalDuration: 0.12043000000000001 seconds
-      - _low: 120430000000000016
+    - prefillTps: 673.15
+    - ramUsageMb: 49.74
+    ▿ totalDuration: 0.2657 seconds
+      - _low: 265699999999999989
       - _high: 0
-    - totalTokens: 26
-  - output: "That\'s welcome! What should I do?"
+    - totalTokens: 44
+  - output: "That\'s welcome! What do you want to say? I am learning and eager to assist. How can I help you with something?"

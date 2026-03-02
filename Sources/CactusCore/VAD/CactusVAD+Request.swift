@@ -70,6 +70,9 @@ extension CactusVAD {
       samplingRate: Int? = nil,
       maxBufferSize: Int? = nil
     ) {
+      if let samplingRate {
+        precondition(samplingRate > 0, "Sampling rate must be greater than 0.")
+      }
       self.content = content
       self.threshold = threshold
       self.negThreshold = negThreshold
@@ -90,13 +93,13 @@ extension CactusVAD {
 
 extension CactusVAD.Request {
   /// The audio payload for a voice activity detection request.
-  ///
-  /// Construct instances with ``audio(_:)`` or ``pcm(_:)``.
   public struct Content: Hashable, Sendable {
     /// The audio file URL to analyze, when file-based input is used.
     public let audioURL: URL?
 
     /// Raw PCM bytes to analyze, when in-memory PCM input is used.
+    ///
+    /// Expected format is 16 kHz mono signed 16-bit PCM bytes.
     public let pcmBytes: [UInt8]?
 
     private init(audioURL: URL?, pcmBytes: [UInt8]?) {
@@ -114,7 +117,8 @@ extension CactusVAD.Request {
 
     /// Creates content from raw PCM bytes.
     ///
-    /// - Parameter bytes: PCM bytes expected by the VAD engine.
+    /// - Parameter bytes: PCM bytes expected by the VAD engine in 16 kHz mono signed 16-bit
+    ///   format.
     /// - Returns: Content configured for PCM-based VAD.
     public static func pcm(_ bytes: [UInt8]) -> Self {
       Self(audioURL: nil, pcmBytes: bytes)

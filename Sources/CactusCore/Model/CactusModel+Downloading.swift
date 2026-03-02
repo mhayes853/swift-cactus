@@ -1,5 +1,5 @@
 import Foundation
-import Zip
+private import Zip
 
 #if canImport(FoundationNetworking)
   import FoundationNetworking
@@ -8,10 +8,10 @@ import Zip
 // MARK: - Download Model
 
 extension CactusModel {
-  /// Downloads the model for the provided ``HubDownloadRequest`` to the provided destination `URL`.
+  /// Downloads the model for the provided ``PlatformDownloadRequest`` to the provided destination `URL`.
   ///
   /// - Parameters:
-  ///   - request: The ``HubDownloadRequest`` to download the model from.
+  ///   - request: The ``PlatformDownloadRequest`` to download the model from.
   ///   - destination: The `URL` to download the model to.
   ///   - configuration: A `URLSessionConfiguration` for the download.
   ///   - onProgress: A callback that is invoked when progress is made towards the download.
@@ -57,12 +57,12 @@ extension CactusModel {
     }
   }
 
-  /// Returns a ``DownloadTask`` for the model with the specified ``HubDownloadRequest``.
+  /// Returns a ``DownloadTask`` for the model with the specified ``PlatformDownloadRequest``.
   ///
   /// You must manually start the download by calling ``DownloadTask/resume()``.
   ///
   /// - Parameters:
-  ///   - request: The ``HubDownloadRequest`` for the model.
+  ///   - request: The ``PlatformDownloadRequest`` for the model.
   ///   - destination: The `URL` to download the model to.
   ///   - configuration: A `URLSessionConfiguration` for the download.
   /// - Returns: A ``DownloadTask``.
