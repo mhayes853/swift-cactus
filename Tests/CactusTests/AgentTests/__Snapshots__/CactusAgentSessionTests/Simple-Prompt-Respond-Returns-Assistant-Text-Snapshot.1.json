@@ -1,6 +1,6 @@
 [
   {
-    "id" : "4CB3F984-9690-48B0-AE6B-8FE23BD0D7C5",
+    "id" : "99B573B9-7A39-4A2D-844C-FD809299D935",
     "message" : {
       "content" : "Say hello in one concise sentence.",
       "images" : [
@@ -10,9 +10,9 @@
     }
   },
   {
-    "id" : "6DBFD676-8320-49D3-8A93-DD461C34283D",
+    "id" : "80B5D581-2973-4979-89C3-CDC15E18AD25",
     "message" : {
-      "content" : "The \"Hello\" in one concise sentence is a greeting.\n",
+      "content" : "The English language is a beautiful and versatile language. I am glad to learn more about it.\n",
       "role" : "assistant"
     }
   }

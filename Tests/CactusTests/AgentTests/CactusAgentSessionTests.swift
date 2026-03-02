@@ -438,6 +438,25 @@ struct `CactusAgentSession tests` {
     }
 
     @Test
+    func `Setting Transcript While Responding Reports Issue`() async throws {
+      let session = try await Self.makeSession()
+      let stream = try session.stream(
+        to: CactusUserMessage {
+          "Write one short sentence about cacti."
+        }
+      )
+
+      expectNoDifference(session.isResponding, true)
+
+      withKnownIssue {
+        session.transcript = CactusTranscript()
+      }
+
+      stream.stop()
+      _ = try? await stream.collectResponse()
+    }
+
+    @Test
     func `Respond Throws Invalid User Message Error For Throwing User Content`() async throws {
       let session = try await Self.makeSession()
 

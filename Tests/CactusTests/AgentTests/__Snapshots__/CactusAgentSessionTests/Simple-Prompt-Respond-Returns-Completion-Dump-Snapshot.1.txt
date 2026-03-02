@@ -4,7 +4,7 @@
       - metrics: Optional<CactusGenerationMetrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 403BF4C3-1FDB-4F62-8FF1-6DF57290884A
+          - rawValue: E770EE50-3C7A-4C27-9E8E-D7DA3E560506
         ▿ message: ChatMessage
           - content: "Say hello in one concise sentence."
           ▿ images: Optional<Array<URL>>
@@ -14,41 +14,41 @@
     ▿ CactusCompletionEntry
       ▿ metrics: Optional<CactusGenerationMetrics>
         ▿ some: CactusGenerationMetrics
-          - confidence: 0.8759
-          - decodeTokens: 143
-          - decodeTps: 104.51
+          - confidence: 0.8913
+          - decodeTokens: 136
+          - decodeTps: 108.32
           - didHandoffToCloud: false
-          ▿ durationToFirstToken: 0.02317 seconds
-            - _low: 23170000000000002
+          ▿ durationToFirstToken: 0.0204 seconds
+            - _low: 20399999999999999
             - _high: 0
-          - prefillTokens: 16
-          - prefillTps: 690.52
-          - ramUsageMb: 46.89
-          ▿ totalDuration: 1.38195 seconds
-            - _low: 1381950000000000046
+          - prefillTokens: 9
+          - prefillTps: 441.26
+          - ramUsageMb: 47.55
+          ▿ totalDuration: 1.26673 seconds
+            - _low: 1266730000000000018
             - _high: 0
-          - totalTokens: 159
+          - totalTokens: 145
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 8F12689D-4907-4E99-95B3-F4350375BE68
+          - rawValue: 29809FED-8D73-47B8-885A-6FDD7796DBCF
         ▿ message: ChatMessage
-          - content: "The English language has evolved significantly over time! What you\'ve heard has changed considerably since its inception. What you\'re reading today can be a snapshot of the current state, or an evolving concept that has been developed by individuals who have learned the language through interaction with others.\n\nThere is no need to learn another word if it\'s simply a reminder of what was once common across many cultures and civilizations alike! The beauty lies in this ability to connect us all from the same place, even as we navigate our own paths and understandings within that shared experience. It is not about learning something new; it is about being able to reflect on ourselves and our lives in such a vibrant reflection on life itself!\n"
+          - content: "The concept of \"Hello there!\" seems quite concise! I am curious about your response and how it is structured. Is there anything specific you would like me to consider? Are you asking for information on any topic?\n\nFor example:\n\n*   \"What is the meaning of life?\"\n*   \"How do people greet strangers?\"\n*   \"Can I use the word \'hello\'?\"\n\nI am ready to receive your questions and respond as if it were a simple, direct question.  Perhaps we can be used together for a conversation about life, humanity, or even just sharing our thoughts in general! What are you hoping to learn from this new language?"
           - images: Optional<Array<URL>>.none
           ▿ role: MessageRole
             - rawValue: "assistant"
   ▿ metrics: CactusGenerationMetrics
-    - confidence: 0.8759
-    - decodeTokens: 143
-    - decodeTps: 104.51
+    - confidence: 0.8913
+    - decodeTokens: 136
+    - decodeTps: 108.32
     - didHandoffToCloud: false
-    ▿ durationToFirstToken: 0.02317 seconds
-      - _low: 23170000000000002
+    ▿ durationToFirstToken: 0.0204 seconds
+      - _low: 20399999999999999
       - _high: 0
-    - prefillTokens: 16
-    - prefillTps: 690.52
-    - ramUsageMb: 46.89
-    ▿ totalDuration: 1.38195 seconds
-      - _low: 1381950000000000046
+    - prefillTokens: 9
+    - prefillTps: 441.26
+    - ramUsageMb: 47.55
+    ▿ totalDuration: 1.26673 seconds
+      - _low: 1266730000000000018
       - _high: 0
-    - totalTokens: 159
-  - output: "The English language has evolved significantly over time! What you\'ve heard has changed considerably since its inception. What you\'re reading today can be a snapshot of the current state, or an evolving concept that has been developed by individuals who have learned the language through interaction with others.\n\nThere is no need to learn another word if it\'s simply a reminder of what was once common across many cultures and civilizations alike! The beauty lies in this ability to connect us all from the same place, even as we navigate our own paths and understandings within that shared experience. It is not about learning something new; it is about being able to reflect on ourselves and our lives in such a vibrant reflection on life itself!\n"
+    - totalTokens: 145
+  - output: "The concept of \"Hello there!\" seems quite concise! I am curious about your response and how it is structured. Is there anything specific you would like me to consider? Are you asking for information on any topic?\n\nFor example:\n\n*   \"What is the meaning of life?\"\n*   \"How do people greet strangers?\"\n*   \"Can I use the word \'hello\'?\"\n\nI am ready to receive your questions and respond as if it were a simple, direct question.  Perhaps we can be used together for a conversation about life, humanity, or even just sharing our thoughts in general! What are you hoping to learn from this new language?"

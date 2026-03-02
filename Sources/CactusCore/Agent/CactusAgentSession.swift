@@ -1,4 +1,5 @@
 import Foundation
+import IssueReporting
 
 // MARK: - CactusAgentSession
 
@@ -23,12 +24,31 @@ public final class CactusAgentSession: Sendable {
 
   /// The full history of interactions for this session.
   public var transcript: CactusTranscript {
+    get { self._transcript }
+    set {
+      if self.isResponding {
+        reportIssue(
+          """
+          Attempted to set the transcript while the session was actively responding to a user \
+          message.
+
+          This is generally considered an application logic error, because the transcript will be \
+          mutated by appending the model's response, as well as any function calls the model \
+          invokes.
+          """
+        )
+      }
+      self._transcript = newValue
+    }
+  }
+
+  private var _transcript: CactusTranscript {
     get {
-      self.observationRegistrar.access(self, keyPath: \CactusAgentSession.transcript)
+      self.observationRegistrar.access(self, keyPath: \.transcript)
       return self.state.withLock { $0.transcript }
     }
     set {
-      self.observationRegistrar.withMutation(of: self, keyPath: \CactusAgentSession.transcript) {
+      self.observationRegistrar.withMutation(of: self, keyPath: \.transcript) {
         self.state.withLock { $0.transcript = newValue }
       }
     }
@@ -492,7 +512,7 @@ extension CactusAgentSession {
     self.endResponding()
     await self.languageModelActor.stop()
     await self.languageModelActor.reset()
-    self.transcript = CactusTranscript()
+    self._transcript = CactusTranscript()
   }
 }
 
@@ -547,11 +567,13 @@ extension CactusAgentSession {
 
       let initialTranscriptCount = self.transcript.count
 
-      self.appendTranscriptEntry(
-        context.transcript.last!,
-        metrics: nil,
-        completionEntries: &completionEntries
-      )
+      if let lastMessage = context.transcript.last {
+        self.appendTranscriptEntry(
+          lastMessage,
+          metrics: nil,
+          completionEntries: &completionEntries
+        )
+      }
 
       var conversationMessages = context.transcript
       var finalResponse = ""
@@ -727,23 +749,15 @@ extension CactusAgentSession {
     completionEntries: inout [CactusCompletionEntry]
   ) {
     let transcriptEntry = CactusTranscript.Element(message: message)
-    self.transcript.append(transcriptEntry)
+    self._transcript.append(transcriptEntry)
     completionEntries.append(
       CactusCompletionEntry(transcriptEntry: transcriptEntry, metrics: metrics)
     )
   }
 
-  private func removeUserMessageFromTranscript() {
-    guard let lastElement = self.transcript.last,
-          lastElement.message.role == .user else {
-      return
-    }
-    _ = self.transcript.removeElement(at: self.transcript.count - 1)
-  }
-
   private func removeTranscriptEntriesSince(initialCount: Int) {
-    while self.transcript.count > initialCount {
-      _ = self.transcript.removeElement(at: self.transcript.count - 1)
+    for index in stride(from: self._transcript.count - 1, through: initialCount, by: -1) {
+      _ = self._transcript.removeElement(at: index)
     }
   }
 
