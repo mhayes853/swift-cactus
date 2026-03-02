@@ -484,38 +484,13 @@ let encoded: JSONSchema.Value = try JSONSchema.Value.Encoder()
   .encode(MyValue(property: "blob", num: 20))
 ```
 
-## Future Roadmap
-
-In no particular order.
-
-- [`AnyLangauageModel`](https://github.com/mattt/AnyLanguageModel) backend.
-- Reliable structured generation using the `@JSONSchema` macro and any EBNF grammar.
-  - This requires CFG support in the upstream engine.
-  - This would also support incremental structured streaming via [`StreamParsing`](https://github.com/mhayes853/swift-stream-parsing). 
-- Higher-Level vector index abstractions.
-- Integrations with more Apple native frameworks (eg. CoreAudio).
-- Prefill API.
-
-## Installation
-
-You can add Swift Cactus to an Xcode project by adding it to your project as a package.
-
-> https://github.com/mhayes853/swift-cactus
-
-If you want to use Swift Cactus in a [SwiftPM](https://swift.org/package-manager/) project, it's as simple as adding it to your `Package.swift`.
-
+### Checking For Supported Engine Version
+This library uses it's own versioning scheme separate from the upstream engine (eg. Version X.Y.Z of this library != Cactus Version X.Y.Z). You can check the supported engine version through the ``cactusEngineVersion`` constant.
 ```swift
-dependencies: [
-  .package(url: "https://github.com/mhayes853/swift-cactus", from: "2.0.0")
-]
+import Cactus
+
+// Prints the supported engine version (v1.9 at the time of writing this).
+print(Cactus.cactusEngineVersion)
 ```
 
-And then adding the product to any target that needs access to the library.
-
-```swift
-.product(name: "Cactus", package: "swift-cactus")
-```
-
-## License
-
-This library is licensed under an MIT License. See [LICENSE](https://github.com/mhayes853/swift-cactus/blob/main/LICENSE) for details.
+The supported engine version is also displayed at the top of README.

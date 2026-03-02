@@ -78,8 +78,8 @@ The input type of the function must conform to `Decodable`, and the function mus
 
 If a model makes multiple function calls in a single prompt, they are executed in parallel by default (this is configurable), and the results are passed back to the model in the same order that the model invoked the functions in.
 
-### Image Analysis
-Certain models also support image analysis. You can analyze images by passing them into the prompt via `CactusPromptContent`.
+### Vision
+Certain models also support vision through images. You can analyze images by passing them into the prompt via `CactusPromptContent`.
 ```swift
 import Cactus
 
@@ -289,7 +289,7 @@ let model = try CactusModel(from: modelURL)
 let turn = try model.complete(
   messages: [
     .system("You are a helpful assistant."),
-	  .user("What is the meaning of life?")
+    .user("What is the meaning of life?")
   ]
 ) { token, tokenId in
   print(token, tokenId) // Streaming
@@ -304,7 +304,8 @@ let transcription = try model.transcribe(
 }
 print(transcription.response)
 ```
-> [!NOTE] Since the struct is non-copyable, it therefore uses ownership semantics to manage the memory of the underlying model pointer. You can read the Swift Evolution [proposal](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0390-noncopyable-structs-and-enums.md) for non-Copyable types to understand how they function at a deeper level.
+> [!NOTE] 
+> Since the struct is non-copyable, it therefore uses ownership semantics to manage the memory of the underlying model pointer. You can read the Swift Evolution [proposal](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0390-noncopyable-structs-and-enums.md) for non-Copyable types to understand how they function at a deeper level.
 
 The `CactusModelActor` is an actor variant of `CactusModel` which is properly Sendable, and supports background thread execution.
 ```swift
@@ -313,7 +314,7 @@ let model = try CactusModelActor(from: modelURL)
 let turn = try await model.complete(
   messages: [
     .system("You are a helpful assistant."),
-	  .user("What is the meaning of life?")
+    .user("What is the meaning of life?")
   ]
 ) { token, tokenId in
   print(token, tokenId) // Streaming
@@ -449,15 +450,27 @@ let encoded: JSONSchema.Value = try JSONSchema.Value.Encoder()
   .encode(MyValue(property: "blob", num: 20))
 ```
 
+### Checking For Supported Engine Version
+This library uses it's own versioning scheme separate from the upstream engine (eg. Version X.Y.Z of this library != Cactus Version X.Y.Z). You can check the supported engine version through the `cactusEngineVersion` constant.
+```swift
+import Cactus
+
+// Prints the supported engine version (v1.9 at the time of writing this).
+print(Cactus.cactusEngineVersion)
+```
+
+The supported engine version is also displayed at the top of README.
+
 ## Future Roadmap
 In no particular order.
 - [`AnyLangauageModel`](https://github.com/mattt/AnyLanguageModel) backend.
 - Reliable structured generation using the `@JSONSchema` macro and any EBNF grammar.
   - This requires CFG support in the upstream engine.
-  - This would also support incremental structured streaming via [`StreamParsing`](https://github.com/mhayes853/swift-stream-parsing). 
+  - This would also support incremental structured streaming for [JSON-complete formats](https://lemire.me/blog/2025/12/20/json-complete-data-format-and-programming-languages/) via [`StreamParsing`](https://github.com/mhayes853/swift-stream-parsing). 
 - Higher-Level vector index abstractions.
 - Integrations with more Apple native frameworks (eg. CoreAudio).
 - Prefill API.
+- Example apps.
 
 ## Installation
 You can add Swift Cactus to an Xcode project by adding it to your project as a package.
