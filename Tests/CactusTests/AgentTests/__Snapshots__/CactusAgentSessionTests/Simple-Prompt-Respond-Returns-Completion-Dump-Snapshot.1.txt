@@ -4,51 +4,51 @@
       - metrics: Optional<CactusGenerationMetrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: E770EE50-3C7A-4C27-9E8E-D7DA3E560506
-        ▿ message: ChatMessage
+          - rawValue: 47725032-515D-48AD-A56D-25AB6DCB946B
+        ▿ message: Message
           - content: "Say hello in one concise sentence."
           ▿ images: Optional<Array<URL>>
             - some: 0 elements
-          ▿ role: MessageRole
+          ▿ role: Role
             - rawValue: "user"
     ▿ CactusCompletionEntry
       ▿ metrics: Optional<CactusGenerationMetrics>
         ▿ some: CactusGenerationMetrics
-          - confidence: 0.8913
-          - decodeTokens: 136
-          - decodeTps: 108.32
+          - confidence: 0.9152
+          - decodeTokens: 28
+          - decodeTps: 111.6
           - didHandoffToCloud: false
-          ▿ durationToFirstToken: 0.0204 seconds
-            - _low: 20399999999999999
+          ▿ durationToFirstToken: 0.02377 seconds
+            - _low: 23770000000000000
             - _high: 0
-          - prefillTokens: 9
-          - prefillTps: 441.26
-          - ramUsageMb: 47.55
-          ▿ totalDuration: 1.26673 seconds
-            - _low: 1266730000000000018
+          - prefillTokens: 16
+          - prefillTps: 673.15
+          - ramUsageMb: 49.74
+          ▿ totalDuration: 0.2657 seconds
+            - _low: 265699999999999989
             - _high: 0
-          - totalTokens: 145
+          - totalTokens: 44
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 29809FED-8D73-47B8-885A-6FDD7796DBCF
-        ▿ message: ChatMessage
-          - content: "The concept of \"Hello there!\" seems quite concise! I am curious about your response and how it is structured. Is there anything specific you would like me to consider? Are you asking for information on any topic?\n\nFor example:\n\n*   \"What is the meaning of life?\"\n*   \"How do people greet strangers?\"\n*   \"Can I use the word \'hello\'?\"\n\nI am ready to receive your questions and respond as if it were a simple, direct question.  Perhaps we can be used together for a conversation about life, humanity, or even just sharing our thoughts in general! What are you hoping to learn from this new language?"
+          - rawValue: 183BDBBD-0EE0-4878-A5F0-ECA778D524F1
+        ▿ message: Message
+          - content: "That\'s welcome! What do you want to say? I am learning and eager to assist. How can I help you with something?"
           - images: Optional<Array<URL>>.none
-          ▿ role: MessageRole
+          ▿ role: Role
             - rawValue: "assistant"
   ▿ metrics: CactusGenerationMetrics
-    - confidence: 0.8913
-    - decodeTokens: 136
-    - decodeTps: 108.32
+    - confidence: 0.9152
+    - decodeTokens: 28
+    - decodeTps: 111.6
     - didHandoffToCloud: false
-    ▿ durationToFirstToken: 0.0204 seconds
-      - _low: 20399999999999999
+    ▿ durationToFirstToken: 0.02377 seconds
+      - _low: 23770000000000000
       - _high: 0
-    - prefillTokens: 9
-    - prefillTps: 441.26
-    - ramUsageMb: 47.55
-    ▿ totalDuration: 1.26673 seconds
-      - _low: 1266730000000000018
+    - prefillTokens: 16
+    - prefillTps: 673.15
+    - ramUsageMb: 49.74
+    ▿ totalDuration: 0.2657 seconds
+      - _low: 265699999999999989
       - _high: 0
-    - totalTokens: 145
-  - output: "The concept of \"Hello there!\" seems quite concise! I am curious about your response and how it is structured. Is there anything specific you would like me to consider? Are you asking for information on any topic?\n\nFor example:\n\n*   \"What is the meaning of life?\"\n*   \"How do people greet strangers?\"\n*   \"Can I use the word \'hello\'?\"\n\nI am ready to receive your questions and respond as if it were a simple, direct question.  Perhaps we can be used together for a conversation about life, humanity, or even just sharing our thoughts in general! What are you hoping to learn from this new language?"
+    - totalTokens: 44
+  - output: "That\'s welcome! What do you want to say? I am learning and eager to assist. How can I help you with something?"

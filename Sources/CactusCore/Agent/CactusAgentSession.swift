@@ -708,8 +708,8 @@ extension CactusAgentSession {
 
     let context: StreamRequestContext
     do {
-      context = try self.streamRequestContext(from: request)
       try self.insertSystemPromptIfNecessary()
+      context = try self.streamRequestContext(from: request)
     } catch {
       self.endResponding()
       throw error
@@ -760,7 +760,7 @@ extension CactusAgentSession {
             completionEntries: &completionEntries
           )
 
-          conversationMessages = context.transcript
+          conversationMessages = self.transcript.messages
           finalResponse = completedTurn.completion.response
 
           if completedTurn.completion.functionCalls.isEmpty {
@@ -779,7 +779,7 @@ extension CactusAgentSession {
             completionEntries: &completionEntries
           )
 
-          conversationMessages = context.transcript
+          conversationMessages = self.transcript.messages
         }
       } catch {
         self.removeTranscriptEntriesSince(initialCount: initialTranscriptCount)

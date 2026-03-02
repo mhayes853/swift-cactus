@@ -3,80 +3,80 @@
     - metrics: Optional<CactusGenerationMetrics>.none
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: 282DD7E1-F575-44A5-9150-6E060E409BB1
-      ▿ message: ChatMessage
+        - rawValue: C9AD2D51-CAE6-4BAA-B76B-FACCC755CAA1
+      ▿ message: Message
         - content: "Use the get_fact tool for both \'cactus\' and \'swift\', then summarize both facts."
         ▿ images: Optional<Array<URL>>
           - some: 0 elements
-        ▿ role: MessageRole
+        ▿ role: Role
           - rawValue: "user"
   ▿ CactusCompletionEntry
     ▿ metrics: Optional<CactusGenerationMetrics>
       ▿ some: CactusGenerationMetrics
         - confidence: 0.9947
         - decodeTokens: 22
-        - decodeTps: 28.1
+        - decodeTps: 29.03
         - didHandoffToCloud: false
-        ▿ durationToFirstToken: 1.62992 seconds
-          - _low: 1629920000000000073
+        ▿ durationToFirstToken: 1.653 seconds
+          - _low: 1653000000000000000
           - _high: 0
         - prefillTokens: 142
-        - prefillTps: 87.12
-        - ramUsageMb: 239.59
-        ▿ totalDuration: 2.37713 seconds
-          - _low: 2377130000000000109
+        - prefillTps: 85.9
+        - ramUsageMb: 252.01
+        ▿ totalDuration: 2.37649 seconds
+          - _low: 2376489999999999782
           - _high: 0
         - totalTokens: 164
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: 41F8DC55-2484-4446-8DC8-FD8D4D71E484
-      ▿ message: ChatMessage
+        - rawValue: D07EF6BC-438E-4106-85A2-F80E6BB52342
+      ▿ message: Message
         - content: "<|tool_call_start|>[get_fact(topic=\"cactus\"), get_fact(topic=\"swift\")]<|tool_call_end|>"
         - images: Optional<Array<URL>>.none
-        ▿ role: MessageRole
+        ▿ role: Role
           - rawValue: "assistant"
   ▿ CactusCompletionEntry
     - metrics: Optional<CactusGenerationMetrics>.none
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: 253D25A3-26B9-48D3-BEE3-66B1A886A433
-      ▿ message: ChatMessage
-        - content: "{\"content\":\"Cacti store water in thick stems to survive arid climates.\",\"name\":\"get_fact\"}"
+        - rawValue: 0B9B603F-87C0-458C-B3AE-A609ED1D969F
+      ▿ message: Message
+        - content: "{\"name\":\"get_fact\",\"content\":\"Cacti store water in thick stems to survive arid climates.\"}"
         - images: Optional<Array<URL>>.none
-        ▿ role: MessageRole
+        ▿ role: Role
           - rawValue: "tool"
   ▿ CactusCompletionEntry
     - metrics: Optional<CactusGenerationMetrics>.none
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: EF8E01ED-751F-466D-B102-83BE4EF5CA85
-      ▿ message: ChatMessage
-        - content: "{\"content\":\"Swift is a type-safe language that emphasizes expressive syntax and performance.\",\"name\":\"get_fact\"}"
+        - rawValue: A9A4D2AE-539B-480A-8A7C-320566B6799F
+      ▿ message: Message
+        - content: "{\"name\":\"get_fact\",\"content\":\"Swift is a type-safe language that emphasizes expressive syntax and performance.\"}"
         - images: Optional<Array<URL>>.none
-        ▿ role: MessageRole
+        ▿ role: Role
           - rawValue: "tool"
   ▿ CactusCompletionEntry
     ▿ metrics: Optional<CactusGenerationMetrics>
       ▿ some: CactusGenerationMetrics
-        - confidence: 0.9168
-        - decodeTokens: 195
-        - decodeTps: 29.21
+        - confidence: 0.9341
+        - decodeTokens: 54
+        - decodeTps: 29.95
         - didHandoffToCloud: false
-        ▿ durationToFirstToken: 1.30102 seconds
-          - _low: 1301019999999999982
+        ▿ durationToFirstToken: 0.90509 seconds
+          - _low: 905090000000000032
           - _high: 0
-        - prefillTokens: 119
-        - prefillTps: 91.47
-        - ramUsageMb: 263.93
-        ▿ totalDuration: 7.94152 seconds
-          - _low: 7941520000000000437
+        - prefillTokens: 66
+        - prefillTps: 72.92
+        - ramUsageMb: 284.49
+        ▿ totalDuration: 2.67482 seconds
+          - _low: 2674820000000000164
           - _high: 0
-        - totalTokens: 314
+        - totalTokens: 120
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: 065D07DA-9AA4-4305-B248-775AAEE852E0
-      ▿ message: ChatMessage
-        - content: "To provide accurate information, could you please specify the topic and any additional details or context you\'d like included? For example, are you interested in a fact about animals, history, science facts about planets like Mars (if that\'s your intended topic), or something else entirely? Let me know so I can assist effectively.\n\nHowever, since no specific request was made beyond \"you can call multiple tools by using multiple tool call blocks,\" here’s how it would look with an example:\n\n```json\n{\n  \"topic\": \"Mars\",\n  \"additional_info\": {\n    \"planet_type\": \"...\",\n    \"_context_provided\": true\n  }\n}\n```\n\nIf you provide the topic and any additional details or context needed to refine the query (e.g., subject area for a fact), I’ll use `get_fact` accordingly. For now, if you\'d like a general example of what could be called next, let me know!"
+        - rawValue: 01D071CC-F9EB-4145-AF41-3182D5BFE151
+      ▿ message: Message
+        - content: "The cactus stores water in its thick stems to survive arid environments. Swift is a type-safe language focused on performance and expressive syntax, commonly used for developing iOS applications. Both facts highlight unique adaptations: one biological survival trait and the other programming language design principles. "
         - images: Optional<Array<URL>>.none
-        ▿ role: MessageRole
+        ▿ role: Role
           - rawValue: "assistant"
