@@ -1,8 +1,8 @@
 {
-  "confidence" : 0.893,
-  "decodeTokens" : 29,
-  "parsedContent" : "The power of a god cannot be overcome. That voice? Alvis, how dare you disobey me? But that's impossible.",
+  "confidence" : 0.9196,
+  "decodeTokens" : 10,
+  "parsedContent" : "The power of a god cannot be overcome!",
   "prefillTokens" : 4,
-  "streamedText" : " The power of a god cannot be overcome. That voice? Alvis, how dare you disobey me? But that's impossible.<|startoftranscript|>",
-  "totalTokens" : 33
+  "streamedText" : " The power of a god cannot be overcome!<|startoftranscript|>",
+  "totalTokens" : 14
 }
