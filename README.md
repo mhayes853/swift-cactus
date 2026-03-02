@@ -159,7 +159,7 @@ Both `CactusAgentSession` and `CactusSTTSession` support streaming via `CactusIn
 ```swift
 // Agent Session
 
-let session = CactusAgentSession(from: modelURL) {
+let session = try CactusAgentSession(from: modelURL) {
   "You are a helpful assistant."
 }
 
@@ -168,7 +168,7 @@ let message = CactusUserMessage {
 }
 let stream = try session.stream(to: message)
 for await token in stream.tokens {
-  print(token.stringValue, token.tokenId, token.messageStreamId)
+  print(token.stringValue, token.tokenId, token.generationStreamId)
 }
 
 let completion = try await stream.collectResponse()
@@ -176,7 +176,7 @@ print(completion.output)
 
 // STT Session
 
-let session = CactusSTTSession(from: modelURL)
+let session = try CactusSTTSession(from: modelURL)
 
 let request = CactusTranscription.Request(
   prompt: .default,
@@ -184,7 +184,7 @@ let request = CactusTranscription.Request(
 )
 let stream = try session.transcriptionStream(request: request)
 for await token in stream.tokens {
-  print(token.stringValue, token.tokenId, token.messageStreamId)
+  print(token.stringValue, token.tokenId, token.generationStreamId)
 }
 
 let transcription = try await stream.collectResponse()

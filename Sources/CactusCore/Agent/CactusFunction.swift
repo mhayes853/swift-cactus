@@ -21,6 +21,9 @@ public protocol CactusFunction<Input, Output>: Sendable {
 // MARK: - Defaults
 
 extension CactusFunction where Input: JSONSchemaRepresentable {
+  /// The default parameter schema derived from ``Input/jsonSchema``.
+  ///
+  /// This is used to validate raw model-emitted arguments before decoding.
   public var parametersSchema: JSONSchema {
     Input.jsonSchema
   }
@@ -38,10 +41,14 @@ extension CactusFunction {
 
   /// Invokes this function from raw function-call arguments.
   ///
+  /// The arguments are validated against ``parametersSchema`` and then decoded into `Input`
+  /// before calling ``invoke(input:)``.
+  ///
   /// - Parameters:
   ///   - rawArguments: The args returned from a model function call.
   ///   - decoder: The ``JSONSchema/Value/Decoder`` to use.
   ///   - validator: The ``JSONSchema/Validator`` to use.
+  /// - Returns: The invoked function output converted to ``CactusPromptContent``.
   public func invoke(
     rawArguments: [String: JSONSchema.Value],
     decoder: JSONSchema.Value.Decoder = JSONSchema.Value.Decoder(),

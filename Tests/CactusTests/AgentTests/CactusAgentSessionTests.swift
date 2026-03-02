@@ -45,10 +45,10 @@ struct `CactusAgentSession tests` {
 
       expectNoDifference(resolvedCompletion.output.isEmpty, false)
       expectNoDifference(session.transcript.count == 2, true)
-      expectNoDifference(session.transcript[0].message.role, CactusModel.MessageRole.user)
+      expectNoDifference(session.transcript[0].message.role, CactusModel.Message.Role.user)
       expectNoDifference(
         session.transcript.last?.message.role,
-        CactusModel.MessageRole.assistant
+        CactusModel.Message.Role.assistant
       )
     }
 
@@ -150,10 +150,10 @@ struct `CactusAgentSession tests` {
       )
 
       expectNoDifference(session.transcript.count >= 2, true)
-      expectNoDifference(session.transcript[0].message.role, CactusModel.MessageRole.user)
+      expectNoDifference(session.transcript[0].message.role, CactusModel.Message.Role.user)
       expectNoDifference(
         session.transcript.last?.message.role,
-        CactusModel.MessageRole.assistant
+        CactusModel.Message.Role.assistant
       )
     }
 
@@ -957,7 +957,7 @@ struct `CactusAgentSession tests` {
   }
 }
 
-extension CactusModel.ChatMessage {
+extension CactusModel.Message {
   fileprivate var isToolOrFunctionOutput: Bool {
     self.role == .tool
   }

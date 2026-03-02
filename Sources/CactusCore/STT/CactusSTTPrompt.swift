@@ -4,10 +4,10 @@ import Foundation
 
 /// A transcription prompt that encodes language and timestamp configuration.
 public enum CactusSTTPrompt: Hashable, Sendable, CustomStringConvertible {
-  /// A default prompt that passes an empty string to the transcription engine.
+  /// A default prompt.
   case `default`
 
-  /// A Whisper-style prompt with full configuration.
+  /// A Whisper-style prompt.
   case whisper(Whisper)
 
   /// Whisper-specific prompt configuration.
@@ -89,10 +89,7 @@ public enum CactusSTTPrompt: Hashable, Sendable, CustomStringConvertible {
   ///
   /// - Parameter prompt: The prompt string to parse.
   public static func whisper(prompt: String) -> Self? {
-    if prompt.isEmpty {
-      return .default
-    }
-    return Whisper(rawValue: prompt).flatMap { .whisper($0) }
+    Whisper(rawValue: prompt).flatMap { .whisper($0) }
   }
 }
 
@@ -104,7 +101,7 @@ extension CactusSTTPrompt.Whisper {
   /// Returns `nil` if the string is not a valid Whisper-style transcription prompt.
   /// Valid format: `[<|startofprev|>{content}]<|startoftranscript|><|{language}|><|transcribe|>[<|notimestamps|>]`
   ///
-  /// - Parameter description: The prompt string to parse.
+  /// - Parameter rawValue: The whisper-style prompt string to parse.
   public init?(rawValue: String) {
     guard !rawValue.isEmpty else { return nil }
 

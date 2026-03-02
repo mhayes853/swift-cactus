@@ -7,24 +7,23 @@ import Foundation
 /// of processed transcriptions.
 ///
 /// ```swift
-/// import AVFoundation
+/// let modelURL = try await CactusModelsDirectory.shared.modelURL(
+///   for: .parakeetCtc_1_1b()
+/// )
 ///
-/// let modelURL = try await CactusModelsDirectory.shared
-///   .modelURL(for: .whisperSmall())
 /// let stream = try CactusTranscriptionStream(from: modelURL)
-///
-/// let task = Task {
+/// let recordingTask = Task {
 ///   for try await chunk in stream {
-///     print(chunk.confirmed, chunk.pending)
+///     print(chunk)
 ///   }
 /// }
 ///
-/// let buffer = try AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount)
-/// try await stream.insert(buffer: buffer)
-/// let finalized = try await stream.finish()
-/// print(finalized.confirmed)
+/// try await stream.process(buffer: chunk)
+/// try await stream.process(buffer: chunk)
+/// try await stream.process(buffer: chunk)
 ///
-/// _ = await task.value
+/// try await stream.finish()
+/// _ = try await recordingTask.value
 /// ```
 public final class CactusTranscriptionStream: Sendable {
   public typealias Element = CactusStreamTranscriber.ProcessedTranscription
@@ -42,9 +41,11 @@ public final class CactusTranscriptionStream: Sendable {
   private let streamTranscriberActor: CactusStreamTranscriberActor
   private let state = RecursiveLock(State(handlers: [:], errorHandlers: [:], finishers: [:]))
 
-  /// Creates a transcription stream from an existing streamTranscriberActor.
+  /// Creates a transcription stream from an existing stream transcriber.
   ///
-  /// - Parameter streamTranscriberActor: The streamTranscriberActor to wrap.
+  /// - Parameters:
+  ///   - executor: A custom `SerialExecutor` to use for the underlying actor.
+  ///   - streamTranscriber: The stream transcriber to wrap.
   public init(
     executor: (any SerialExecutor)? = nil,
     streamTranscriber: consuming sending CactusStreamTranscriber
@@ -124,6 +125,8 @@ extension CactusTranscriptionStream: AsyncSequence {
 
 extension CactusTranscriptionStream {
   /// Processes a PCM audio buffer and returns interim transcription result.
+  ///
+  /// The buffer must be 16 kHz mono signed 16-bit PCM bytes.
   @discardableResult
   public func process(buffer: [UInt8]) async throws -> Element {
     do {
@@ -183,7 +186,10 @@ extension CactusTranscriptionStream {
 extension CactusTranscriptionStream {
   /// Subscribes to processed transcriptions.
   ///
-  /// - Parameter handler: The handler invoked when transcriptions are emitted.
+  /// - Parameters:
+  ///   - handler: The handler invoked when transcriptions are emitted.
+  ///   - onError: Called when stream processing emits an error.
+  ///   - onFinish: Called when the stream finishes with the finalized transcription.
   /// - Returns: A ``CactusSubscription``.
   public func subscribe(
     _ handler: @escaping @Sendable (Element) -> Void,

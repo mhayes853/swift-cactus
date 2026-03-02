@@ -37,9 +37,9 @@ extension CactusTranscription {
 
     /// Whether to enable VAD weights on the transcription model.
     ///
-    /// - `nil`: Use engine default behavior.
-    /// - `true`: Explicitly enable VAD.
-    /// - `false`: Explicitly disable VAD.
+    /// `nil`: Use engine default behavior.
+    /// `true`: Explicitly enable VAD.
+    /// `false`: Explicitly disable VAD.
     ///
     /// When the prompt is a whisper-style prompt with timestamps included. This property is
     /// automatically set to true when the value is nil.
@@ -100,7 +100,7 @@ extension CactusTranscription {
       }
     }
 
-    /// Creates a transcription request from language/timestamp configuration.
+    /// Creates a Whisper-style transcription request from language/timestamp configuration.
     ///
     /// The generated prompt follows Whisper token formatting:
     /// `<|startoftranscript|><|{language}|><|transcribe|>[<|notimestamps|>]`.
@@ -120,7 +120,8 @@ extension CactusTranscription {
     ///   - useVad: Whether to enable VAD weights.
     ///   - cloudHandoffThreshold: cloud handoff.
     ///   - maxBufferSize: The maximum buffer size Optional confidence threshold for for the transcription.
-    public init(
+    /// - Returns: A transcription request with a Whisper-formatted prompt.
+    public static func whisper(
       language: CactusSTTLanguage,
       includeTimestamps: Bool,
       content: Content,
@@ -132,9 +133,9 @@ extension CactusTranscription {
       useVad: Bool? = nil,
       cloudHandoffThreshold: Float? = nil,
       maxBufferSize: Int? = nil
-    ) {
+    ) -> Self {
       let prompt = CactusSTTPrompt.whisper(language: language, includeTimestamps: includeTimestamps)
-      self.init(
+      return Self(
         prompt: prompt,
         content: content,
         maxTokens: maxTokens,
@@ -154,13 +155,13 @@ extension CactusTranscription {
 
 extension CactusTranscription.Request {
   /// The audio payload for a transcription request.
-  ///
-  /// Construct instances with ``audio(_:)`` or ``pcm(_:)``.
   public struct Content: Hashable, Sendable {
     /// The audio file URL to transcribe, when file-based input is used.
     public let audioURL: URL?
 
     /// Raw PCM bytes to transcribe, when in-memory PCM input is used.
+    ///
+    /// Expected format is 16 kHz mono signed 16-bit PCM bytes.
     public let pcmBytes: [UInt8]?
 
     private init(audioURL: URL?, pcmBytes: [UInt8]?) {
@@ -178,7 +179,8 @@ extension CactusTranscription.Request {
 
     /// Creates content from raw PCM bytes.
     ///
-    /// - Parameter bytes: PCM bytes expected by the transcription engine.
+    /// - Parameter bytes: PCM bytes expected by the transcription engine in 16 kHz mono signed
+    ///   16-bit format.
     /// - Returns: Content configured for PCM-based transcription.
     public static func pcm(_ bytes: [UInt8]) -> Self {
       Self(audioURL: nil, pcmBytes: bytes)

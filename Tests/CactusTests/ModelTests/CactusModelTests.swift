@@ -335,11 +335,11 @@ struct `CactusModel tests` {
     #expect(throws: CactusModelError.completionBufferTooSmall) {
       try model.complete(
         messages: [
-          CactusModel.ChatMessage(
+          CactusModel.Message(
             role: .system,
             content: "You are a philosopher, philosophize about any questions you are asked."
           ),
-          CactusModel.ChatMessage(role: .user, content: "What is the meaning of life?")
+          CactusModel.Message(role: .user, content: "What is the meaning of life?")
         ],
         maxBufferSize: 300
       )
@@ -460,7 +460,7 @@ final class CactusModelGenerationSnapshotTests: XCTestCase {
     struct Completion: Encodable {
       let slug: String
       let completion: CactusModel.Completion
-      let messages: [CactusModel.ChatMessage]
+      let messages: [CactusModel.Message]
     }
 
     let request = CactusModel.PlatformDownloadRequest.qwen3_1_7b()

@@ -10,6 +10,28 @@ import Foundation
 ///
 /// All methods of this type are synchronous and blocking, and should not be called on the main
 /// actor due to the long runtimes. To access the model safely in the background, use ``CactusModelActor``.
+///
+/// ```swift
+/// let model = try CactusModel(from: modelURL)
+///
+/// let turn = try model.complete(
+///   messages: [
+///     .system("You are a helpful assistant."),
+///     .user("What is the meaning of life?")
+///   ]
+/// ) { token, tokenId in
+///   print(token, tokenId) // Streaming
+/// }
+/// print(turn.response)
+///
+/// let transcription = try model.transcribe(
+///   audio: wavURL,
+///   prompt: ""
+/// ) { token, tokenId in
+///   print(token, tokenId) // Streaming
+/// }
+/// print(transcription.response)
+/// ```
 public struct CactusModel: ~Copyable {
   private static let bufferNotBigEnoughErrorMessage = "buffer too small"
   private static let unavailableModelPointerMessage = "CactusModel pointer is unavailable."
@@ -188,7 +210,7 @@ public struct CactusModelError: Error, Hashable, Sendable {
   /// Creates a model error with a stable code and optional context message.
   ///
   /// - Parameters:
-   ///   - code: A stable machine-readable error code.
+  ///   - code: A stable machine-readable error code.
   ///   - message: Optional additional context describing the failure.
   public init(code: Code, message: String? = nil) {
     self.code = code
@@ -669,7 +691,7 @@ extension CactusModel {
     public let completion: Completion
 
     /// Canonical conversation messages that include the generated assistant turn.
-    public let messages: [ChatMessage]
+    public let messages: [Message]
   }
 
   /// Generates a completed chat turn with reusable continuation messages.
@@ -692,14 +714,14 @@ extension CactusModel {
   /// ```
   ///
   /// - Parameters:
-  ///   - messages: The list of ``ChatMessage`` instances.
-  ///   - options: The ``ChatCompletion/Options``.
+  ///   - messages: The list of ``Message`` instances.
+  ///   - options: The ``Completion/Options``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
   /// - Returns: A ``CompletedChatTurn``.
   public func complete(
-    messages: [ChatMessage],
+    messages: [Message],
     options: Completion.Options = Completion.Options(),
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
@@ -730,14 +752,14 @@ extension CactusModel {
   /// ```
   ///
   /// - Parameters:
-  ///   - messages: The list of ``ChatMessage`` instances.
-  ///   - options: The ``ChatCompletion/Options``.
+  ///   - messages: The list of ``Message`` instances.
+  ///   - options: The ``Completion/Options``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
   ///   - onToken: A callback invoked whenever a token is generated.
   /// - Returns: A ``CompletedChatTurn``.
   public func complete(
-    messages: [ChatMessage],
+    messages: [Message],
     options: Completion.Options = Completion.Options(),
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
@@ -802,11 +824,11 @@ extension CactusModel {
   }
 
   private struct FFIMessage: Codable {
-    let role: MessageRole
+    let role: Message.Role
     let content: String
     let images: [String]?
 
-    init(message: ChatMessage) {
+    init(message: Message) {
       self.role = message.role
       self.content = message.content
       self.images = message.images?.map(\.nativePath)
@@ -815,7 +837,7 @@ extension CactusModel {
 }
 
 extension CactusModel.Completion {
-  /// Options for generating a ``CactusModel/ChatCompletion``.
+  /// Options for generating a ``CactusModel/Completion``.
   public struct Options: Hashable, Sendable {
     /// A default array of common stop sequences.
     public static let defaultStopSequences = ["<|im_end|>", "<end_of_turn>"]
@@ -1069,7 +1091,7 @@ extension CactusModel {
   /// Transcribes the specified audio buffer.
   ///
   /// - Parameters:
-  ///   - buffer: The audio buffer to transcribe.
+  ///   - buffer: The audio buffer to transcribe in 16 kHz mono signed 16-bit PCM byte format.
   ///   - prompt: The prompt to use for transcription.
   ///   - options: The ``Transcription/Options``.
   ///   - transcriptionMaxBufferSize: The maximum buffer size to store the completion.
@@ -1095,7 +1117,7 @@ extension CactusModel {
   /// Transcribes the specified audio buffer.
   ///
   /// - Parameters:
-  ///   - buffer: The audio buffer to transcribe.
+  ///   - buffer: The audio buffer to transcribe in 16 kHz mono signed 16-bit PCM byte format.
   ///   - prompt: The prompt to use for transcription.
   ///   - options: The ``Transcription/Options``.
   ///   - transcriptionMaxBufferSize: The maximum buffer size to store the completion.
@@ -1481,7 +1503,7 @@ extension CactusModel {
   /// Runs voice activity detection on a PCM byte buffer.
   ///
   /// - Parameters:
-  ///   - pcmBuffer: The PCM byte buffer to analyze.
+  ///   - pcmBuffer: The PCM byte buffer to analyze in 16 kHz mono signed 16-bit format.
   ///   - options: The ``VADOptions``.
   ///   - maxBufferSize: The maximum buffer size to store the result.
   /// - Returns: A ``VADResult``.
@@ -1496,7 +1518,7 @@ extension CactusModel {
   /// Runs voice activity detection on a PCM byte buffer.
   ///
   /// - Parameters:
-  ///   - pcmBuffer: The PCM byte buffer to analyze.
+  ///   - pcmBuffer: The PCM byte buffer to analyze in 16 kHz mono signed 16-bit format.
   ///   - options: The ``VADOptions``.
   ///   - maxBufferSize: The maximum buffer size to store the result.
   /// - Returns: A ``VADResult``.

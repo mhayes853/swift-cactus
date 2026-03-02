@@ -8,6 +8,7 @@ import CactusCore
 /// ```swift
 /// @JSONSchema(title: "Recipe", description: "Recipe payload")
 /// struct Recipe: Codable {
+///   @JSONSchemaProperty(.string(minLength: 1), description: "Recipe title")
 ///   var title: String
 ///   @JSONSchemaProperty(.integer(minimum: 1))
 ///   var servings: Int

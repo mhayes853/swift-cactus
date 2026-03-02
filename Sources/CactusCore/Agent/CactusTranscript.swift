@@ -30,8 +30,8 @@ public struct CactusTranscript: Hashable, Sendable {
 
   /// Creates a new transcript with the given elements.
   ///
+  /// Complexity: O(*n*) where *n* is the number of elements.
   /// - Parameter elements: A sequence of ``Element`` instances to initialize the transcript with.
-  /// - Complexity: O(*n*) where *n* is the number of elements.
   public init(elements: some Sequence<Element> = []) {
     for element in elements {
       self.elements.append(element)
@@ -51,19 +51,20 @@ public struct CactusTranscript: Hashable, Sendable {
 
   /// An array of all messages in the transcript, in order.
   ///
-  /// Use this property to extract just the ``CactusModel/ChatMessage`` instances
+  /// Use this property to extract just the ``CactusModel/Message`` instances
   /// for passing to inference APIs.
   ///
-  /// - Complexity: O(*n*) where *n* is the number of elements.
-  public var messages: [CactusModel.ChatMessage] {
+  /// Complexity: O(*n*) where *n* is the number of elements.
+  public var messages: [CactusModel.Message] {
     self.elements.map(\.message)
   }
 
   /// Accesses the element with the given identifier.
   ///
+  /// Complexity: O(1).
+  ///
   /// - Parameter id: The ``CactusGenerationID`` to look up.
   /// - Returns: The element with the given identifier, or `nil` if no such element exists.
-  /// - Complexity: O(1).
   public subscript(id id: CactusGenerationID) -> Element? {
     _read {
       guard let index = self.messageIndicies[id] else {
@@ -76,8 +77,8 @@ public struct CactusTranscript: Hashable, Sendable {
 
   /// Appends an element to the transcript.
   ///
+  /// Complexity: O(1) amortized.
   /// - Parameter element: The element to append.
-  /// - Complexity: O(1) amortized.
   public mutating func append(_ element: Element) {
     self.messageIndicies[element.id] = self.elements.count
     self.elements.append(element)
@@ -85,8 +86,8 @@ public struct CactusTranscript: Hashable, Sendable {
 
   /// Appends the elements of a sequence to the transcript.
   ///
+  /// Complexity: O(*n*) where *n* is the number of elements in `newElements`.
   /// - Parameter newElements: A sequence of elements to append.
-  /// - Complexity: O(*n*) where *n* is the number of elements in `newElements`.
   public mutating func append(contentsOf newElements: some Sequence<Element>) {
     for element in newElements {
       self.append(element)
@@ -95,10 +96,11 @@ public struct CactusTranscript: Hashable, Sendable {
 
   /// Inserts an element at the specified position.
   ///
+  /// Complexity: O(*n*) where *n* is the number of elements after `index`.
+  ///
   /// - Parameters:
   ///   - element: The element to insert.
   ///   - index: The position at which to insert the element.
-  /// - Complexity: O(*n*) where *n* is the number of elements after `index`.
   public mutating func insert(_ element: Element, at index: Int) {
     self.elements.insert(element, at: index)
     for i in index..<self.elements.count {
@@ -111,8 +113,8 @@ public struct CactusTranscript: Hashable, Sendable {
   /// Call this method before appending a known number of elements to avoid
   /// intermediate reallocations.
   ///
+  /// Complexity: O(*n*) where *n* is the new capacity.
   /// - Parameter capacity: The minimum number of elements to reserve storage for.
-  /// - Complexity: O(*n*) where *n* is the new capacity.
   public mutating func reserveCapacity(_ capacity: Int) {
     self.elements.reserveCapacity(capacity)
     self.messageIndicies.reserveCapacity(capacity)
@@ -120,9 +122,10 @@ public struct CactusTranscript: Hashable, Sendable {
 
   /// Removes the element with the given identifier.
   ///
+  /// Complexity: O(*n*) where *n* is the number of elements after the removed element.
+  ///
   /// - Parameter id: The ``CactusGenerationID`` of the element to remove.
   /// - Returns: The removed element, or `nil` if no element with the given identifier exists.
-  /// - Complexity: O(*n*) where *n* is the number of elements after the removed element.
   @discardableResult
   public mutating func removeElement(id: CactusGenerationID) -> Element? {
     guard let index = self.messageIndicies[id] else { return nil }
@@ -131,9 +134,10 @@ public struct CactusTranscript: Hashable, Sendable {
 
   /// Removes the element at the given position.
   ///
+  /// Complexity: O(*n*) where *n* is the number of elements after `index`.
+  ///
   /// - Parameter index: The position of the element to remove.
   /// - Returns: The removed element.
-  /// - Complexity: O(*n*) where *n* is the number of elements after `index`.
   @discardableResult
   public mutating func removeElement(at index: Int) -> Element {
     let removed = self.elements.remove(at: index)
@@ -146,8 +150,8 @@ public struct CactusTranscript: Hashable, Sendable {
 
   /// Removes all elements from the transcript.
   ///
+  /// Complexity: O(*n*) where *n* is the number of elements.
   /// - Parameter keepingCapacity: If `true`, the transcript's storage capacity is preserved.
-  /// - Complexity: O(*n*) where *n* is the number of elements.
   public mutating func removeAll(keepingCapacity: Bool = false) {
     self.elements.removeAll(keepingCapacity: keepingCapacity)
     self.messageIndicies.removeAll(keepingCapacity: keepingCapacity)
@@ -155,9 +159,9 @@ public struct CactusTranscript: Hashable, Sendable {
 
   /// Removes all elements that satisfy the given predicate.
   ///
+  /// Complexity: O(*n*^2) in the worst case, where *n* is the number of elements.
   /// - Parameter predicate: A closure that takes an element and returns a Boolean value
   ///   indicating whether the element should be removed.
-  /// - Complexity: O(*n*) where *n* is the number of elements.
   public mutating func removeAll<E: Error>(where predicate: (Element) throws(E) -> Bool) throws(E) {
     var i = 0
     while i < self.elements.count {
@@ -175,28 +179,31 @@ public struct CactusTranscript: Hashable, Sendable {
 
   /// Returns a new transcript containing only elements whose message has the given role.
   ///
-  /// - Parameter role: The ``CactusModel/MessageRole`` to filter by.
+  /// Complexity: O(*n*) where *n* is the number of elements.
+  ///
+  /// - Parameter role: The ``CactusModel/Message/Role`` to filter by.
   /// - Returns: A new transcript containing only matching elements.
-  /// - Complexity: O(*n*) where *n* is the number of elements.
-  public func filter(byRole role: CactusModel.MessageRole) -> Self {
+  public func filter(byRole role: CactusModel.Message.Role) -> Self {
     Self(elements: self.elements.filter { $0.message.role == role })
   }
 
   /// Returns the first element whose message has the given role.
   ///
-  /// - Parameter role: The ``CactusModel/MessageRole`` to search for.
+  /// Complexity: O(*n*) where *n* is the number of elements.
+  ///
+  /// - Parameter role: The ``CactusModel/Message/Role`` to search for.
   /// - Returns: The first matching element, or `nil` if no such element exists.
-  /// - Complexity: O(*n*) where *n* is the number of elements.
-  public func firstMessage(forRole role: CactusModel.MessageRole) -> Element? {
+  public func firstMessage(forRole role: CactusModel.Message.Role) -> Element? {
     self.elements.first { $0.message.role == role }
   }
 
   /// Returns the last element whose message has the given role.
   ///
-  /// - Parameter role: The ``CactusModel/MessageRole`` to search for.
+  /// Complexity: O(*n*) where *n* is the number of elements.
+  ///
+  /// - Parameter role: The ``CactusModel/Message/Role`` to search for.
   /// - Returns: The last matching element, or `nil` if no such element exists.
-  /// - Complexity: O(*n*) where *n* is the number of elements.
-  public func lastMessage(forRole role: CactusModel.MessageRole) -> Element? {
+  public func lastMessage(forRole role: CactusModel.Message.Role) -> Element? {
     self.elements.last { $0.message.role == role }
   }
 }
@@ -212,10 +219,10 @@ extension CactusTranscript: MutableCollection {
   /// When modifying an element, if the new element has a different identifier than the
   /// original, the internal index is updated to reflect the change.
   ///
-  /// - Parameter position: The position of the element to access.
-  /// - Complexity: O(1) for reading, O(1) for writing when the identifier is unchanged,
+  /// Complexity: O(1) for reading, O(1) for writing when the identifier is unchanged,
   ///   O(*n*) when the identifier changes where *n* is the number of elements after `position`.
-  /// - Precondition: The new element's identifier must not already exist at a different position.
+  /// Precondition: The new element's identifier must not already exist at a different position.
+  /// - Parameter position: The position of the element to access.
   public subscript(position: Int) -> Element {
     _read { yield self.elements[position] }
     _modify {
@@ -248,7 +255,7 @@ extension CactusTranscript {
     public let id: CactusGenerationID
 
     /// The chat message.
-    public var message: CactusModel.ChatMessage
+    public var message: CactusModel.Message
 
     /// Creates a new transcript element.
     ///
@@ -257,7 +264,7 @@ extension CactusTranscript {
     ///   - message: The chat message.
     public init(
       id: CactusGenerationID = CactusGenerationID(),
-      message: CactusModel.ChatMessage
+      message: CactusModel.Message
     ) {
       self.id = id
       self.message = message

@@ -3,28 +3,23 @@
 extension JSONSchema {
   /// A class for validating JSON values against a ``JSONSchema``.
   ///
-  /// You can use this to validate tool parameter output from a ``CactusModel``.
   /// ```swift
-  /// let functionDefinition = CactusModel.FunctionDefinition(
-  ///   name: "search",
-  ///   description: "Find something",
-  ///   parameters: .object(
-  ///     properties: [
-  ///       "query": .string(minLength: 1)
-  ///     ]
-  ///   )
-  /// )
-  /// let completion = try model.complete(
-  ///   messages: messages,
-  ///   functions: [functionDefinition]
+  /// let schema: JSONSchema = .object(
+  ///   properties: [
+  ///     "name": .string(minLength: 1),
+  ///     "age": .integer(minimum: 0)
+  ///   ],
+  ///   required: ["name"]
   /// )
   ///
-  /// for functionCall in completion.functionCalls {
-  ///   try JSONSchema.Validator.shared.validate(
-  ///     value: .object(functionCall.arguments),
-  ///     with: functionDefinition.parameters
-  ///   )
-  /// }
+  /// let value: JSONSchema.Value = .object([
+  ///   "name": "Blob",
+  ///   "age": 4
+  /// ])
+  ///
+  /// try JSONSchema.Validator.shared.validate(value: value, with: schema)
+  /// let isValid = JSONSchema.Validator.shared.isValid(value: value, with: schema)
+  /// print(isValid)
   /// ```
   public final class Validator: Sendable {
     /// A shared validator instance.
@@ -37,10 +32,11 @@ extension JSONSchema {
 
     /// Validates the specified `value` against the specified ``JSONSchema``.
     ///
+    /// Throws: A ``ValidationError`` indicating the reason for the validation failure.
+    ///
     /// - Parameters:
     ///   - value: The ``Value`` to validate.
     ///   - schema: The ``JSONSchema`` to validate against.
-    /// - Throws: A ``ValidationError`` indicating the reason for the validation failure.
     public func validate(value: Value, with schema: JSONSchema) throws(ValidationError) {
       var context = Context()
       self.validate(value: value, with: schema, in: &context)
