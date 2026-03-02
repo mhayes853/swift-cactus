@@ -463,13 +463,14 @@ The supported engine version is also displayed at the top of README.
 
 ## Future Roadmap
 In no particular order.
-- [`AnyLangauageModel`](https://github.com/mattt/AnyLanguageModel) backend.
+- [`AnyLangauageModel`](https://github.com/mattt/AnyLanguageModel) backend via package trait.
 - Reliable structured generation using the `@JSONSchema` macro and any EBNF grammar.
   - This requires CFG support in the upstream engine.
   - This would also support incremental structured streaming for [JSON-complete formats](https://lemire.me/blog/2025/12/20/json-complete-data-format-and-programming-languages/) via [`StreamParsing`](https://github.com/mhayes853/swift-stream-parsing). 
 - Higher-Level vector index abstractions.
 - Integrations with more Apple native frameworks (eg. CoreAudio).
-- Prefill API.
+- Prefill API to reduce decode latency.
+  - This requires engine support for separating prefill step from decode step at FFI level.
 - Example apps.
 
 ## Installation

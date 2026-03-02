@@ -2,6 +2,9 @@ import Foundation
 
 // MARK: - CactusAgentSession
 
+/// A class for agent workflows using Cactus inference.
+///
+///
 public final class CactusAgentSession: Sendable {
   private let observationRegistrar = _ObservationRegistrar()
   private let state: Lock<State>
@@ -542,61 +545,68 @@ extension CactusAgentSession {
 
       var completionEntries = [CactusCompletionEntry]()
 
+      let initialTranscriptCount = self.transcript.count
+
       self.appendTranscriptEntry(
-        context.userMessage,
+        context.transcript.last!,
         metrics: nil,
         completionEntries: &completionEntries
       )
 
-      var conversationMessages = self.transcript.messages
+      var conversationMessages = context.transcript
       var finalResponse = ""
-      while true {
-        let assistantStreamID = CactusGenerationID()
-        let completedTurn = try await self.languageModelActor.complete(
-          messages: conversationMessages,
-          options: context.options,
-          maxBufferSize: context.maxBufferSize,
-          functions: context.functionDefinitions
-        ) { token, tokenId in
-          continuation.yield(
-            token: CactusStreamedToken(
-              messageStreamId: assistantStreamID,
-              stringValue: token,
-              tokenId: tokenId
+      do {
+        while true {
+          let assistantStreamID = CactusGenerationID()
+          let completedTurn = try await self.languageModelActor.complete(
+            messages: conversationMessages,
+            options: context.options,
+            maxBufferSize: context.maxBufferSize,
+            functions: context.functionDefinitions
+          ) { token, tokenId in
+            continuation.yield(
+              token: CactusStreamedToken(
+                messageStreamId: assistantStreamID,
+                stringValue: token,
+                tokenId: tokenId
+              )
             )
+          }
+
+          let appendedMessages = self.appendedMessages(
+            in: completedTurn.messages,
+            originalMessagesCount: conversationMessages.count
           )
+          self.appendModelMessages(
+            appendedMessages,
+            completion: completedTurn.completion,
+            completionEntries: &completionEntries
+          )
+
+          conversationMessages = context.transcript
+          finalResponse = completedTurn.completion.response
+
+          if completedTurn.completion.functionCalls.isEmpty {
+            break
+          }
+
+          let resolvedFunctionCalls = try self.resolveFunctionCalls(
+            completedTurn.completion.functionCalls,
+            using: context.functions
+          )
+          let functionReturns = try await self.executeFunctionCalls(resolvedFunctionCalls)
+
+          try self.appendFunctionReturns(
+            functionReturns,
+            role: .tool,
+            completionEntries: &completionEntries
+          )
+
+          conversationMessages = context.transcript
         }
-
-        let appendedMessages = self.appendedMessages(
-          in: completedTurn.messages,
-          originalMessagesCount: conversationMessages.count
-        )
-        self.appendModelMessages(
-          appendedMessages,
-          completion: completedTurn.completion,
-          completionEntries: &completionEntries
-        )
-
-        conversationMessages = self.transcript.messages
-        finalResponse = completedTurn.completion.response
-
-        if completedTurn.completion.functionCalls.isEmpty {
-          break
-        }
-
-        let resolvedFunctionCalls = try self.resolveFunctionCalls(
-          completedTurn.completion.functionCalls,
-          using: context.functions
-        )
-        let functionReturns = try await self.executeFunctionCalls(resolvedFunctionCalls)
-
-        try self.appendFunctionReturns(
-          functionReturns,
-          role: .tool,
-          completionEntries: &completionEntries
-        )
-
-        conversationMessages = self.transcript.messages
+      } catch {
+        self.removeTranscriptEntriesSince(initialCount: initialTranscriptCount)
+        throw error
       }
       return CactusCompletion(output: finalResponse, entries: completionEntries)
     }
@@ -658,7 +668,7 @@ extension CactusAgentSession {
   }
 
   private struct StreamRequestContext: Sendable {
-    let userMessage: CactusModel.ChatMessage
+    let transcript: [CactusModel.ChatMessage]
     let options: CactusModel.Completion.Options
     let maxBufferSize: Int?
     let functionDefinitions: [CactusModel.FunctionDefinition]
@@ -674,8 +684,12 @@ extension CactusAgentSession {
     } catch {
       throw CactusAgentSessionError.invalidUserMessage(error)
     }
+
+    var transcript = self.transcript.messages
+    transcript.append(userMessage)
+
     return StreamRequestContext(
-      userMessage: userMessage,
+      transcript: transcript,
       options: CactusModel.Completion.Options(message: request),
       maxBufferSize: request.maxBufferSize,
       functionDefinitions: self.functions.map(\.definition),
@@ -717,6 +731,20 @@ extension CactusAgentSession {
     completionEntries.append(
       CactusCompletionEntry(transcriptEntry: transcriptEntry, metrics: metrics)
     )
+  }
+
+  private func removeUserMessageFromTranscript() {
+    guard let lastElement = self.transcript.last,
+          lastElement.message.role == .user else {
+      return
+    }
+    _ = self.transcript.removeElement(at: self.transcript.count - 1)
+  }
+
+  private func removeTranscriptEntriesSince(initialCount: Int) {
+    while self.transcript.count > initialCount {
+      _ = self.transcript.removeElement(at: self.transcript.count - 1)
+    }
   }
 
   private func appendModelMessages(

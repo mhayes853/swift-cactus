@@ -473,6 +473,43 @@ struct `CactusAgentSession tests` {
     }
 
     @Test
+    func `Function Error Prevents User Message From Being Added To Transcript`() async throws {
+      let modelURL = try await CactusModel.testModelURL(request: .lfm2_2_6b())
+      let model = try CactusModel(from: modelURL)
+
+      final class ThrowingDelegate: CactusAgentSession.Delegate, Sendable {
+        func agentFunctionWillExecuteFunctions(
+          _ session: CactusAgentSession,
+          functionCalls: sending [CactusAgentSession.FunctionCall]
+        ) async throws -> sending [CactusAgentSession.FunctionReturn] {
+          struct SomeError: Error {}
+          throw SomeError()
+        }
+      }
+
+      let session = CactusAgentSession(
+        model: model,
+        functions: [ToolFactsFunction()]
+      ) {
+        "You are a helpful assistant that can get facts about cool things. Use the get_fact tool to do so."
+      }
+      session.delegate = ThrowingDelegate()
+      
+      let response = try? await session.respond(
+        to: CactusUserMessage(forceFunctions: true) {
+          "Use the get_fact tool for 'cactus' and respond with only that fact."
+        }
+      )
+
+      if response == nil {
+        expectNoDifference(session.transcript.count, 1)
+        expectNoDifference(session.transcript.first?.message.role, .system)
+      } else {
+        withKnownIssue { Issue.record("Model did not invoke get_fact tool.") }
+      }
+    }
+
+    @Test
     func `Reset Clears Transcript`() async throws {
       let session = try await Self.makeSession()
 

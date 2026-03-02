@@ -4,7 +4,7 @@
       - metrics: Optional<CactusGenerationMetrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: E20111ED-51AC-4EFE-B1F3-D19765C0A55E
+          - rawValue: 403BF4C3-1FDB-4F62-8FF1-6DF57290884A
         ▿ message: ChatMessage
           - content: "Say hello in one concise sentence."
           ▿ images: Optional<Array<URL>>
@@ -14,41 +14,41 @@
     ▿ CactusCompletionEntry
       ▿ metrics: Optional<CactusGenerationMetrics>
         ▿ some: CactusGenerationMetrics
-          - confidence: 0.9143
-          - decodeTokens: 10
-          - decodeTps: 96.9
+          - confidence: 0.8759
+          - decodeTokens: 143
+          - decodeTps: 104.51
           - didHandoffToCloud: false
-          ▿ durationToFirstToken: 0.02755 seconds
-            - _low: 27550000000000000
+          ▿ durationToFirstToken: 0.02317 seconds
+            - _low: 23170000000000002
             - _high: 0
           - prefillTokens: 16
-          - prefillTps: 580.74
-          - ramUsageMb: 54.69
-          ▿ totalDuration: 0.12043000000000001 seconds
-            - _low: 120430000000000016
+          - prefillTps: 690.52
+          - ramUsageMb: 46.89
+          ▿ totalDuration: 1.38195 seconds
+            - _low: 1381950000000000046
             - _high: 0
-          - totalTokens: 26
+          - totalTokens: 159
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 1D300A5E-A603-479C-895D-95029264DACC
+          - rawValue: 8F12689D-4907-4E99-95B3-F4350375BE68
         ▿ message: ChatMessage
-          - content: "That\'s welcome! What should I do?"
+          - content: "The English language has evolved significantly over time! What you\'ve heard has changed considerably since its inception. What you\'re reading today can be a snapshot of the current state, or an evolving concept that has been developed by individuals who have learned the language through interaction with others.\n\nThere is no need to learn another word if it\'s simply a reminder of what was once common across many cultures and civilizations alike! The beauty lies in this ability to connect us all from the same place, even as we navigate our own paths and understandings within that shared experience. It is not about learning something new; it is about being able to reflect on ourselves and our lives in such a vibrant reflection on life itself!\n"
           - images: Optional<Array<URL>>.none
           ▿ role: MessageRole
             - rawValue: "assistant"
   ▿ metrics: CactusGenerationMetrics
-    - confidence: 0.9143
-    - decodeTokens: 10
-    - decodeTps: 96.9
+    - confidence: 0.8759
+    - decodeTokens: 143
+    - decodeTps: 104.51
     - didHandoffToCloud: false
-    ▿ durationToFirstToken: 0.02755 seconds
-      - _low: 27550000000000000
+    ▿ durationToFirstToken: 0.02317 seconds
+      - _low: 23170000000000002
       - _high: 0
     - prefillTokens: 16
-    - prefillTps: 580.74
-    - ramUsageMb: 54.69
-    ▿ totalDuration: 0.12043000000000001 seconds
-      - _low: 120430000000000016
+    - prefillTps: 690.52
+    - ramUsageMb: 46.89
+    ▿ totalDuration: 1.38195 seconds
+      - _low: 1381950000000000046
       - _high: 0
-    - totalTokens: 26
-  - output: "That\'s welcome! What should I do?"
+    - totalTokens: 159
+  - output: "The English language has evolved significantly over time! What you\'ve heard has changed considerably since its inception. What you\'re reading today can be a snapshot of the current state, or an evolving concept that has been developed by individuals who have learned the language through interaction with others.\n\nThere is no need to learn another word if it\'s simply a reminder of what was once common across many cultures and civilizations alike! The beauty lies in this ability to connect us all from the same place, even as we navigate our own paths and understandings within that shared experience. It is not about learning something new; it is about being able to reflect on ourselves and our lives in such a vibrant reflection on life itself!\n"
