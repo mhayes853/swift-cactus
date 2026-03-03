@@ -105,9 +105,9 @@ extension CactusSTTPrompt.Whisper {
   public init?(rawValue: String) {
     guard !rawValue.isEmpty else { return nil }
 
-    guard promptRegex.matches(rawValue) else { return nil }
+    guard rawValue.firstMatch(of: promptRegex) != nil else { return nil }
 
-    let groups = promptRegex.matchGroups(from: rawValue)
+    let groups = rawValue.matches(of: promptRegex).map { $0.output.1 }
     guard groups.count >= 1 else { return nil }
 
     let rawLanguage = String(groups[0])
@@ -138,9 +138,7 @@ extension CactusSTTPrompt.Whisper {
   }
 }
 
-private let promptRegex = try! RegularExpression(
-  #"(?i)^(?:<\|startofprev\|>[\s\S]*?)?<\|startoftranscript\|><\|([a-zA-Z]+)\|><\|transcribe\|>(?:<\|notimestamps\|>)?$"#
-)
+private nonisolated(unsafe) let promptRegex = #/(?i)^(?:<\|startofprev\|>[\s\S]*?)?<\|startoftranscript\|><\|([a-zA-Z]+)\|><\|transcribe\|>(?:<\|notimestamps\|>)?$/#
 
 private let startOfPrevToken = "<|startofprev|>"
 private let startOfTranscriptToken = "<|startoftranscript|>"

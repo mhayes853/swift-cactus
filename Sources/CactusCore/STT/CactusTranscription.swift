@@ -76,7 +76,10 @@ public struct CactusTranscription: Hashable, Sendable, Identifiable {
     ///
     /// - Parameter response: The raw transcription response string.
     public init(response: String) {
-      let matchGroups = responseRegex.matchGroups(from: response)
+      let matchGroups = response.matches(of: responseRegex).flatMap { match in
+        let output = match.output
+        return [output.1, output.2]
+      }
 
       if matchGroups.isEmpty {
         self = .fullTranscript(response)
@@ -117,6 +120,4 @@ public struct CactusTranscription: Hashable, Sendable, Identifiable {
   }
 }
 
-private let responseRegex = try! RegularExpression(
-  "<\\|(\\d+(?:\\.\\d+)?)\\|>([\\s\\S]*?)(?=(?:<\\|\\d+(?:\\.\\d+)?\\|>)|$)"
-)
+private nonisolated(unsafe) let responseRegex = #/<\|(\d+(?:\.\d+)?)\|>([\s\S]*?)(?=(?:<|\d+(?:\.\d+)?|>)|$)/#
