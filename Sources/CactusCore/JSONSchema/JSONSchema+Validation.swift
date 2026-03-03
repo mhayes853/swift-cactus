@@ -25,7 +25,7 @@ extension JSONSchema {
     /// A shared validator instance.
     public static let shared = Validator()
 
-    private let regexCache = Lock([String: RegularExpression]())
+    private let regexCache = Lock([String: Regex<AnyRegexOutput>]())
 
     /// Creates a validator.
     public init() {}
@@ -189,7 +189,7 @@ extension JSONSchema {
         guard let regex = self.regexes(for: CollectionOfOne(pattern), in: &context)[pattern] else {
           return
         }
-        if !regex.matches(string) {
+        if string.firstMatch(of: regex) == nil {
           context.appendFailureReason(.stringPatternMismatch(pattern: pattern))
         }
       }
@@ -268,7 +268,7 @@ extension JSONSchema {
             self.validate(value: value, with: propertySchema, in: &context)
           }
 
-          let patterns = regexes.filter { $0.1.matches(property) }.map(\.key)
+          let patterns = regexes.filter { property.firstMatch(of: $0.1) != nil }.map(\.key)
           let patternPropertySchemas = patterns.compactMap { schema.patternProperties?[$0] }
           for propertySchema in patternPropertySchemas {
             self.validate(value: value, with: propertySchema, in: &context)
@@ -375,13 +375,13 @@ extension JSONSchema {
     private func regexes(
       for patterns: some Sequence<String>,
       in context: inout Context
-    ) -> [String: RegularExpression] {
+    ) -> [String: Regex<AnyRegexOutput>] {
       self.regexCache.withLock { cache in
-        var regexes = [String: RegularExpression]()
+        var regexes = [String: Regex<AnyRegexOutput>]()
         for pattern in patterns {
           if let regex = cache[pattern] {
             regexes[pattern] = regex
-          } else if let regex = try? RegularExpression(pattern) {
+          } else if let regex = try? Regex(pattern, as: AnyRegexOutput.self) {
             regexes[pattern] = regex
             cache[pattern] = regex
           } else {

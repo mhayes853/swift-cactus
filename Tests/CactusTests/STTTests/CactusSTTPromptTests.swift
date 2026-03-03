@@ -187,7 +187,7 @@ struct CactusSTTPromptTests {
   @Test
   func `Parse Empty Description Returns Default`() {
     let prompt = CactusSTTPrompt.whisper(prompt: "")
-    #expect(prompt == .default)
+    expectNoDifference(prompt, nil)
   }
 
   @Test
