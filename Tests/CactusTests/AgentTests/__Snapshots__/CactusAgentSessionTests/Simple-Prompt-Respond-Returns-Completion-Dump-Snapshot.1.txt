@@ -4,7 +4,7 @@
       - metrics: Optional<CactusGenerationMetrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 47725032-515D-48AD-A56D-25AB6DCB946B
+          - rawValue: 2FC2C2FA-2B0D-4F1D-B740-7F24004AAFFB
         ▿ message: Message
           - content: "Say hello in one concise sentence."
           ▿ images: Optional<Array<URL>>
@@ -14,41 +14,41 @@
     ▿ CactusCompletionEntry
       ▿ metrics: Optional<CactusGenerationMetrics>
         ▿ some: CactusGenerationMetrics
-          - confidence: 0.9152
-          - decodeTokens: 28
-          - decodeTps: 111.6
+          - confidence: 0.8933
+          - decodeTokens: 201
+          - decodeTps: 30.62
           - didHandoffToCloud: false
-          ▿ durationToFirstToken: 0.02377 seconds
-            - _low: 23770000000000000
+          ▿ durationToFirstToken: 0.0603 seconds
+            - _low: 60299999999999997
             - _high: 0
           - prefillTokens: 16
-          - prefillTps: 673.15
-          - ramUsageMb: 49.74
-          ▿ totalDuration: 0.2657 seconds
-            - _low: 265699999999999989
+          - prefillTps: 265.36
+          - ramUsageMb: 446.43
+          ▿ totalDuration: 6.59115 seconds
+            - _low: 6591149999999999636
             - _high: 0
-          - totalTokens: 44
+          - totalTokens: 217
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 183BDBBD-0EE0-4878-A5F0-ECA778D524F1
+          - rawValue: 12897C00-816F-4014-830C-2E3AA6A8B41F
         ▿ message: Message
-          - content: "That\'s welcome! What do you want to say? I am learning and eager to assist. How can I help you with something?"
+          - content: "The English Language Learning website is the best resource for learning new phrases in the local languages spoken across many countries.\n\nHere\'s how to use it effectively:\n\n*   **Focus on practical exercises:** Instead of just memorizing vocabulary lists, practice real conversations with phrases from various cultures and communities.\n*   **Immer sive immersion:** Immerse yourself in the sounds and rhythms of a new language without any distractions from grammar rules or pronunciation guides.\n*   **Connect with others**:  Learning a language isn\'rous! Connect with native speakers, musicians, artists who share common goals and experiences through online platforms built into the platform.\n*    **Personal growth**: Whether you are learning to order food in Italy or ordering coffee in Kenya, using an online platform can help you learn not only what is said but also *how it is done*.\n\nBy incorporating this resource into your daily life, you can unlock new opportunities for connection across cultures and languages. The journey towards fluency is yours!"
           - images: Optional<Array<URL>>.none
           ▿ role: Role
             - rawValue: "assistant"
   ▿ metrics: CactusGenerationMetrics
-    - confidence: 0.9152
-    - decodeTokens: 28
-    - decodeTps: 111.6
+    - confidence: 0.8933
+    - decodeTokens: 201
+    - decodeTps: 30.62
     - didHandoffToCloud: false
-    ▿ durationToFirstToken: 0.02377 seconds
-      - _low: 23770000000000000
+    ▿ durationToFirstToken: 0.0603 seconds
+      - _low: 60299999999999997
       - _high: 0
     - prefillTokens: 16
-    - prefillTps: 673.15
-    - ramUsageMb: 49.74
-    ▿ totalDuration: 0.2657 seconds
-      - _low: 265699999999999989
+    - prefillTps: 265.36
+    - ramUsageMb: 446.43
+    ▿ totalDuration: 6.59115 seconds
+      - _low: 6591149999999999636
       - _high: 0
-    - totalTokens: 44
-  - output: "That\'s welcome! What do you want to say? I am learning and eager to assist. How can I help you with something?"
+    - totalTokens: 217
+  - output: "The English Language Learning website is the best resource for learning new phrases in the local languages spoken across many countries.\n\nHere\'s how to use it effectively:\n\n*   **Focus on practical exercises:** Instead of just memorizing vocabulary lists, practice real conversations with phrases from various cultures and communities.\n*   **Immer sive immersion:** Immerse yourself in the sounds and rhythms of a new language without any distractions from grammar rules or pronunciation guides.\n*   **Connect with others**:  Learning a language isn\'rous! Connect with native speakers, musicians, artists who share common goals and experiences through online platforms built into the platform.\n*    **Personal growth**: Whether you are learning to order food in Italy or ordering coffee in Kenya, using an online platform can help you learn not only what is said but also *how it is done*.\n\nBy incorporating this resource into your daily life, you can unlock new opportunities for connection across cultures and languages. The journey towards fluency is yours!"

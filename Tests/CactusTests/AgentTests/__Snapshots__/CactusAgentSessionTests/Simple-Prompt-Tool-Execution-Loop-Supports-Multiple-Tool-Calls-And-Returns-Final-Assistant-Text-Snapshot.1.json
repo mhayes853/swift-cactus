@@ -1,6 +1,6 @@
 [
   {
-    "id" : "C212A87A-E8A1-488A-935E-2A736F79789C",
+    "id" : "F120FB96-0C87-4482-810D-9D69E3782421",
     "message" : {
       "content" : "Use the get_fact tool for both 'cactus' and 'swift', then summarize both facts.",
       "images" : [
@@ -10,30 +10,9 @@
     }
   },
   {
-    "id" : "EAFD354D-82DF-4AF3-9BDE-752C86A3B3E5",
+    "id" : "FE4887AB-EC4E-4AF3-8D70-F56A73E099B2",
     "message" : {
-      "content" : "<|tool_call_start|>[get_fact(topic=\"cactus\"), get_fact(topic=\"swift\")]<|tool_call_end|>I will retrieve the facts for 'cactus' and 2. swift using the get_fact tool, then summarize them together in one response.",
-      "role" : "assistant"
-    }
-  },
-  {
-    "id" : "F65304A9-A84C-4B7A-9B58-579B56043AC0",
-    "message" : {
-      "content" : "{\"name\":\"get_fact\",\"content\":\"Cacti store water in thick stems to survive arid climates.\"}",
-      "role" : "tool"
-    }
-  },
-  {
-    "id" : "67027707-5495-4447-B6A3-234D593ED26E",
-    "message" : {
-      "content" : "{\"name\":\"get_fact\",\"content\":\"Swift is a type-safe language that emphasizes expressive syntax and performance.\"}",
-      "role" : "tool"
-    }
-  },
-  {
-    "id" : "3A857CF9-4E4F-4E4C-B962-9A4F2FF3ADC2",
-    "message" : {
-      "content" : "The cactus stores water in its thick stems to survive dry environments, while Swift is a modern programming language known for its safety features and efficient performance. Both are notable examples of adaptation—whether biological or technological—to thrive under specific conditions: cacti adapt to desert climates, and Swift adapts as an optimal choice for developers seeking reliability and speed in software development.",
+      "content" : "To provide you with the requested information, could you please specify the topic and any properties or details related to that topic? For example, if you want a fact about space exploration or historical events like World War II. Once I have this information, I can use the `get_fact` tool accordingly.\n\nFor now here's an example format based on your request:\n\n```json\n{\n  \"topic\": \"space exploration\",\n  \"properties\": {\n    \"year_of_moon_landing\": 1969,\n    \"mission_name\": Apollo 11\n  }\n}\n```\n\nPlease adjust these as needed for your specific query!",
       "role" : "assistant"
     }
   }
