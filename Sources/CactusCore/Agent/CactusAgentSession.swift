@@ -911,9 +911,7 @@ extension CactusAgentSession {
   }
 
   private func removeTranscriptEntriesSince(initialCount: Int) {
-    for index in stride(from: self._transcript.count - 1, through: initialCount, by: -1) {
-      _ = self._transcript.removeElement(at: index)
-    }
+    self._transcript = CactusTranscript(elements: self._transcript.prefix(initialCount))
   }
 
   private func appendModelMessages(
@@ -922,7 +920,8 @@ extension CactusAgentSession {
     completionEntries: inout [CactusCompletionEntry]
   ) {
     for message in messages {
-      let metrics: CactusGenerationMetrics? = message.role == .assistant
+      let metrics: CactusGenerationMetrics? =
+        message.role == .assistant
         ? CactusGenerationMetrics(completion: completion)
         : nil
       self.appendTranscriptEntry(
