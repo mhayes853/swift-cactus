@@ -366,7 +366,7 @@ struct `CactusAgentSession tests` {
     final class ToolCallDelegateSpy: CactusAgentSession.Delegate, @unchecked Sendable {
       private let invocations = Lock(0)
 
-      func agentFunctionWillExecuteFunctions(
+      func agentSessionWillExecuteFunctions(
         _ session: CactusAgentSession,
         functionCalls: sending [CactusAgentSession.FunctionCall]
       ) async throws -> sending [CactusAgentSession.FunctionReturn] {
@@ -497,7 +497,7 @@ struct `CactusAgentSession tests` {
       let model = try CactusModel(from: modelURL)
 
       final class ThrowingDelegate: CactusAgentSession.Delegate, Sendable {
-        func agentFunctionWillExecuteFunctions(
+        func agentSessionWillExecuteFunctions(
           _ session: CactusAgentSession,
           functionCalls: sending [CactusAgentSession.FunctionCall]
         ) async throws -> sending [CactusAgentSession.FunctionReturn] {

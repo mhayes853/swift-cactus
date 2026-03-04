@@ -521,7 +521,7 @@ extension CactusAgentSession {
     ///   - session: The active session.
     ///   - functionCalls: The resolved function calls for the current model turn.
     /// - Returns: Function return outputs in the same order as `functionCalls`.
-    func agentFunctionWillExecuteFunctions(
+    func agentSessionWillExecuteFunctions(
       _ session: CactusAgentSession,
       functionCalls: sending [CactusAgentSession.FunctionCall]
     ) async throws -> sending [CactusAgentSession.FunctionReturn]
@@ -535,7 +535,7 @@ extension CactusAgentSession.Delegate {
   ///   - session: The active session.
   ///   - functionCalls: The resolved function calls for the current model turn.
   /// - Returns: Function return outputs in the same order as `functionCalls`.
-  public func agentFunctionWillExecuteFunctions(
+  public func agentSessionWillExecuteFunctions(
     _ session: CactusAgentSession,
     functionCalls: sending [CactusAgentSession.FunctionCall]
   ) async throws -> sending [CactusAgentSession.FunctionReturn] {
@@ -937,7 +937,7 @@ extension CactusAgentSession {
     _ functionCalls: [CactusAgentSession.FunctionCall]
   ) async throws -> [CactusAgentSession.FunctionReturn] {
     if let delegate = self.delegate {
-      return try await delegate.agentFunctionWillExecuteFunctions(
+      return try await delegate.agentSessionWillExecuteFunctions(
         self,
         functionCalls: functionCalls
       )
