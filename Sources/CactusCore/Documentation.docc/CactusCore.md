@@ -229,6 +229,38 @@ try await stream.finish()
 _ = try await recordingTask.value
 ```
 
+## Language Detection
+``CactusSTTSession`` also supports detecting the language from an audio source.
+```swift
+let modelURL = try await CactusModelsDirectory.shared.modelURL(
+  for: .whisperSmall()
+)
+
+let session = try CactusSTTSession(from: modelURL)
+
+// WAV File
+let request = CactusLanguageDetection.Request(
+  content: .audio(.documentsDirectory.appending(path: "audio.wav"))
+)
+let detection = try await session.detectLanguage(request: request)
+print(detection.language)
+
+// PCM Buffer
+let pcmBytes: [UInt8] = [...]
+let request = CactusLanguageDetection.Request(content: .pcm(pcmBytes))
+let detection = try await session.detectLanguage(request: request)
+print(detection.language)
+
+// AVFoundation (Apple Platforms Only)
+import AVFoundation
+
+let buffer: AVAudioPCMBuffer = ...
+let request = CactusLanguageDetection.Request(content: try .pcm(buffer))
+let detection = try await session.detectLanguage(request: request)
+print(detection.language)
+```
+> Note: Language detection is currently limited to whisper models only.
+
 ## Voice Activity Detection (VAD)
 
 VAD is supported through the ``CactusVADSession`` class, and supports the same audio formats as ``CactusSTTSession``.
@@ -484,7 +516,16 @@ let encoded: JSONSchema.Value = try JSONSchema.Value.Encoder()
   .encode(MyValue(property: "blob", num: 20))
 ```
 
-### Checking For Supported Engine Version
+## Hybrid Inference
+Cactus supports hybrid inference (ie. Handing off to a cloud model when a local model is below a certain confidence threshold.) automatically through the ``cactusCloudAPIKey`` property.
+```swift
+import Cactus
+
+Cactus.cactusCloudAPIKey = "<optional key here for hybrid inference>"
+```
+> Warning: Avoid hardcoding an API key into an app that's publicly distributed. Attackers can inspect your binary, network traffic, or use a debugger to extract the key.
+
+## Checking For Supported Engine Version
 This library uses it's own versioning scheme separate from the upstream engine (eg. Version X.Y.Z of this library != Cactus Version X.Y.Z). You can check the supported engine version through the ``cactusEngineVersion`` constant.
 ```swift
 import Cactus
