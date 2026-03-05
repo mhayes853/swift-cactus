@@ -138,7 +138,8 @@ extension CactusSTTPrompt.Whisper {
   }
 }
 
-private nonisolated(unsafe) let promptRegex = #/(?i)^(?:<\|startofprev\|>[\s\S]*?)?<\|startoftranscript\|><\|([a-zA-Z]+)\|><\|transcribe\|>(?:<\|notimestamps\|>)?$/#
+private nonisolated(unsafe) let promptRegex =
+  #/(?i)^(?:<\|startofprev\|>[\s\S]*?)?<\|startoftranscript\|><\|([a-zA-Z]+)\|><\|transcribe\|>(?:<\|notimestamps\|>)?$/#
 
 private let startOfPrevToken = "<|startofprev|>"
 private let startOfTranscriptToken = "<|startoftranscript|>"

@@ -123,6 +123,30 @@ struct `CactusSTTSession tests` {
   }
 
   @Test
+  func `File Language Detection Succeeds`() async throws {
+    let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
+    let session = try CactusSTTSession(from: modelURL)
+    let request = CactusLanguageDetection.Request(content: .audio(testAudioURL))
+
+    let detection = try await session.detectLanguage(request: request)
+    expectNoDifference(detection.language, .english)
+  }
+
+  #if canImport(AVFoundation)
+    @Test
+    func `PCM Buffer Language Detection Succeeds`() async throws {
+      let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
+      let session = try CactusSTTSession(from: modelURL)
+      let pcmBuffer = try testAudioPCMBuffer()
+      let content = try CactusLanguageDetection.Request.Content.pcm(pcmBuffer)
+      let request = CactusLanguageDetection.Request(content: content)
+
+      let detection = try await session.detectLanguage(request: request)
+      expectNoDifference(detection.language, .english)
+    }
+  #endif
+
+  @Test
   func `Canceling Transcribe Cancels Stream And Ends Session`() async throws {
     let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
     let session = try CactusSTTSession(from: modelURL)

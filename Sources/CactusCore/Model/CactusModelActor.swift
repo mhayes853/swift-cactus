@@ -422,6 +422,55 @@ extension CactusModelActor {
   }
 }
 
+// MARK: - Language Detection
+
+extension CactusModelActor {
+  /// Detects the language from an audio file.
+  ///
+  /// - Parameters:
+  ///   - audio: The audio file to analyze.
+  ///   - options: The ``CactusModel/LanguageDetectionOptions``.
+  ///   - maxBufferSize: The maximum buffer size to store the result.
+  /// - Returns: A ``CactusModel/LanguageDetection``.
+  public func detectLanguage(
+    audio: URL,
+    options: CactusModel.LanguageDetectionOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) async throws -> CactusModel.LanguageDetection {
+    try self.model.detectLanguage(audio: audio, options: options, maxBufferSize: maxBufferSize)
+  }
+
+  /// Detects the language from a PCM byte buffer.
+  ///
+  /// - Parameters:
+  ///   - pcmBuffer: The PCM byte buffer to analyze in 16 kHz mono signed 16-bit format.
+  ///   - options: The ``CactusModel/LanguageDetectionOptions``.
+  ///   - maxBufferSize: The maximum buffer size to store the result.
+  /// - Returns: A ``CactusModel/LanguageDetection``.
+  public func detectLanguage(
+    pcmBuffer: [UInt8],
+    options: CactusModel.LanguageDetectionOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) async throws -> CactusModel.LanguageDetection {
+    try self.model.detectLanguage(pcmBuffer: pcmBuffer, options: options, maxBufferSize: maxBufferSize)
+  }
+
+  /// Detects the language from a PCM byte buffer.
+  ///
+  /// - Parameters:
+  ///   - pcmBuffer: The PCM byte buffer to analyze in 16 kHz mono signed 16-bit format.
+  ///   - options: The ``CactusModel/LanguageDetectionOptions``.
+  ///   - maxBufferSize: The maximum buffer size to store the result.
+  /// - Returns: A ``CactusModel/LanguageDetection``.
+  public func detectLanguage(
+    pcmBuffer: sending UnsafeBufferPointer<UInt8>,
+    options: CactusModel.LanguageDetectionOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) async throws -> CactusModel.LanguageDetection {
+    try self.model.detectLanguage(pcmBuffer: pcmBuffer, options: options, maxBufferSize: maxBufferSize)
+  }
+}
+
 // MARK: - VAD
 
 extension CactusModelActor {

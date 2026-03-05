@@ -1,6 +1,7 @@
 #if canImport(AVFoundation)
   import AVFoundation
   import Cactus
+  import CustomDump
   import Foundation
   import IssueReporting
   import SnapshotTesting
@@ -28,6 +29,19 @@
           record: true
         )
       }
+    }
+
+    func testDetectsLanguageFromAVAudioPCMBuffer() async throws {
+      let request = CactusModel.PlatformDownloadRequest.whisperSmall()
+      let modelURL = try await CactusModel.testModelURL(request: request)
+      let model = try CactusModel(from: modelURL)
+
+      let buffer = try testAudioPCMBuffer()
+
+      let detection = try model.detectLanguage(buffer: buffer)
+
+      expectNoDifference(detection.language, "en")
+      expectNoDifference((0...1).contains(detection.confidence), true)
     }
   }
 

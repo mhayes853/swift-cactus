@@ -28,6 +28,9 @@ if [ -n "$COMMIT_SHA" ]; then
     echo "✅ Checked out Cactus repo at commit $COMMIT_SHA"
 fi
 
+echo "🧹 Removing any kernel_sme2.cpp files from cloned repo"
+find "$CACTUS_ROOT_DIR" -type f -name "kernel_sme2.cpp" -print -exec rm -f {} +
+
 CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release}
 ANDROID_DIR="$CACTUS_ROOT_DIR/android"
 SOURCE_DIR="$CACTUS_ROOT_DIR/cactus"
