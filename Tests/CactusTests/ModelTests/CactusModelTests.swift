@@ -402,6 +402,55 @@ struct `CactusModel tests` {
   }
 
   @Test
+  func `Detects Language From Audio File`() async throws {
+    let modelURL = try await CactusModel.testModelURL(
+      request: .whisperSmall()
+    )
+    let model = try CactusModel(from: modelURL)
+
+    let detection = try model.detectLanguage(audio: testAudioURL)
+
+    expectNoDifference(detection.language, "en")
+    expectNoDifference((0...1).contains(detection.confidence), true)
+  }
+
+  @Test
+  func `Throws Language Detection Error When Buffer Size Is Zero`() async throws {
+    let modelURL = try await CactusModel.testModelURL(
+      request: .whisperSmall()
+    )
+    let model = try CactusModel(from: modelURL)
+
+    #expect(throws: CactusModelError.languageDetectionBufferTooSmall) {
+      try model.detectLanguage(audio: testAudioURL, maxBufferSize: 0)
+    }
+  }
+
+  @Test
+  func `Throws Language Detection Error When Buffer Size Is Too Small`() async throws {
+    let modelURL = try await CactusModel.testModelURL(
+      request: .whisperSmall()
+    )
+    let model = try CactusModel(from: modelURL)
+
+    #expect(throws: CactusModelError.languageDetectionBufferTooSmall) {
+      try model.detectLanguage(audio: testAudioURL, maxBufferSize: 64)
+    }
+  }
+
+  @Test
+  func `Throws Language Detection Not Supported Error For Parakeet Model`() async throws {
+    let modelURL = try await CactusModel.testModelURL(
+      request: .parakeetCtc_1_1b()
+    )
+    let model = try CactusModel(from: modelURL)
+
+    #expect(throws: CactusModelError.languageDetectionNotSupported) {
+      try model.detectLanguage(audio: testAudioURL)
+    }
+  }
+
+  @Test
   func `Embeddings From Model With Raw Pointer`() async throws {
     let modelURL = try await CactusModel.testModelURL(request: .lfm2_5_1_2bThinking())
     let modelPtr = try #require(cactus_init(modelURL.nativePath, nil, false))

@@ -52,6 +52,25 @@
       )
     }
 
+    /// Detects language from the specified PCM buffer converted to mono 16 kHz signed 16-bit PCM bytes.
+    ///
+    /// - Parameters:
+    ///   - buffer: The PCM buffer to analyze.
+    ///   - options: The ``LanguageDetectionOptions``.
+    ///   - maxBufferSize: The maximum buffer size to store the result.
+    /// - Returns: A ``LanguageDetection``.
+    public func detectLanguage(
+      buffer: AVAudioPCMBuffer,
+      options: LanguageDetectionOptions? = nil,
+      maxBufferSize: Int? = nil
+    ) throws -> LanguageDetection {
+      try self.detectLanguage(
+        pcmBuffer: try buffer.cactusPCMBytes(),
+        options: options,
+        maxBufferSize: maxBufferSize
+      )
+    }
+
     /// Runs voice activity detection on the specified PCM buffer to mono 16 kHz signed 16-bit PCM bytes.
     ///
     /// - Parameters:

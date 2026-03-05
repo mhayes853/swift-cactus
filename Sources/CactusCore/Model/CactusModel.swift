@@ -182,6 +182,19 @@ public struct CactusModelError: Error, Hashable, Sendable {
     /// A transcription generation error.
     public static let transcriptionGeneration = Self(rawValue: "transcriptionGeneration")
 
+    /// The buffer size for language detection was too small.
+    public static let languageDetectionBufferTooSmall = Self(
+      rawValue: "languageDetectionBufferTooSmall"
+    )
+
+    /// The model does not support language detection.
+    public static let languageDetectionNotSupported = Self(
+      rawValue: "languageDetectionNotSupported"
+    )
+
+    /// A language detection generation error.
+    public static let languageDetectionGeneration = Self(rawValue: "languageDetectionGeneration")
+
     /// The buffer size for voice activity detection was too small.
     public static let vadBufferTooSmall = Self(rawValue: "vadBufferTooSmall")
 
@@ -254,6 +267,17 @@ public struct CactusModelError: Error, Hashable, Sendable {
   /// A transcription generation error.
   public static func transcriptionGeneration(message: String?) -> Self {
     Self(code: .transcriptionGeneration, message: message)
+  }
+
+  /// The buffer size for language detection was too small.
+  public static let languageDetectionBufferTooSmall = Self(code: .languageDetectionBufferTooSmall)
+
+  /// The model does not support language detection.
+  public static let languageDetectionNotSupported = Self(code: .languageDetectionNotSupported)
+
+  /// A language detection generation error.
+  public static func languageDetectionGeneration(message: String?) -> Self {
+    Self(code: .languageDetectionGeneration, message: message)
   }
 
   /// The buffer size for voice activity detection was too small.
@@ -1375,6 +1399,214 @@ extension CactusModel.Transcription: Encodable {
     case didHandoffToCloud = "cloud_handoff"
     case timeToFirstTokenMs = "time_to_first_token_ms"
     case totalTimeMs = "total_time_ms"
+  }
+}
+
+// MARK: - Language Detection
+
+extension CactusModel {
+  /// A language detection result.
+  public struct LanguageDetection: Hashable, Sendable {
+    /// Detected language code (for example, "en").
+    public let language: String
+
+    /// Raw language token emitted by the model (for example, "<|en|>").
+    public let languageToken: String
+
+    /// Token ID corresponding to `languageToken`.
+    public let tokenId: UInt32
+
+    /// Confidence in [0, 1].
+    public let confidence: Double
+
+    /// Entropy used to derive confidence.
+    public let entropy: Double
+
+    /// Total detection time.
+    public let totalDuration: Duration
+
+    /// The amount of RAM used by this operation, in MB.
+    public let ramUsageMb: Double
+  }
+
+  /// Options for language detection.
+  public struct LanguageDetectionOptions: Hashable, Sendable, Codable {
+    /// Whether to run voice activity detection before language detection.
+    public var useVad: Bool?
+
+    /// Whether telemetry is enabled.
+    public var isTelemetryEnabled: Bool?
+
+    /// Creates options for language detection.
+    ///
+    /// - Parameters:
+    ///   - useVad: Whether to run voice activity detection before language detection.
+    ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
+    public init(
+      useVad: Bool? = nil,
+      isTelemetryEnabled: Bool? = nil
+    ) {
+      self.useVad = useVad
+      self.isTelemetryEnabled = isTelemetryEnabled
+    }
+
+    private enum CodingKeys: String, CodingKey {
+      case useVad = "use_vad"
+      case isTelemetryEnabled = "telemetry_enabled"
+    }
+  }
+
+  private enum LanguageDetectionRequest {
+    case audio(URL)
+    case buffer([UInt8])
+  }
+
+  /// Detects the language from an audio file.
+  ///
+  /// - Parameters:
+  ///   - audio: The audio file to analyze.
+  ///   - options: The ``LanguageDetectionOptions``.
+  ///   - maxBufferSize: The maximum buffer size to store the result.
+  /// - Returns: A ``LanguageDetection``.
+  public func detectLanguage(
+    audio: URL,
+    options: LanguageDetectionOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) throws -> LanguageDetection {
+    try self.detectLanguage(for: .audio(audio), options: options, maxBufferSize: maxBufferSize)
+  }
+
+  /// Detects the language from a PCM byte buffer.
+  ///
+  /// - Parameters:
+  ///   - pcmBuffer: The PCM byte buffer to analyze in 16 kHz mono signed 16-bit format.
+  ///   - options: The ``LanguageDetectionOptions``.
+  ///   - maxBufferSize: The maximum buffer size to store the result.
+  /// - Returns: A ``LanguageDetection``.
+  public func detectLanguage(
+    pcmBuffer: [UInt8],
+    options: LanguageDetectionOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) throws -> LanguageDetection {
+    try self.detectLanguage(for: .buffer(pcmBuffer), options: options, maxBufferSize: maxBufferSize)
+  }
+
+  /// Detects the language from a PCM byte buffer.
+  ///
+  /// - Parameters:
+  ///   - pcmBuffer: The PCM byte buffer to analyze in 16 kHz mono signed 16-bit format.
+  ///   - options: The ``LanguageDetectionOptions``.
+  ///   - maxBufferSize: The maximum buffer size to store the result.
+  /// - Returns: A ``LanguageDetection``.
+  public func detectLanguage(
+    pcmBuffer: UnsafeBufferPointer<UInt8>,
+    options: LanguageDetectionOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) throws -> LanguageDetection {
+    try self.detectLanguage(
+      for: .buffer(Array(pcmBuffer)),
+      options: options,
+      maxBufferSize: maxBufferSize
+    )
+  }
+
+  private func detectLanguage(
+    for request: LanguageDetectionRequest,
+    options: LanguageDetectionOptions?,
+    maxBufferSize: Int?
+  ) throws -> LanguageDetection {
+    let maxBufferSize = maxBufferSize ?? 8192
+    guard maxBufferSize > 0 else {
+      throw CactusModelError.languageDetectionBufferTooSmall
+    }
+
+    let optionsJSON = try options.map { try String(decoding: ffiEncoder.encode($0), as: UTF8.self) }
+
+    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) {
+      responseBuffer,
+      responseBufferSize in
+      switch request {
+      case .audio(let audio):
+        cactus_detect_language(
+          self.rawModelPointer,
+          audio.nativePath,
+          responseBuffer,
+          responseBufferSize,
+          optionsJSON,
+          nil,
+          0
+        )
+      case .buffer(let pcmBuffer):
+        pcmBuffer.withUnsafeBufferPointer { rawBuffer in
+          cactus_detect_language(
+            self.rawModelPointer,
+            nil,
+            responseBuffer,
+            responseBufferSize,
+            optionsJSON,
+            rawBuffer.baseAddress,
+            rawBuffer.count
+          )
+        }
+      }
+    }
+
+    guard result != -1 else {
+      let response = try? ffiDecoder.decode(FFIErrorResponse.self, from: responseData)
+      let errorMessage = response?.error ?? String(data: responseData, encoding: .utf8)
+
+      if errorMessage?.isEmpty != false {
+        throw CactusModelError.languageDetectionBufferTooSmall
+      }
+
+      if errorMessage?.contains(Self.bufferNotBigEnoughErrorMessage) == true {
+        throw CactusModelError.languageDetectionBufferTooSmall
+      }
+      if errorMessage?.contains("Language detection currently requires a Whisper model") == true {
+        throw CactusModelError.languageDetectionNotSupported
+      }
+      throw CactusModelError.languageDetectionGeneration(message: errorMessage)
+    }
+
+    return try ffiDecoder.decode(LanguageDetection.self, from: responseData)
+  }
+}
+
+extension CactusModel.LanguageDetection: Decodable {
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    self.language = try container.decode(String.self, forKey: .language)
+    self.languageToken = try container.decode(String.self, forKey: .languageToken)
+    self.tokenId = try container.decode(UInt32.self, forKey: .tokenId)
+    self.confidence = try container.decode(Double.self, forKey: .confidence)
+    self.entropy = try container.decode(Double.self, forKey: .entropy)
+    self.totalDuration = .milliseconds(
+      try container.decode(Double.self, forKey: .totalTimeMs)
+    )
+    self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
+  }
+}
+
+extension CactusModel.LanguageDetection: Encodable {
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(self.language, forKey: .language)
+    try container.encode(self.languageToken, forKey: .languageToken)
+    try container.encode(self.tokenId, forKey: .tokenId)
+    try container.encode(self.confidence, forKey: .confidence)
+    try container.encode(self.entropy, forKey: .entropy)
+    try container.encode(self.totalDuration.secondsDouble * 1000, forKey: .totalTimeMs)
+    try container.encode(self.ramUsageMb, forKey: .ramUsageMb)
+  }
+
+  private enum CodingKeys: String, CodingKey {
+    case language
+    case languageToken = "language_token"
+    case tokenId = "token_id"
+    case confidence
+    case entropy
+    case totalTimeMs = "total_time_ms"
+    case ramUsageMb = "ram_usage_mb"
   }
 }
 
