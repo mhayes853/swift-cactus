@@ -79,7 +79,7 @@ public final class CactusSTTSession: Sendable {
   }
 }
 
-// MARK: - Public API
+// MARK: - Transcription
 
 extension CactusSTTSession {
   /// Creates a transcription stream for the provided request.
@@ -193,5 +193,48 @@ extension CactusSTTSession {
     } onCancel: {
       stream.stop()
     }
+  }
+}
+
+// MARK: - Language Detection
+
+extension CactusSTTSession {
+  /// Performs language detection and returns parsed language output.
+  ///
+  /// - Parameter request: The language detection request.
+  /// - Returns: The parsed language detection output.
+  public func detectLanguage(
+    request: CactusLanguageDetection.Request
+  ) async throws -> CactusLanguageDetection {
+    let options = CactusModel.LanguageDetectionOptions(request: request)
+    let dection = try await self.detectLanguage(request: request, options: options)
+    return CactusLanguageDetection(detection: dection)
+  }
+
+  private func detectLanguage(
+    request: CactusLanguageDetection.Request,
+    options: CactusModel.LanguageDetectionOptions
+  ) async throws -> CactusModel.LanguageDetection {
+    if let audioURL = request.content.audioURL {
+      return try await self.modelActor.detectLanguage(
+        audio: audioURL,
+        options: options,
+        maxBufferSize: request.maxBufferSize
+      )
+    }
+
+    if let pcmBytes = request.content.pcmBytes {
+      return try await self.modelActor.detectLanguage(
+        pcmBuffer: pcmBytes,
+        options: options,
+        maxBufferSize: request.maxBufferSize
+      )
+    }
+
+    return try await self.modelActor.detectLanguage(
+      pcmBuffer: [UInt8](),
+      options: options,
+      maxBufferSize: request.maxBufferSize
+    )
   }
 }
