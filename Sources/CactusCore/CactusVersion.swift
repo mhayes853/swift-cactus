@@ -2,4 +2,4 @@
 public let swiftCactusVersion = "2.0.0"
 
 /// The current underlying Cactus engine version.
-public let cactusEngineVersion = "1.9"
+public let cactusEngineVersion = "1.10"
