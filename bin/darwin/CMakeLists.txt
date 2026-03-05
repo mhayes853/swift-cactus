@@ -189,7 +189,7 @@ target_compile_options(CXXCactusDarwin PRIVATE
     -O3
     -fvisibility=hidden -fvisibility-inlines-hidden
     -ffunction-sections -fdata-sections
-    -march=armv8.2-a+fp16+simd+dotprod
+    -march=armv8.2-a+fp16+simd+dotprod+sme2
 )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")

@@ -33,7 +33,10 @@ public enum CactusTelemetry {
 
     guard !alreadySetup else { return }
 
-    cactus_set_telemetry_environment("swift", cacheLocation.nativePath)
+    cactus_set_telemetry_environment("swift", cacheLocation.nativePath, nil)
+    if let bundleId = Bundle.main.bundleIdentifier {
+      bundleId.withCString { cactus_set_app_id($0) }
+    }
   }
 
   #if canImport(Darwin)
