@@ -57,11 +57,14 @@ public struct CactusModel: ~Copyable {
         cacheIndex
       )
     else {
-      throw CreationError(
-        modelURL: url,
-        corpusDirectoryURL: corpusDirectoryURL,
-        cacheIndex: cacheIndex
-      )
+      let message: String
+      if let error = cactus_get_last_error() {
+        message = String(cString: error)
+      } else {
+        message =
+          "Failed to create model with modelURL: \(url), corpusDirectoryURL: \(String(describing: corpusDirectoryURL)), cacheIndex: \(cacheIndex)"
+      }
+      throw CactusModelError.creation(message: message)
     }
     self.modelPointer = modelPointer
   }
@@ -111,29 +114,6 @@ public struct CactusModel: ~Copyable {
       preconditionFailure(Self.unavailableModelPointerMessage)
     }
     return modelPointer
-  }
-}
-
-// MARK: - Creation Error
-
-extension CactusModel {
-  /// An error thrown when trying to create a model.
-  public struct CreationError: Error, Hashable {
-    /// The error message.
-    public let message: String
-
-    init(
-      modelURL: URL,
-      corpusDirectoryURL: URL?,
-      cacheIndex: Bool
-    ) {
-      if let message = cactus_get_last_error() {
-        self.message = String(cString: message)
-      } else {
-        self.message =
-          "Failed to create model with modelURL: \(modelURL), corpusDirectoryURL: \(String(describing: corpusDirectoryURL)), cacheIndex: \(cacheIndex)"
-      }
-    }
   }
 }
 
@@ -212,6 +192,9 @@ public struct CactusModelError: Error, Hashable, Sendable {
 
     /// A RAG query generation error.
     public static let ragQueryGeneration = Self(rawValue: "ragQueryGeneration")
+
+    /// Failed to create the model.
+    public static let creation = Self(rawValue: "creation")
   }
 
   /// A stable machine-readable error code.
@@ -300,6 +283,11 @@ public struct CactusModelError: Error, Hashable, Sendable {
   /// A RAG query generation error.
   public static func ragQueryGeneration(message: String?) -> Self {
     Self(code: .ragQueryGeneration, message: message)
+  }
+
+  /// Failed to create the model.
+  public static func creation(message: String?) -> Self {
+    Self(code: .creation, message: message)
   }
 }
 
