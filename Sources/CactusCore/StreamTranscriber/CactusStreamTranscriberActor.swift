@@ -53,6 +53,7 @@ public actor CactusStreamTranscriberActor {
   ///   - executor: A custom `SerialExecutor` to use for this actor.
   ///   - modelURL: The URL of the model.
   public init(executor: (any SerialExecutor)? = nil, modelURL: URL) throws {
+    try Task.checkCancellation()
     let streamTranscriber = try CactusStreamTranscriber(modelURL: modelURL)
     self.init(executor: executor, streamTranscriber: consume streamTranscriber)
   }
@@ -66,6 +67,7 @@ public actor CactusStreamTranscriberActor {
     executor: (any SerialExecutor)? = nil,
     model: consuming sending cactus_model_t
   ) throws {
+    try Task.checkCancellation()
     let streamTranscriber = try CactusStreamTranscriber(model: model)
     self.init(executor: executor, streamTranscriber: consume streamTranscriber)
   }
@@ -100,7 +102,8 @@ extension CactusStreamTranscriberActor {
   public func process(buffer: [UInt8]) async throws
     -> CactusStreamTranscriber.ProcessedTranscription
   {
-    try self.streamTranscriber.process(buffer: buffer)
+    try Task.checkCancellation()
+    return try self.streamTranscriber.process(buffer: buffer)
   }
 
   /// Processes a PCM audio buffer and returns interim transcription result.
@@ -110,7 +113,8 @@ extension CactusStreamTranscriberActor {
   public func process(buffer: UnsafeBufferPointer<UInt8>) async throws
     -> CactusStreamTranscriber.ProcessedTranscription
   {
-    try self.streamTranscriber.process(buffer: buffer)
+    try Task.checkCancellation()
+    return try self.streamTranscriber.process(buffer: buffer)
   }
 }
 
@@ -121,7 +125,8 @@ extension CactusStreamTranscriberActor {
   ///
   /// - Returns: A ``CactusStreamTranscriber/FinalizedTranscription``.
   public func stop() async throws -> CactusStreamTranscriber.FinalizedTranscription {
-    try self.streamTranscriber.mutatingStop()
+    try Task.checkCancellation()
+    return try self.streamTranscriber.mutatingStop()
   }
 }
 
