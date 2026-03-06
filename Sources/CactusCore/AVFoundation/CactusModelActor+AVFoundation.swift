@@ -20,7 +20,8 @@
       transcriptionMaxBufferSize: Int? = nil,
       onToken: @escaping @Sendable (String) -> Void = { _ in }
     ) async throws -> CactusModel.Transcription {
-      try await self.transcribe(
+      try Task.checkCancellation()
+      return try await self.transcribe(
         buffer: try buffer.cactusPCMBytes(),
         prompt: prompt,
         options: options,
@@ -45,7 +46,8 @@
       transcriptionMaxBufferSize: Int? = nil,
       onToken: @escaping @Sendable (String, UInt32) -> Void
     ) async throws -> CactusModel.Transcription {
-      try await self.transcribe(
+      try Task.checkCancellation()
+      return try await self.transcribe(
         buffer: try buffer.cactusPCMBytes(),
         prompt: prompt,
         options: options,
@@ -66,7 +68,8 @@
       options: CactusModel.LanguageDetectionOptions? = nil,
       maxBufferSize: Int? = nil
     ) async throws -> CactusModel.LanguageDetection {
-      try await self.detectLanguage(
+      try Task.checkCancellation()
+      return try await self.detectLanguage(
         pcmBuffer: try buffer.cactusPCMBytes(),
         options: options,
         maxBufferSize: maxBufferSize
@@ -85,7 +88,8 @@
       options: CactusModel.VADOptions? = nil,
       maxBufferSize: Int? = nil
     ) async throws -> CactusModel.VADResult {
-      try await self.vad(
+      try Task.checkCancellation()
+      return try await self.vad(
         pcmBuffer: try buffer.cactusPCMBytes(),
         options: options,
         maxBufferSize: maxBufferSize

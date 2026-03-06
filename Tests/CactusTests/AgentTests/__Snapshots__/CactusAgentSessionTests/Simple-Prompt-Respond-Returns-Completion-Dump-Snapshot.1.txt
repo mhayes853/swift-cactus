@@ -4,7 +4,7 @@
       - metrics: Optional<CactusGenerationMetrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 2FC2C2FA-2B0D-4F1D-B740-7F24004AAFFB
+          - rawValue: 4D1AB970-502D-490B-81C7-96E4F836A645
         ▿ message: Message
           - content: "Say hello in one concise sentence."
           ▿ images: Optional<Array<URL>>
@@ -14,41 +14,41 @@
     ▿ CactusCompletionEntry
       ▿ metrics: Optional<CactusGenerationMetrics>
         ▿ some: CactusGenerationMetrics
-          - confidence: 0.8933
-          - decodeTokens: 201
-          - decodeTps: 30.62
+          - confidence: 0.9099
+          - decodeTokens: 512
+          - decodeTps: 54.47
           - didHandoffToCloud: false
-          ▿ durationToFirstToken: 0.0603 seconds
-            - _low: 60299999999999997
+          ▿ durationToFirstToken: 0.02294 seconds
+            - _low: 22940000000000001
             - _high: 0
           - prefillTokens: 16
-          - prefillTps: 265.36
-          - ramUsageMb: 446.43
-          ▿ totalDuration: 6.59115 seconds
-            - _low: 6591149999999999636
+          - prefillTps: 697.41
+          - ramUsageMb: 1308.53
+          ▿ totalDuration: 9.40374 seconds
+            - _low: 9403739999999999782
             - _high: 0
-          - totalTokens: 217
+          - totalTokens: 528
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 12897C00-816F-4014-830C-2E3AA6A8B41F
+          - rawValue: 5578CAD4-9444-41A3-ADD3-86035B6CA9BF
         ▿ message: Message
-          - content: "The English Language Learning website is the best resource for learning new phrases in the local languages spoken across many countries.\n\nHere\'s how to use it effectively:\n\n*   **Focus on practical exercises:** Instead of just memorizing vocabulary lists, practice real conversations with phrases from various cultures and communities.\n*   **Immer sive immersion:** Immerse yourself in the sounds and rhythms of a new language without any distractions from grammar rules or pronunciation guides.\n*   **Connect with others**:  Learning a language isn\'rous! Connect with native speakers, musicians, artists who share common goals and experiences through online platforms built into the platform.\n*    **Personal growth**: Whether you are learning to order food in Italy or ordering coffee in Kenya, using an online platform can help you learn not only what is said but also *how it is done*.\n\nBy incorporating this resource into your daily life, you can unlock new opportunities for connection across cultures and languages. The journey towards fluency is yours!"
+          - content: "The \"Hello\" in one concise sentence is often used as a greeting or formal expression. The meaning depends on the context provided. For example:\n\n*   \"Greetings to you!\" (formal)\n*   \"Greetings to you!\" (informal)\n*   \"Greetings to all!\" (formal)\n\nWhich one is appropriate depends on your specific situation and relationship. Using the word \"Hello.\" provides a more approachable and less formal tone than using something like \"Good morning, good afternoon, good evening.\" \n\nConsider this simple statement for yourself:  *\"Hi there! How are things?\"  If it\'isms with your first name or other details of your life, it is often better practice not having that greeting in mind. It can be used as a way of communicating with someone who may have just learned about you without being asked for an introduction or an explanation. You could say something like *\"It\'s been great to meet you!\"* which means *\"I enjoyed meeting everyone here today!\"*\n\nUsing the word \"Hello\" is simply a more considerate and less formal way to show respect and appreciation in many situations, whether those involve personal interactions or professional settings. It provides a sense of connection that might be lacking when one has no prior knowledge about another person.\n\nIn summary:\n\n1️⃣ Meaningful in one concise sentence: The \"Hello\" is often used as a greeting, formal expression, etc., depending on your specific situation and relationship. Use it with people who are generally known for their warmth or friendliness by using the word \"Hello.\" \n2️⃣ Consider this simple statement for yourself: *\"Hi there! How are things?\"  If itisms with your first name or other details of your life?  It can be used as a way to communicate with someone who may just learned about you without being asked for an introduction or an explanation. You could say something like *\"It\'evolving!\"* which means *\"I enjoyed meeting everyone here today!\"*\n\nUse the word \"Hello\" in one concise sentence. It is often a more considerate and less formal way to show respect and appreciation in many situations, whether those involve personal interactions or professional settings. Using the word \"Hello.\" provides a sense of connection that might be lacking when one has no prior knowledge about another person\'s feelings, emotions, etc., it can be used as a way of communicating with someone who may have just learned about you without being asked for an introduction or an explanation. You could say something like *\"It was lovely meeting you"
           - images: Optional<Array<URL>>.none
           ▿ role: Role
             - rawValue: "assistant"
   ▿ metrics: CactusGenerationMetrics
-    - confidence: 0.8933
-    - decodeTokens: 201
-    - decodeTps: 30.62
+    - confidence: 0.9099
+    - decodeTokens: 512
+    - decodeTps: 54.47
     - didHandoffToCloud: false
-    ▿ durationToFirstToken: 0.0603 seconds
-      - _low: 60299999999999997
+    ▿ durationToFirstToken: 0.02294 seconds
+      - _low: 22940000000000001
       - _high: 0
     - prefillTokens: 16
-    - prefillTps: 265.36
-    - ramUsageMb: 446.43
-    ▿ totalDuration: 6.59115 seconds
-      - _low: 6591149999999999636
+    - prefillTps: 697.41
+    - ramUsageMb: 1308.53
+    ▿ totalDuration: 9.40374 seconds
+      - _low: 9403739999999999782
       - _high: 0
-    - totalTokens: 217
-  - output: "The English Language Learning website is the best resource for learning new phrases in the local languages spoken across many countries.\n\nHere\'s how to use it effectively:\n\n*   **Focus on practical exercises:** Instead of just memorizing vocabulary lists, practice real conversations with phrases from various cultures and communities.\n*   **Immer sive immersion:** Immerse yourself in the sounds and rhythms of a new language without any distractions from grammar rules or pronunciation guides.\n*   **Connect with others**:  Learning a language isn\'rous! Connect with native speakers, musicians, artists who share common goals and experiences through online platforms built into the platform.\n*    **Personal growth**: Whether you are learning to order food in Italy or ordering coffee in Kenya, using an online platform can help you learn not only what is said but also *how it is done*.\n\nBy incorporating this resource into your daily life, you can unlock new opportunities for connection across cultures and languages. The journey towards fluency is yours!"
+    - totalTokens: 528
+  - output: "The \"Hello\" in one concise sentence is often used as a greeting or formal expression. The meaning depends on the context provided. For example:\n\n*   \"Greetings to you!\" (formal)\n*   \"Greetings to you!\" (informal)\n*   \"Greetings to all!\" (formal)\n\nWhich one is appropriate depends on your specific situation and relationship. Using the word \"Hello.\" provides a more approachable and less formal tone than using something like \"Good morning, good afternoon, good evening.\" \n\nConsider this simple statement for yourself:  *\"Hi there! How are things?\"  If it\'isms with your first name or other details of your life, it is often better practice not having that greeting in mind. It can be used as a way of communicating with someone who may have just learned about you without being asked for an introduction or an explanation. You could say something like *\"It\'s been great to meet you!\"* which means *\"I enjoyed meeting everyone here today!\"*\n\nUsing the word \"Hello\" is simply a more considerate and less formal way to show respect and appreciation in many situations, whether those involve personal interactions or professional settings. It provides a sense of connection that might be lacking when one has no prior knowledge about another person.\n\nIn summary:\n\n1️⃣ Meaningful in one concise sentence: The \"Hello\" is often used as a greeting, formal expression, etc., depending on your specific situation and relationship. Use it with people who are generally known for their warmth or friendliness by using the word \"Hello.\" \n2️⃣ Consider this simple statement for yourself: *\"Hi there! How are things?\"  If itisms with your first name or other details of your life?  It can be used as a way to communicate with someone who may just learned about you without being asked for an introduction or an explanation. You could say something like *\"It\'evolving!\"* which means *\"I enjoyed meeting everyone here today!\"*\n\nUse the word \"Hello\" in one concise sentence. It is often a more considerate and less formal way to show respect and appreciation in many situations, whether those involve personal interactions or professional settings. Using the word \"Hello.\" provides a sense of connection that might be lacking when one has no prior knowledge about another person\'s feelings, emotions, etc., it can be used as a way of communicating with someone who may have just learned about you without being asked for an introduction or an explanation. You could say something like *\"It was lovely meeting you"
