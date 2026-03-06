@@ -20,10 +20,11 @@ struct `CactusModel tests` {
 
   @Test
   func `Attempt To Create Model From Non-Existent URL, Throws Error`() async throws {
-    let error = #expect(throws: CactusModel.CreationError.self) {
+    let error = #expect(throws: CactusModelError.self) {
       _ = try CactusModel(from: temporaryModelDirectory())
     }
-    expectNoDifference(error?.message.starts(with: "Failed to create model"), true)
+    expectNoDifference(error?.code, CactusModelError.Code.creation)
+    expectNoDifference(error?.message?.starts(with: "Failed to create model"), true)
   }
 
   @Test
