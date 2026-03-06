@@ -69,6 +69,7 @@ public actor CactusModelActor {
     corpusDirectoryURL: URL? = nil,
     cacheIndex: Bool = false
   ) throws {
+    try Task.checkCancellation()
     let model = try CactusModel(
       from: url,
       corpusDirectoryURL: corpusDirectoryURL,
@@ -103,7 +104,8 @@ extension CactusModelActor {
   ///   - maxBufferSize: The maximum buffer size for the tokenized output.
   /// - Returns: An array of raw tokens.
   public func tokenize(text: String, maxBufferSize: Int = 8192) async throws -> [UInt32] {
-    try self.model.tokenize(text: text, maxBufferSize: maxBufferSize)
+    try Task.checkCancellation()
+    return try self.model.tokenize(text: text, maxBufferSize: maxBufferSize)
   }
 
   /// Tokenizes the specified `text`.
@@ -114,7 +116,8 @@ extension CactusModelActor {
   /// - Returns: The total number of tokens.
   @discardableResult
   public func tokenize(text: String, buffer: inout MutableSpan<UInt32>) async throws -> Int {
-    try self.model.tokenize(text: text, buffer: &buffer)
+    try Task.checkCancellation()
+    return try self.model.tokenize(text: text, buffer: &buffer)
   }
 }
 
@@ -133,7 +136,8 @@ extension CactusModelActor {
     range: Range<Int>? = nil,
     context: Int
   ) async throws -> CactusModel.TokenWindowScore {
-    try self.model.scoreTokenWindow(tokens: tokens, range: range, context: context)
+    try Task.checkCancellation()
+    return try self.model.scoreTokenWindow(tokens: tokens, range: range, context: context)
   }
 
   /// Calculates the log probability score of a token window.
@@ -148,7 +152,8 @@ extension CactusModelActor {
     range: Range<Int>? = nil,
     context: Int
   ) async throws -> CactusModel.TokenWindowScore {
-    try self.model.scoreTokenWindow(tokens: tokens, range: range, context: context)
+    try Task.checkCancellation()
+    return try self.model.scoreTokenWindow(tokens: tokens, range: range, context: context)
   }
 }
 
@@ -167,7 +172,8 @@ extension CactusModelActor {
     maxBufferSize: Int? = nil,
     normalize: Bool = false
   ) async throws -> [Float] {
-    try self.model.embeddings(for: text, maxBufferSize: maxBufferSize, normalize: normalize)
+    try Task.checkCancellation()
+    return try self.model.embeddings(for: text, maxBufferSize: maxBufferSize, normalize: normalize)
   }
 
   /// Generates embeddings for the specified `text` and stores them in the specified buffer.
@@ -183,7 +189,8 @@ extension CactusModelActor {
     buffer: inout MutableSpan<Float>,
     normalize: Bool = false
   ) async throws -> Int {
-    try self.model.embeddings(for: text, buffer: &buffer, normalize: normalize)
+    try Task.checkCancellation()
+    return try self.model.embeddings(for: text, buffer: &buffer, normalize: normalize)
   }
 
   /// Generates embeddings for the specified `image`.
@@ -193,7 +200,8 @@ extension CactusModelActor {
   ///   - maxBufferSize: The size of the buffer to allocate to store the embeddings.
   /// - Returns: An array of float values.
   public func imageEmbeddings(for image: URL, maxBufferSize: Int? = nil) async throws -> [Float] {
-    try self.model.imageEmbeddings(for: image, maxBufferSize: maxBufferSize)
+    try Task.checkCancellation()
+    return try self.model.imageEmbeddings(for: image, maxBufferSize: maxBufferSize)
   }
 
   /// Generates embeddings for the specified `image` and stores them in the specified buffer.
@@ -207,7 +215,8 @@ extension CactusModelActor {
     for image: URL,
     buffer: inout MutableSpan<Float>
   ) async throws -> Int {
-    try self.model.imageEmbeddings(for: image, buffer: &buffer)
+    try Task.checkCancellation()
+    return try self.model.imageEmbeddings(for: image, buffer: &buffer)
   }
 
   /// Generates embeddings for the specified `audio`.
@@ -217,7 +226,8 @@ extension CactusModelActor {
   ///   - maxBufferSize: The size of the buffer to allocate to store the embeddings.
   /// - Returns: An array of float values.
   public func audioEmbeddings(for audio: URL, maxBufferSize: Int? = nil) async throws -> [Float] {
-    try self.model.audioEmbeddings(for: audio, maxBufferSize: maxBufferSize)
+    try Task.checkCancellation()
+    return try self.model.audioEmbeddings(for: audio, maxBufferSize: maxBufferSize)
   }
 
   /// Generates embeddings for the specified `audio` and stores them in the specified buffer.
@@ -231,7 +241,35 @@ extension CactusModelActor {
     for audio: URL,
     buffer: inout MutableSpan<Float>
   ) async throws -> Int {
-    try self.model.audioEmbeddings(for: audio, buffer: &buffer)
+    try Task.checkCancellation()
+    return try self.model.audioEmbeddings(for: audio, buffer: &buffer)
+  }
+}
+
+// MARK: - Cancellation Helpers
+
+extension CactusModelActor {
+  private func performStoppableGeneration<T>(
+    _ operation: () throws -> T
+  ) async throws -> T {
+    try Task.checkCancellation()
+    let modelStopper = self.model.withModelPointer { modelPointer in
+      CactusModelStopper(modelPointer: modelPointer)
+    }
+    return try await withTaskCancellationHandler {
+      do {
+        let value = try operation()
+        try Task.checkCancellation()
+        return value
+      } catch {
+        if Task.isCancelled {
+          throw CancellationError()
+        }
+        throw error
+      }
+    } onCancel: {
+      modelStopper.stop()
+    }
   }
 }
 
@@ -271,13 +309,15 @@ extension CactusModelActor {
     functions: [CactusModel.FunctionDefinition] = [],
     onToken: @escaping @Sendable (String) -> Void = { _ in }
   ) async throws -> CactusModel.CompletedChatTurn {
-    try self.model.complete(
-      messages: messages,
-      options: options,
-      maxBufferSize: maxBufferSize,
-      functions: functions,
-      onToken: onToken
-    )
+    try await self.performStoppableGeneration {
+      try self.model.complete(
+        messages: messages,
+        options: options,
+        maxBufferSize: maxBufferSize,
+        functions: functions,
+        onToken: onToken
+      )
+    }
   }
 
   /// Generates a completed chat turn with reusable continuation messages.
@@ -308,13 +348,15 @@ extension CactusModelActor {
     functions: [CactusModel.FunctionDefinition] = [],
     onToken: @escaping @Sendable (String, UInt32) -> Void
   ) async throws -> CactusModel.CompletedChatTurn {
-    try self.model.complete(
-      messages: messages,
-      options: options,
-      maxBufferSize: maxBufferSize,
-      functions: functions,
-      onToken: onToken
-    )
+    try await self.performStoppableGeneration {
+      try self.model.complete(
+        messages: messages,
+        options: options,
+        maxBufferSize: maxBufferSize,
+        functions: functions,
+        onToken: onToken
+      )
+    }
   }
 }
 
@@ -337,13 +379,15 @@ extension CactusModelActor {
     transcriptionMaxBufferSize: Int? = nil,
     onToken: @escaping @Sendable (String) -> Void = { _ in }
   ) async throws -> CactusModel.Transcription {
-    try self.model.transcribe(
-      buffer: buffer,
-      prompt: prompt,
-      options: options,
-      transcriptionMaxBufferSize: transcriptionMaxBufferSize,
-      onToken: onToken
-    )
+    try await self.performStoppableGeneration {
+      try self.model.transcribe(
+        buffer: buffer,
+        prompt: prompt,
+        options: options,
+        transcriptionMaxBufferSize: transcriptionMaxBufferSize,
+        onToken: onToken
+      )
+    }
   }
 
   /// Transcribes the specified audio buffer.
@@ -362,13 +406,15 @@ extension CactusModelActor {
     transcriptionMaxBufferSize: Int? = nil,
     onToken: @escaping @Sendable (String, UInt32) -> Void
   ) async throws -> CactusModel.Transcription {
-    try self.model.transcribe(
-      buffer: buffer,
-      prompt: prompt,
-      options: options,
-      transcriptionMaxBufferSize: transcriptionMaxBufferSize,
-      onToken: onToken
-    )
+    try await self.performStoppableGeneration {
+      try self.model.transcribe(
+        buffer: buffer,
+        prompt: prompt,
+        options: options,
+        transcriptionMaxBufferSize: transcriptionMaxBufferSize,
+        onToken: onToken
+      )
+    }
   }
 
   /// Transcribes the specified `audio` file.
@@ -387,13 +433,15 @@ extension CactusModelActor {
     maxBufferSize: Int? = nil,
     onToken: @escaping @Sendable (String) -> Void = { _ in }
   ) async throws -> CactusModel.Transcription {
-    try self.model.transcribe(
-      audio: audio,
-      prompt: prompt,
-      options: options,
-      maxBufferSize: maxBufferSize,
-      onToken: onToken
-    )
+    try await self.performStoppableGeneration {
+      try self.model.transcribe(
+        audio: audio,
+        prompt: prompt,
+        options: options,
+        maxBufferSize: maxBufferSize,
+        onToken: onToken
+      )
+    }
   }
 
   /// Transcribes the specified `audio` file.
@@ -412,13 +460,15 @@ extension CactusModelActor {
     maxBufferSize: Int? = nil,
     onToken: @escaping @Sendable (String, UInt32) -> Void
   ) async throws -> CactusModel.Transcription {
-    try self.model.transcribe(
-      audio: audio,
-      prompt: prompt,
-      options: options,
-      maxBufferSize: maxBufferSize,
-      onToken: onToken
-    )
+    try await self.performStoppableGeneration {
+      try self.model.transcribe(
+        audio: audio,
+        prompt: prompt,
+        options: options,
+        maxBufferSize: maxBufferSize,
+        onToken: onToken
+      )
+    }
   }
 }
 
@@ -437,7 +487,8 @@ extension CactusModelActor {
     options: CactusModel.LanguageDetectionOptions? = nil,
     maxBufferSize: Int? = nil
   ) async throws -> CactusModel.LanguageDetection {
-    try self.model.detectLanguage(audio: audio, options: options, maxBufferSize: maxBufferSize)
+    try Task.checkCancellation()
+    return try self.model.detectLanguage(audio: audio, options: options, maxBufferSize: maxBufferSize)
   }
 
   /// Detects the language from a PCM byte buffer.
@@ -452,7 +503,12 @@ extension CactusModelActor {
     options: CactusModel.LanguageDetectionOptions? = nil,
     maxBufferSize: Int? = nil
   ) async throws -> CactusModel.LanguageDetection {
-    try self.model.detectLanguage(pcmBuffer: pcmBuffer, options: options, maxBufferSize: maxBufferSize)
+    try Task.checkCancellation()
+    return try self.model.detectLanguage(
+      pcmBuffer: pcmBuffer,
+      options: options,
+      maxBufferSize: maxBufferSize
+    )
   }
 
   /// Detects the language from a PCM byte buffer.
@@ -467,7 +523,12 @@ extension CactusModelActor {
     options: CactusModel.LanguageDetectionOptions? = nil,
     maxBufferSize: Int? = nil
   ) async throws -> CactusModel.LanguageDetection {
-    try self.model.detectLanguage(pcmBuffer: pcmBuffer, options: options, maxBufferSize: maxBufferSize)
+    try Task.checkCancellation()
+    return try self.model.detectLanguage(
+      pcmBuffer: pcmBuffer,
+      options: options,
+      maxBufferSize: maxBufferSize
+    )
   }
 }
 
@@ -486,7 +547,8 @@ extension CactusModelActor {
     options: CactusModel.VADOptions? = nil,
     maxBufferSize: Int? = nil
   ) async throws -> CactusModel.VADResult {
-    try self.model.vad(audio: audio, options: options, maxBufferSize: maxBufferSize)
+    try Task.checkCancellation()
+    return try self.model.vad(audio: audio, options: options, maxBufferSize: maxBufferSize)
   }
 
   /// Runs voice activity detection on a PCM byte buffer.
@@ -501,7 +563,8 @@ extension CactusModelActor {
     options: CactusModel.VADOptions? = nil,
     maxBufferSize: Int? = nil
   ) async throws -> CactusModel.VADResult {
-    try self.model.vad(pcmBuffer: pcmBuffer, options: options, maxBufferSize: maxBufferSize)
+    try Task.checkCancellation()
+    return try self.model.vad(pcmBuffer: pcmBuffer, options: options, maxBufferSize: maxBufferSize)
   }
 
   /// Runs voice activity detection on a PCM byte buffer.
@@ -516,7 +579,8 @@ extension CactusModelActor {
     options: CactusModel.VADOptions? = nil,
     maxBufferSize: Int? = nil
   ) async throws -> CactusModel.VADResult {
-    try self.model.vad(pcmBuffer: pcmBuffer, options: options, maxBufferSize: maxBufferSize)
+    try Task.checkCancellation()
+    return try self.model.vad(pcmBuffer: pcmBuffer, options: options, maxBufferSize: maxBufferSize)
   }
 }
 
@@ -560,7 +624,8 @@ extension CactusModelActor {
     topK: Int = 10,
     maxBufferSize: Int? = nil
   ) async throws -> CactusModel.RAGQueryResult {
-    try self.model.ragQuery(query: query, topK: topK, maxBufferSize: maxBufferSize)
+    try Task.checkCancellation()
+    return try self.model.ragQuery(query: query, topK: topK, maxBufferSize: maxBufferSize)
   }
 }
 

@@ -3,7 +3,7 @@
     - metrics: Optional<CactusGenerationMetrics>.none
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: 525B1FBC-E59F-4A3E-983C-941B8C2E422B
+        - rawValue: FC051124-2CF6-4429-8D44-F61ADF90B9F7
       ▿ message: Message
         - content: "Use the get_fact tool for both \'cactus\' and \'swift\', then summarize both facts."
         ▿ images: Optional<Array<URL>>
@@ -13,23 +13,23 @@
   ▿ CactusCompletionEntry
     ▿ metrics: Optional<CactusGenerationMetrics>
       ▿ some: CactusGenerationMetrics
-        - confidence: 0.9947
+        - confidence: 0.994
         - decodeTokens: 22
-        - decodeTps: 4.81
+        - decodeTps: 6.93
         - didHandoffToCloud: false
-        ▿ durationToFirstToken: 8.98172 seconds
-          - _low: 8981719999999999345
+        ▿ durationToFirstToken: 3.26572 seconds
+          - _low: 3265719999999999800
           - _high: 0
         - prefillTokens: 142
-        - prefillTps: 15.81
-        - ramUsageMb: 300.76
-        ▿ totalDuration: 13.34981 seconds
-          - _low: 13349809999999999491
+        - prefillTps: 43.48
+        - ramUsageMb: 1117.57
+        ▿ totalDuration: 6.29674 seconds
+          - _low: 6296739999999999782
           - _high: 0
         - totalTokens: 164
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: 5E9D20E7-C800-4BDF-90D1-B462F08447D8
+        - rawValue: 8C90B5DE-2B0A-4866-948B-1171095E3F6B
       ▿ message: Message
         - content: "<|tool_call_start|>[get_fact(topic=\"cactus\"), get_fact(topic=\"swift\")]<|tool_call_end|>"
         - images: Optional<Array<URL>>.none
@@ -39,9 +39,9 @@
     - metrics: Optional<CactusGenerationMetrics>.none
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: 2602648A-7B0E-435B-A868-4394B1445644
+        - rawValue: FA1821EB-5732-4A91-80DD-0169A6805D28
       ▿ message: Message
-        - content: "{\"content\":\"Cacti store water in thick stems to survive arid climates.\",\"name\":\"get_fact\"}"
+        - content: "{\"name\":\"get_fact\",\"content\":\"Cacti store water in thick stems to survive arid climates.\"}"
         - images: Optional<Array<URL>>.none
         ▿ role: Role
           - rawValue: "tool"
@@ -49,34 +49,34 @@
     - metrics: Optional<CactusGenerationMetrics>.none
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: 6D36E9AE-A58B-4205-9795-B8E416EFB580
+        - rawValue: F76FFD8E-759D-4306-B87A-8709137435FC
       ▿ message: Message
-        - content: "{\"content\":\"Swift is a type-safe language that emphasizes expressive syntax and performance.\",\"name\":\"get_fact\"}"
+        - content: "{\"name\":\"get_fact\",\"content\":\"Swift is a type-safe language that emphasizes expressive syntax and performance.\"}"
         - images: Optional<Array<URL>>.none
         ▿ role: Role
           - rawValue: "tool"
   ▿ CactusCompletionEntry
     ▿ metrics: Optional<CactusGenerationMetrics>
       ▿ some: CactusGenerationMetrics
-        - confidence: 0.9621
-        - decodeTokens: 58
-        - decodeTps: 3.51
+        - confidence: 0.9381
+        - decodeTokens: 69
+        - decodeTps: 25.39
         - didHandoffToCloud: false
-        ▿ durationToFirstToken: 7.97479 seconds
-          - _low: 7974789999999999964
+        ▿ durationToFirstToken: 1.90629 seconds
+          - _low: 1906289999999999964
           - _high: 0
-        - prefillTokens: 68
-        - prefillTps: 8.53
-        - ramUsageMb: 154.07
-        ▿ totalDuration: 24.21637 seconds
-          - _low: 5769625926290447365
-          - _high: 1
-        - totalTokens: 126
+        - prefillTokens: 66
+        - prefillTps: 34.62
+        - ramUsageMb: 1201.63
+        ▿ totalDuration: 4.58445 seconds
+          - _low: 4584449999999999818
+          - _high: 0
+        - totalTokens: 135
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: 0D5B535B-9DBE-4D73-8771-3E4F59C3B08E
+        - rawValue: 8BA8EB93-77F6-48EF-9534-04B789C99024
       ▿ message: Message
-        - content: "Here are the facts:  \n- Cacti store water in thick stems to survive arid climates.  \n- Swift is a type-safe language that emphasizes expressive syntax and performance.  \n\nBoth facts highlight unique adaptations—cacti for desert survival, Swift for efficient coding practices. "
+        - content: "The cactus stores water in its thick stems to survive arid environments. Swift is a type-safe programming language known for its expressive syntax and performance optimization. These facts highlight the adaptability of life forms like cacti and the design principles behind modern programming languages like Swift, which both thrive in their respective domains—nature and technology. "
         - images: Optional<Array<URL>>.none
         ▿ role: Role
           - rawValue: "assistant"
