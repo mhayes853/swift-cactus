@@ -157,6 +157,7 @@ public final class CactusAgentSession: Sendable {
       self.observationRegistrar.withMutation(of: self, keyPath: \CactusAgentSession.functions) {
         self.state.withLock { $0.functions = newValue }
       }
+      Self.checkForDuplicateFunctions(newValue)
     }
   }
 
@@ -172,6 +173,7 @@ public final class CactusAgentSession: Sendable {
     transcript: CactusTranscript,
     systemPrompt: sending CactusPromptContent?
   ) {
+    Self.checkForDuplicateFunctions(functions)
     self.modelActor = modelActor
     self.state = Lock(
       State(
@@ -182,6 +184,31 @@ public final class CactusAgentSession: Sendable {
         delegate: nil,
         systemPrompt: systemPrompt
       )
+    )
+  }
+
+  private static func checkForDuplicateFunctions(_ functions: [any CactusFunction]) {
+    var nameCounts: [String: Int] = [:]
+    for function in functions {
+      nameCounts[function.name, default: 0] += 1
+    }
+    let duplicates = nameCounts.filter { $0.value > 1 }
+    guard !duplicates.isEmpty else { return }
+    var duplicateList: [String] = []
+    for name in duplicates.keys.sorted() {
+      for function in functions where function.name == name {
+        duplicateList.append("(\(name), \(String(describing: type(of: function))))")
+      }
+    }
+    reportIssue(
+      """
+      Functions with duplicate names have been detected in a `CactusAgentSession`. This is \
+      generally considered an application logic error, and may cause unexpected behavior around \
+      function calls.
+
+      Duplicates:
+      \(duplicateList.map { "  \($0)" }.joined(separator: "\n"))
+      """
     )
   }
 }
@@ -831,10 +858,10 @@ extension CactusAgentSession {
 
   private func resolveFunctionCalls(
     _ functionCalls: [CactusModel.FunctionCall],
-    using functions: [any CactusFunction]
+    using functions: [String: any CactusFunction]
   ) throws -> [CactusAgentSession.FunctionCall] {
-    return try functionCalls.map { functionCall in
-      guard let function = functions.first(where: { $0.name == functionCall.name }) else {
+    try functionCalls.map { functionCall in
+      guard let function = functions[functionCall.name] else {
         throw CactusAgentSessionError.missingFunction(functionCall.name)
       }
       return CactusAgentSession.FunctionCall(
@@ -849,7 +876,7 @@ extension CactusAgentSession {
     let options: CactusModel.Completion.Options
     let maxBufferSize: Int?
     let functionDefinitions: [CactusModel.FunctionDefinition]
-    let functions: [any CactusFunction]
+    let functions: [String: any CactusFunction]
   }
 
   private func streamRequestContext(
@@ -865,12 +892,14 @@ extension CactusAgentSession {
     var transcript = self.transcript.messages
     transcript.append(userMessage)
 
+    let functionsDict = Dictionary(uniqueKeysWithValues: self.functions.map { ($0.name, $0) })
+
     return StreamRequestContext(
       transcript: transcript,
       options: CactusModel.Completion.Options(message: request),
       maxBufferSize: request.maxBufferSize,
       functionDefinitions: self.functions.map(\.definition),
-      functions: self.functions
+      functions: functionsDict
     )
   }
 
