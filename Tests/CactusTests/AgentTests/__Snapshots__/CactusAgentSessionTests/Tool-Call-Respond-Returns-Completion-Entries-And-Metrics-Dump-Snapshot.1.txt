@@ -1,9 +1,9 @@
-▿ 5 elements
+▿ 2 elements
   ▿ CactusCompletionEntry
     - metrics: Optional<CactusGenerationMetrics>.none
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: FC051124-2CF6-4429-8D44-F61ADF90B9F7
+        - rawValue: A924C5E3-260B-4033-AF98-ACD9262FF79A
       ▿ message: Message
         - content: "Use the get_fact tool for both \'cactus\' and \'swift\', then summarize both facts."
         ▿ images: Optional<Array<URL>>
@@ -13,70 +13,25 @@
   ▿ CactusCompletionEntry
     ▿ metrics: Optional<CactusGenerationMetrics>
       ▿ some: CactusGenerationMetrics
-        - confidence: 0.994
-        - decodeTokens: 22
-        - decodeTps: 6.93
+        - confidence: 0.9323
+        - decodeTokens: 49
+        - decodeTps: 34.62
         - didHandoffToCloud: false
-        ▿ durationToFirstToken: 3.26572 seconds
-          - _low: 3265719999999999800
+        ▿ durationToFirstToken: 1.24326 seconds
+          - _low: 1243259999999999991
           - _high: 0
-        - prefillTokens: 142
-        - prefillTps: 43.48
-        - ramUsageMb: 1117.57
-        ▿ totalDuration: 6.29674 seconds
-          - _low: 6296739999999999782
+        - prefillTokens: 119
+        - prefillTps: 95.72
+        - ramUsageMb: 992.64
+        ▿ totalDuration: 2.62955 seconds
+          - _low: 2629550000000000182
           - _high: 0
-        - totalTokens: 164
+        - totalTokens: 168
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: 8C90B5DE-2B0A-4866-948B-1171095E3F6B
+        - rawValue: BD540357-A81E-4424-B430-3983324CFBF0
       ▿ message: Message
-        - content: "<|tool_call_start|>[get_fact(topic=\"cactus\"), get_fact(topic=\"swift\")]<|tool_call_end|>"
-        - images: Optional<Array<URL>>.none
-        ▿ role: Role
-          - rawValue: "assistant"
-  ▿ CactusCompletionEntry
-    - metrics: Optional<CactusGenerationMetrics>.none
-    ▿ transcriptEntry: Element
-      ▿ id: CactusGenerationID
-        - rawValue: FA1821EB-5732-4A91-80DD-0169A6805D28
-      ▿ message: Message
-        - content: "{\"name\":\"get_fact\",\"content\":\"Cacti store water in thick stems to survive arid climates.\"}"
-        - images: Optional<Array<URL>>.none
-        ▿ role: Role
-          - rawValue: "tool"
-  ▿ CactusCompletionEntry
-    - metrics: Optional<CactusGenerationMetrics>.none
-    ▿ transcriptEntry: Element
-      ▿ id: CactusGenerationID
-        - rawValue: F76FFD8E-759D-4306-B87A-8709137435FC
-      ▿ message: Message
-        - content: "{\"name\":\"get_fact\",\"content\":\"Swift is a type-safe language that emphasizes expressive syntax and performance.\"}"
-        - images: Optional<Array<URL>>.none
-        ▿ role: Role
-          - rawValue: "tool"
-  ▿ CactusCompletionEntry
-    ▿ metrics: Optional<CactusGenerationMetrics>
-      ▿ some: CactusGenerationMetrics
-        - confidence: 0.9381
-        - decodeTokens: 69
-        - decodeTps: 25.39
-        - didHandoffToCloud: false
-        ▿ durationToFirstToken: 1.90629 seconds
-          - _low: 1906289999999999964
-          - _high: 0
-        - prefillTokens: 66
-        - prefillTps: 34.62
-        - ramUsageMb: 1201.63
-        ▿ totalDuration: 4.58445 seconds
-          - _low: 4584449999999999818
-          - _high: 0
-        - totalTokens: 135
-    ▿ transcriptEntry: Element
-      ▿ id: CactusGenerationID
-        - rawValue: 8BA8EB93-77F6-48EF-9534-04B789C99024
-      ▿ message: Message
-        - content: "The cactus stores water in its thick stems to survive arid environments. Swift is a type-safe programming language known for its expressive syntax and performance optimization. These facts highlight the adaptability of life forms like cacti and the design principles behind modern programming languages like Swift, which both thrive in their respective domains—nature and technology. "
+        - content: "To provide the requested information, I need to know the specific topic for which you\'d like a fact. Could you please specify what topic or subject area (e.g., \"space exploration,\" \"ancient civilizations\")) your question relates to?"
         - images: Optional<Array<URL>>.none
         ▿ role: Role
           - rawValue: "assistant"

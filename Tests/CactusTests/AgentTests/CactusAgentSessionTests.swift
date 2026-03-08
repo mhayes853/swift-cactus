@@ -513,7 +513,7 @@ struct `CactusAgentSession tests` {
         "You are a helpful assistant that can get facts about cool things. Use the get_fact tool to do so."
       }
       session.delegate = ThrowingDelegate()
-      
+
       let response = try? await session.respond(
         to: CactusUserMessage(forceFunctions: true) {
           "Use the get_fact tool for 'cactus' and respond with only that fact."
@@ -643,6 +643,47 @@ struct `CactusAgentSession tests` {
         _ = try await responseTask.value
       }
       expectNoDifference(session.isResponding, false)
+    }
+
+    @Test
+    func `Setting Duplicate Functions Via Property Reports Issue`() async throws {
+      let modelURL = try await CactusModel.testModelURL(request: .lfm2_2_6b())
+      let session = try CactusAgentSession(from: modelURL)
+
+      let duplicateFunctions = [DuplicateTestFunction(), DuplicateTestFunction()]
+      withKnownIssue {
+        session.functions = duplicateFunctions
+      }
+    }
+
+    @Test
+    func `Constructing Agent Session With Duplicate Functions Reports Issue`() async throws {
+      let modelURL = try await CactusModel.testModelURL(request: .lfm2_2_6b())
+      let duplicateFunctions = [DuplicateTestFunction(), DuplicateTestFunction()]
+      withKnownIssue {
+        let model = try CactusModel(from: modelURL)
+        _ = CactusAgentSession(
+          model: model,
+          functions: duplicateFunctions,
+          transcript: CactusTranscript()
+        )
+      }
+    }
+
+    fileprivate struct DuplicateTestFunction: CactusFunction, Sendable {
+      typealias Output = String
+
+      @JSONSchema
+      struct Input: Codable, Sendable {
+        let text: String
+      }
+
+      let name = "test_function"
+      let description = "A test function"
+
+      func invoke(input: sending Input) async throws -> sending String {
+        input.text
+      }
     }
 
     struct SlowToolFunction: CactusFunction, Sendable {
@@ -906,7 +947,9 @@ struct `CactusAgentSession tests` {
 
       let innerTask = Task {
         do {
-          _ = try await CactusAgentSession.executeParallelFunctionCalls(functionCalls: functionCalls)
+          _ = try await CactusAgentSession.executeParallelFunctionCalls(
+            functionCalls: functionCalls
+          )
         } catch is CancellationError {
           let didCancel = await function.didCancel
           expectNoDifference(didCancel, true)
