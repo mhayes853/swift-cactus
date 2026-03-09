@@ -23,20 +23,19 @@ extension JSONSchema.Value.Encoder: TopLevelEncoder {}
 // MARK: - AnyTopLevelEncoder
 
 /// Type-erased wrapper around any ``TopLevelEncoder``.
-public struct AnyTopLevelEncoder<Encoded>: TopLevelEncoder {
+public struct AnyTopLevelEncoder<Encoded>: TopLevelEncoder, @unchecked Sendable {
+  private let lock = NSLock()
   private let encoder: any TopLevelEncoder<Encoded>
 
   /// Creates a type-erased top-level encoder.
   ///
   /// - Parameter encoder: The encoder to wrap.
-  public init(_ encoder: any TopLevelEncoder<Encoded>) {
+  public init(_ encoder: sending any TopLevelEncoder<Encoded>) {
     self.encoder = encoder
   }
 
   /// Encodes the provided value using the wrapped encoder.
   public func encode<T: Encodable>(_ value: T) throws -> Encoded {
-    try self.encoder.encode(value)
+    try self.lock.withLock { try self.encoder.encode(value) }
   }
 }
-
-extension AnyTopLevelEncoder: @unchecked Sendable {}

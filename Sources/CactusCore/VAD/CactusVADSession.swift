@@ -84,7 +84,7 @@ extension CactusVADSession {
 // MARK: - Helpers
 
 extension CactusVADSession {
-  private final class VADContinuationState: @unchecked Sendable {
+  private final class VADContinuationState: Sendable {
     private struct State {
       var continuation: UnsafeContinuation<CactusVAD, any Error>?
       var task: Task<Void, Never>?
