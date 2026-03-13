@@ -75,6 +75,8 @@ public enum CactusLogging {
   }
 }
 
+// MARK: - Helpers
+
 private final class LogCallbackBox: @unchecked Sendable {
   let callback: (CactusLogging.Entry) -> Void
 

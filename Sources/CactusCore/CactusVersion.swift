@@ -1,5 +1,5 @@
 /// The current Swift Cactus Library version.
-public let swiftCactusVersion = "2.1.1"
+public let swiftCactusVersion = "2.2.0"
 
 /// The current underlying Cactus engine version.
-public let cactusEngineVersion = "1.10"
+public let cactusEngineVersion = "1.11"

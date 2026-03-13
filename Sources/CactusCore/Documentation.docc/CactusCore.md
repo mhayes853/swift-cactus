@@ -8,7 +8,7 @@ Cactus is a low-latency inference engine for mobile devices and wearables, allow
 
 This package supports all Apple platforms, Android, and Linux on ARM.
 
-**Supported Engine Version:** 1.10
+**Supported Engine Version:** 1.11
 
 ### Package Structure
 
