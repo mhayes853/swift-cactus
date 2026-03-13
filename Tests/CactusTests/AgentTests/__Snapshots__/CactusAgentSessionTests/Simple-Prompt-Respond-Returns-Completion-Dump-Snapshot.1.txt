@@ -4,7 +4,7 @@
       - metrics: Optional<CactusGenerationMetrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 83793703-93F3-41AD-AF89-1D5014F7DA2C
+          - rawValue: 6DA74F98-E63D-437B-9889-F36EDF9C3BF2
         ▿ message: Message
           - content: "Say hello in one concise sentence."
           ▿ images: Optional<Array<URL>>
@@ -14,41 +14,41 @@
     ▿ CactusCompletionEntry
       ▿ metrics: Optional<CactusGenerationMetrics>
         ▿ some: CactusGenerationMetrics
-          - confidence: 0.9069
-          - decodeTokens: 56
-          - decodeTps: 112.97
+          - confidence: 0.8847
+          - decodeTokens: 46
+          - decodeTps: 110.17
           - didHandoffToCloud: false
-          ▿ durationToFirstToken: 0.02229 seconds
-            - _low: 22289999999999999
+          ▿ durationToFirstToken: 0.02095 seconds
+            - _low: 20949999999999999
             - _high: 0
-          - prefillTokens: 16
-          - prefillTps: 717.88
-          - ramUsageMb: 1242.42
-          ▿ totalDuration: 0.50915 seconds
-            - _low: 509149999999999977
+          - prefillTokens: 9
+          - prefillTps: 429.51
+          - ramUsageMb: 48.17
+          ▿ totalDuration: 0.4294 seconds
+            - _low: 429399999999999977
             - _high: 0
-          - totalTokens: 72
+          - totalTokens: 55
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: D6635A1E-F4E5-4F03-8034-D272C207327E
+          - rawValue: 8FFEDA64-F057-43C3-9DCB-F9913FAAEE4D
         ▿ message: Message
-          - content: "There seems to be an error in your message! Could you please help me understand what you have been trying? I am looking for a concise sentence about a topic that has not yet been explored. Can you provide me with information, if it can be helpful, regarding your request?"
+          - content: "You have provided a prompt asking for information about \"What is...\", but it seems incomplete without providing any specific details, context, or limitations related to that topic. What would you prefer? Let me know if you can help!\n"
           - images: Optional<Array<URL>>.none
           ▿ role: Role
             - rawValue: "assistant"
   ▿ metrics: CactusGenerationMetrics
-    - confidence: 0.9069
-    - decodeTokens: 56
-    - decodeTps: 112.97
+    - confidence: 0.8847
+    - decodeTokens: 46
+    - decodeTps: 110.17
     - didHandoffToCloud: false
-    ▿ durationToFirstToken: 0.02229 seconds
-      - _low: 22289999999999999
+    ▿ durationToFirstToken: 0.02095 seconds
+      - _low: 20949999999999999
       - _high: 0
-    - prefillTokens: 16
-    - prefillTps: 717.88
-    - ramUsageMb: 1242.42
-    ▿ totalDuration: 0.50915 seconds
-      - _low: 509149999999999977
+    - prefillTokens: 9
+    - prefillTps: 429.51
+    - ramUsageMb: 48.17
+    ▿ totalDuration: 0.4294 seconds
+      - _low: 429399999999999977
       - _high: 0
-    - totalTokens: 72
-  - output: "There seems to be an error in your message! Could you please help me understand what you have been trying? I am looking for a concise sentence about a topic that has not yet been explored. Can you provide me with information, if it can be helpful, regarding your request?"
+    - totalTokens: 55
+  - output: "You have provided a prompt asking for information about \"What is...\", but it seems incomplete without providing any specific details, context, or limitations related to that topic. What would you prefer? Let me know if you can help!\n"
