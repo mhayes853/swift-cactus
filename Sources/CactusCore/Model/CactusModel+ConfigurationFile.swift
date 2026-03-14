@@ -66,13 +66,17 @@ extension CactusModel {
     public var modelIdentifier: ModelIdentifier? {
       switch self.string(forKey: "model_type")?.lowercased() {
       case "gemma": .gemma
+      case "gemma3n": .gemma3n
       case "bert": .nomic
       case "smol": .smol
-      case "lfm2": .lfm2
+      case "lfm2", "lfm2_moe": .lfm2
       case "qwen": .qwen
+      case "qwen3_5": .qwen3_5
       case "moonshine": .moonshine
       case "whisper": .whisper
       case "parakeet": .parakeet
+      case "parakeet_tdt": .parakeetTDT
+      case "silero_vad": .sileroVAD
       default: nil
       }
     }
@@ -93,8 +97,14 @@ extension CactusModel {
     /// A model identifier for Qwen models.
     public static let qwen = Self(rawValue: "qwen")
 
+    /// A model identifier for Qwen 3.5 models.
+    public static let qwen3_5 = Self(rawValue: "qwen3_5")
+
     /// A model identifier for Gemma models.
     public static let gemma = Self(rawValue: "gemma")
+
+    /// A model identifier for Gemma 3n models.
+    public static let gemma3n = Self(rawValue: "gemma3n")
 
     /// A model identifier for Smol models.
     public static let smol = Self(rawValue: "smol")
@@ -111,7 +121,13 @@ extension CactusModel {
     /// A model identifier for Parakeet models.
     public static let parakeet = Self(rawValue: "parakeet")
 
+    /// A model identifier for Parakeet models.
+    public static let parakeetTDT = Self(rawValue: "parakeet_tdt")
+
     /// A model identifier for Moonshine models.
     public static let moonshine = Self(rawValue: "moonshine")
+
+    /// A model identifier for Silero VAD models.
+    public static let sileroVAD = Self(rawValue: "silero_vad")
   }
 }
