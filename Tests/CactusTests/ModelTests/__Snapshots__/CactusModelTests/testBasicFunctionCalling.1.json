@@ -1,16 +1,21 @@
 {
   "cloud_handoff" : false,
-  "confidence" : 0.9365,
-  "decode_tokens" : 24,
-  "decode_tps" : 48.98,
+  "confidence" : 0.9735,
+  "decode_tokens" : 119,
+  "decode_tps" : 56.28,
   "function_calls" : [
-
+    {
+      "arguments" : {
+        "location" : "Santa Cruze"
+      },
+      "name" : "get_weather"
+    }
   ],
-  "prefill_tokens" : 142,
-  "prefill_tps" : 338.4,
-  "ram_usage_mb" : 397.16,
-  "response" : "None of the provided functions are applicable to this query. Let me know if there's anything else I can assist with!",
-  "time_to_first_token_ms" : 419.62,
-  "total_time_ms" : 889.24,
-  "total_tokens" : 166
+  "prefill_tokens" : 162,
+  "prefill_tps" : 441.58,
+  "ram_usage_mb" : 379.24,
+  "response" : "The weather in Santa Cruze can be determined by calling a tool to retrieve it.",
+  "time_to_first_token_ms" : 366.86,
+  "total_time_ms" : 2463.39,
+  "total_tokens" : 281
 }

@@ -1,8 +1,75 @@
 {
-  "confidence" : 0.8532,
-  "decodeTokens" : 194,
-  "parsedContent" : "The power of a God cannot be overcome! Xanzah, this is probably one of the worlds. Even gods are merely being restricted to the limited power determined by promise that's our... Although great, it's not unlimited! The voice? Alvis!? How dare you disobey me? Ah, i'm Monarda and i'll be here for a while but i won't be able to proclaim the end But that's impossible! Shulk, it is time for you two to choose Does this world belongs to Xanza, or does it belong too you? That is something I decided long ago! Eh!? Hey we used all power to fell our god, and that these are destiny! Eeehhh? It's fated, the memory of a gods existence born from the chaos of creation It is",
+  "confidence" : 0.879,
+  "decodeTokens" : 156,
   "prefillTokens" : 4,
-  "streamedText" : " The power of a God cannot be overcome! Xanzah, this is probably one of the worlds. Even gods are merely being restricted to the limited power determined by promise that's our... Although great, it's not unlimited! The voice? Alvis!? How dare you disobey me? Ah, i'm Monarda and i'll be here for a while but i won't be able to proclaim the end But that's impossible! Shulk, it is time for you two to choose Does this world belongs to Xanza, or does it belong too you? That is something I decided long ago! Eh!? Hey we used all power to fell our god, and that these are destiny! Eeehhh? It's fated, the memory of a gods existence born from the chaos of creation It is",
-  "totalTokens" : 198
+  "segments" : [
+    {
+      "endSeconds" : 8.358,
+      "startSeconds" : 5.122,
+      "transcript" : "The power of a God cannot be overcome!"
+    },
+    {
+      "endSeconds" : 13.366,
+      "startSeconds" : 8.358,
+      "transcript" : "Zanza, this is providence for all the world"
+    },
+    {
+      "endSeconds" : 18.582,
+      "startSeconds" : 13.366,
+      "transcript" : "Even gods are merely being restricted to their limited power, determined"
+    },
+    {
+      "endSeconds" : 25.23,
+      "startSeconds" : 18.582,
+      "transcript" : "I promise that the power of great is not unlimited!"
+    },
+    {
+      "endSeconds" : 31.242,
+      "startSeconds" : 26.47,
+      "transcript" : "That voice, Abix how dare you disobey me!"
+    },
+    {
+      "endSeconds" : 37.35,
+      "startSeconds" : 32.678,
+      "transcript" : "I'm Monadah, and was here at the beginning"
+    },
+    {
+      "endSeconds" : 40.114,
+      "startSeconds" : 37.37,
+      "transcript" : "And will proclaim the end"
+    },
+    {
+      "endSeconds" : 43.106,
+      "startSeconds" : 40.134,
+      "transcript" : "But That's impossible"
+    },
+    {
+      "endSeconds" : 45.822,
+      "startSeconds" : 43.126,
+      "transcript" : "Shulk, It is time to choose"
+    },
+    {
+      "endSeconds" : 54.178,
+      "startSeconds" : 46.338,
+      "transcript" : "Does this world belong Zanza or does it belongs you? That something that decided long ago!"
+    },
+    {
+      "endSeconds" : 71.71,
+      "startSeconds" : 65.026,
+      "transcript" : "We use our power to fell a god and then these are destiny"
+    },
+    {
+      "endSeconds" : 97.626,
+      "startSeconds" : 91.006,
+      "transcript" : "It's fated the memory of a gods existence born from chaos creation"
+    },
+    {
+      "endSeconds" : 98.914,
+      "startSeconds" : 97.706,
+      "transcript" : "Yes"
+    }
+  ],
+  "streamedText" : " The power of a God cannot be overcome! Zanza, this is providence for all the world Even gods are merely being restricted to their limited power, determined I promise that the power of great is not unlimited! That voice, Abix how dare you disobey me! I'm Monadah, and was here at the beginning And will proclaim the end But That's impossible Shulk, It is time to choose Does this world belong Zanza or does it belongs you? That something that decided long ago! We use our power to fell a god and then these are destiny It's fated the memory of a gods existence born from chaos creation Yes",
+  "totalTokens" : 160,
+  "transcript" : "The power of a God cannot be overcome! Zanza, this is providence for all the world Even gods are merely being restricted to their limited power, determined I promise that the power of great is not unlimited! That voice, Abix how dare you disobey me! I'm Monadah, and was here at the beginning And will proclaim the end But That's impossible Shulk, It is time to choose Does this world belong Zanza or does it belongs you? That something that decided long ago! We use our power to fell a god and then these are destiny It's fated the memory of a gods existence born from chaos creation Yes"
 }

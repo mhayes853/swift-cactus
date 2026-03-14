@@ -1062,6 +1062,9 @@ extension CactusModel {
     /// The raw response text from the model.
     public let response: String
 
+    /// Structured timed segments emitted during transcription.
+    public let segments: [Segment]
+
     /// The number of prefilled tokens.
     public let prefillTokens: Int
 
@@ -1201,6 +1204,42 @@ extension CactusModel {
       onToken: onToken
     )
   }
+
+  /// A timed segment emitted by a transcription model.
+  public struct TranscriptionSegment: Hashable, Sendable, Codable {
+    /// The start time of the segment.
+    public let startDuration: Duration
+
+    /// The end time of the segment.
+    public let endDuration: Duration
+
+    /// The transcript text for the segment.
+    public let text: String
+
+    private enum CodingKeys: String, CodingKey {
+      case startDuration = "start"
+      case endDuration = "end"
+      case text
+    }
+
+    public init(from decoder: any Decoder) throws {
+      let container = try decoder.container(keyedBy: CodingKeys.self)
+      self.startDuration = .seconds(try container.decode(Double.self, forKey: .startDuration))
+      self.endDuration = .seconds(try container.decode(Double.self, forKey: .endDuration))
+      self.text = try container.decode(String.self, forKey: .text)
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      try container.encode(self.startDuration.secondsDouble, forKey: .startDuration)
+      try container.encode(self.endDuration.secondsDouble, forKey: .endDuration)
+      try container.encode(self.text, forKey: .text)
+    }
+  }
+}
+
+extension CactusModel.Transcription {
+  public typealias Segment = CactusModel.TranscriptionSegment
 }
 
 extension CactusModel {
@@ -1297,6 +1336,12 @@ extension CactusModel.Transcription {
     /// Threshold for triggering cloud handoff based on confidence.
     public var cloudHandoffThreshold: Float?
 
+    /// Vocabulary entries to bias during transcription.
+    public var customVocabulary: [String]
+
+    /// The strength of the vocabulary bias.
+    public var vocabularyBoost: Float?
+
     /// Creates options for generating transcriptions.
     ///
     /// - Parameters:
@@ -1307,6 +1352,8 @@ extension CactusModel.Transcription {
     ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
     ///   - useVad: Whether to enable VAD weights for transcription. `nil` defers to higher-level defaults.
     ///   - cloudHandoffThreshold: Optional confidence threshold for cloud handoff.
+    ///   - customVocabulary: Vocabulary entries to bias during transcription.
+    ///   - vocabularyBoost: Optional bias strength to apply to `customVocabulary` entries.
     public init(
       maxTokens: Int = 512,
       temperature: Float = 0.6,
@@ -1314,7 +1361,9 @@ extension CactusModel.Transcription {
       topK: Int = 20,
       isTelemetryEnabled: Bool = false,
       useVad: Bool? = nil,
-      cloudHandoffThreshold: Float? = nil
+      cloudHandoffThreshold: Float? = nil,
+      customVocabulary: [String] = [String](),
+      vocabularyBoost: Float? = nil
     ) {
       self.maxTokens = maxTokens
       self.temperature = temperature
@@ -1323,6 +1372,8 @@ extension CactusModel.Transcription {
       self.isTelemetryEnabled = isTelemetryEnabled
       self.useVad = useVad
       self.cloudHandoffThreshold = cloudHandoffThreshold
+      self.customVocabulary = customVocabulary
+      self.vocabularyBoost = vocabularyBoost
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -1333,6 +1384,8 @@ extension CactusModel.Transcription {
       case isTelemetryEnabled = "telemetry_enabled"
       case useVad = "use_vad"
       case cloudHandoffThreshold = "cloud_handoff_threshold"
+      case customVocabulary = "custom_vocabulary"
+      case vocabularyBoost = "vocabulary_boost"
     }
   }
 }
@@ -1341,6 +1394,7 @@ extension CactusModel.Transcription: Decodable {
   public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.response = try container.decode(String.self, forKey: .response)
+    self.segments = try container.decodeIfPresent([Segment].self, forKey: .segments) ?? [Segment]()
     self.prefillTokens = try container.decode(Int.self, forKey: .prefillTokens)
     self.decodeTokens = try container.decode(Int.self, forKey: .decodeTokens)
     self.totalTokens = try container.decode(Int.self, forKey: .totalTokens)
@@ -1363,6 +1417,7 @@ extension CactusModel.Transcription: Encodable {
   public func encode(to encoder: any Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(self.response, forKey: .response)
+    try container.encode(self.segments, forKey: .segments)
     try container.encode(self.prefillTokens, forKey: .prefillTokens)
     try container.encode(self.decodeTokens, forKey: .decodeTokens)
     try container.encode(self.totalTokens, forKey: .totalTokens)
@@ -1377,6 +1432,7 @@ extension CactusModel.Transcription: Encodable {
 
   private enum CodingKeys: String, CodingKey {
     case response
+    case segments
     case prefillTokens = "prefill_tokens"
     case decodeTokens = "decode_tokens"
     case totalTokens = "total_tokens"

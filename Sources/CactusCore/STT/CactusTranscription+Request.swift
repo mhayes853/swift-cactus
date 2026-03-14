@@ -48,6 +48,12 @@ extension CactusTranscription {
     /// Threshold for triggering cloud handoff based on confidence.
     public var cloudHandoffThreshold: Float?
 
+    /// Request-scoped vocabulary entries to bias during transcription.
+    public var customVocabulary: [String]
+
+    /// Optional bias strength to apply to `customVocabulary` entries.
+    public var vocabularyBoost: Float?
+
     /// The maximum buffer size for the transcription.
     ///
     /// `nil` uses the engine default (8192).
@@ -68,6 +74,8 @@ extension CactusTranscription {
     ///   - isTelemetryEnabled: Whether telemetry is enabled.
     ///   - useVad: Whether to enable VAD weights.
     ///   - cloudHandoffThreshold: Optional confidence threshold for cloud handoff.
+    ///   - customVocabulary: Request-scoped vocabulary entries to bias during transcription.
+    ///   - vocabularyBoost: Optional bias strength to apply to `customVocabulary` entries.
     ///   - maxBufferSize: The maximum buffer size for the transcription.
     public init(
       prompt: CactusSTTPrompt,
@@ -79,6 +87,8 @@ extension CactusTranscription {
       isTelemetryEnabled: Bool = false,
       useVad: Bool? = nil,
       cloudHandoffThreshold: Float? = nil,
+      customVocabulary: [String] = [String](),
+      vocabularyBoost: Float? = nil,
       maxBufferSize: Int? = nil
     ) {
       self.prompt = prompt
@@ -89,6 +99,8 @@ extension CactusTranscription {
       self.topK = topK
       self.isTelemetryEnabled = isTelemetryEnabled
       self.cloudHandoffThreshold = cloudHandoffThreshold
+      self.customVocabulary = customVocabulary
+      self.vocabularyBoost = vocabularyBoost
       self.maxBufferSize = maxBufferSize
 
       if let useVad {
@@ -119,6 +131,8 @@ extension CactusTranscription {
     ///   - isTelemetryEnabled: Whether telemetry is enabled.
     ///   - useVad: Whether to enable VAD weights.
     ///   - cloudHandoffThreshold: cloud handoff.
+    ///   - customVocabulary: Request-scoped vocabulary entries to bias during transcription.
+    ///   - vocabularyBoost: Optional bias strength to apply to `customVocabulary` entries.
     ///   - maxBufferSize: The maximum buffer size Optional confidence threshold for for the transcription.
     /// - Returns: A transcription request with a Whisper-formatted prompt.
     public static func whisper(
@@ -132,6 +146,8 @@ extension CactusTranscription {
       isTelemetryEnabled: Bool = false,
       useVad: Bool? = nil,
       cloudHandoffThreshold: Float? = nil,
+      customVocabulary: [String] = [String](),
+      vocabularyBoost: Float? = nil,
       maxBufferSize: Int? = nil
     ) -> Self {
       let prompt = CactusSTTPrompt.whisper(language: language, includeTimestamps: includeTimestamps)
@@ -145,6 +161,8 @@ extension CactusTranscription {
         isTelemetryEnabled: isTelemetryEnabled,
         useVad: useVad,
         cloudHandoffThreshold: cloudHandoffThreshold,
+        customVocabulary: customVocabulary,
+        vocabularyBoost: vocabularyBoost,
         maxBufferSize: maxBufferSize
       )
     }

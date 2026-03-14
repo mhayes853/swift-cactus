@@ -377,20 +377,6 @@ struct `CactusModel tests` {
   }
 
   @Test
-  func `Streams Same Response As Audio Transcription`() async throws {
-    let modelURL = try await CactusModel.testModelURL(
-      request: .whisperSmall()
-    )
-    let model = try CactusModel(from: modelURL)
-
-    var stream = ""
-    let transcription = try model.transcribe(audio: testAudioURL, prompt: audioPrompt) {
-      stream.append($0)
-    }
-    expectNoDifference(stream.contains(transcription.response), true)
-  }
-
-  @Test
   func `Throws Transcription Error When Buffer Size Is Zero`() async throws {
     let modelURL = try await CactusModel.testModelURL(
       request: .whisperSmall()

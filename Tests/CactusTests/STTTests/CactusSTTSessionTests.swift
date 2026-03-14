@@ -224,24 +224,31 @@ struct `CactusSTTSession tests` {
 }
 
 private struct TranscriptionSnapshot: Codable {
-  let content: String
+  let transcript: String
+  let segments: [SegmentSnapshot]
 
   init(transcription: CactusTranscription) {
-    switch transcription.content {
-    case .fullTranscript(let text):
-      self.content = text
-    case .timestamps(let timestamps):
-      self.content =
-        timestamps
-        .map { "\($0.startDuration.secondsDouble):\($0.transcript)" }
-        .joined(separator: "\n")
-    }
+    self.transcript = transcription.transcript
+    self.segments = transcription.segments.map(SegmentSnapshot.init(segment:))
+  }
+}
+
+private struct SegmentSnapshot: Codable {
+  let startSeconds: Double
+  let endSeconds: Double
+  let transcript: String
+
+  init(segment: CactusTranscription.Segment) {
+    self.startSeconds = segment.startDuration.secondsDouble
+    self.endSeconds = segment.endDuration.secondsDouble
+    self.transcript = segment.transcript
   }
 }
 
 private struct StreamTranscriptionSnapshot: Codable {
   let streamedText: String
-  let parsedContent: String
+  let transcript: String
+  let segments: [SegmentSnapshot]
   let prefillTokens: Int
   let decodeTokens: Int
   let totalTokens: Int
@@ -249,7 +256,8 @@ private struct StreamTranscriptionSnapshot: Codable {
 
   init(streamedText: String, transcription: CactusTranscription) {
     self.streamedText = streamedText
-    self.parsedContent = TranscriptionSnapshot(transcription: transcription).content
+    self.transcript = transcription.transcript
+    self.segments = transcription.segments.map(SegmentSnapshot.init(segment:))
     self.prefillTokens = transcription.metrics.prefillTokens
     self.decodeTokens = transcription.metrics.decodeTokens
     self.totalTokens = transcription.metrics.totalTokens
