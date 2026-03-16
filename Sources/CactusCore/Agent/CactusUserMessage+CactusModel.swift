@@ -22,7 +22,8 @@ extension CactusModel.Completion.Options {
       isTelemetryEnabled: message.isTelemetryEnabled,
       autoHandoff: message.cloudHandoff != nil,
       cloudTimeoutDuration: cloudTimeoutDuration,
-      handoffWithImages: handoffWithImages
+      handoffWithImages: handoffWithImages,
+      enableThinkingIfSupported: message.enableThinkingIfSupported
     )
   }
 }

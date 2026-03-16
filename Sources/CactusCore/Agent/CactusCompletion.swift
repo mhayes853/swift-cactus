@@ -10,16 +10,20 @@ public struct CactusCompletion<Output: Sendable>: Sendable {
   /// The parsed output for the completion turn.
   public let output: Output
 
+  /// Extracted reasoning content for the final assistant turn, if available.
+  public let thinking: String?
+
   /// The entries appended during this completion turn.
   public let entries: [CactusCompletionEntry]
 
   /// Metrics captured for this completion turn.
   public let metrics: CactusGenerationMetrics
 
-  init(output: Output, entries: [CactusCompletionEntry]) {
+  init(output: Output, thinking: String? = nil, entries: [CactusCompletionEntry]) {
     precondition(!entries.isEmpty, "Entries must not be empty.")
     precondition(entries.last?.metrics != nil, "The last entry must have metrics.")
     self.output = output
+    self.thinking = thinking
     self.entries = entries
     self.metrics = entries[entries.index(before: entries.endIndex)].metrics!
   }
