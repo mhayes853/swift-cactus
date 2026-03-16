@@ -32,6 +32,9 @@ public struct CactusUserMessage {
   /// Whether telemetry is enabled for this request.
   public var isTelemetryEnabled: Bool
 
+  /// Whether to enable thinking for models that support it.
+  public var enableThinkingIfSupported: Bool
+
   /// The maximum buffer size used to store the completion.
   ///
   /// `nil` uses the engine default.
@@ -55,6 +58,7 @@ public struct CactusUserMessage {
   ///   - toolRagTopK: Number of top tools to keep after tool-RAG selection.
   ///   - includeStopSequences: Whether stop sequences are kept in final output.
   ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
+  ///   - enableThinkingIfSupported: Whether to enable thinking for models that support it.
   ///   - maxBufferSize: The maximum buffer size used to store the completion.
   ///   - cloudHandoff: Built-in cloud-handoff settings for this request.
   public init(
@@ -68,6 +72,7 @@ public struct CactusUserMessage {
     toolRagTopK: Int = 2,
     includeStopSequences: Bool = false,
     isTelemetryEnabled: Bool = false,
+    enableThinkingIfSupported: Bool = true,
     maxBufferSize: Int? = nil,
     cloudHandoff: CloudHandoff? = CloudHandoff()
   ) {
@@ -81,6 +86,7 @@ public struct CactusUserMessage {
     self.toolRagTopK = toolRagTopK
     self.includeStopSequences = includeStopSequences
     self.isTelemetryEnabled = isTelemetryEnabled
+    self.enableThinkingIfSupported = enableThinkingIfSupported
     self.maxBufferSize = maxBufferSize
     self.cloudHandoff = cloudHandoff
   }
@@ -98,6 +104,7 @@ public struct CactusUserMessage {
   ///   - toolRagTopK: Number of top tools to keep after tool-RAG selection.
   ///   - includeStopSequences: Whether stop sequences are kept in final output.
   ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
+  ///   - enableThinkingIfSupported: Whether to enable thinking for models that support it.
   ///   - maxBufferSize: The maximum buffer size used to store the completion.
   ///   - cloudHandoff: Built-in cloud-handoff settings for this request.
   public init(
@@ -111,6 +118,7 @@ public struct CactusUserMessage {
     toolRagTopK: Int = 2,
     includeStopSequences: Bool = false,
     isTelemetryEnabled: Bool = false,
+    enableThinkingIfSupported: Bool = true,
     maxBufferSize: Int? = nil,
     cloudHandoff: CloudHandoff? = CloudHandoff()
   ) {
@@ -124,6 +132,7 @@ public struct CactusUserMessage {
     self.toolRagTopK = toolRagTopK
     self.includeStopSequences = includeStopSequences
     self.isTelemetryEnabled = isTelemetryEnabled
+    self.enableThinkingIfSupported = enableThinkingIfSupported
     self.maxBufferSize = maxBufferSize
     self.cloudHandoff = cloudHandoff
   }
@@ -140,6 +149,7 @@ public struct CactusUserMessage {
   ///   - toolRagTopK: Number of top tools to keep after tool-RAG selection.
   ///   - includeStopSequences: Whether stop sequences are kept in final output.
   ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
+  ///   - enableThinkingIfSupported: Whether to enable thinking for models that support it.
   ///   - maxBufferSize: The maximum buffer size used to store the completion.
   ///   - cloudHandoff: Built-in cloud-handoff settings for this request.
   ///   - content: The prompt content for this user message.
@@ -153,6 +163,7 @@ public struct CactusUserMessage {
     toolRagTopK: Int = 2,
     includeStopSequences: Bool = false,
     isTelemetryEnabled: Bool = false,
+    enableThinkingIfSupported: Bool = true,
     maxBufferSize: Int? = nil,
     cloudHandoff: CloudHandoff? = CloudHandoff(),
     @CactusPromptBuilder content: @Sendable () -> some CactusPromptRepresentable
@@ -167,6 +178,7 @@ public struct CactusUserMessage {
     self.toolRagTopK = toolRagTopK
     self.includeStopSequences = includeStopSequences
     self.isTelemetryEnabled = isTelemetryEnabled
+    self.enableThinkingIfSupported = enableThinkingIfSupported
     self.maxBufferSize = maxBufferSize
     self.cloudHandoff = cloudHandoff
   }

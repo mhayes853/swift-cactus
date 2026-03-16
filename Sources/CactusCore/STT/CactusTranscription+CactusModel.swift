@@ -14,7 +14,24 @@ extension CactusModel.Transcription.Options {
       topK: request.topK,
       isTelemetryEnabled: request.isTelemetryEnabled,
       useVad: request.useVad,
-      cloudHandoffThreshold: request.cloudHandoffThreshold
+      cloudHandoffThreshold: request.cloudHandoffThreshold,
+      customVocabulary: request.customVocabulary,
+      vocabularyBoost: request.vocabularyBoost
+    )
+  }
+}
+
+// MARK: - Segment
+
+extension CactusTranscription.Segment {
+  /// Creates a transcription segment.
+  ///
+  /// - Parameter segment: A ``CactusModel/Transcription/Segment``.
+  public init(segment: CactusModel.Transcription.Segment) {
+    self.init(
+      startDuration: segment.startDuration,
+      endDuration: segment.endDuration,
+      transcript: segment.text
     )
   }
 }
@@ -31,7 +48,8 @@ extension CactusTranscription {
     self.init(
       id: id,
       metrics: CactusGenerationMetrics(transcription: transcription),
-      response: transcription.response
+      transcript: transcription.response,
+      segments: transcription.segments.map(Segment.init(segment:))
     )
   }
 }

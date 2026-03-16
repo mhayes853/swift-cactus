@@ -4,7 +4,7 @@
       - metrics: Optional<CactusGenerationMetrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 83793703-93F3-41AD-AF89-1D5014F7DA2C
+          - rawValue: E212F831-3BD9-48F1-ABE6-445BB85C5A03
         ▿ message: Message
           - content: "Say hello in one concise sentence."
           ▿ images: Optional<Array<URL>>
@@ -14,41 +14,42 @@
     ▿ CactusCompletionEntry
       ▿ metrics: Optional<CactusGenerationMetrics>
         ▿ some: CactusGenerationMetrics
-          - confidence: 0.9069
-          - decodeTokens: 56
-          - decodeTps: 112.97
+          - confidence: 0.8639
+          - decodeTokens: 353
+          - decodeTps: 28.48
           - didHandoffToCloud: false
-          ▿ durationToFirstToken: 0.02229 seconds
-            - _low: 22289999999999999
+          ▿ durationToFirstToken: 0.02641 seconds
+            - _low: 26410000000000000
             - _high: 0
-          - prefillTokens: 16
-          - prefillTps: 717.88
-          - ramUsageMb: 1242.42
-          ▿ totalDuration: 0.50915 seconds
-            - _low: 509149999999999977
+          - prefillTokens: 9
+          - prefillTps: 340.72
+          - ramUsageMb: 56.36
+          ▿ totalDuration: 12.38406 seconds
+            - _low: 12384059999999999491
             - _high: 0
-          - totalTokens: 72
+          - totalTokens: 362
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: D6635A1E-F4E5-4F03-8034-D272C207327E
+          - rawValue: BF0FCD9F-06AD-4675-8D2B-44E40F8178B9
         ▿ message: Message
-          - content: "There seems to be an error in your message! Could you please help me understand what you have been trying? I am looking for a concise sentence about a topic that has not yet been explored. Can you provide me with information, if it can be helpful, regarding your request?"
+          - content: "You are asking me for information on how I am functioning as a response to your previous message. My capabilities include things like providing general advice, offering instructions, providing vocabulary related to various topics in conversation, and offering basic explanations in multiple languages.\n\nI am designed with the intention that it is clear that I am processing your request and responding appropriately based on what you\'ve asked me before. However, there are some important caveats:\n\n*   **Me being a language model:** While I can generate text across many different formats supported by various programming languages including Python with the OpenAI library here is capable of producing results from many forms of interaction. This includes both generating responses based on common patterns within its own data which may not be as natural as others since it does not have an inherent \"naturalness\" beyond what can be inferred from its capabilities.\n*   **Limitations in understanding:** It is important to remember that my knowledge seems limited to the information provided in your previous message. I am still learning and evolving, so it\'weist that my abilities are currently constrained to a wide range of topics, ranging from mathematics and logic through speech recognition in AI systems designed for language models like me.\n\nI hope this reflects the reality given by me when you first encountered my response! If you encounter any questions or concerns about how I work or how I can assist with something specific on a particular topic, please feel free to reach out for help with anything related there as well as providing more information on the capabilities of an AI model which has been created by myself.\n\nI am ready for your next prompt! What do you want? Let me know if there is anything else here. Please provide it and let\'𝘴 know what 2nd message is being asked ²."
           - images: Optional<Array<URL>>.none
           ▿ role: Role
             - rawValue: "assistant"
   ▿ metrics: CactusGenerationMetrics
-    - confidence: 0.9069
-    - decodeTokens: 56
-    - decodeTps: 112.97
+    - confidence: 0.8639
+    - decodeTokens: 353
+    - decodeTps: 28.48
     - didHandoffToCloud: false
-    ▿ durationToFirstToken: 0.02229 seconds
-      - _low: 22289999999999999
+    ▿ durationToFirstToken: 0.02641 seconds
+      - _low: 26410000000000000
       - _high: 0
-    - prefillTokens: 16
-    - prefillTps: 717.88
-    - ramUsageMb: 1242.42
-    ▿ totalDuration: 0.50915 seconds
-      - _low: 509149999999999977
+    - prefillTokens: 9
+    - prefillTps: 340.72
+    - ramUsageMb: 56.36
+    ▿ totalDuration: 12.38406 seconds
+      - _low: 12384059999999999491
       - _high: 0
-    - totalTokens: 72
-  - output: "There seems to be an error in your message! Could you please help me understand what you have been trying? I am looking for a concise sentence about a topic that has not yet been explored. Can you provide me with information, if it can be helpful, regarding your request?"
+    - totalTokens: 362
+  - output: "You are asking me for information on how I am functioning as a response to your previous message. My capabilities include things like providing general advice, offering instructions, providing vocabulary related to various topics in conversation, and offering basic explanations in multiple languages.\n\nI am designed with the intention that it is clear that I am processing your request and responding appropriately based on what you\'ve asked me before. However, there are some important caveats:\n\n*   **Me being a language model:** While I can generate text across many different formats supported by various programming languages including Python with the OpenAI library here is capable of producing results from many forms of interaction. This includes both generating responses based on common patterns within its own data which may not be as natural as others since it does not have an inherent \"naturalness\" beyond what can be inferred from its capabilities.\n*   **Limitations in understanding:** It is important to remember that my knowledge seems limited to the information provided in your previous message. I am still learning and evolving, so it\'weist that my abilities are currently constrained to a wide range of topics, ranging from mathematics and logic through speech recognition in AI systems designed for language models like me.\n\nI hope this reflects the reality given by me when you first encountered my response! If you encounter any questions or concerns about how I work or how I can assist with something specific on a particular topic, please feel free to reach out for help with anything related there as well as providing more information on the capabilities of an AI model which has been created by myself.\n\nI am ready for your next prompt! What do you want? Let me know if there is anything else here. Please provide it and let\'𝘴 know what 2nd message is being asked ²."
+  - thinking: Optional<String>.none

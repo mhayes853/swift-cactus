@@ -200,6 +200,49 @@ struct `CactusAgentSession tests` {
     }
 
     @Test
+    func `Respond Returns Optional Thinking Content`() async throws {
+      let modelURL = try await CactusModel.testModelURL(request: .qwen3_1_7b())
+      let model = try CactusModel(from: modelURL)
+      let session = CactusAgentSession(model: model, transcript: CactusTranscript())
+
+      let completion = try await session.respond(
+        to: CactusUserMessage(
+          maxTokens: 256,
+          temperature: 0,
+          enableThinkingIfSupported: true
+        ) {
+          "What is the meaning of life?"
+        }
+      )
+
+      expectNoDifference(completion.output.isEmpty, false)
+      expectNoDifference(completion.thinking?.isEmpty, false)
+    }
+
+    @Test
+    func `Respond Returns Completion Thinking Dump Snapshot`() async throws {
+      let modelURL = try await CactusModel.testModelURL(request: .qwen3_1_7b())
+      let model = try CactusModel(from: modelURL)
+      let session = CactusAgentSession(model: model, transcript: CactusTranscript())
+
+      let completion = try await session.respond(
+        to: CactusUserMessage(
+          maxTokens: 256,
+          temperature: 0,
+          enableThinkingIfSupported: true
+        ) {
+          "What is the meaning of life?"
+        }
+      )
+
+      expectNoDifference(completion.output.isEmpty, false)
+      expectNoDifference(completion.thinking?.isEmpty, false)
+      withKnownIssue {
+        assertSnapshot(of: completion, as: .dump, record: true)
+      }
+    }
+
+    @Test
     func `Tool Call Respond Returns Completion Entries And Metrics Dump Snapshot`() async throws {
       let modelURL = try await CactusModel.testModelURL(request: .lfm2_2_6b())
       let model = try CactusModel(from: modelURL)

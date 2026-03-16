@@ -759,6 +759,7 @@ extension CactusAgentSession {
 
       var conversationMessages = context.transcript
       var finalResponse = ""
+      var finalThinking: String?
       do {
         while true {
           let assistantStreamID = CactusGenerationID()
@@ -789,6 +790,7 @@ extension CactusAgentSession {
 
           conversationMessages = self.transcript.messages
           finalResponse = completedTurn.completion.response
+          finalThinking = completedTurn.completion.thinking
 
           if completedTurn.completion.functionCalls.isEmpty {
             break
@@ -812,7 +814,11 @@ extension CactusAgentSession {
         self.removeTranscriptEntriesSince(initialCount: initialTranscriptCount)
         throw error
       }
-      return CactusCompletion(output: finalResponse, entries: completionEntries)
+      return CactusCompletion(
+        output: finalResponse,
+        thinking: finalThinking,
+        entries: completionEntries
+      )
     }
     self.registerActiveStreamStopper(stream)
     return stream

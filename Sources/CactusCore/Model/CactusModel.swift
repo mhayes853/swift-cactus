@@ -33,6 +33,8 @@ import Foundation
 /// print(transcription.response)
 /// ```
 public struct CactusModel: ~Copyable {
+  private static let defaultBufferSize = 8192
+
   private static let bufferNotBigEnoughErrorMessage = "buffer too small"
   private static let unavailableModelPointerMessage = "CactusModel pointer is unavailable."
 
@@ -644,7 +646,7 @@ extension CactusModel {
   }
 
   private var defaultEmbeddingsBufferSize: Int {
-    8192
+    Self.defaultBufferSize
   }
 }
 
@@ -653,8 +655,11 @@ extension CactusModel {
 extension CactusModel {
   /// A chat completion result.
   public struct Completion: Hashable, Sendable {
-    /// The raw response text from the model.
+    /// The assistant-visible response text from the model.
     public let response: String
+
+    /// Extracted reasoning content from the model, if provided separately.
+    public let thinking: String?
 
     /// The number of prefilled tokens.
     public let prefillTokens: Int
@@ -777,7 +782,7 @@ extension CactusModel {
     functions: [FunctionDefinition] = [],
     onToken: (String, UInt32) -> Void
   ) throws -> CompletedChatTurn {
-    let maxBufferSize = maxBufferSize ?? 8192
+    let maxBufferSize = maxBufferSize ?? Self.defaultBufferSize
     guard maxBufferSize > 0 else {
       throw CactusModelError.completionBufferTooSmall
     }
@@ -825,7 +830,9 @@ extension CactusModel {
     var completedMessages = messages
     completedMessages.append(
       .assistant(
-        completion.response.count > streamedResponse.count ? completion.response : streamedResponse
+        completion.rawResponseForTranscript.count > streamedResponse.count
+          ? completion.rawResponseForTranscript
+          : streamedResponse
       )
     )
     return CompletedChatTurn(completion: completion, messages: completedMessages)
@@ -893,6 +900,9 @@ extension CactusModel.Completion {
     /// Whether to include images when handing off to cloud.
     public var handoffWithImages: Bool
 
+    /// Whether to enable thinking for models that support it.
+    public var enableThinkingIfSupported: Bool
+
     /// Creates options for generating chat completions.
     ///
     /// - Parameters:
@@ -909,6 +919,7 @@ extension CactusModel.Completion {
     ///   - autoHandoff: Whether to automatically handoff to cloud when confidence is below threshold.
     ///   - cloudTimeoutDuration: Timeout duration for cloud handoff.
     ///   - handoffWithImages: Whether to include images when handing off to cloud.
+    ///   - enableThinkingIfSupported: Whether to enable thinking for models that support it.
     public init(
       maxTokens: Int = 512,
       temperature: Float = 0.6,
@@ -922,7 +933,8 @@ extension CactusModel.Completion {
       isTelemetryEnabled: Bool = false,
       autoHandoff: Bool = true,
       cloudTimeoutDuration: Duration = .milliseconds(15000),
-      handoffWithImages: Bool = true
+      handoffWithImages: Bool = true,
+      enableThinkingIfSupported: Bool = true
     ) {
       self.maxTokens = maxTokens
       self.temperature = temperature
@@ -937,6 +949,7 @@ extension CactusModel.Completion {
       self.autoHandoff = autoHandoff
       self.cloudTimeoutDuration = cloudTimeoutDuration
       self.handoffWithImages = handoffWithImages
+      self.enableThinkingIfSupported = enableThinkingIfSupported
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -953,6 +966,7 @@ extension CactusModel.Completion {
       case autoHandoff = "auto_handoff"
       case cloudTimeoutDuration = "cloud_timeout_ms"
       case handoffWithImages = "handoff_with_images"
+      case enableThinkingIfSupported = "enable_thinking_if_supported"
     }
   }
 }
@@ -976,6 +990,7 @@ extension CactusModel.Completion.Options: Encodable {
       forKey: .cloudTimeoutDuration
     )
     try container.encode(self.handoffWithImages, forKey: .handoffWithImages)
+    try container.encode(self.enableThinkingIfSupported, forKey: .enableThinkingIfSupported)
   }
 }
 
@@ -997,6 +1012,18 @@ extension CactusModel.Completion.Options: Decodable {
       try container.decode(Double.self, forKey: .cloudTimeoutDuration)
     )
     self.handoffWithImages = try container.decode(Bool.self, forKey: .handoffWithImages)
+    self.enableThinkingIfSupported =
+      try container.decodeIfPresent(Bool.self, forKey: .enableThinkingIfSupported) ?? true
+  }
+}
+
+extension CactusModel.Completion {
+  fileprivate var rawResponseForTranscript: String {
+    guard let thinking, !thinking.isEmpty else { return self.response }
+    if self.response.isEmpty {
+      return "<think>\n\(thinking)\n</think>"
+    }
+    return "<think>\n\(thinking)\n</think>\n\n\(self.response)"
   }
 }
 
@@ -1004,6 +1031,7 @@ extension CactusModel.Completion: Decodable {
   public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.response = try container.decode(String.self, forKey: .response)
+    self.thinking = try container.decodeIfPresent(String.self, forKey: .thinking)
     self.prefillTokens = try container.decode(Int.self, forKey: .prefillTokens)
     self.decodeTokens = try container.decode(Int.self, forKey: .decodeTokens)
     self.totalTokens = try container.decode(Int.self, forKey: .totalTokens)
@@ -1025,6 +1053,7 @@ extension CactusModel.Completion: Encodable {
   public func encode(to encoder: any Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(self.response, forKey: .response)
+    try container.encodeIfPresent(self.thinking, forKey: .thinking)
     try container.encode(self.prefillTokens, forKey: .prefillTokens)
     try container.encode(self.decodeTokens, forKey: .decodeTokens)
     try container.encode(self.totalTokens, forKey: .totalTokens)
@@ -1040,6 +1069,7 @@ extension CactusModel.Completion: Encodable {
 
   private enum CodingKeys: String, CodingKey {
     case response
+    case thinking
     case prefillTokens = "prefill_tokens"
     case decodeTokens = "decode_tokens"
     case totalTokens = "total_tokens"
@@ -1061,6 +1091,9 @@ extension CactusModel {
   public struct Transcription: Hashable, Sendable {
     /// The raw response text from the model.
     public let response: String
+
+    /// Structured timed segments emitted during transcription.
+    public let segments: [Segment]
 
     /// The number of prefilled tokens.
     public let prefillTokens: Int
@@ -1201,6 +1234,42 @@ extension CactusModel {
       onToken: onToken
     )
   }
+
+  /// A timed segment emitted by a transcription model.
+  public struct TranscriptionSegment: Hashable, Sendable, Codable {
+    /// The start time of the segment.
+    public let startDuration: Duration
+
+    /// The end time of the segment.
+    public let endDuration: Duration
+
+    /// The transcript text for the segment.
+    public let text: String
+
+    private enum CodingKeys: String, CodingKey {
+      case startDuration = "start"
+      case endDuration = "end"
+      case text
+    }
+
+    public init(from decoder: any Decoder) throws {
+      let container = try decoder.container(keyedBy: CodingKeys.self)
+      self.startDuration = .seconds(try container.decode(Double.self, forKey: .startDuration))
+      self.endDuration = .seconds(try container.decode(Double.self, forKey: .endDuration))
+      self.text = try container.decode(String.self, forKey: .text)
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      try container.encode(self.startDuration.secondsDouble, forKey: .startDuration)
+      try container.encode(self.endDuration.secondsDouble, forKey: .endDuration)
+      try container.encode(self.text, forKey: .text)
+    }
+  }
+}
+
+extension CactusModel.Transcription {
+  public typealias Segment = CactusModel.TranscriptionSegment
 }
 
 extension CactusModel {
@@ -1216,7 +1285,7 @@ extension CactusModel {
     maxBufferSize: Int? = nil,
     onToken: (String, UInt32) -> Void
   ) throws -> Transcription {
-    let maxBufferSize = maxBufferSize ?? 8192
+    let maxBufferSize = maxBufferSize ?? Self.defaultBufferSize
     guard maxBufferSize > 0 else {
       throw CactusModelError.transcriptionBufferTooSmall
     }
@@ -1297,6 +1366,12 @@ extension CactusModel.Transcription {
     /// Threshold for triggering cloud handoff based on confidence.
     public var cloudHandoffThreshold: Float?
 
+    /// Vocabulary entries to bias during transcription.
+    public var customVocabulary: [String]
+
+    /// The strength of the vocabulary bias.
+    public var vocabularyBoost: Float?
+
     /// Creates options for generating transcriptions.
     ///
     /// - Parameters:
@@ -1307,6 +1382,8 @@ extension CactusModel.Transcription {
     ///   - isTelemetryEnabled: Whether telemetry is enabled for this request.
     ///   - useVad: Whether to enable VAD weights for transcription. `nil` defers to higher-level defaults.
     ///   - cloudHandoffThreshold: Optional confidence threshold for cloud handoff.
+    ///   - customVocabulary: Vocabulary entries to bias during transcription.
+    ///   - vocabularyBoost: Optional bias strength to apply to `customVocabulary` entries.
     public init(
       maxTokens: Int = 512,
       temperature: Float = 0.6,
@@ -1314,7 +1391,9 @@ extension CactusModel.Transcription {
       topK: Int = 20,
       isTelemetryEnabled: Bool = false,
       useVad: Bool? = nil,
-      cloudHandoffThreshold: Float? = nil
+      cloudHandoffThreshold: Float? = nil,
+      customVocabulary: [String] = [String](),
+      vocabularyBoost: Float? = nil
     ) {
       self.maxTokens = maxTokens
       self.temperature = temperature
@@ -1323,6 +1402,8 @@ extension CactusModel.Transcription {
       self.isTelemetryEnabled = isTelemetryEnabled
       self.useVad = useVad
       self.cloudHandoffThreshold = cloudHandoffThreshold
+      self.customVocabulary = customVocabulary
+      self.vocabularyBoost = vocabularyBoost
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -1333,6 +1414,8 @@ extension CactusModel.Transcription {
       case isTelemetryEnabled = "telemetry_enabled"
       case useVad = "use_vad"
       case cloudHandoffThreshold = "cloud_handoff_threshold"
+      case customVocabulary = "custom_vocabulary"
+      case vocabularyBoost = "vocabulary_boost"
     }
   }
 }
@@ -1341,6 +1424,7 @@ extension CactusModel.Transcription: Decodable {
   public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.response = try container.decode(String.self, forKey: .response)
+    self.segments = try container.decodeIfPresent([Segment].self, forKey: .segments) ?? [Segment]()
     self.prefillTokens = try container.decode(Int.self, forKey: .prefillTokens)
     self.decodeTokens = try container.decode(Int.self, forKey: .decodeTokens)
     self.totalTokens = try container.decode(Int.self, forKey: .totalTokens)
@@ -1363,6 +1447,7 @@ extension CactusModel.Transcription: Encodable {
   public func encode(to encoder: any Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(self.response, forKey: .response)
+    try container.encode(self.segments, forKey: .segments)
     try container.encode(self.prefillTokens, forKey: .prefillTokens)
     try container.encode(self.decodeTokens, forKey: .decodeTokens)
     try container.encode(self.totalTokens, forKey: .totalTokens)
@@ -1377,6 +1462,7 @@ extension CactusModel.Transcription: Encodable {
 
   private enum CodingKeys: String, CodingKey {
     case response
+    case segments
     case prefillTokens = "prefill_tokens"
     case decodeTokens = "decode_tokens"
     case totalTokens = "total_tokens"
@@ -1503,7 +1589,7 @@ extension CactusModel {
     options: LanguageDetectionOptions?,
     maxBufferSize: Int?
   ) throws -> LanguageDetection {
-    let maxBufferSize = maxBufferSize ?? 8192
+    let maxBufferSize = maxBufferSize ?? Self.defaultBufferSize
     guard maxBufferSize > 0 else {
       throw CactusModelError.languageDetectionBufferTooSmall
     }
@@ -1755,7 +1841,7 @@ extension CactusModel {
     options: VADOptions?,
     maxBufferSize: Int?
   ) throws -> VADResult {
-    let maxBufferSize = maxBufferSize ?? 8192
+    let maxBufferSize = maxBufferSize ?? Self.defaultBufferSize
     guard maxBufferSize > 0 else {
       throw CactusModelError.vadBufferTooSmall
     }
@@ -1940,14 +2026,14 @@ extension CactusModel {
   /// - Parameters:
   ///   - query: The search query string to find relevant documents.
   ///   - topK: The maximum number of chunks to return (default: 10).
-  ///   - maxBufferSize: The maximum buffer size for the response (default: 8192).
+  ///   - maxBufferSize: The maximum buffer size for the response (default: Self.defaultBufferSize).
   /// - Returns: A ``RAGQueryResult`` containing relevant document chunks.
   public func ragQuery(
     query: String,
     topK: Int = 10,
     maxBufferSize: Int? = nil
   ) throws -> RAGQueryResult {
-    let maxBufferSize = maxBufferSize ?? 8192
+    let maxBufferSize = maxBufferSize ?? Self.defaultBufferSize
     guard maxBufferSize > 0 else { throw CactusModelError.ragQueryBufferTooSmall }
 
     let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) {

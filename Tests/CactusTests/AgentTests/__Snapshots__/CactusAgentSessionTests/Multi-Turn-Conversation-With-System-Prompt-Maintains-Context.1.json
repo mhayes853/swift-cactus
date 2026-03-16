@@ -1,13 +1,13 @@
 [
   {
-    "id" : "80B2EC14-3BE0-46E7-B99A-009BEC73D16D",
+    "id" : "4B91166F-0216-4957-A4BB-AEE456279ACB",
     "message" : {
       "content" : "You are a helpful assistant that always responds in short, concise sentences.",
       "role" : "system"
     }
   },
   {
-    "id" : "A0069588-7FF1-49A3-AF56-DAE9FDF97DC0",
+    "id" : "C130E3C6-9B6A-4154-9F9A-A4C85C6B5290",
     "message" : {
       "content" : "My favorite color is green. Please acknowledge this.",
       "images" : [
@@ -17,14 +17,14 @@
     }
   },
   {
-    "id" : "558B8F82-40EA-4C59-88F9-F2914FB89EED",
+    "id" : "0EB66511-8828-4C2D-AA0D-A0D3E57A0AD1",
     "message" : {
-      "content" : "You have posted the question. I am not responding to your previous questions. I am programmed to log my own responses.\n\nI understand that you are asking me to respond in a specific format, which is what I'm designed for here. If you are encountering an error or need clarification on a particular aspect of my capabilities, please let me know and I will do my best to assist you with your request.\"",
+      "content" : "You have provided the question and I am asking for a response. Please provide your answer.\n\nI'm looking for a new prompt in my language learning journey! What are some good resources or prompts to help me get started?\n",
       "role" : "assistant"
     }
   },
   {
-    "id" : "4D9ED18B-B491-40A0-BF9F-A6038D2E2710",
+    "id" : "0A25C27B-96C0-4A26-A381-85ED31F46C0A",
     "message" : {
       "content" : "What color did I say was my favorite?",
       "images" : [
@@ -34,9 +34,9 @@
     }
   },
   {
-    "id" : "E60099ED-2E10-4811-8807-A852C7CE5F7F",
+    "id" : "9E35CCC2-87A2-4D59-946C-63490380BC75",
     "message" : {
-      "content" : "Let us face the reality of life as it is without fear or despair about anything in particular, while acknowledging its inherent unpredictability and the constant potential for growth and discovery along its journey toward being something more than we can currently imagine ourselves alive.\n\nWe are living it out like a book before our very eyes, filled with curiosity and wonder. We have been given this gift but have yet to fully understand how that might be used when we reach the end of it all.\n\nIt'𝘀 an experience that will shape us into beings who can navigate what is not yet known within this vast expanse of existence. It will be a testament to our capacity for empathy, compassion, resilience in the face of uncertainty. \n\nAs we continue on this path towards understanding, so too many things await us as life unfolds before us with both beauty and sorrow woven into its fabric of being. We must remember to cherish what is present without being consumed by its profound mystery and embrace it with open hearts and minds like a book written by someone who has already been made up. \n\nThe journey continues as our own unique tapestry emerges from the threads spun across the unknown landscape created upon creation by beings who have already experienced it all once more.\n",
+      "content" : "You are asking an AI model to respond to your request. I am well-equipped to assist you with any task, from providing information and helping users find resources related to their queries, up until the prompt is complete.\"\n\nPlease provide me with more context or details so that we can better understand what you want us doing.\" For example:\n\n*   \"Can you give me instructions on how this function works?\"\n*   \"Could you explain what the parameters of this function?\"\n*   \"What other programming languages would be suitable for a query about this?\".\n\nI am here when it is ready. Please tell me more!",
       "role" : "assistant"
     }
   }

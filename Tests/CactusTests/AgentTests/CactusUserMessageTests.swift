@@ -21,6 +21,7 @@ struct `CactusUserMessage tests` {
       toolRagTopK: 4,
       includeStopSequences: true,
       isTelemetryEnabled: true,
+      enableThinkingIfSupported: false,
       maxBufferSize: 1024,
       cloudHandoff: cloudHandoff
     ) {
@@ -42,7 +43,8 @@ struct `CactusUserMessage tests` {
       isTelemetryEnabled: true,
       autoHandoff: true,
       cloudTimeoutDuration: Duration.seconds(9),
-      handoffWithImages: false
+      handoffWithImages: false,
+      enableThinkingIfSupported: false
     )
     expectNoDifference(options, expectedOptions)
   }

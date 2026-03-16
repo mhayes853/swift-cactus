@@ -8,7 +8,7 @@ Cactus is a low-latency inference engine for mobile devices and wearables, allow
 
 This package supports all Apple platforms, Android, and Linux on ARM.
 
-**Supported Engine Version:** 1.10
+**Supported Engine Version:** 1.11
 
 ### Package Structure
 
@@ -454,6 +454,25 @@ import Cactus
 CactusTelemetry.setup()
 await CactusTelemetry.disable()
 ```
+
+## Logging
+You can control logging from the Cactus engine via ``CactusLogging``.
+```swift
+import Cactus
+
+CactusLogging.setLevel(.debug)
+CactusLogging.setHandler { entry in
+  print(entry.level, entry.message)
+}
+CactusLogging.removeHandler()
+```
+
+The available log levels are:
+- `.debug` - All log messages
+- `.info` - Informational messages and above
+- `.warn` - Warnings and errors (default)
+- `.error` - Errors only
+- `.none` - Disables all logging
 
 ## Observation
 

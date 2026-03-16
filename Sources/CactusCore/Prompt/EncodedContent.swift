@@ -31,7 +31,7 @@ extension CactusPromptRepresentable {
 /// A prompt wrapper that applies a custom top-level encoder to nested prompt values.
 public struct _EncodedContent<
   Content: CactusPromptRepresentable,
-  Encoder: TopLevelEncoder<Data>
+  Encoder: TopLevelEncoder<Data> & Sendable
 >: CactusPromptRepresentable {
   let content: Content
   let encoder: Encoder

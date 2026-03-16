@@ -1,3 +1,85 @@
 {
-  "content" : "The power of a God can not be overcome! The voice, Abix? How dare you disobey me!? I am Manada, i was here at the beginning and will proclaim end But that...that's impossible"
+  "segments" : [
+    {
+      "endSeconds" : 8.022,
+      "startSeconds" : 5.122,
+      "transcript" : "The power of god cannot be overcome!"
+    },
+    {
+      "endSeconds" : 12.442,
+      "startSeconds" : 8.398,
+      "transcript" : "Xanza, this is the Providence Of World"
+    },
+    {
+      "endSeconds" : 17.266,
+      "startSeconds" : 13.386,
+      "transcript" : "Even Gods are merely beings restricted to limited power"
+    },
+    {
+      "endSeconds" : 25.11,
+      "startSeconds" : 17.742,
+      "transcript" : "Determined By proper Back Power, although Great is Not Unlimited"
+    },
+    {
+      "endSeconds" : 31.162,
+      "startSeconds" : 25.21,
+      "transcript" : "That Voice Abix How dare you disobey me?"
+    },
+    {
+      "endSeconds" : 31.702,
+      "startSeconds" : 31.202,
+      "transcript" : "AHHHHH!!"
+    },
+    {
+      "endSeconds" : 33.758,
+      "startSeconds" : 31.722,
+      "transcript" : "i Am Manada"
+    },
+    {
+      "endSeconds" : 39.422,
+      "startSeconds" : 33.838,
+      "transcript" : "Was Here At The Beginning and Will Proclaim The End"
+    },
+    {
+      "endSeconds" : 42.35,
+      "startSeconds" : 39.462,
+      "transcript" : "but that is impossible..."
+    },
+    {
+      "endSeconds" : 45.79,
+      "startSeconds" : 42.41,
+      "transcript" : "Shook, it Is Time For You To Choose"
+    },
+    {
+      "endSeconds" : 54.914,
+      "startSeconds" : 46.338,
+      "transcript" : "Do This World Belong To Xanza or, does It Belong To You That Is Something I Decided Long Ago!"
+    },
+    {
+      "endSeconds" : 55.714,
+      "startSeconds" : 54.914,
+      "transcript" : "AHHHHH!!"
+    },
+    {
+      "endSeconds" : 71.69,
+      "startSeconds" : 55.714,
+      "transcript" : "Hey, We Use Our Power To Fell A God and That Deeds Are Destiny!"
+    },
+    {
+      "endSeconds" : 74.27,
+      "startSeconds" : 71.69,
+      "transcript" : "AHHHHHHHH!!"
+    },
+    {
+      "endSeconds" : 97.586,
+      "startSeconds" : 74.27,
+      "transcript" : "It Fades The Memory Of A Gods Existence Born From The Chaos Of Creation"
+    },
+    {
+      "endSeconds" : 98.794,
+      "startSeconds" : 97.586,
+      "transcript" : "IT IS"
+    }
+  ],
+  "transcript" : "The power of god cannot be overcome! Xanza, this is the Providence Of World Even Gods are merely beings restricted to limited power Determined By proper Back Power, although Great is Not Unlimited That Voice Abix How dare you disobey me? AHHHHH!! i Am Manada Was Here At The Beginning and Will Proclaim The End but that is impossible... Shook, it Is Time For You To Choose Do This World Belong To Xanza or, does It Belong To You That Is Something I Decided Long Ago! AHHHHH!! Hey, We Use Our Power To Fell A God and That Deeds Are Destiny! AHHHHHHHH!! It Fades The Memory Of A Gods Existence Born From The Chaos Of Creation IT IS"
 }

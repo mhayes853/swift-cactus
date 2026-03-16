@@ -103,7 +103,7 @@ private let testAudioURL = Bundle.module.url(forResource: "test", withExtension:
 
 private enum TestError: Error {
   case message(String)
-  
+
   init(_ message: String) {
     self = .message(message)
   }

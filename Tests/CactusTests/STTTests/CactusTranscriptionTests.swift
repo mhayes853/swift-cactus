@@ -6,157 +6,88 @@ import Testing
 @Suite
 struct `CactusTranscription tests` {
   @Test
-  func `Empty String Response`() {
-    let content = CactusTranscription.Content(response: "")
-    expectNoDifference(content, .fullTranscript(""))
-  }
-
-  @Test
-  func `No Timestamps Response`() {
-    let responseText = "Hello world"
-    let content = CactusTranscription.Content(response: responseText)
-
-    expectNoDifference(content, .fullTranscript("Hello world"))
-  }
-
-  @Test
-  func `Timestamps Response`() {
-    let content = CactusTranscription.Content(
-      response: """
-        <|0.00|> How? The power of a god cannot be overcome.\
-        <|3.14|> Zanzan, this is the providence of the world. Even gods are merely beings \
-        restricted to the limited power determined by prophets.\
-        <|6.56|> That power, although great, is not unlimited. \
-        <|9.31|> That voice, Albrecht! How dare you!
-        """
+  @available(*, deprecated)
+  func `Deprecated Content Returns Full Transcript When Segments Empty`() {
+    let transcription = CactusTranscription(
+      id: CactusGenerationID(),
+      metrics: .init(
+        prefillTokens: 0,
+        decodeTokens: 0,
+        totalTokens: 0,
+        confidence: 1,
+        prefillTps: 0,
+        decodeTps: 0,
+        ramUsageMb: 0,
+        didHandoffToCloud: false,
+        durationToFirstToken: .zero,
+        totalDuration: .zero
+      ),
+      transcript: "Hello world",
+      segments: [CactusTranscription.Segment]()
     )
-    expectNoDifference(
-      content,
-      .timestamps([
-        CactusTranscription.Timestamp(
+
+    expectNoDifference(transcription.content, .fullTranscript("Hello world"))
+  }
+
+  @Test
+  @available(*, deprecated)
+  func `Deprecated Content Returns Timestamps When Segments Present`() {
+    let transcription = CactusTranscription(
+      id: CactusGenerationID(),
+      metrics: .init(
+        prefillTokens: 0,
+        decodeTokens: 0,
+        totalTokens: 0,
+        confidence: 1,
+        prefillTps: 0,
+        decodeTps: 0,
+        ramUsageMb: 0,
+        didHandoffToCloud: false,
+        durationToFirstToken: .zero,
+        totalDuration: .zero
+      ),
+      transcript: "Hello world",
+      segments: [
+        CactusTranscription.Segment(
           startDuration: .seconds(0),
-          transcript: "How? The power of a god cannot be overcome."
-        ),
-        CactusTranscription.Timestamp(
-          startDuration: .seconds(3.14),
-          transcript: """
-            Zanzan, this is the providence of the world. Even gods are merely beings \
-            restricted to the limited power determined by prophets.
-            """
-        ),
-        CactusTranscription.Timestamp(
-          startDuration: .seconds(6.56),
-          transcript: "That power, although great, is not unlimited. "
-        ),
-        CactusTranscription.Timestamp(
-          startDuration: .seconds(9.31),
-          transcript: "That voice, Albrecht! How dare you!"
+          endDuration: .seconds(1),
+          transcript: "Hello"
         )
-      ])
+      ]
     )
-  }
 
-  @Test
-  func `Timestamps Response With Start End Markers`() {
-    let content = CactusTranscription.Content(
-      response:
-        "<|0.02|> The power of a god cannot be overcome!<|2.94|><|3.14|> Zanza, this is the providence of the world.<|6.12|><|6.28|> Even gods are merely beings restricted to limited power determined by promise that power...<|12.76|><|13.10|> ...although great is not unlimited<|15.96|><|16.02|> That voice! Abyss!? How dare you disobey me?<|19.34|><|19.98|> I am Manada. I was here at beginning and will proclaim it's end<|25.16|><|25.30|> But that..that's impossible<|27.18|><|27.26|>"
-    )
     expectNoDifference(
-      content,
+      transcription.content,
       .timestamps([
-        CactusTranscription.Timestamp(
-          startDuration: .seconds(0.02),
-          transcript: "The power of a god cannot be overcome!"
-        ),
-        .silence(startDuration: .seconds(2.94)),
-        CactusTranscription.Timestamp(
-          startDuration: .seconds(3.14),
-          transcript: "Zanza, this is the providence of the world."
-        ),
-        .silence(startDuration: .seconds(6.12)),
-        CactusTranscription.Timestamp(
-          startDuration: .seconds(6.28),
-          transcript:
-            "Even gods are merely beings restricted to limited power determined by promise that power..."
-        ),
-        .silence(startDuration: .seconds(12.76)),
-        CactusTranscription.Timestamp(
-          startDuration: .seconds(13.10),
-          transcript: "...although great is not unlimited"
-        ),
-        .silence(startDuration: .seconds(15.96)),
-        CactusTranscription.Timestamp(
-          startDuration: .seconds(16.02),
-          transcript: "That voice! Abyss!? How dare you disobey me?"
-        ),
-        .silence(startDuration: .seconds(19.34)),
-        CactusTranscription.Timestamp(
-          startDuration: .seconds(19.98),
-          transcript: "I am Manada. I was here at beginning and will proclaim it's end"
-        ),
-        .silence(startDuration: .seconds(25.16)),
-        CactusTranscription.Timestamp(
-          startDuration: .seconds(25.30),
-          transcript: "But that..that's impossible"
-        ),
-        .silence(startDuration: .seconds(27.18)),
-        .silence(startDuration: .seconds(27.26))
+        CactusTranscription.Timestamp(startDuration: .seconds(0), transcript: "Hello")
       ])
     )
   }
 
   @Test
-  func `Content response from fullTranscript`() {
-    let content = CactusTranscription.Content.fullTranscript("Hello world")
-    expectNoDifference(content.response, "Hello world")
-  }
-
-  @Test
-  func `Content response from fullTranscript with complex text`() {
-    let transcript = """
-      How? The power of a god cannot be overcome. Zanzan, this is the providence of the world. \
-      Even gods are merely beings restricted to the limited power determined by prophets. That \
-      power, although great, is not unlimited. That voice, Albrecht! How dare you!
-      """
-    let content = CactusTranscription.Content.fullTranscript(transcript)
-    expectNoDifference(content.response, transcript)
-  }
-
-  @Test
-  func `Content response from timestamps`() {
-    let timestamps = [
+  @available(*, deprecated)
+  func `Deprecated Content Response From Timestamps`() {
+    let content = CactusTranscription.Content.timestamps([
       CactusTranscription.Timestamp(startDuration: .seconds(0), transcript: "Hello"),
       CactusTranscription.Timestamp(startDuration: .seconds(1.5), transcript: "World")
-    ]
-    let content = CactusTranscription.Content.timestamps(timestamps)
+    ])
+
     expectNoDifference(content.response, "<|0.00|>Hello<|1.50|>World")
   }
 
   @Test
-  func `Content response from timestamps with complex example`() {
-    let responseString = """
-      <|0.00|>How? The power of a god cannot be overcome.\
-      <|3.14|>Zanzan, this is the providence of the world. Even gods are merely beings \
-      restricted to the limited power determined by prophets.\
-      <|6.56|>That power, although great, is not unlimited. \
-      <|9.31|>That voice, Albrecht! How dare you!
-      """
-    let content = CactusTranscription.Content(response: responseString)
-    expectNoDifference(content.response, responseString)
-  }
+  @available(*, deprecated)
+  func `Deprecated Content Response Parser Still Supports Whisper Style Strings`() {
+    let content = CactusTranscription.Content(
+      response: "<|0.00|>Hello<|1.50|>World"
+    )
 
-  @Test
-  func `Content response from timestamps with silence markers`() {
-    let responseString =
-      "<|0.02|>The power of a god cannot be overcome!<|2.94|><|3.14|>Zanza, this is the providence of the world."
-    let content = CactusTranscription.Content(response: responseString)
-    expectNoDifference(content.response, responseString)
-  }
-}
-
-extension CactusTranscription.Timestamp {
-  fileprivate static func silence(startDuration: Duration) -> Self {
-    Self(startDuration: startDuration, transcript: "")
+    expectNoDifference(
+      content,
+      .timestamps([
+        CactusTranscription.Timestamp(startDuration: .seconds(0), transcript: "Hello"),
+        CactusTranscription.Timestamp(startDuration: .seconds(1.5), transcript: "World")
+      ])
+    )
   }
 }
