@@ -255,6 +255,35 @@ struct `CactusModel tests` {
   }
 
   @Test
+  func `Thinking Content Is Extracted From Completion`() async throws {
+    let request = CactusModel.PlatformDownloadRequest.qwen3_1_7b()
+    let modelURL = try await CactusModel.testModelURL(request: request)
+    let model = try CactusModel(from: modelURL)
+
+    let completed = try model.complete(
+      messages: [
+        .system("You are a philosopher, philosophize about any questions you are asked."),
+        .user("What is the meaning of life?")
+      ],
+      options: CactusModel.Completion.Options(
+        maxTokens: 256,
+        temperature: 0,
+        enableThinkingIfSupported: true
+      )
+    )
+
+    let thinking = try #require(completed.completion.thinking)
+    expectNoDifference(completed.completion.response.isEmpty, false)
+    expectNoDifference(thinking.isEmpty, false)
+    expectNoDifference(completed.messages.last?.content.contains("<think>"), true)
+    expectNoDifference(
+      completed.messages.last?.content.contains(completed.completion.response),
+      true
+    )
+    expectNoDifference(completed.messages.last?.content.contains(thinking), true)
+  }
+
+  @Test
   func `Complete Returned Messages Can Be Reused For Next Complete`() async throws {
     let modelURL = try await CactusModel.testModelURL(request: .qwen3_1_7b())
     let model = try CactusModel(from: modelURL)
@@ -506,7 +535,45 @@ final class CactusModelGenerationSnapshotTests: XCTestCase {
       messages: [
         .system("You are a philosopher, philosophize about any questions you are asked."),
         .user("What is the meaning of life?")
-      ]
+      ],
+      options: CactusModel.Completion.Options(
+        maxTokens: 256,
+        temperature: 0,
+        enableThinkingIfSupported: true
+      )
+    )
+    withExpectedIssue {
+      assertSnapshot(
+        of: Completion(
+          slug: request.slug,
+          completion: completed.completion,
+          messages: completed.messages
+        ),
+        as: .json
+      )
+    }
+  }
+
+  func testThinkingCompletionSnapshot() async throws {
+    struct Completion: Codable {
+      let slug: String
+      let completion: CactusModel.Completion
+      let messages: [CactusModel.Message]
+    }
+
+    let request = CactusModel.PlatformDownloadRequest.qwen3_1_7b()
+    let modelURL = try await CactusModel.testModelURL(request: request)
+    let model = try CactusModel(from: modelURL)
+    let completed = try model.complete(
+      messages: [
+        .system("You are a philosopher, philosophize about any questions you are asked."),
+        .user("What is the meaning of life?")
+      ],
+      options: CactusModel.Completion.Options(
+        maxTokens: 256,
+        temperature: 0,
+        enableThinkingIfSupported: true
+      )
     )
     withExpectedIssue {
       assertSnapshot(
