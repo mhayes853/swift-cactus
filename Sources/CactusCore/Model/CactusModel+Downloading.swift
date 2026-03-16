@@ -125,6 +125,7 @@ extension CactusModel {
       public static let v1_7 = Self(rawValue: "v1.7")
       public static let v1_8 = Self(rawValue: "v1.8")
       public static let v1_9 = Self(rawValue: "v1.9")
+      public static let v1_11 = Self(rawValue: "v1.11")
 
       public let rawValue: String
 
@@ -204,7 +205,7 @@ extension CactusModel {
     public init(
       slug: String,
       quantization: Quantization = .int4,
-      version: Version = .v1_9,
+      version: Version = .v1_11,
       pro: Pro? = nil
     ) {
       self.slug = slug
@@ -220,7 +221,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func gemma3_270mIt(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "gemma-3-270m-it", quantization: quantization, version: version)
     }
@@ -232,7 +233,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func functiongemma270mIt(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "functiongemma-270m-it", quantization: quantization, version: version)
     }
@@ -244,7 +245,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func gemma3_1bIt(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "gemma-3-1b-it", quantization: quantization, version: version)
     }
@@ -258,7 +259,7 @@ extension CactusModel {
     public static func whisperSmall(
       quantization: Quantization = .int4,
       pro: Pro? = nil,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "whisper-small", quantization: quantization, version: version, pro: pro)
     }
@@ -272,7 +273,7 @@ extension CactusModel {
     public static func whisperMedium(
       quantization: Quantization = .int4,
       pro: Pro? = nil,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "whisper-medium", quantization: quantization, version: version, pro: pro)
     }
@@ -284,7 +285,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func lfm2_350m(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "lfm2-350m", quantization: quantization, version: version)
     }
@@ -296,7 +297,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func lfm2_700m(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "lfm2-700m", quantization: quantization, version: version)
     }
@@ -308,7 +309,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func lfm2_1_2b(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "lfm2-1.2b", quantization: quantization, version: version)
     }
@@ -320,7 +321,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func lfm2_1_2bRag(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "lfm2-1.2b-rag", quantization: quantization, version: version)
     }
@@ -332,7 +333,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func lfm2_1_2bTool(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "lfm2-1.2b-tool", quantization: quantization, version: version)
     }
@@ -344,7 +345,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func lfm2_5_1_2bInstruct(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "lfm2.5-1.2b-instruct", quantization: quantization, version: version)
     }
@@ -356,7 +357,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func lfm2_5_1_2bThinking(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "lfm2.5-1.2b-thinking", quantization: quantization, version: version)
     }
@@ -368,7 +369,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func lfm2_2_6b(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "lfm2-2.6b", quantization: quantization, version: version)
     }
@@ -382,7 +383,7 @@ extension CactusModel {
     public static func lfm2Vl_450m(
       quantization: Quantization = .int4,
       pro: Pro? = nil,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "lfm2-vl-450m", quantization: quantization, version: version, pro: pro)
     }
@@ -396,7 +397,7 @@ extension CactusModel {
     public static func lfm2_5Vl_1_6b(
       quantization: Quantization = .int4,
       pro: Pro? = nil,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "lfm2.5-vl-1.6b", quantization: quantization, version: version, pro: pro)
     }
@@ -408,7 +409,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func qwen3_0_6b(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "qwen3-0.6b", quantization: quantization, version: version)
     }
@@ -420,7 +421,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func qwen3Embedding_0_6b(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "qwen3-embedding-0.6b", quantization: quantization, version: version)
     }
@@ -432,7 +433,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func qwen3_1_7b(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "qwen3-1.7b", quantization: quantization, version: version)
     }
@@ -444,7 +445,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func nomicEmbedTextV2Moe(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "nomic-embed-text-v2-moe", quantization: quantization, version: version)
     }
@@ -458,7 +459,7 @@ extension CactusModel {
     public static func moonshineBase(
       quantization: Quantization = .int4,
       pro: Pro? = nil,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "moonshine-base", quantization: quantization, version: version, pro: pro)
     }
@@ -472,7 +473,7 @@ extension CactusModel {
     public static func parakeetCtc_0_6b(
       quantization: Quantization = .int4,
       pro: Pro? = nil,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "parakeet-ctc-0.6b", quantization: quantization, version: version, pro: pro)
     }
@@ -486,7 +487,7 @@ extension CactusModel {
     public static func parakeetCtc_1_1b(
       quantization: Quantization = .int4,
       pro: Pro? = nil,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "parakeet-ctc-1.1b", quantization: quantization, version: version, pro: pro)
     }
@@ -498,7 +499,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func parakeetTdt_0_6bV3(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "parakeet-tdt-0.6b-v3", quantization: quantization, version: version)
     }
@@ -510,7 +511,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func lfm2_8bA1b(
       quantization: Quantization = .int4,
-      version: Version = .v1_9
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "lfm2-8b-a1b", quantization: quantization, version: version)
     }

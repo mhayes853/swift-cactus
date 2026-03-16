@@ -549,7 +549,8 @@ final class CactusModelGenerationSnapshotTests: XCTestCase {
           completion: completed.completion,
           messages: completed.messages
         ),
-        as: .json
+        as: .json,
+        record: true
       )
     }
   }
