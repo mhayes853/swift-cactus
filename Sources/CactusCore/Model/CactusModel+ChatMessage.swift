@@ -38,6 +38,30 @@ extension CactusModel {
       Self(role: .assistant, content: content)
     }
 
+    /// Creates a tool message.
+    ///
+    /// Use this initializer when providing tool output to the model.
+    ///
+    /// - Parameters:
+    ///   - content: The tool output content.
+    ///   - name: The name of the tool that produced this output.
+    /// - Returns: A ``CactusModel/Message``.
+    public static func tool(_ content: String, name: String) -> Self {
+      Self(role: .tool, content: content, name: name)
+    }
+
+    /// Creates a function message.
+    ///
+    /// This is an alias for ``tool(_:name:)``.
+    ///
+    /// - Parameters:
+    ///   - content: The function output content.
+    ///   - name: The name of the function that produced this output.
+    /// - Returns: A ``CactusModel/Message``.
+    public static func function(_ content: String, name: String) -> Self {
+      Self(role: .function, content: content, name: name)
+    }
+
     /// The ``Role`` of the message.
     public var role: Role
 
@@ -47,16 +71,28 @@ extension CactusModel {
     /// An array of `URL`s to locally stored images.
     public var images: [URL]?
 
+    /// The name of the tool or function that produced this message.
+    ///
+    /// This is used for messages with the ``Role/tool`` or ``Role/function`` role.
+    public var name: String?
+
     /// Creates a message.
     ///
     /// - Parameters:
     ///   - role: The ``Role`` of the message.
     ///   - content: The message content.
     ///   - images: An array of `URL`s to locally stored images.
-    public init(role: Role, content: String, images: [URL]? = nil) {
+    ///   - name: The name of the tool or function that produced this message.
+    public init(
+      role: Role,
+      content: String,
+      images: [URL]? = nil,
+      name: String? = nil
+    ) {
       self.role = role
       self.content = content
       self.images = images
+      self.name = name
     }
   }
 }

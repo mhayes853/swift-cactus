@@ -985,12 +985,9 @@ extension CactusAgentSession {
     completionEntries: inout [CactusCompletionEntry]
   ) throws {
     for functionReturn in functionReturns {
-      let content = try self.functionOutputPayload(
-        name: functionReturn.name,
-        content: functionReturn.content
-      )
+      let components = try functionReturn.content.messageComponents()
       self.appendTranscriptEntry(
-        CactusModel.Message(role: role, content: content),
+        .tool(components.text, name: functionReturn.name),
         metrics: nil,
         completionEntries: &completionEntries
       )
@@ -1012,20 +1009,6 @@ extension CactusAgentSession {
       return []
     }
     return Array(messages.dropFirst(originalMessagesCount))
-  }
-
-  private func functionOutputPayload(
-    name: String,
-    content: CactusPromptContent
-  ) throws -> String {
-    struct Payload: Encodable {
-      let name: String
-      let content: String
-    }
-
-    let components = try content.messageComponents()
-    let data = try JSONEncoder().encode(Payload(name: name, content: components.text))
-    return String(decoding: data, as: UTF8.self)
   }
 }
 

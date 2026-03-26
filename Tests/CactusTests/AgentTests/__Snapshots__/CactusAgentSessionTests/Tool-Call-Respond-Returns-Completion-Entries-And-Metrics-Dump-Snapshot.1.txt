@@ -1,37 +1,89 @@
-▿ 2 elements
+▿ 5 elements
   ▿ CactusCompletionEntry
     - metrics: Optional<CactusGenerationMetrics>.none
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: A924C5E3-260B-4033-AF98-ACD9262FF79A
+        - rawValue: 6197FC55-26D0-464A-A4AA-ABB07995A444
       ▿ message: Message
         - content: "Use the get_fact tool for both \'cactus\' and \'swift\', then summarize both facts."
         ▿ images: Optional<Array<URL>>
           - some: 0 elements
+        - name: Optional<String>.none
         ▿ role: Role
           - rawValue: "user"
   ▿ CactusCompletionEntry
     ▿ metrics: Optional<CactusGenerationMetrics>
       ▿ some: CactusGenerationMetrics
-        - confidence: 0.9323
-        - decodeTokens: 49
-        - decodeTps: 34.62
+        - confidence: 0.9936
+        - decodeTokens: 22
+        - decodeTps: 35.55
         - didHandoffToCloud: false
-        ▿ durationToFirstToken: 1.24326 seconds
-          - _low: 1243259999999999991
+        ▿ durationToFirstToken: 1.45685 seconds
+          - _low: 1456849999999999909
           - _high: 0
-        - prefillTokens: 119
-        - prefillTps: 95.72
-        - ramUsageMb: 992.64
-        ▿ totalDuration: 2.62955 seconds
-          - _low: 2629550000000000182
+        - prefillTokens: 142
+        - prefillTps: 97.47
+        - ramUsageMb: 620.99
+        ▿ totalDuration: 2.04756 seconds
+          - _low: 2047559999999999945
           - _high: 0
-        - totalTokens: 168
+        - totalTokens: 164
     ▿ transcriptEntry: Element
       ▿ id: CactusGenerationID
-        - rawValue: BD540357-A81E-4424-B430-3983324CFBF0
+        - rawValue: A627AB80-633C-4B86-9FA4-597350F5659A
       ▿ message: Message
-        - content: "To provide the requested information, I need to know the specific topic for which you\'d like a fact. Could you please specify what topic or subject area (e.g., \"space exploration,\" \"ancient civilizations\")) your question relates to?"
+        - content: "<|tool_call_start|>[get_fact(subject=\"cactus\"), get_fact(subject=\"swift\")]<|tool_call_end|>"
         - images: Optional<Array<URL>>.none
+        - name: Optional<String>.none
+        ▿ role: Role
+          - rawValue: "assistant"
+  ▿ CactusCompletionEntry
+    - metrics: Optional<CactusGenerationMetrics>.none
+    ▿ transcriptEntry: Element
+      ▿ id: CactusGenerationID
+        - rawValue: C32F4834-1A21-4387-8054-B8A3DAA74498
+      ▿ message: Message
+        - content: "Cacti store water in thick stems to survive arid climates."
+        - images: Optional<Array<URL>>.none
+        ▿ name: Optional<String>
+          - some: "get_fact"
+        ▿ role: Role
+          - rawValue: "tool"
+  ▿ CactusCompletionEntry
+    - metrics: Optional<CactusGenerationMetrics>.none
+    ▿ transcriptEntry: Element
+      ▿ id: CactusGenerationID
+        - rawValue: 33DE8082-83CA-478A-B69B-203F5CA1FCCA
+      ▿ message: Message
+        - content: "Swift is a type-safe language that emphasizes expressive syntax and performance."
+        - images: Optional<Array<URL>>.none
+        ▿ name: Optional<String>
+          - some: "get_fact"
+        ▿ role: Role
+          - rawValue: "tool"
+  ▿ CactusCompletionEntry
+    ▿ metrics: Optional<CactusGenerationMetrics>
+      ▿ some: CactusGenerationMetrics
+        - confidence: 0.9434
+        - decodeTokens: 37
+        - decodeTps: 33.26
+        - didHandoffToCloud: false
+        ▿ durationToFirstToken: 2.1128400000000003 seconds
+          - _low: 2112840000000000146
+          - _high: 0
+        - prefillTokens: 211
+        - prefillTps: 99.87
+        - ramUsageMb: 925.82
+        ▿ totalDuration: 3.1951 seconds
+          - _low: 3195099999999999909
+          - _high: 0
+        - totalTokens: 248
+    ▿ transcriptEntry: Element
+      ▿ id: CactusGenerationID
+        - rawValue: 490A01B4-BA2D-4020-878B-B3A80DBC8F76
+      ▿ message: Message
+        - content: "The cactus stores water in its thick stems to thrive in dry environments. Swift is a type-safe language known for its expressive syntax and high performance, often used for iOS development."
+        - images: Optional<Array<URL>>.none
+        - name: Optional<String>.none
         ▿ role: Role
           - rawValue: "assistant"
