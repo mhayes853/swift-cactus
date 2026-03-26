@@ -845,11 +845,13 @@ extension CactusModel {
   private struct FFIMessage: Codable {
     let role: Message.Role
     let content: String
+    let name: String?
     let images: [String]?
 
     init(message: Message) {
       self.role = message.role
       self.content = message.content
+      self.name = message.name
       self.images = message.images?.map(\.nativePath)
     }
   }

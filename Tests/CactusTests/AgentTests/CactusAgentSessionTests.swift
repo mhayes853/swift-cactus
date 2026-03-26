@@ -253,7 +253,7 @@ struct `CactusAgentSession tests` {
       )
 
       let completion = try await session.respond(
-        to: CactusUserMessage(forceFunctions: true) {
+        to: CactusUserMessage {
           "Use the get_fact tool for both 'cactus' and 'swift', then summarize both facts."
         }
       )
@@ -390,18 +390,18 @@ struct `CactusAgentSession tests` {
 
       @JSONSchema
       struct Input: Codable, Sendable {
-        let topic: String
+        let subject: String
       }
 
       let name = "get_fact"
       let description = "Returns a short fact for a topic"
 
       func invoke(input: sending Input) async throws -> sending String {
-        switch input.topic.lowercased() {
+        switch input.subject.lowercased() {
         case "cactus": "Cacti store water in thick stems to survive arid climates."
         case "swift":
           "Swift is a type-safe language that emphasizes expressive syntax and performance."
-        default: "No fact available for \(input.topic)."
+        default: "No fact available for \(input.subject)."
         }
       }
     }
