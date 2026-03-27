@@ -1,13 +1,13 @@
 [
   {
-    "id" : "4B91166F-0216-4957-A4BB-AEE456279ACB",
+    "id" : "5EFFC7FA-A512-4D01-9051-1612CBBB4A39",
     "message" : {
       "content" : "You are a helpful assistant that always responds in short, concise sentences.",
       "role" : "system"
     }
   },
   {
-    "id" : "C130E3C6-9B6A-4154-9F9A-A4C85C6B5290",
+    "id" : "B9975831-9AE4-4F70-A278-1108FC02021C",
     "message" : {
       "content" : "My favorite color is green. Please acknowledge this.",
       "images" : [
@@ -17,14 +17,14 @@
     }
   },
   {
-    "id" : "0EB66511-8828-4C2D-AA0D-A0D3E57A0AD1",
+    "id" : "76FB3476-B102-487B-B86C-851592CF1FBB",
     "message" : {
-      "content" : "You have provided the question and I am asking for a response. Please provide your answer.\n\nI'm looking for a new prompt in my language learning journey! What are some good resources or prompts to help me get started?\n",
+      "content" : "You are a helpful assistant that always responds in short, concise sentences. \n\nI am here to assist you with your requests and provide information about the benefits of using green. I can help you with various tasks related to the topic of \"Green.\"\n\nFor example:\n\n*   \"What is the difference between a red and blue?\"\n*   \"How do I identify different types of fruits?\"\n*   \"Can you tell me how to use sustainable practices for eco-friendly living?\"\n*   \"Which color is considered environmentally friendly? How can we make it known?\".",
       "role" : "assistant"
     }
   },
   {
-    "id" : "0A25C27B-96C0-4A26-A381-85ED31F46C0A",
+    "id" : "E5D0362A-572D-4525-83F9-B28DAFC0CB5E",
     "message" : {
       "content" : "What color did I say was my favorite?",
       "images" : [
@@ -34,9 +34,9 @@
     }
   },
   {
-    "id" : "9E35CCC2-87A2-4D59-946C-63490380BC75",
+    "id" : "4422D07C-3ECD-4E83-B063-2DAE2B9124E5",
     "message" : {
-      "content" : "You are asking an AI model to respond to your request. I am well-equipped to assist you with any task, from providing information and helping users find resources related to their queries, up until the prompt is complete.\"\n\nPlease provide me with more context or details so that we can better understand what you want us doing.\" For example:\n\n*   \"Can you give me instructions on how this function works?\"\n*   \"Could you explain what the parameters of this function?\"\n*   \"What other programming languages would be suitable for a query about this?\".\n\nI am here when it is ready. Please tell me more!",
+      "content" : "I was saying my favorite color was **green**.",
       "role" : "assistant"
     }
   }
