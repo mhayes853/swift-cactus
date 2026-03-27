@@ -253,7 +253,7 @@ struct `CactusAgentSession tests` {
       )
 
       let completion = try await session.respond(
-        to: CactusUserMessage {
+        to: CactusUserMessage(forceFunctions: true) {
           "Use the get_fact tool for both 'cactus' and 'swift', then summarize both facts."
         }
       )

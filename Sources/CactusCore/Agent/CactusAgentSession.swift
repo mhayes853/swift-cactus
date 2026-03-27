@@ -760,12 +760,13 @@ extension CactusAgentSession {
       var conversationMessages = context.transcript
       var finalResponse = ""
       var finalThinking: String?
+      var options = context.options
       do {
         while true {
           let assistantStreamID = CactusGenerationID()
           let completedTurn = try await self.modelActor.complete(
             messages: conversationMessages,
-            options: context.options,
+            options: options,
             maxBufferSize: context.maxBufferSize,
             functions: context.functionDefinitions
           ) { token, tokenId in
@@ -777,6 +778,7 @@ extension CactusAgentSession {
               )
             )
           }
+          options.forceFunctions = false
 
           let appendedMessages = self.appendedMessages(
             in: completedTurn.messages,
