@@ -849,7 +849,7 @@ extension CactusModel {
       if response?.error.contains(Self.bufferNotBigEnoughErrorMessage) == true {
         throw CactusModelError.speakerEmbeddingsBufferTooSmall
       }
-      if response?.error.localizedCaseInsensitiveContains("not supported") == true {
+      if response?.error.localizedCaseInsensitiveContains("not a WeSpeaker") == true {
         throw CactusModelError.speakerEmbeddingsNotSupported
       }
       throw CactusModelError.speakerEmbeddingsGeneration(message: response?.error)
@@ -2555,7 +2555,7 @@ extension CactusModel {
       if response?.error.contains(Self.bufferNotBigEnoughErrorMessage) == true {
         throw CactusModelError.diarizeBufferTooSmall
       }
-      if response?.error.localizedCaseInsensitiveContains("not supported") == true {
+      if response?.error.localizedCaseInsensitiveContains("not a PyAnnote") == true {
         throw CactusModelError.diarizeNotSupported
       }
       throw CactusModelError.diarizeGeneration(message: response?.error)
