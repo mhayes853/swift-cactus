@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 3.10)
 project(CactusLinuxArm LANGUAGES CXX)
 
+include(CheckCXXCompilerFlag)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-    message(STATUS "CMAKE_BUILD_TYPE was not set, defaulting to Release.")
+  set(CMAKE_BUILD_TYPE Release)
+  message(STATUS "CMAKE_BUILD_TYPE was not set, defaulting to Release.")
 endif()
 
 set(SOURCE_DIR ${CMAKE_SOURCE_DIR}/../build/cactus/cactus)
@@ -15,9 +17,29 @@ file(GLOB ENGINE_SOURCES "${SOURCE_DIR}/engine/*.cpp")
 file(GLOB GRAPH_SOURCES "${SOURCE_DIR}/graph/*.cpp")
 file(GLOB KERNEL_SOURCES "${SOURCE_DIR}/kernel/*.cpp")
 file(GLOB FFI_SOURCES "${SOURCE_DIR}/ffi/*.cpp")
-file(GLOB MODEL_SOURCES "${SOURCE_DIR}/models/*.cpp")
+file(GLOB MODEL_SOURCES "${SOURCE_DIR}/models/*.cpp" "${SOURCE_DIR}/models/gemma4/*.cpp")
 file(GLOB NPU_SOURCES "${SOURCE_DIR}/npu/*.cpp")
 file(GLOB INDEX_SOURCES "${SOURCE_DIR}/index/*.cpp")
+
+set(CACTUS_I8MM_SOURCE "${SOURCE_DIR}/kernel/kernel_i8mm.cpp")
+list(REMOVE_ITEM KERNEL_SOURCES "${CACTUS_I8MM_SOURCE}")
+
+check_cxx_compiler_flag("-march=armv8.6-a+i8mm" CACTUS_HAS_ARMV86_I8MM)
+check_cxx_compiler_flag("-march=armv8.2-a+fp16+simd+dotprod+i8mm" CACTUS_HAS_ARMV82_DOTPROD_I8MM)
+
+set(CACTUS_I8MM_COMPILE_OPTION "")
+if(CACTUS_HAS_ARMV86_I8MM)
+  set(CACTUS_I8MM_COMPILE_OPTION "-march=armv8.6-a+i8mm")
+elseif(CACTUS_HAS_ARMV82_DOTPROD_I8MM)
+  set(CACTUS_I8MM_COMPILE_OPTION "-march=armv8.2-a+fp16+simd+dotprod+i8mm")
+endif()
+
+if(CACTUS_I8MM_COMPILE_OPTION)
+  list(APPEND KERNEL_SOURCES "${CACTUS_I8MM_SOURCE}")
+  message(STATUS "Enabling I8MM kernel with flag: ${CACTUS_I8MM_COMPILE_OPTION}")
+else()
+  message(STATUS "I8MM compile flag unsupported by this toolchain; skipping kernel_i8mm.cpp")
+endif()
 
 set(COMMON_SOURCES
     ${KERNEL_SOURCES}
@@ -30,14 +52,14 @@ set(COMMON_SOURCES
 )
 
 if(NOT COMMON_SOURCES)
-    message(FATAL_ERROR "No source files found! Check SOURCE_DIR: ${SOURCE_DIR}")
+  message(FATAL_ERROR "No source files found! Check SOURCE_DIR: ${SOURCE_DIR}")
 endif()
 
 if(CMAKE_SYSTEM_PROCESSOR)
-    string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" TARGET_CPU)
-    if(NOT TARGET_CPU MATCHES "^(aarch64|arm64)$")
-        message(FATAL_ERROR "Linux ARM build requires aarch64/arm64 target processor. Got: ${CMAKE_SYSTEM_PROCESSOR}")
-    endif()
+  string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" TARGET_CPU)
+  if(NOT TARGET_CPU MATCHES "^(aarch64|arm64)$")
+    message(FATAL_ERROR "Linux ARM build requires aarch64/arm64 target processor. Got: ${CMAKE_SYSTEM_PROCESSOR}")
+  endif()
 endif()
 
 add_library(cactus STATIC ${COMMON_SOURCES})
@@ -59,15 +81,17 @@ target_compile_definitions(cactus PRIVATE
     __ARM_NEON=1
     __ARM_FEATURE_FP16_VECTOR_ARITHMETIC=1
     __ARM_FEATURE_DOTPROD=1
-    __ARM_FEATURE_MATMUL_INT8=1
 )
+
+if(CACTUS_I8MM_COMPILE_OPTION)
+  target_compile_definitions(cactus PRIVATE CACTUS_COMPILE_I8MM=1)
+endif()
 
 target_compile_options(cactus PRIVATE
     -pthread
     -Wall
     -Wextra
     -pedantic
-    -Wno-c++20-designator
     -Wno-missing-field-initializers
     -fomit-frame-pointer
     -funroll-loops
@@ -80,6 +104,14 @@ target_compile_options(cactus PRIVATE
     -fdata-sections
     -march=armv8.2-a+fp16+simd+dotprod
 )
+
+if(CACTUS_I8MM_COMPILE_OPTION)
+  set_source_files_properties(
+      "${CACTUS_I8MM_SOURCE}"
+      PROPERTIES
+          COMPILE_OPTIONS "${CACTUS_I8MM_COMPILE_OPTION}"
+  )
+endif()
 
 target_link_options(cactus PRIVATE
     -Wl,--gc-sections
