@@ -95,5 +95,101 @@
         maxBufferSize: maxBufferSize
       )
     }
+
+    /// Generates a completed chat turn with reusable continuation messages using the specified audio buffer.
+    ///
+    /// - Parameters:
+    ///   - messages: The list of ``CactusModel/Message`` instances.
+    ///   - buffer: The PCM buffer to include with the messages.
+    ///   - options: The ``CactusModel/Completion/Options``.
+    ///   - maxBufferSize: The maximum buffer size to store the completion.
+    ///   - functions: A list of ``CactusModel/FunctionDefinition`` instances.
+    ///   - onToken: A callback invoked whenever a token is generated.
+    /// - Returns: A ``CactusModel/CompletedChatTurn``.
+    public func complete(
+      messages: [CactusModel.Message],
+      buffer: sending AVAudioPCMBuffer,
+      options: CactusModel.Completion.Options = CactusModel.Completion.Options(),
+      maxBufferSize: Int? = nil,
+      functions: [CactusModel.FunctionDefinition] = [],
+      onToken: @escaping @Sendable (String) -> Void = { _ in }
+    ) async throws -> CactusModel.CompletedChatTurn {
+      try await self.complete(
+        messages: messages,
+        options: options,
+        maxBufferSize: maxBufferSize,
+        functions: functions,
+        pcmBuffer: try buffer.cactusPCMBytes(),
+        onToken: onToken
+      )
+    }
+
+    /// Generates a completed chat turn with reusable continuation messages using the specified audio buffer.
+    ///
+    /// - Parameters:
+    ///   - messages: The list of ``CactusModel/Message`` instances.
+    ///   - buffer: The PCM buffer to include with the messages.
+    ///   - options: The ``CactusModel/Completion/Options``.
+    ///   - maxBufferSize: The maximum buffer size to store the completion.
+    ///   - functions: A list of ``CactusModel/FunctionDefinition`` instances.
+    ///   - onToken: A callback invoked whenever a token is generated.
+    /// - Returns: A ``CactusModel/CompletedChatTurn``.
+    public func complete(
+      messages: [CactusModel.Message],
+      buffer: sending AVAudioPCMBuffer,
+      options: CactusModel.Completion.Options = CactusModel.Completion.Options(),
+      maxBufferSize: Int? = nil,
+      functions: [CactusModel.FunctionDefinition] = [],
+      onToken: @escaping @Sendable (String, UInt32) -> Void
+    ) async throws -> CactusModel.CompletedChatTurn {
+      try await self.complete(
+        messages: messages,
+        options: options,
+        maxBufferSize: maxBufferSize,
+        functions: functions,
+        pcmBuffer: try buffer.cactusPCMBytes(),
+        onToken: onToken
+      )
+    }
+
+    /// Runs speaker diarization on the specified PCM buffer.
+    ///
+    /// - Parameters:
+    ///   - buffer: The PCM buffer to analyze.
+    ///   - options: The ``CactusModel/DiarizationOptions``.
+    ///   - maxBufferSize: The maximum buffer size for the response.
+    /// - Returns: A ``CactusModel/DiarizationResult``.
+    public func diarize(
+      buffer: sending AVAudioPCMBuffer,
+      options: CactusModel.DiarizationOptions? = nil,
+      maxBufferSize: Int? = nil
+    ) async throws -> CactusModel.DiarizationResult {
+      try Task.checkCancellation()
+      return try await self.diarize(
+        pcmBuffer: try buffer.cactusPCMBytes(),
+        options: options,
+        maxBufferSize: maxBufferSize
+      )
+    }
+
+    /// Extracts speaker embeddings from the specified PCM buffer.
+    ///
+    /// - Parameters:
+    ///   - buffer: The PCM buffer to analyze.
+    ///   - options: The ``CactusModel/SpeakerEmbeddingsOptions``.
+    ///   - maxBufferSize: The maximum buffer size for the response.
+    /// - Returns: A speaker embedding vector.
+    public func speakerEmbeddings(
+      buffer: sending AVAudioPCMBuffer,
+      options: CactusModel.SpeakerEmbeddingsOptions? = nil,
+      maxBufferSize: Int? = nil
+    ) async throws -> [Float] {
+      try Task.checkCancellation()
+      return try await self.speakerEmbeddings(
+        pcmBuffer: try buffer.cactusPCMBytes(),
+        options: options,
+        maxBufferSize: maxBufferSize
+      )
+    }
   }
 #endif

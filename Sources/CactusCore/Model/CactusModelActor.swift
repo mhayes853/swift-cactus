@@ -249,7 +249,7 @@ extension CactusModelActor {
 // MARK: - Cancellation Helpers
 
 extension CactusModelActor {
-  private func performStoppableGeneration<T>(
+  func performStoppableGeneration<T>(
     _ operation: () throws -> T
   ) async throws -> T {
     try Task.checkCancellation()
@@ -300,6 +300,7 @@ extension CactusModelActor {
   ///   - options: The ``CactusModel/Completion/Options``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``CactusModel/FunctionDefinition`` instances.
+  ///   - pcmBuffer: An optional PCM buffer to include with the messages.
   ///   - onToken: A callback invoked whenever a token is generated.
   /// - Returns: A ``CactusModel/CompletedChatTurn``.
   public func complete(
@@ -307,6 +308,7 @@ extension CactusModelActor {
     options: CactusModel.Completion.Options = CactusModel.Completion.Options(),
     maxBufferSize: Int? = nil,
     functions: [CactusModel.FunctionDefinition] = [],
+    pcmBuffer: [UInt8]? = nil,
     onToken: @escaping @Sendable (String) -> Void = { _ in }
   ) async throws -> CactusModel.CompletedChatTurn {
     try await self.performStoppableGeneration {
@@ -315,6 +317,7 @@ extension CactusModelActor {
         options: options,
         maxBufferSize: maxBufferSize,
         functions: functions,
+        pcmBuffer: pcmBuffer,
         onToken: onToken
       )
     }
@@ -339,6 +342,7 @@ extension CactusModelActor {
   ///   - options: The ``CactusModel/Completion/Options``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``CactusModel/FunctionDefinition`` instances.
+  ///   - pcmBuffer: An optional PCM buffer to include with the messages.
   ///   - onToken: A callback invoked whenever a token is generated.
   /// - Returns: A ``CactusModel/CompletedChatTurn``.
   public func complete(
@@ -346,6 +350,7 @@ extension CactusModelActor {
     options: CactusModel.Completion.Options = CactusModel.Completion.Options(),
     maxBufferSize: Int? = nil,
     functions: [CactusModel.FunctionDefinition] = [],
+    pcmBuffer: [UInt8]? = nil,
     onToken: @escaping @Sendable (String, UInt32) -> Void
   ) async throws -> CactusModel.CompletedChatTurn {
     try await self.performStoppableGeneration {
@@ -354,6 +359,7 @@ extension CactusModelActor {
         options: options,
         maxBufferSize: maxBufferSize,
         functions: functions,
+        pcmBuffer: pcmBuffer,
         onToken: onToken
       )
     }
@@ -626,6 +632,108 @@ extension CactusModelActor {
   ) async throws -> CactusModel.RAGQueryResult {
     try Task.checkCancellation()
     return try self.model.ragQuery(query: query, topK: topK, maxBufferSize: maxBufferSize)
+  }
+}
+
+// MARK: - Prefill
+
+extension CactusModelActor {
+  /// Pre-populates the KV cache with the provided messages without generating output tokens.
+  ///
+  /// This reduces latency for future calls to ``complete(messages:options:maxBufferSize:functions:onToken:)-6umrm``
+  /// by pre-filling the attention cache with the provided context.
+  ///
+  /// - Parameters:
+  ///   - messages: The list of ``CactusModel/Message`` instances to prefill.
+  ///   - options: The ``CactusModel/Completion/Options``.
+  ///   - maxBufferSize: The maximum buffer size for the response.
+  ///   - functions: A list of ``CactusModel/FunctionDefinition`` instances.
+  /// - Returns: A ``CactusModel/PrefillResult``.
+  public func prefill(
+    messages: [CactusModel.Message],
+    options: CactusModel.Completion.Options = CactusModel.Completion.Options(),
+    maxBufferSize: Int? = nil,
+    functions: [CactusModel.FunctionDefinition] = []
+  ) async throws -> CactusModel.PrefillResult {
+    try Task.checkCancellation()
+    return try self.model.prefill(
+      messages: messages,
+      options: options,
+      maxBufferSize: maxBufferSize,
+      functions: functions
+    )
+  }
+}
+
+// MARK: - Diarization
+
+extension CactusModelActor {
+  /// Runs speaker diarization on the specified audio file.
+  ///
+  /// - Parameters:
+  ///   - audio: The audio file to analyze.
+  ///   - options: The ``CactusModel/DiarizationOptions``.
+  ///   - maxBufferSize: The maximum buffer size for the response.
+  /// - Returns: A ``CactusModel/DiarizationResult``.
+  public func diarize(
+    audio: URL,
+    options: CactusModel.DiarizationOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) async throws -> CactusModel.DiarizationResult {
+    try Task.checkCancellation()
+    return try self.model.diarize(audio: audio, options: options, maxBufferSize: maxBufferSize)
+  }
+
+  /// Runs speaker diarization on the specified PCM buffer.
+  ///
+  /// - Parameters:
+  ///   - pcmBuffer: The PCM byte buffer to analyze in 16 kHz mono signed 16-bit format.
+  ///   - options: The ``CactusModel/DiarizationOptions``.
+  ///   - maxBufferSize: The maximum buffer size for the response.
+  /// - Returns: A ``CactusModel/DiarizationResult``.
+  public func diarize(
+    pcmBuffer: [UInt8],
+    options: CactusModel.DiarizationOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) async throws -> CactusModel.DiarizationResult {
+    try Task.checkCancellation()
+    return try self.model.diarize(pcmBuffer: pcmBuffer, options: options, maxBufferSize: maxBufferSize)
+  }
+}
+
+// MARK: - Speaker Embeddings
+
+extension CactusModelActor {
+  /// Extracts speaker embeddings from the specified audio file.
+  ///
+  /// - Parameters:
+  ///   - audio: The audio file to analyze.
+  ///   - options: The ``CactusModel/SpeakerEmbeddingsOptions``.
+  ///   - maxBufferSize: The maximum buffer size for the response.
+  /// - Returns: A speaker embedding vector.
+  public func speakerEmbeddings(
+    for audio: URL,
+    options: CactusModel.SpeakerEmbeddingsOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) async throws -> [Float] {
+    try Task.checkCancellation()
+    return try self.model.speakerEmbeddings(for: audio, options: options, maxBufferSize: maxBufferSize)
+  }
+
+  /// Extracts speaker embeddings from the specified PCM buffer.
+  ///
+  /// - Parameters:
+  ///   - pcmBuffer: The PCM byte buffer to analyze in 16 kHz mono signed 16-bit format.
+  ///   - options: The ``CactusModel/SpeakerEmbeddingsOptions``.
+  ///   - maxBufferSize: The maximum buffer size for the response.
+  /// - Returns: A speaker embedding vector.
+  public func speakerEmbeddings(
+    pcmBuffer: [UInt8],
+    options: CactusModel.SpeakerEmbeddingsOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) async throws -> [Float] {
+    try Task.checkCancellation()
+    return try self.model.speakerEmbeddings(pcmBuffer: pcmBuffer, options: options, maxBufferSize: maxBufferSize)
   }
 }
 

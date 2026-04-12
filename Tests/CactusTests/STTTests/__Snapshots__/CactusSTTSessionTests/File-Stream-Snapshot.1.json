@@ -1,75 +1,20 @@
 {
-  "confidence" : 0.879,
-  "decodeTokens" : 156,
-  "prefillTokens" : 4,
+  "confidence" : 0.588,
+  "decodeTokens" : 348,
+  "prefillTokens" : 24,
   "segments" : [
     {
-      "endSeconds" : 8.358,
-      "startSeconds" : 5.122,
-      "transcript" : "The power of a God cannot be overcome!"
-    },
-    {
-      "endSeconds" : 13.366,
-      "startSeconds" : 8.358,
-      "transcript" : "Zanza, this is providence for all the world"
-    },
-    {
-      "endSeconds" : 18.582,
-      "startSeconds" : 13.366,
-      "transcript" : "Even gods are merely being restricted to their limited power, determined"
-    },
-    {
-      "endSeconds" : 25.23,
-      "startSeconds" : 18.582,
-      "transcript" : "I promise that the power of great is not unlimited!"
-    },
-    {
-      "endSeconds" : 31.242,
-      "startSeconds" : 26.47,
-      "transcript" : "That voice, Abix how dare you disobey me!"
-    },
-    {
-      "endSeconds" : 37.35,
-      "startSeconds" : 32.678,
-      "transcript" : "I'm Monadah, and was here at the beginning"
-    },
-    {
-      "endSeconds" : 40.114,
-      "startSeconds" : 37.37,
-      "transcript" : "And will proclaim the end"
-    },
-    {
-      "endSeconds" : 43.106,
-      "startSeconds" : 40.134,
-      "transcript" : "But That's impossible"
-    },
-    {
       "endSeconds" : 45.822,
-      "startSeconds" : 43.126,
-      "transcript" : "Shulk, It is time to choose"
+      "startSeconds" : 5.122,
+      "transcript" : "l l I l I i i dn'tn-dn-dn–mst–w<|ml|><|en|>ligth – A– A– A— A— B— E – C- O- V — S- O– V – S... M– A– A— A— C- O – E… F- E... V – S… T- O– V– S... A— A— C — O- V – C… E… F– E..."
     },
     {
-      "endSeconds" : 54.178,
+      "endSeconds" : 98.974,
       "startSeconds" : 46.338,
-      "transcript" : "Does this world belong Zanza or does it belongs you? That something that decided long ago!"
-    },
-    {
-      "endSeconds" : 71.71,
-      "startSeconds" : 65.026,
-      "transcript" : "We use our power to fell a god and then these are destiny"
-    },
-    {
-      "endSeconds" : 97.626,
-      "startSeconds" : 91.006,
-      "transcript" : "It's fated the memory of a gods existence born from chaos creation"
-    },
-    {
-      "endSeconds" : 98.914,
-      "startSeconds" : 97.706,
-      "transcript" : "Yes"
+      "transcript" : "<|sv|><|zh|><|fr|><|ko|><|zh|><|no|>oi—not-dn-dn—script–crisis–stive – ssistive – srsvxh.exeva—lfvt-djnzp — SvxHUVT—sYrEcAwSWRVLtDHF – srsvhJJGN — SXCFH—L-vdHlTsB – ssSxRV—WrT hEwSbDhJN — SXCFH-LvGdHK – sUvLmMVsR— ssxSWrT HlBhEY, hOmCJSbDH — SXCFH-LVGnNNNNSWM— — SvhJKhEwSdHsUvD HLBHCVT-sF hEWRT — GNNJJMXKhEVSY — LGHLH – JGNCvDHF"
     }
   ],
-  "streamedText" : " The power of a God cannot be overcome! Zanza, this is providence for all the world Even gods are merely being restricted to their limited power, determined I promise that the power of great is not unlimited! That voice, Abix how dare you disobey me! I'm Monadah, and was here at the beginning And will proclaim the end But That's impossible Shulk, It is time to choose Does this world belong Zanza or does it belongs you? That something that decided long ago! We use our power to fell a god and then these are destiny It's fated the memory of a gods existence born from chaos creation Yes",
-  "totalTokens" : 160,
-  "transcript" : "The power of a God cannot be overcome! Zanza, this is providence for all the world Even gods are merely being restricted to their limited power, determined I promise that the power of great is not unlimited! That voice, Abix how dare you disobey me! I'm Monadah, and was here at the beginning And will proclaim the end But That's impossible Shulk, It is time to choose Does this world belong Zanza or does it belongs you? That something that decided long ago! We use our power to fell a god and then these are destiny It's fated the memory of a gods existence born from chaos creation Yes"
+  "streamedText" : " l l I l I i i dn'tn-dn-dn–mst–w<|ml|><|en|>ligth – A– A– A— A— B— E – C- O- V — S- O– V – S... M– A– A— A— C- O – E… F- E... V – S… T- O– V– S... A— A— C — O- V – C… E… F– E...<|sv|><|zh|><|fr|><|ko|><|zh|><|no|>oi—not-dn-dn—script–crisis–stive – ssistive – srsvxh.exeva—lfvt-djnzp — SvxHUVT—sYrEcAwSWRVLtDHF – srsvhJJGN — SXCFH—L-vdHlTsB – ssSxRV—WrT hEwSbDhJN — SXCFH-LvGdHK – sUvLmMVsR— ssxSWrT HlBhEY, hOmCJSbDH — SXCFH-LVGnNNNNSWM— — SvhJKhEwSdHsUvD HLBHCVT-sF hEWRT — GNNJJMXKhEVSY — LGHLH – JGNCvDHF",
+  "totalTokens" : 372,
+  "transcript" : "l l I l I i i dn'tn-dn-dn–mst–w<|ml|><|en|>ligth – A– A– A— A— B— E – C- O- V — S- O– V – S... M– A– A— A— C- O – E… F- E... V – S… T- O– V– S... A— A— C — O- V – C… E… F– E...<|sv|><|zh|><|fr|><|ko|><|zh|><|no|>oi—not-dn-dn—script–crisis–stive – ssistive – srsvxh.exeva—lfvt-djnzp — SvxHUVT—sYrEcAwSWRVLtDHF – srsvhJJGN — SXCFH—L-vdHlTsB – ssSxRV—WrT hEwSbDhJN — SXCFH-LvGdHK – sUvLmMVsR— ssxSWrT HlBhEY, hOmCJSbDH — SXCFH-LVGnNNNNSWM— — SvhJKhEwSdHsUvD HLBHCVT-sF hEWRT — GNNJJMXKhEVSY — LGHLH – JGNCvDHF"
 }

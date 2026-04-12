@@ -2,77 +2,27 @@
   "slug" : "whisper-small",
   "transcription" : {
     "cloud_handoff" : true,
-    "confidence" : 0.8771,
-    "decode_tokens" : 181,
-    "decode_tps" : 50.02,
-    "prefill_tokens" : 4,
-    "prefill_tps" : 1.6,
-    "ram_usage_mb" : 404.28,
-    "response" : "The power of a god cannot be overcome! Zanzer, this is the providence of the world. Even gods are merely beings restricted to limited power, determined by promise that power... ...although great is not unlimited. The voice! Albus? How dare you disobey me?! I am Manada… …I was here at beginning and will proclaim end… But that's impossible... Shulk it time for you choose…. Does this world belong to Zanzer or does it belong to you? That something I decided long ago! AAAAAAAAHHHHHH!!! We use our powers as a feld god and then these are destiny! AAAAAAAAAAHHHHH!!! It's fate, the memory of a gods existence born from the chaos of creation. It is.",
+    "confidence" : 0.5972,
+    "decode_tokens" : 247,
+    "decode_tps" : 49.57,
+    "prefill_tokens" : 24,
+    "prefill_tps" : 10.7,
+    "ram_usage_mb" : 385.36,
+    "response" : "<|ca|><|zh|><|zh|><|zh|> Ça va à la fin de l'aïs. Aïs, aïs, un pät et à la suite. it is the the the one that you know know not not not north north northern northern northern northern eastern southern north eastern western southern eastern northern north western southern eastern western southern northern eastern western western northern northern southern North northern North region regions regions regions region regions region regions region regions regional north and and N The The The The The The This is a re re re re read read read Re re That Is Re Re Re Re Read That Is Re Le It That Is Re Re Le It That Res Res Res Res Res Res Res Res Res Rest Resres res res res resres res res Ri Ri Ri Ri Ri R Rem Ri Rei R Rem RI R Rem RI RE RI RE R R RE REM Ri RA Rei Rei Restres RER Rem Rem Mi Re Rei RE R REM REM Rio R REM R Rei Restresulous<|ms|><|zh|>avesaveviveviveveaverreerreerreerroofoorr e r s s t i n c e m o w a l y u I W A E S M U V V v v d h h o w",
     "segments" : [
       {
-        "end" : 8.002,
+        "end" : 45.822,
         "start" : 5.122,
-        "text" : "The power of a god cannot be overcome!"
-      },
-      {
-        "end" : 12.462,
-        "start" : 8.002,
-        "text" : "Zanzer, this is the providence of the world."
-      },
-      {
-        "end" : 21.294,
-        "start" : 12.502,
-        "text" : "Even gods are merely beings restricted to limited power, determined by promise that power..."
-      },
-      {
-        "end" : 26.47,
-        "start" : 21.554,
-        "text" : "...although great is not unlimited."
-      },
-      {
-        "end" : 31.202,
-        "start" : 26.49,
-        "text" : "The voice! Albus? How dare you disobey me?!"
-      },
-      {
-        "end" : 34.47,
-        "start" : 31.722,
-        "text" : "I am Manada…"
-      },
-      {
-        "end" : 39.342,
-        "start" : 34.49,
-        "text" : "…I was here at beginning and will proclaim end…"
-      },
-      {
-        "end" : 42.35,
-        "start" : 39.362,
-        "text" : "But that's impossible..."
-      },
-      {
-        "end" : 45.81,
-        "start" : 42.39,
-        "text" : "Shulk it time for you choose…."
-      },
-      {
-        "end" : 65.046,
-        "start" : 46.338,
-        "text" : "Does this world belong to Zanzer or does it belong to you? That something I decided long ago! AAAAAAAAHHHHHH!!!"
-      },
-      {
-        "end" : 90.986,
-        "start" : 65.046,
-        "text" : "We use our powers as a feld god and then these are destiny! AAAAAAAAAAHHHHH!!!"
+        "text" : "<|ca|><|zh|><|zh|><|zh|> Ça va à la fin de l'aïs. Aïs, aïs, un pät et à la suite."
       },
       {
         "end" : 98.974,
-        "start" : 90.986,
-        "text" : "It's fate, the memory of a gods existence born from the chaos of creation. It is."
+        "start" : 46.338,
+        "text" : "it is the the the one that you know know not not not north north northern northern northern northern eastern southern north eastern western southern eastern northern north western southern eastern western southern northern eastern western western northern northern southern North northern North region regions regions regions region regions region regions region regions regional north and and N The The The The The The This is a re re re re read read read Re re That Is Re Re Re Re Read That Is Re Le It That Is Re Re Le It That Res Res Res Res Res Res Res Res Res Rest Resres res res res resres res res Ri Ri Ri Ri Ri R Rem Ri Rei R Rem RI R Rem RI RE RI RE R R RE REM Ri RA Rei Rei Restres RER Rem Rem Mi Re Rei RE R REM REM Rio R REM R Rei Restresulous<|ms|><|zh|>avesaveviveviveveaverreerreerreerroofoorr e r s s t i n c e m o w a l y u I W A E S M U V V v v d h h o w"
       }
     ],
-    "time_to_first_token_ms" : 2499.42,
-    "total_time_ms" : 6097.63,
-    "total_tokens" : 185
+    "time_to_first_token_ms" : 2242.75,
+    "total_time_ms" : 7205.43,
+    "total_tokens" : 271
   }
 }

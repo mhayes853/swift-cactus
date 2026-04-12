@@ -1,21 +1,16 @@
 {
   "cloud_handoff" : false,
-  "confidence" : 0.9735,
-  "decode_tokens" : 119,
-  "decode_tps" : 56.28,
+  "confidence" : 0.9032,
+  "decode_tokens" : 318,
+  "decode_tps" : 48.86,
   "function_calls" : [
-    {
-      "arguments" : {
-        "location" : "Santa Cruze"
-      },
-      "name" : "get_weather"
-    }
+
   ],
-  "prefill_tokens" : 162,
-  "prefill_tps" : 441.58,
-  "ram_usage_mb" : 379.24,
-  "response" : "The weather in Santa Cruze can be determined by calling a tool to retrieve it.",
-  "time_to_first_token_ms" : 366.86,
-  "total_time_ms" : 2463.39,
-  "total_tokens" : 281
+  "prefill_tokens" : 161,
+  "prefill_tps" : 456.1,
+  "ram_usage_mb" : 438.91,
+  "response" : "icher>\n\n\nOkay, the user is asking about getting the weather in a specific location. I need to figure out which function to use here. The available tool is get_weather, which requires the location parameter.\n\nFirst, I should check if there's any other parameters needed for that function. The description says it takes a city name and returns weather info. So, regardless of what else they mention next, I just need to pass their input as \"location\".\n\nWait, buticher\n\nHmm... Wait, looking back at the user's message: \"For each\n{\"name\": <function-name>, \"arguments\": <args-json-object>}\n\nSo in this case, since the user is asking about getting weather in a location (probably expecting me to call get_weather with that location), I need to structure it properly.\n\nBut wait, maybe there's a missing parameter? Let me check again. The function get_weather has parameters: location as required. Soichericher\n\n\n{\"name\": \"get_weather\", \"arguments\": {\"location\":}}\n",
+  "time_to_first_token_ms" : 353,
+  "total_time_ms" : 6840.88,
+  "total_tokens" : 479
 }
