@@ -29,7 +29,7 @@ public struct CactusCompletion<Output: Sendable>: Sendable {
   }
 }
 
-extension CactusCompletion: Equatable where Output: Hashable {}
+extension CactusCompletion: Equatable where Output: Equatable {}
 extension CactusCompletion: Hashable where Output: Hashable {}
 
 // MARK: - CactusCompletionEntry
