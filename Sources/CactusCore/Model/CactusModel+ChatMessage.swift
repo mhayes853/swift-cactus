@@ -23,9 +23,10 @@ extension CactusModel {
     /// - Parameters:
     ///   - content: The message content.
     ///   - images: An array of `URL`s to locally stored images.
+    ///   - audio: An array of `URL`s to locally stored audio files.
     /// - Returns: A ``CactusModel/Message``.
-    public static func user(_ content: String, images: [URL]? = nil) -> Self {
-      Self(role: .user, content: content, images: images)
+    public static func user(_ content: String, images: [URL]? = nil, audio: [URL]? = nil) -> Self {
+      Self(role: .user, content: content, images: images, audio: audio)
     }
 
     /// Creates an assistant message.
@@ -71,6 +72,9 @@ extension CactusModel {
     /// An array of `URL`s to locally stored images.
     public var images: [URL]?
 
+    /// An array of `URL`s to locally stored audio files.
+    public var audio: [URL]?
+
     /// The name of the tool or function that produced this message.
     ///
     /// This is used for messages with the ``Role/tool`` or ``Role/function`` role.
@@ -82,16 +86,19 @@ extension CactusModel {
     ///   - role: The ``Role`` of the message.
     ///   - content: The message content.
     ///   - images: An array of `URL`s to locally stored images.
+    ///   - audio: An array of `URL`s to locally stored audio files.
     ///   - name: The name of the tool or function that produced this message.
     public init(
       role: Role,
       content: String,
       images: [URL]? = nil,
+      audio: [URL]? = nil,
       name: String? = nil
     ) {
       self.role = role
       self.content = content
       self.images = images
+      self.audio = audio
       self.name = name
     }
   }

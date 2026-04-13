@@ -1083,12 +1083,14 @@ extension CactusModel {
     let content: String
     let name: String?
     let images: [String]?
+    let audio: [String]?
 
     init(message: Message) {
       self.role = message.role
       self.content = message.content
       self.name = message.name
       self.images = message.images?.map(\.nativePath)
+      self.audio = message.audio?.map(\.nativePath)
     }
   }
 }

@@ -218,7 +218,15 @@ struct `CactusTranscript tests` {
   func `Codable Round Trip`() throws {
     var transcript = CactusTranscript()
     transcript.append(CactusTranscript.Element(message: .system("You are helpful")))
-    transcript.append(CactusTranscript.Element(message: .user("Hi")))
+    transcript.append(
+      CactusTranscript.Element(
+        message: .user(
+          "Hi",
+          images: [URL(filePath: "/tmp/image.png")],
+          audio: [URL(filePath: "/tmp/audio.wav")]
+        )
+      )
+    )
     transcript.append(CactusTranscript.Element(message: .assistant("Hello!")))
 
     let encoder = JSONEncoder()
