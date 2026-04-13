@@ -515,7 +515,7 @@ This library uses it's own versioning scheme separate from the upstream engine (
 ```swift
 import Cactus
 
-// Prints the supported engine version ("1.10" at the time of writing this).
+// Prints the supported engine version ("1.12" at the time of writing this).
 print(Cactus.cactusEngineVersion)
 ```
 
@@ -529,8 +529,7 @@ In no particular order.
   - This would also support incremental structured streaming for [JSON-complete formats](https://lemire.me/blog/2025/12/20/json-complete-data-format-and-programming-languages/) via [`StreamParsing`](https://github.com/mhayes853/swift-stream-parsing). 
 - Higher-Level vector index abstractions.
 - Integrations with more Apple native frameworks (eg. CoreAudio).
-- Prefill API to reduce decode latency.
-  - This requires engine support for separating prefill step from decode step at FFI level.
+- Cactus Graphs.
 - Example apps.
 
 ## Installation
