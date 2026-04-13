@@ -4,7 +4,7 @@
       - metrics: Optional<CactusGenerationMetrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: CFAEADA8-DF3D-4873-A2D7-2A09B53D90E3
+          - rawValue: C2BEC410-6CA9-4A91-980C-9A4863746069
         ▿ message: Message
           - content: "Say hello in one concise sentence."
           ▿ images: Optional<Array<URL>>
@@ -15,43 +15,43 @@
     ▿ CactusCompletionEntry
       ▿ metrics: Optional<CactusGenerationMetrics>
         ▿ some: CactusGenerationMetrics
-          - confidence: 0.9073
-          - decodeTokens: 17
-          - decodeTps: 108.7
+          - confidence: 0.8803
+          - decodeTokens: 116
+          - decodeTps: 108.64
           - didHandoffToCloud: false
-          ▿ durationToFirstToken: 0.02453 seconds
-            - _low: 24530000000000001
+          ▿ durationToFirstToken: 0.01962 seconds
+            - _low: 19620000000000001
             - _high: 0
-          - prefillTokens: 16
-          - prefillTps: 652.32
-          - ramUsageMb: 1225.78
-          ▿ totalDuration: 0.17172 seconds
-            - _low: 171719999999999999
+          - prefillTokens: 9
+          - prefillTps: 458.69
+          - ramUsageMb: 187.28
+          ▿ totalDuration: 1.07813 seconds
+            - _low: 1078130000000000109
             - _high: 0
-          - totalTokens: 33
+          - totalTokens: 125
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 88B24D71-3941-4854-A695-35E3C3EFAEF9
+          - rawValue: 2FC149BA-10CB-42D2-92E5-F28D939BB73A
         ▿ message: Message
-          - content: "The English Language Learning website offers free lessons on learning languages in an interactive tutorial!\n"
+          - content: "The title of the first line appears to mean \"Hello there!\"\n\n\"Hello there!\" means the English speaker has received an unexpected greeting. It\'s clear that the user has just initiated communication with someone who may be experiencing difficulties or confusion.\n\nIt seems like a simple statement, but it can carry a lot about how people are navigating life and connecting with others without any special meaning or context provided by this initial utterance. It suggests that even if we don\'t know what we are going for, our capacity to connect is still being reached by those around us. \n"
           - images: Optional<Array<URL>>.none
           - name: Optional<String>.none
           ▿ role: Role
             - rawValue: "assistant"
   ▿ metrics: CactusGenerationMetrics
-    - confidence: 0.9073
-    - decodeTokens: 17
-    - decodeTps: 108.7
+    - confidence: 0.8803
+    - decodeTokens: 116
+    - decodeTps: 108.64
     - didHandoffToCloud: false
-    ▿ durationToFirstToken: 0.02453 seconds
-      - _low: 24530000000000001
+    ▿ durationToFirstToken: 0.01962 seconds
+      - _low: 19620000000000001
       - _high: 0
-    - prefillTokens: 16
-    - prefillTps: 652.32
-    - ramUsageMb: 1225.78
-    ▿ totalDuration: 0.17172 seconds
-      - _low: 171719999999999999
+    - prefillTokens: 9
+    - prefillTps: 458.69
+    - ramUsageMb: 187.28
+    ▿ totalDuration: 1.07813 seconds
+      - _low: 1078130000000000109
       - _high: 0
-    - totalTokens: 33
-  - output: "The English Language Learning website offers free lessons on learning languages in an interactive tutorial!\n"
+    - totalTokens: 125
+  - output: "The title of the first line appears to mean \"Hello there!\"\n\n\"Hello there!\" means the English speaker has received an unexpected greeting. It\'s clear that the user has just initiated communication with someone who may be experiencing difficulties or confusion.\n\nIt seems like a simple statement, but it can carry a lot about how people are navigating life and connecting with others without any special meaning or context provided by this initial utterance. It suggests that even if we don\'t know what we are going for, our capacity to connect is still being reached by those around us. \n"
   - thinking: Optional<String>.none

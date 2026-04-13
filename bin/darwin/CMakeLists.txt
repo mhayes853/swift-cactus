@@ -14,8 +14,8 @@ set(SOURCE_DIR ${BIN_DIR}/build/cactus/cactus)
 set(CACTUS_CURL_ROOT "${BIN_DIR}/build/cactus/libs/curl" CACHE PATH "Path to vendored libcurl artifacts")
 
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-    message(STATUS "CMAKE_BUILD_TYPE was not set, defaulting to Release.")
+  set(CMAKE_BUILD_TYPE Release)
+  message(STATUS "CMAKE_BUILD_TYPE was not set, defaulting to Release.")
 endif()
 
 set(CACTUS_CURL_INCLUDE_DIR "${CACTUS_CURL_ROOT}/include")
@@ -23,41 +23,41 @@ set(CACTUS_ENABLE_CURL OFF)
 set(CACTUS_CURL_LIBRARY "")
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(CACTUS_CURL_LIBRARY "${CACTUS_CURL_ROOT}/macos/libcurl.a")
-    set(CACTUS_ENABLE_CURL ON)
-    message(STATUS "Configuring vendored libcurl for macOS")
+  set(CACTUS_CURL_LIBRARY "${CACTUS_CURL_ROOT}/macos/libcurl.a")
+  set(CACTUS_ENABLE_CURL ON)
+  message(STATUS "Configuring vendored libcurl for macOS")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
-    string(TOLOWER "${CMAKE_OSX_SYSROOT}" CACTUS_SYSROOT_LOWER)
-    if(CACTUS_SYSROOT_LOWER MATCHES "simulator")
-        set(CACTUS_CURL_LIBRARY "${CACTUS_CURL_ROOT}/ios/simulator/libcurl.a")
-        message(STATUS "Configuring vendored libcurl for iOS Simulator")
-    else()
-        set(CACTUS_CURL_LIBRARY "${CACTUS_CURL_ROOT}/ios/device/libcurl.a")
-        message(STATUS "Configuring vendored libcurl for iOS Device")
-    endif()
-    set(CACTUS_ENABLE_CURL ON)
+  string(TOLOWER "${CMAKE_OSX_SYSROOT}" CACTUS_SYSROOT_LOWER)
+  if(CACTUS_SYSROOT_LOWER MATCHES "simulator")
+    set(CACTUS_CURL_LIBRARY "${CACTUS_CURL_ROOT}/ios/simulator/libcurl.a")
+    message(STATUS "Configuring vendored libcurl for iOS Simulator")
+  else()
+    set(CACTUS_CURL_LIBRARY "${CACTUS_CURL_ROOT}/ios/device/libcurl.a")
+    message(STATUS "Configuring vendored libcurl for iOS Device")
+  endif()
+  set(CACTUS_ENABLE_CURL ON)
 else()
-    message(STATUS "Skipping libcurl on ${CMAKE_SYSTEM_NAME}")
+  message(STATUS "Skipping libcurl on ${CMAKE_SYSTEM_NAME}")
 endif()
 
 file(GLOB ENGINE_SOURCES "${SOURCE_DIR}/engine/*.cpp")
 file(GLOB GRAPH_SOURCES "${SOURCE_DIR}/graph/*.cpp")
 file(GLOB KERNEL_SOURCES "${SOURCE_DIR}/kernel/*.cpp")
 file(GLOB FFI_SOURCES "${SOURCE_DIR}/ffi/*.cpp")
-file(GLOB MODEL_SOURCES "${SOURCE_DIR}/models/*.cpp")
+file(GLOB MODEL_SOURCES "${SOURCE_DIR}/models/*.cpp" "${SOURCE_DIR}/models/gemma4/*.cpp")
 file(GLOB TELEMETRY_SOURCES "${SOURCE_DIR}/telemetry/*.cpp")
 file(GLOB INDEX_SOURCES "${SOURCE_DIR}/index/*.cpp")
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" OR CMAKE_SYSTEM_NAME STREQUAL "iOS")
-    set(NPU_SOURCES "${SOURCE_DIR}/npu/npu_ane.mm")
+  set(NPU_SOURCES "${SOURCE_DIR}/npu/npu_ane.mm")
 else()
-    set(NPU_SOURCES "${SOURCE_DIR}/npu/npu.cpp")
+  set(NPU_SOURCES "${SOURCE_DIR}/npu/npu.cpp")
 endif()
 
 if(NOT CACTUS_ENABLE_CURL)
-    set(CACTUS_TELEMETRY_STUB "${CMAKE_CURRENT_LIST_DIR}/telemetry_stub.cpp")
-    set(TELEMETRY_SOURCES "${CACTUS_TELEMETRY_STUB}")
-    message(STATUS "Using telemetry stub for ${CMAKE_SYSTEM_NAME}")
+  set(CACTUS_TELEMETRY_STUB "${CMAKE_CURRENT_LIST_DIR}/telemetry_stub.cpp")
+  set(TELEMETRY_SOURCES "${CACTUS_TELEMETRY_STUB}")
+  message(STATUS "Using telemetry stub for ${CMAKE_SYSTEM_NAME}")
 endif()
 
 enable_language(OBJCXX)
@@ -87,13 +87,13 @@ set(COMMON_SOURCES
 )
 
 if(NOT COMMON_SOURCES)
-    message(FATAL_ERROR "No source files found! Check SOURCE_DIR: ${SOURCE_DIR}")
+  message(FATAL_ERROR "No source files found! Check SOURCE_DIR: ${SOURCE_DIR}")
 endif()
 
 if(BUILD_SHARED_LIBS)
-    add_library(CXXCactusDarwin SHARED ${COMMON_SOURCES})
+  add_library(CXXCactusDarwin SHARED ${COMMON_SOURCES})
 else()
-    add_library(CXXCactusDarwin STATIC ${COMMON_SOURCES})
+  add_library(CXXCactusDarwin STATIC ${COMMON_SOURCES})
 endif()
 
 set_target_properties(CXXCactusDarwin PROPERTIES
@@ -147,20 +147,20 @@ target_link_libraries(CXXCactusDarwin PUBLIC
 )
 
 if(CACTUS_ENABLE_CURL)
-    if(NOT SECURITY_FRAMEWORK OR NOT SYSTEMCONFIGURATION_FRAMEWORK OR NOT CFNETWORK_FRAMEWORK)
-        message(FATAL_ERROR "Required networking frameworks were not found for libcurl linking")
-    endif()
-    if(NOT EXISTS "${CACTUS_CURL_INCLUDE_DIR}/curl/curl.h" OR NOT EXISTS "${CACTUS_CURL_LIBRARY}")
-        message(FATAL_ERROR "Vendored libcurl not found. Expected: ${CACTUS_CURL_INCLUDE_DIR}/curl/curl.h and ${CACTUS_CURL_LIBRARY}")
-    endif()
-    target_link_libraries(CXXCactusDarwin PUBLIC
+  if(NOT SECURITY_FRAMEWORK OR NOT SYSTEMCONFIGURATION_FRAMEWORK OR NOT CFNETWORK_FRAMEWORK)
+    message(FATAL_ERROR "Required networking frameworks were not found for libcurl linking")
+  endif()
+  if(NOT EXISTS "${CACTUS_CURL_INCLUDE_DIR}/curl/curl.h" OR NOT EXISTS "${CACTUS_CURL_LIBRARY}")
+    message(FATAL_ERROR "Vendored libcurl not found. Expected: ${CACTUS_CURL_INCLUDE_DIR}/curl/curl.h and ${CACTUS_CURL_LIBRARY}")
+  endif()
+  target_link_libraries(CXXCactusDarwin PUBLIC
         ${SECURITY_FRAMEWORK}
         ${SYSTEMCONFIGURATION_FRAMEWORK}
         ${CFNETWORK_FRAMEWORK}
         "${CACTUS_CURL_LIBRARY}"
     )
-    target_include_directories(CXXCactusDarwin PUBLIC "${CACTUS_CURL_INCLUDE_DIR}")
-    target_compile_definitions(CXXCactusDarwin PRIVATE CACTUS_USE_CURL=1)
+  target_include_directories(CXXCactusDarwin PUBLIC "${CACTUS_CURL_INCLUDE_DIR}")
+  target_compile_definitions(CXXCactusDarwin PRIVATE CACTUS_USE_CURL=1)
 endif()
 
 target_compile_definitions(CXXCactusDarwin PRIVATE
@@ -173,7 +173,7 @@ target_compile_definitions(CXXCactusDarwin PRIVATE
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
-    target_compile_definitions(CXXCactusDarwin PRIVATE TARGET_OS_IPHONE=1)
+  target_compile_definitions(CXXCactusDarwin PRIVATE TARGET_OS_IPHONE=1)
 endif()
 
 target_compile_options(CXXCactusDarwin PRIVATE
@@ -189,11 +189,11 @@ target_compile_options(CXXCactusDarwin PRIVATE
     -O3
     -fvisibility=hidden -fvisibility-inlines-hidden
     -ffunction-sections -fdata-sections
-    -march=armv8.2-a+fp16+simd+dotprod+sme2
+    -march=armv8.2-a+fp16+simd+dotprod+sme2+i8mm
 )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    target_compile_options(CXXCactusDarwin PRIVATE -DCACTUS_IOS_ENABLE_LOGGING)
+  target_compile_options(CXXCactusDarwin PRIVATE -DCACTUS_IOS_ENABLE_LOGGING)
 endif ()
 
 target_link_options(CXXCactusDarwin PRIVATE

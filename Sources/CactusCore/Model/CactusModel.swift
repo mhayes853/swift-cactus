@@ -195,6 +195,34 @@ public struct CactusModelError: Error, Hashable, Sendable {
     /// A RAG query generation error.
     public static let ragQueryGeneration = Self(rawValue: "ragQueryGeneration")
 
+    /// The buffer size for prefill was too small.
+    public static let prefillBufferTooSmall = Self(rawValue: "prefillBufferTooSmall")
+
+    /// A prefill generation error.
+    public static let prefillGeneration = Self(rawValue: "prefillGeneration")
+
+    /// The model does not support diarization.
+    public static let diarizeNotSupported = Self(rawValue: "diarizeNotSupported")
+
+    /// The buffer size for diarization was too small.
+    public static let diarizeBufferTooSmall = Self(rawValue: "diarizeBufferTooSmall")
+
+    /// A diarization generation error.
+    public static let diarizeGeneration = Self(rawValue: "diarizeGeneration")
+
+    /// The model does not support speaker embeddings.
+    public static let speakerEmbeddingsNotSupported = Self(
+      rawValue: "speakerEmbeddingsNotSupported"
+    )
+
+    /// The buffer size for speaker embeddings was too small.
+    public static let speakerEmbeddingsBufferTooSmall = Self(
+      rawValue: "speakerEmbeddingsBufferTooSmall"
+    )
+
+    /// A speaker embeddings generation error.
+    public static let speakerEmbeddingsGeneration = Self(rawValue: "speakerEmbeddingsGeneration")
+
     /// Failed to create the model.
     public static let creation = Self(rawValue: "creation")
   }
@@ -285,6 +313,36 @@ public struct CactusModelError: Error, Hashable, Sendable {
   /// A RAG query generation error.
   public static func ragQueryGeneration(message: String?) -> Self {
     Self(code: .ragQueryGeneration, message: message)
+  }
+
+  /// The buffer size for prefill was too small.
+  public static let prefillBufferTooSmall = Self(code: .prefillBufferTooSmall)
+
+  /// A prefill generation error.
+  public static func prefillGeneration(message: String?) -> Self {
+    Self(code: .prefillGeneration, message: message)
+  }
+
+  /// The model does not support diarization.
+  public static let diarizeNotSupported = Self(code: .diarizeNotSupported)
+
+  /// The buffer size for diarization was too small.
+  public static let diarizeBufferTooSmall = Self(code: .diarizeBufferTooSmall)
+
+  /// A diarization generation error.
+  public static func diarizeGeneration(message: String?) -> Self {
+    Self(code: .diarizeGeneration, message: message)
+  }
+
+  /// The model does not support speaker embeddings.
+  public static let speakerEmbeddingsNotSupported = Self(code: .speakerEmbeddingsNotSupported)
+
+  /// The buffer size for speaker embeddings was too small.
+  public static let speakerEmbeddingsBufferTooSmall = Self(code: .speakerEmbeddingsBufferTooSmall)
+
+  /// A speaker embeddings generation error.
+  public static func speakerEmbeddingsGeneration(message: String?) -> Self {
+    Self(code: .speakerEmbeddingsGeneration, message: message)
   }
 
   /// Failed to create the model.
@@ -650,6 +708,158 @@ extension CactusModel {
   }
 }
 
+// MARK: - Speaker Embeddings
+
+extension CactusModel {
+  /// A speaker embedding result.
+  public struct SpeakerEmbeddingResult: Hashable, Sendable, Codable {
+    /// Whether the embedding extraction was successful.
+    public let success: Bool
+
+    /// Error message if the extraction failed.
+    public let error: String?
+
+    /// The 256-dimensional speaker embedding.
+    public let embedding: [Float]
+
+    /// The total processing time.
+    public let totalDuration: Duration
+
+    /// The current process RAM usage in MB.
+    public let ramUsageMb: Double
+
+    private enum CodingKeys: String, CodingKey {
+      case success
+      case error
+      case embedding
+      case totalTimeMs = "total_time_ms"
+      case ramUsageMb = "ram_usage_mb"
+    }
+
+    public init(from decoder: any Decoder) throws {
+      let container = try decoder.container(keyedBy: CodingKeys.self)
+      self.success = try container.decode(Bool.self, forKey: .success)
+      self.error = try container.decodeIfPresent(String.self, forKey: .error)
+      self.embedding = try container.decode([Float].self, forKey: .embedding)
+      let totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
+      self.totalDuration = .milliseconds(totalTimeMs)
+      self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      try container.encode(self.success, forKey: .success)
+      try container.encodeIfPresent(self.error, forKey: .error)
+      try container.encode(self.embedding, forKey: .embedding)
+      try container.encode(self.totalDuration / .milliseconds(1), forKey: .totalTimeMs)
+      try container.encode(self.ramUsageMb, forKey: .ramUsageMb)
+    }
+  }
+
+  /// Options for speaker embedding extraction.
+  public struct SpeakerEmbeddingsOptions: Hashable, Sendable, Codable {
+    public init() {}
+  }
+
+  private enum SpeakerEmbeddingRequest {
+    case audio(URL)
+    case buffer([UInt8])
+  }
+
+  /// Extracts speaker embeddings from the specified audio file.
+  ///
+  /// - Parameters:
+  ///   - audio: The audio file to analyze.
+  ///   - options: The ``SpeakerEmbeddingsOptions``.
+  ///   - maxBufferSize: The maximum buffer size for the response.
+  /// - Returns: A speaker embedding vector.
+  public func speakerEmbeddings(
+    for audio: URL,
+    options: SpeakerEmbeddingsOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) throws -> [Float] {
+    try self.speakerEmbeddings(for: .audio(audio), options: options, maxBufferSize: maxBufferSize)
+  }
+
+  /// Extracts speaker embeddings from the specified PCM buffer.
+  ///
+  /// - Parameters:
+  ///   - pcmBuffer: The PCM byte buffer to analyze in 16 kHz mono signed 16-bit format.
+  ///   - options: The ``SpeakerEmbeddingsOptions``.
+  ///   - maxBufferSize: The maximum buffer size for the response.
+  /// - Returns: A speaker embedding vector.
+  public func speakerEmbeddings(
+    pcmBuffer: [UInt8],
+    options: SpeakerEmbeddingsOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) throws -> [Float] {
+    try self.speakerEmbeddings(
+      for: .buffer(pcmBuffer),
+      options: options,
+      maxBufferSize: maxBufferSize
+    )
+  }
+
+  private func speakerEmbeddings(
+    for request: SpeakerEmbeddingRequest,
+    options: SpeakerEmbeddingsOptions?,
+    maxBufferSize: Int?
+  ) throws -> [Float] {
+    let maxBufferSize = maxBufferSize ?? Self.defaultBufferSize
+    guard maxBufferSize > 0 else {
+      throw CactusModelError.speakerEmbeddingsBufferTooSmall
+    }
+
+    let optionsJSON = try options.map { try String(decoding: ffiEncoder.encode($0), as: UTF8.self) }
+
+    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) {
+      responseBuffer,
+      responseBufferSize in
+      switch request {
+      case .audio(let audio):
+        cactus_embed_speaker(
+          self.rawModelPointer,
+          audio.nativePath,
+          responseBuffer,
+          responseBufferSize,
+          optionsJSON,
+          nil,
+          0
+        )
+      case .buffer(let buffer):
+        buffer.withUnsafeBufferPointer { rawBuffer in
+          cactus_embed_speaker(
+            self.rawModelPointer,
+            nil,
+            responseBuffer,
+            responseBufferSize,
+            optionsJSON,
+            rawBuffer.baseAddress,
+            rawBuffer.count
+          )
+        }
+      }
+    }
+
+    guard result != -1 else {
+      let response = try? ffiDecoder.decode(
+        FFIErrorResponse.self,
+        from: responseData
+      )
+      if response?.error.contains(Self.bufferNotBigEnoughErrorMessage) == true {
+        throw CactusModelError.speakerEmbeddingsBufferTooSmall
+      }
+      if response?.error.localizedCaseInsensitiveContains("not a WeSpeaker") == true {
+        throw CactusModelError.speakerEmbeddingsNotSupported
+      }
+      throw CactusModelError.speakerEmbeddingsGeneration(message: response?.error)
+    }
+
+    let embeddingResult = try ffiDecoder.decode(SpeakerEmbeddingResult.self, from: responseData)
+    return embeddingResult.embedding
+  }
+}
+
 // MARK: - Chat Completion
 
 extension CactusModel {
@@ -735,6 +945,7 @@ extension CactusModel {
   ///   - options: The ``Completion/Options``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
+  ///   - pcmBuffer: An optional 16khz 16-bit signed mono PCM buffer to include with the messages.
   ///   - onToken: A callback invoked whenever a token is generated.
   /// - Returns: A ``CompletedChatTurn``.
   public func complete(
@@ -742,13 +953,15 @@ extension CactusModel {
     options: Completion.Options = Completion.Options(),
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
-    onToken: (String) -> Void = { _ in }
+    pcmBuffer: [UInt8]? = nil,
+    onToken: @escaping (String) -> Void = { _ in }
   ) throws -> CompletedChatTurn {
     try self.complete(
       messages: messages,
       options: options,
       maxBufferSize: maxBufferSize,
-      functions: functions
+      functions: functions,
+      pcmBuffer: pcmBuffer
     ) { token, _ in
       onToken(token)
     }
@@ -773,6 +986,7 @@ extension CactusModel {
   ///   - options: The ``Completion/Options``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
+  ///   - pcmBuffer: An optional 16khz 16-bit signed mono PCM buffer to include with the messages.
   ///   - onToken: A callback invoked whenever a token is generated.
   /// - Returns: A ``CompletedChatTurn``.
   public func complete(
@@ -780,7 +994,8 @@ extension CactusModel {
     options: Completion.Options = Completion.Options(),
     maxBufferSize: Int? = nil,
     functions: [FunctionDefinition] = [],
-    onToken: (String, UInt32) -> Void
+    pcmBuffer: [UInt8]? = nil,
+    onToken: @escaping (String, UInt32) -> Void
   ) throws -> CompletedChatTurn {
     let maxBufferSize = maxBufferSize ?? Self.defaultBufferSize
     guard maxBufferSize > 0 else {
@@ -794,25 +1009,46 @@ extension CactusModel {
       : String(decoding: try ffiEncoder.encode(functions), as: UTF8.self)
 
     let ffiMessages = messages.map { FFIMessage(message: $0) }
+    let messagesJSON = String(decoding: try ffiEncoder.encode(ffiMessages), as: UTF8.self)
+    let optionsJSON = String(decoding: try ffiEncoder.encode(options), as: UTF8.self)
     var streamedResponse = ""
 
     let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) {
       buffer,
       responseBufferSize in
-      try withTokenCallback { token, tokenID in
+      withTokenCallback { token, tokenID in
         streamedResponse += token
         onToken(token, tokenID)
       } perform: { userData, onToken in
-        cactus_complete(
-          self.rawModelPointer,
-          String(decoding: try ffiEncoder.encode(ffiMessages), as: UTF8.self),
-          buffer,
-          responseBufferSize,
-          String(decoding: try ffiEncoder.encode(options), as: UTF8.self),
-          functionsJSON,
-          onToken,
-          userData
-        )
+        if let pcmBuffer, !pcmBuffer.isEmpty {
+          pcmBuffer.withUnsafeBufferPointer { rawBuffer in
+            cactus_complete(
+              self.rawModelPointer,
+              messagesJSON,
+              buffer,
+              responseBufferSize,
+              optionsJSON,
+              functionsJSON,
+              onToken,
+              userData,
+              rawBuffer.baseAddress,
+              rawBuffer.count
+            )
+          }
+        } else {
+          cactus_complete(
+            self.rawModelPointer,
+            messagesJSON,
+            buffer,
+            responseBufferSize,
+            optionsJSON,
+            functionsJSON,
+            onToken,
+            userData,
+            nil,
+            0
+          )
+        }
       }
     }
 
@@ -854,6 +1090,139 @@ extension CactusModel {
       self.name = message.name
       self.images = message.images?.map(\.nativePath)
     }
+  }
+}
+
+// MARK: - Prefill
+
+extension CactusModel {
+  /// A prefill result from pre-populating the KV cache without generating output tokens.
+  public struct PrefillResult: Hashable, Sendable, Codable {
+    /// Whether the prefill was successful.
+    public let success: Bool
+
+    /// Error message if the prefill failed.
+    public let error: String?
+
+    /// The number of prefilled tokens.
+    public let prefillTokens: Int
+
+    /// The prefill tokens per second.
+    public let prefillTps: Double
+
+    /// The total prefill time.
+    public let totalDuration: Duration
+
+    /// The current process RAM usage in MB.
+    public let ramUsageMb: Double
+
+    private enum CodingKeys: String, CodingKey {
+      case success
+      case error
+      case prefillTokens = "prefill_tokens"
+      case prefillTps = "prefill_tps"
+      case totalTimeMs = "total_time_ms"
+      case ramUsageMb = "ram_usage_mb"
+    }
+
+    public init(from decoder: any Decoder) throws {
+      let container = try decoder.container(keyedBy: CodingKeys.self)
+      self.success = try container.decode(Bool.self, forKey: .success)
+      self.error = try container.decodeIfPresent(String.self, forKey: .error)
+      self.prefillTokens = try container.decode(Int.self, forKey: .prefillTokens)
+      self.prefillTps = try container.decode(Double.self, forKey: .prefillTps)
+      let totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
+      self.totalDuration = .milliseconds(totalTimeMs)
+      self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      try container.encode(self.success, forKey: .success)
+      try container.encodeIfPresent(self.error, forKey: .error)
+      try container.encode(self.prefillTokens, forKey: .prefillTokens)
+      try container.encode(self.prefillTps, forKey: .prefillTps)
+      try container.encode(self.totalDuration / .milliseconds(1), forKey: .totalTimeMs)
+      try container.encode(self.ramUsageMb, forKey: .ramUsageMb)
+    }
+  }
+
+  /// Pre-populates the KV cache with the provided messages without generating output tokens.
+  ///
+  /// This reduces latency for future calls to ``complete(messages:options:maxBufferSize:functions:onToken:)-6umrm``
+  /// by pre-filling the attention cache with the provided context.
+  ///
+  /// - Parameters:
+  ///   - messages: The list of ``Message`` instances to prefill.
+  ///   - options: The ``Completion/Options``.
+  ///   - maxBufferSize: The maximum buffer size for the response.
+  ///   - functions: A list of ``FunctionDefinition`` instances.
+  ///   - pcmBuffer: An optional 16khz 16-bit signed mono PCM buffer to include with the messages.
+  /// - Returns: A ``PrefillResult``.
+  public func prefill(
+    messages: [Message],
+    options: Completion.Options = Completion.Options(),
+    maxBufferSize: Int? = nil,
+    functions: [FunctionDefinition] = [],
+    pcmBuffer: [UInt8]? = nil
+  ) throws -> PrefillResult {
+    let maxBufferSize = maxBufferSize ?? Self.defaultBufferSize
+    guard maxBufferSize > 0 else {
+      throw CactusModelError.prefillBufferTooSmall
+    }
+
+    let functions = functions.map { FFIFunctionDefinition(function: $0) }
+    let functionsJSON =
+      functions.isEmpty
+      ? nil
+      : String(decoding: try ffiEncoder.encode(functions), as: UTF8.self)
+
+    let ffiMessages = messages.map { FFIMessage(message: $0) }
+    let messagesJSON = String(decoding: try ffiEncoder.encode(ffiMessages), as: UTF8.self)
+    let optionsJSON = String(decoding: try ffiEncoder.encode(options), as: UTF8.self)
+
+    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) {
+      buffer,
+      responseBufferSize in
+      if let pcmBuffer, !pcmBuffer.isEmpty {
+        pcmBuffer.withUnsafeBufferPointer { rawBuffer in
+          cactus_prefill(
+            self.rawModelPointer,
+            messagesJSON,
+            buffer,
+            responseBufferSize,
+            optionsJSON,
+            functionsJSON,
+            rawBuffer.baseAddress,
+            rawBuffer.count
+          )
+        }
+      } else {
+        cactus_prefill(
+          self.rawModelPointer,
+          messagesJSON,
+          buffer,
+          responseBufferSize,
+          optionsJSON,
+          functionsJSON,
+          nil,
+          0
+        )
+      }
+    }
+
+    guard result != -1 else {
+      let response = try? ffiDecoder.decode(
+        FFIErrorResponse.self,
+        from: responseData
+      )
+      if response?.error.contains(Self.bufferNotBigEnoughErrorMessage) == true {
+        throw CactusModelError.prefillBufferTooSmall
+      }
+      throw CactusModelError.prefillGeneration(message: response?.error)
+    }
+
+    return try ffiDecoder.decode(PrefillResult.self, from: responseData)
   }
 }
 
@@ -1994,6 +2363,224 @@ extension CactusModel {
   /// Resets the context state of the model.
   public func reset() {
     cactus_reset(self.rawModelPointer)
+  }
+}
+
+// MARK: - Diarization
+
+extension CactusModel {
+  /// Options for speaker diarization.
+  public struct DiarizationOptions: Hashable, Sendable, Codable {
+    /// Sliding window stride duration.
+    public var stepDuration: Duration?
+
+    /// Threshold for per-speaker scores.
+    public var threshold: Float?
+
+    /// Keep only the N most active speakers.
+    public var numSpeakers: Int?
+
+    /// Lower bound on the number of active speakers to retain.
+    public var minSpeakers: Int?
+
+    /// Upper bound on the number of active speakers to retain.
+    public var maxSpeakers: Int?
+
+    /// Return raw 7-class powerset scores instead of 3-speaker probabilities.
+    public var rawPowerset: Bool?
+
+    public init(
+      stepDuration: Duration? = nil,
+      threshold: Float? = nil,
+      numSpeakers: Int? = nil,
+      minSpeakers: Int? = nil,
+      maxSpeakers: Int? = nil,
+      rawPowerset: Bool? = nil
+    ) {
+      self.stepDuration = stepDuration
+      self.threshold = threshold
+      self.numSpeakers = numSpeakers
+      self.minSpeakers = minSpeakers
+      self.maxSpeakers = maxSpeakers
+      self.rawPowerset = rawPowerset
+    }
+
+    private enum CodingKeys: String, CodingKey {
+      case stepMs = "step_ms"
+      case threshold
+      case numSpeakers = "num_speakers"
+      case minSpeakers = "min_speakers"
+      case maxSpeakers = "max_speakers"
+      case rawPowerset = "raw_powerset"
+    }
+
+    public init(from decoder: any Decoder) throws {
+      let container = try decoder.container(keyedBy: CodingKeys.self)
+      self.stepDuration = try container.decodeIfPresent(Int.self, forKey: .stepMs)
+        .map { .milliseconds($0) }
+      self.threshold = try container.decodeIfPresent(Float.self, forKey: .threshold)
+      self.numSpeakers = try container.decodeIfPresent(Int.self, forKey: .numSpeakers)
+      self.minSpeakers = try container.decodeIfPresent(Int.self, forKey: .minSpeakers)
+      self.maxSpeakers = try container.decodeIfPresent(Int.self, forKey: .maxSpeakers)
+      self.rawPowerset = try container.decodeIfPresent(Bool.self, forKey: .rawPowerset)
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      try container.encodeIfPresent(
+        self.stepDuration.map { Int($0 / .milliseconds(1)) },
+        forKey: .stepMs
+      )
+      try container.encodeIfPresent(self.threshold, forKey: .threshold)
+      try container.encodeIfPresent(self.numSpeakers, forKey: .numSpeakers)
+      try container.encodeIfPresent(self.minSpeakers, forKey: .minSpeakers)
+      try container.encodeIfPresent(self.maxSpeakers, forKey: .maxSpeakers)
+      try container.encodeIfPresent(self.rawPowerset, forKey: .rawPowerset)
+    }
+  }
+
+  /// A speaker diarization result.
+  public struct DiarizationResult: Hashable, Sendable, Codable {
+    /// Whether the diarization was successful.
+    public let success: Bool
+
+    /// Error message if the diarization failed.
+    public let error: String?
+
+    /// The number of speakers.
+    public let numSpeakers: Int
+
+    /// Flat array of T x num_speakers float32 values in row-major order.
+    public let scores: [Float]
+
+    /// The total processing time.
+    public let totalDuration: Duration
+
+    /// The current process RAM usage in MB.
+    public let ramUsageMb: Double
+
+    private enum CodingKeys: String, CodingKey {
+      case success
+      case error
+      case numSpeakers = "num_speakers"
+      case scores
+      case totalTimeMs = "total_time_ms"
+      case ramUsageMb = "ram_usage_mb"
+    }
+
+    public init(from decoder: any Decoder) throws {
+      let container = try decoder.container(keyedBy: CodingKeys.self)
+      self.success = try container.decode(Bool.self, forKey: .success)
+      self.error = try container.decodeIfPresent(String.self, forKey: .error)
+      self.numSpeakers = try container.decode(Int.self, forKey: .numSpeakers)
+      self.scores = try container.decode([Float].self, forKey: .scores)
+      let totalTimeMs = try container.decode(Double.self, forKey: .totalTimeMs)
+      self.totalDuration = .milliseconds(totalTimeMs)
+      self.ramUsageMb = try container.decode(Double.self, forKey: .ramUsageMb)
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+      var container = encoder.container(keyedBy: CodingKeys.self)
+      try container.encode(self.success, forKey: .success)
+      try container.encodeIfPresent(self.error, forKey: .error)
+      try container.encode(self.numSpeakers, forKey: .numSpeakers)
+      try container.encode(self.scores, forKey: .scores)
+      try container.encode(self.totalDuration / .milliseconds(1), forKey: .totalTimeMs)
+      try container.encode(self.ramUsageMb, forKey: .ramUsageMb)
+    }
+  }
+
+  private enum DiarizationRequest {
+    case audio(URL)
+    case buffer([UInt8])
+  }
+
+  /// Runs speaker diarization on the specified audio file.
+  ///
+  /// - Parameters:
+  ///   - audio: The audio file to analyze.
+  ///   - options: The ``DiarizationOptions``.
+  ///   - maxBufferSize: The maximum buffer size for the response.
+  /// - Returns: A ``DiarizationResult``.
+  public func diarize(
+    audio: URL,
+    options: DiarizationOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) throws -> DiarizationResult {
+    try self.diarize(for: .audio(audio), options: options, maxBufferSize: maxBufferSize)
+  }
+
+  /// Runs speaker diarization on the specified PCM buffer.
+  ///
+  /// - Parameters:
+  ///   - pcmBuffer: The PCM byte buffer to analyze in 16 kHz mono signed 16-bit format.
+  ///   - options: The ``DiarizationOptions``.
+  ///   - maxBufferSize: The maximum buffer size for the response.
+  /// - Returns: A ``DiarizationResult``.
+  public func diarize(
+    pcmBuffer: [UInt8],
+    options: DiarizationOptions? = nil,
+    maxBufferSize: Int? = nil
+  ) throws -> DiarizationResult {
+    try self.diarize(for: .buffer(pcmBuffer), options: options, maxBufferSize: maxBufferSize)
+  }
+
+  private func diarize(
+    for request: DiarizationRequest,
+    options: DiarizationOptions?,
+    maxBufferSize: Int?
+  ) throws -> DiarizationResult {
+    let maxBufferSize = maxBufferSize ?? Self.defaultBufferSize
+    guard maxBufferSize > 0 else {
+      throw CactusModelError.diarizeBufferTooSmall
+    }
+
+    let optionsJSON = try options.map { try String(decoding: ffiEncoder.encode($0), as: UTF8.self) }
+
+    let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) {
+      responseBuffer,
+      responseBufferSize in
+      switch request {
+      case .audio(let audio):
+        cactus_diarize(
+          self.rawModelPointer,
+          audio.nativePath,
+          responseBuffer,
+          responseBufferSize,
+          optionsJSON,
+          nil,
+          0
+        )
+      case .buffer(let buffer):
+        buffer.withUnsafeBufferPointer { rawBuffer in
+          cactus_diarize(
+            self.rawModelPointer,
+            nil,
+            responseBuffer,
+            responseBufferSize,
+            optionsJSON,
+            rawBuffer.baseAddress,
+            rawBuffer.count
+          )
+        }
+      }
+    }
+
+    guard result != -1 else {
+      let response = try? ffiDecoder.decode(
+        FFIErrorResponse.self,
+        from: responseData
+      )
+      if response?.error.contains(Self.bufferNotBigEnoughErrorMessage) == true {
+        throw CactusModelError.diarizeBufferTooSmall
+      }
+      if response?.error.localizedCaseInsensitiveContains("not a PyAnnote") == true {
+        throw CactusModelError.diarizeNotSupported
+      }
+      throw CactusModelError.diarizeGeneration(message: response?.error)
+    }
+
+    return try ffiDecoder.decode(DiarizationResult.self, from: responseData)
   }
 }
 

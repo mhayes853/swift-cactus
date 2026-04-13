@@ -1,16 +1,28 @@
 {
   "slug" : "whisper-small",
   "transcription" : {
-    "cloud_handoff" : false,
-    "confidence" : 0.9205,
-    "decode_tokens" : 10,
-    "decode_tps" : 63.43,
-    "prefill_tokens" : 4,
-    "prefill_tps" : 2.12,
-    "ram_usage_mb" : 381.63,
-    "response" : "The power of a god cannot be overcome.",
-    "time_to_first_token_ms" : 1884.09,
-    "total_time_ms" : 2025.97,
-    "total_tokens" : 14
+    "cloud_handoff" : true,
+    "confidence" : 0.547,
+    "decode_tokens" : 243,
+    "decode_tps" : 49.29,
+    "prefill_tokens" : 24,
+    "prefill_tps" : 14.53,
+    "ram_usage_mb" : 428.22,
+    "response" : "n l l l ll l I I i i m---...................... .... ... .. . . . nlnmccc c c c e e re re re nn N N M C C E E M N MCC C E E M N CCC C se ce cece se stem stem stem stemstem stem stems from from from From From From From From from F f h he he, , ,, ,, ,,,,, long run run run!!!!!!! !!!! web web web web web world world wo wo wo wo om om om om ob ob mob mob mob lob mobile mobile mobile mobile robot mobile Mobile Mobile Mobile Mobile Mobile Mobile Mobile mobile mobile robot mobile robots world mod World World World World World World World World World world World World World World World Mobile Mobile Mobile Mobile web mobile Mobile Web world World World world web internet internet internet Internet Internet Internet internet Internet Internet Internet世界世界世界世界世界 WebWorld Internet Internet browser Bluetooth digital Windows Internet world Bluetooth digital Windows Bluetooth Google Web Bluetooth YouTube digital Intel Bluetooth Bluetooth YouTube Windows Android Google Android New Bluetooth Intel Android Intel Intel Intel iPhone Android New iPhone iPhone Intel New iPhone Google Windows Google Angular",
+    "segments" : [
+      {
+        "end" : 45.822,
+        "start" : 5.122,
+        "text" : "n l l l ll l I I i i m---...................... .... ... .. . . ."
+      },
+      {
+        "end" : 98.974,
+        "start" : 46.338,
+        "text" : "nlnmccc c c c e e re re re nn N N M C C E E M N MCC C E E M N CCC C se ce cece se stem stem stem stemstem stem stems from from from From From From From From from F f h he he, , ,, ,, ,,,,, long run run run!!!!!!! !!!! web web web web web world world wo wo wo wo om om om om ob ob mob mob mob lob mobile mobile mobile mobile robot mobile Mobile Mobile Mobile Mobile Mobile Mobile Mobile mobile mobile robot mobile robots world mod World World World World World World World World World world World World World World World Mobile Mobile Mobile Mobile web mobile Mobile Web world World World world web internet internet internet Internet Internet Internet internet Internet Internet Internet世界世界世界世界世界 WebWorld Internet Internet browser Bluetooth digital Windows Internet world Bluetooth digital Windows Bluetooth Google Web Bluetooth YouTube digital Intel Bluetooth Bluetooth YouTube Windows Android Google Android New Bluetooth Intel Android Intel Intel Intel iPhone Android New iPhone iPhone Intel New iPhone Google Windows Google Angular"
+      }
+    ],
+    "time_to_first_token_ms" : 1652.18,
+    "total_time_ms" : 6562.1,
+    "total_tokens" : 267
   }
 }

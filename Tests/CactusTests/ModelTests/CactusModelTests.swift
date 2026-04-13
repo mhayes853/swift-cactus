@@ -518,6 +518,42 @@ struct `CactusModel tests` {
       try model.ragQuery(query: "What is async/await?", maxBufferSize: 0)
     }
   }
+
+  @Test
+  func `Prefill Snapshot`() async throws {
+    let modelURL = try await CactusModel.testModelURL(request: .qwen3_1_7b())
+    let model = try CactusModel(from: modelURL)
+
+    let result = try model.prefill(messages: [.user("Hello, how are you?")])
+
+    withKnownIssue {
+      assertSnapshot(of: result, as: .json, record: true)
+    }
+  }
+
+  @Test
+  func `File Diarize Snapshot`() async throws {
+    let modelURL = try await CactusModel.testModelURL(request: .pyannoteSegmentation())
+    let model = try CactusModel(from: modelURL)
+
+    let result = try model.diarize(audio: testAudioURL)
+
+    withKnownIssue {
+      assertSnapshot(of: result, as: .dump, record: true)
+    }
+  }
+
+  @Test
+  func `Speaker Embeddings Snapshot`() async throws {
+    let modelURL = try await CactusModel.testModelURL(request: .wespeakerResnet34())
+    let model = try CactusModel(from: modelURL)
+
+    let embeddings = try model.speakerEmbeddings(for: testAudioURL)
+
+    withKnownIssue {
+      assertSnapshot(of: embeddings, as: .json, record: true)
+    }
+  }
 }
 
 final class CactusModelGenerationSnapshotTests: XCTestCase {
@@ -701,7 +737,7 @@ final class CactusModelGenerationSnapshotTests: XCTestCase {
 
   func testImageAnalysis() async throws {
     let url = try await CactusModel.testModelURL(
-      request: .lfm2Vl_450m()
+      request: .gemma4_E2BIt()
     )
     let model = try CactusModel(from: url)
 

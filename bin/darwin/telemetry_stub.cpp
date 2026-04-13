@@ -19,6 +19,7 @@ void recordEmbedding(const char*, bool, const char*) {}
 void recordTranscription(const char*, bool, double, double, double, int, const char*) {}
 void recordTranscription(const char*, bool, double, double, double, int, double, const char*) {}
 void recordStreamTranscription(const char*, bool, double, double, double, int, double, double, double, int, const char*) {}
+bool isStreamMode() { return false; }
 void setStreamMode(bool) {}
 void markInference(bool) {}
 void flush() {}
