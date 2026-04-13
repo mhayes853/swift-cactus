@@ -174,6 +174,8 @@ extension CactusModel {
       case "functiongemma-270m-it": "functiongemma-270m-it"
       case "whisper-small": "whisper-small"
       case "whisper-medium": "whisper-medium"
+      case "whisper-tiny": "whisper-tiny"
+      case "whisper-base": "whisper-base"
       case "lfm2-350m": "LFM2-350M"
       case "lfm2-700m": "LFM2-700M"
       case "lfm2-1.2b": "LFM2-1.2B"
@@ -184,9 +186,13 @@ extension CactusModel {
       case "lfm2-2.6b": "LFM2-2.6B"
       case "lfm2-vl-450m": "LFM2-VL-450M"
       case "lfm2.5-vl-1.6b": "LFM2.5-VL-1.6B"
+      case "lfm2.5-350m": "LFM2.5-350M"
       case "qwen3-0.6b": "Qwen3-0.6B"
       case "qwen3-embedding-0.6b": "Qwen3-Embedding-0.6B"
       case "qwen3-1.7b": "Qwen3-1.7B"
+      case "qwen3.5-0.8b": "Qwen3.5-0.8B"
+      case "qwen3.5-2b": "Qwen3.5-2B"
+      case "youtube-llm-2b": "Youtu-LLM-2B"
       case "nomic-embed-text-v2-moe": "nomic-embed-text-v2-moe"
       case "moonshine-base": "moonshine-base"
       case "silero-vad": "silero-vad"
@@ -563,6 +569,106 @@ extension CactusModel {
       version: Version = .v1_12
     ) -> Self {
       Self(slug: "wespeaker-voxceleb-resnet34-lm", quantization: quantization, version: version)
+    }
+
+    /// Creates a download request for the `qwen3.5-0.8b` model.
+    ///
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func qwen3_5_0_8b(
+      quantization: Quantization = .int4,
+      version: Version = .v1_12
+    ) -> Self {
+      Self(slug: "qwen3.5-0.8b", quantization: quantization, version: version)
+    }
+
+    /// Creates a download request for the `qwen3.5-2b` model.
+    ///
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func qwen3_5_2b(
+      quantization: Quantization = .int4,
+      version: Version = .v1_12
+    ) -> Self {
+      Self(slug: "qwen3.5-2b", quantization: quantization, version: version)
+    }
+
+    /// Creates a download request for the `gemma-3n-E2B-it` model.
+    ///
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func gemma3n_E2BIt(
+      quantization: Quantization = .int4,
+      version: Version = .v1_12
+    ) -> Self {
+      Self(slug: "gemma-3n-E2B-it", quantization: quantization, version: version)
+    }
+
+    /// Creates a download request for the `gemma-3n-E4B-it` model.
+    ///
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func gemma3n_E4BIt(
+      quantization: Quantization = .int4,
+      version: Version = .v1_12
+    ) -> Self {
+      Self(slug: "gemma-3n-E4B-it", quantization: quantization, version: version)
+    }
+
+    /// Creates a download request for the `lfm2.5-350m` model.
+    ///
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func lfm2_5_350m(
+      quantization: Quantization = .int4,
+      version: Version = .v1_12
+    ) -> Self {
+      Self(slug: "lfm2.5-350m", quantization: quantization, version: version)
+    }
+
+    /// Creates a download request for the `youtube-llm-2b` model.
+    ///
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - version: The library version of the model.
+    public static func youtubeLLM_2b(
+      quantization: Quantization = .int4,
+      version: Version = .v1_12
+    ) -> Self {
+      Self(slug: "youtube-llm-2b", quantization: quantization, version: version)
+    }
+
+    /// Creates a download request for the `whisper-tiny` model.
+    ///
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - pro: The pro version configuration for the model.
+    ///   - version: The library version of the model.
+    public static func whisperTiny(
+      quantization: Quantization = .int4,
+      pro: Pro? = nil,
+      version: Version = .v1_12
+    ) -> Self {
+      Self(slug: "whisper-tiny", quantization: quantization, version: version, pro: pro)
+    }
+
+    /// Creates a download request for the `whisper-base` model.
+    ///
+    /// - Parameters:
+    ///   - quantization: The quantization format of the model.
+    ///   - pro: The pro version configuration for the model.
+    ///   - version: The library version of the model.
+    public static func whisperBase(
+      quantization: Quantization = .int4,
+      pro: Pro? = nil,
+      version: Version = .v1_12
+    ) -> Self {
+      Self(slug: "whisper-base", quantization: quantization, version: version, pro: pro)
     }
   }
 }
