@@ -327,6 +327,43 @@ struct `CactusAgentSession tests` {
     }
 
     @Test
+    func `Prewarm Returns Prefill Metrics Dump Snapshot`() async throws {
+      let modelURL = try await CactusModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusModel(from: modelURL)
+      let session = CactusAgentSession(model: model, transcript: CactusTranscript())
+
+      let prewarm = try await session.prewarm {
+        "Say hello in one concise sentence."
+      }
+
+      withKnownIssue {
+        assertSnapshot(of: prewarm.metrics, as: .dump, record: true)
+      }
+    }
+
+    @Test
+    func `Prewarm Reduces Subsequent Respond Prefill Tokens`() async throws {
+      let modelURL = try await CactusModel.testModelURL(request: .gemma3_270mIt())
+      let session = try CactusAgentSession(from: modelURL) {
+        "You are a helpful assistant."
+      }
+      let request = CactusUserMessage(temperature: 0) {
+        "Say hello in one concise sentence."
+      }
+
+      try await session.prewarm(promptPrefix: request.content, pcmBuffer: request.pcmBuffer)
+      let prewarmedCompletion = try await session.respond(to: request)
+
+      await session.reset()
+      let coldCompletion = try await session.respond(to: request)
+
+      expectNoDifference(
+        prewarmedCompletion.metrics.prefillTokens < coldCompletion.metrics.prefillTokens,
+        true
+      )
+    }
+
+    @Test
     func
       `Simple Prompt Tool Execution Loop Supports Multiple Tool Calls And Returns Final Assistant Text Snapshot`()
       async throws
