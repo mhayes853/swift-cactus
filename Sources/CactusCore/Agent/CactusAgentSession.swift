@@ -681,6 +681,104 @@ extension CactusAgentSession {
   }
 }
 
+// MARK: - Prewarm
+
+extension CactusAgentSession {
+  /// A snapshot of the values used to prewarm a ``CactusAgentSession``.
+  public struct Prewarm: Sendable {
+    /// The messages that were prewarmed.
+    public let messages: [CactusModel.Message]
+
+    /// The functions available during prewarm.
+    public let functions: [any CactusFunction]
+
+    /// The PCM audio bytes included during prewarm, if any.
+    public let pcmBuffer: [UInt8]?
+
+    /// Prefill metrics captured during prewarm.
+    public let metrics: CactusPrefillMetrics
+  }
+
+  /// Prewarms the current session transcript with an optional prompt prefix and PCM buffer.
+  ///
+  /// - Parameters:
+  ///   - promptPrefix: Additional prompt content to append as a transient user message for the
+  ///     prewarm operation.
+  ///   - pcmBuffer: Optional PCM audio bytes to include during prewarm.
+  /// - Returns: A snapshot describing what was prewarmed and the resulting metrics.
+  @discardableResult
+  public func prewarm(
+    promptPrefix: CactusPromptContent? = nil,
+    pcmBuffer: [UInt8]? = nil
+  ) async throws -> Prewarm {
+    try await self._prewarm(promptPrefix: promptPrefix, pcmBuffer: pcmBuffer)
+  }
+
+  /// Prewarms the current session transcript with a prompt prefix and optional PCM buffer.
+  ///
+  /// - Parameters:
+  ///   - promptPrefix: Additional prompt content to append as a transient user message for the
+  ///     prewarm operation.
+  ///   - pcmBuffer: Optional PCM audio bytes to include during prewarm.
+  /// - Returns: A snapshot describing what was prewarmed and the resulting metrics.
+  @discardableResult
+  public func prewarm(
+    promptPrefix: some CactusPromptRepresentable,
+    pcmBuffer: [UInt8]? = nil
+  ) async throws -> Prewarm {
+    try await self._prewarm(
+      promptPrefix: CactusPromptContent(promptPrefix),
+      pcmBuffer: pcmBuffer
+    )
+  }
+
+  /// Prewarms the current session transcript with a prompt-prefix builder and optional PCM buffer.
+  ///
+  /// - Parameters:
+  ///   - pcmBuffer: Optional PCM audio bytes to include during prewarm.
+  ///   - promptPrefix: Additional prompt content to append as a transient user message for the
+  ///     prewarm operation.
+  /// - Returns: A snapshot describing what was prewarmed and the resulting metrics.
+  @discardableResult
+  public func prewarm(
+    pcmBuffer: [UInt8]? = nil,
+    @CactusPromptBuilder promptPrefix: @Sendable () -> some CactusPromptRepresentable
+  ) async throws -> Prewarm {
+    try await self._prewarm(
+      promptPrefix: CactusPromptContent(promptPrefix()),
+      pcmBuffer: pcmBuffer
+    )
+  }
+
+  private func _prewarm(
+    promptPrefix: CactusPromptContent?,
+    pcmBuffer: [UInt8]?
+  ) async throws -> Prewarm {
+    guard self.beginRespondingIfNecessary() else {
+      throw CactusAgentSessionError.alreadyResponding
+    }
+    defer { self.endResponding() }
+
+    try self.insertSystemPromptIfNecessary()
+
+    let functions = self.functions
+    let messages = try self.prewarmMessages(promptPrefix: promptPrefix)
+    let prefillResult = try await self.modelActor.prefill(
+      messages: messages,
+      options: CactusModel.Completion.Options(),
+      functions: functions.map(\.definition),
+      pcmBuffer: pcmBuffer
+    )
+
+    return Prewarm(
+      messages: messages,
+      functions: functions,
+      pcmBuffer: pcmBuffer,
+      metrics: CactusPrefillMetrics(prefillResult: prefillResult)
+    )
+  }
+}
+
 // MARK: - Completion
 
 extension CactusAgentSession {
@@ -742,6 +840,7 @@ extension CactusAgentSession {
       throw error
     }
 
+    let initialPCMBuffer = request.pcmBuffer
     let stream = CactusInferenceStream<CactusCompletion<String>> { continuation in
       defer { self.endResponding() }
 
@@ -768,7 +867,8 @@ extension CactusAgentSession {
             messages: conversationMessages,
             options: options,
             maxBufferSize: context.maxBufferSize,
-            functions: context.functionDefinitions
+            functions: context.functionDefinitions,
+            pcmBuffer: initialPCMBuffer
           ) { token, tokenId in
             continuation.yield(
               token: CactusStreamedToken(
@@ -909,6 +1009,15 @@ extension CactusAgentSession {
       functionDefinitions: self.functions.map(\.definition),
       functions: functionsDict
     )
+  }
+
+  private func prewarmMessages(promptPrefix: CactusPromptContent?) throws -> [CactusModel.Message] {
+    var messages = self.transcript.messages
+    guard let promptPrefix else { return messages }
+
+    let components = try promptPrefix.messageComponents()
+    messages.append(.user(components.text, images: components.images))
+    return messages
   }
 
   private func insertSystemPromptIfNecessary() throws {

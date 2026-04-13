@@ -8,6 +8,10 @@ import Testing
   import Observation
 #endif
 
+#if canImport(AVFoundation)
+  import AVFoundation
+#endif
+
 @Suite
 struct `CactusAgentSession tests` {
   @Suite(.serialized)
@@ -105,6 +109,31 @@ struct `CactusAgentSession tests` {
         assertSnapshot(of: session.transcript, as: .json, record: true)
       }
     }
+
+    #if canImport(AVFoundation)
+      @Test
+      func `Multi Turn Conversation With PCM Buffer Maintains Context`() async throws {
+        let modelURL = try await CactusModel.testModelURL(request: .gemma4_E2BIt())
+        let model = try CactusModel(from: modelURL)
+        let session = CactusAgentSession(model: model, transcript: CactusTranscript())
+
+        let buffer = try testAudioPCMBuffer()
+        try await session.respond(
+          to: try CactusUserMessage(pcmBuffer: buffer, enableThinkingIfSupported: false) {
+            "Summarize the audio."
+          }
+        )
+        try await session.respond(
+          to: CactusUserMessage(pcmBuffer: buffer, enableThinkingIfSupported: false) {
+            "What part stands out as the most philosophical?"
+          }
+        )
+
+        withKnownIssue {
+          assertSnapshot(of: session.transcript, as: .json, record: true)
+        }
+      }
+    #endif
 
     @Test
     func `Multi Turn Conversation With System Prompt Maintains Context`() async throws {
@@ -293,6 +322,43 @@ struct `CactusAgentSession tests` {
         completion.entries
           .filter { $0.transcriptEntry.message.isToolOrFunctionOutput }
           .allSatisfy { $0.metrics == nil },
+        true
+      )
+    }
+
+    @Test
+    func `Prewarm Returns Prefill Metrics Dump Snapshot`() async throws {
+      let modelURL = try await CactusModel.testModelURL(request: .gemma3_270mIt())
+      let model = try CactusModel(from: modelURL)
+      let session = CactusAgentSession(model: model, transcript: CactusTranscript())
+
+      let prewarm = try await session.prewarm {
+        "Say hello in one concise sentence."
+      }
+
+      withKnownIssue {
+        assertSnapshot(of: prewarm.metrics, as: .dump, record: true)
+      }
+    }
+
+    @Test
+    func `Prewarm Reduces Subsequent Respond Prefill Tokens`() async throws {
+      let modelURL = try await CactusModel.testModelURL(request: .gemma3_270mIt())
+      let session = try CactusAgentSession(from: modelURL) {
+        "You are a helpful assistant."
+      }
+      let request = CactusUserMessage(temperature: 0) {
+        "Say hello in one concise sentence."
+      }
+
+      try await session.prewarm(promptPrefix: request.content, pcmBuffer: request.pcmBuffer)
+      let prewarmedCompletion = try await session.respond(to: request)
+
+      await session.reset()
+      let coldCompletion = try await session.respond(to: request)
+
+      expectNoDifference(
+        prewarmedCompletion.metrics.prefillTokens < coldCompletion.metrics.prefillTokens,
         true
       )
     }

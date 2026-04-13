@@ -1,0 +1,7 @@
+▿ CactusPrefillMetrics
+  - prefillTokens: 12
+  - prefillTps: 782.88
+  - ramUsageMb: 161.11
+  ▿ totalDuration: 0.01533 seconds
+    - _low: 15330000000000000
+    - _high: 0
