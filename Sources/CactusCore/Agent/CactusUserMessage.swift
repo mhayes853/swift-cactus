@@ -45,6 +45,11 @@ public struct CactusUserMessage {
   /// `nil` disables cloud handoff.
   public var cloudHandoff: CloudHandoff?
 
+  /// PCM audio bytes to include with this message, converted to mono 16 kHz signed 16-bit PCM.
+  ///
+  /// Use this to send audio data alongside text content.
+  public var pcmBuffer: [UInt8]?
+
   /// Creates a user message.
   ///
   /// - Parameters:
@@ -74,7 +79,8 @@ public struct CactusUserMessage {
     isTelemetryEnabled: Bool = false,
     enableThinkingIfSupported: Bool = true,
     maxBufferSize: Int? = nil,
-    cloudHandoff: CloudHandoff? = CloudHandoff()
+    cloudHandoff: CloudHandoff? = CloudHandoff(),
+    pcmBuffer: [UInt8]? = nil
   ) {
     self.content = content
     self.maxTokens = maxTokens
@@ -89,6 +95,7 @@ public struct CactusUserMessage {
     self.enableThinkingIfSupported = enableThinkingIfSupported
     self.maxBufferSize = maxBufferSize
     self.cloudHandoff = cloudHandoff
+    self.pcmBuffer = pcmBuffer
   }
 
   /// Creates a user message from prompt representable content.
@@ -120,7 +127,8 @@ public struct CactusUserMessage {
     isTelemetryEnabled: Bool = false,
     enableThinkingIfSupported: Bool = true,
     maxBufferSize: Int? = nil,
-    cloudHandoff: CloudHandoff? = CloudHandoff()
+    cloudHandoff: CloudHandoff? = CloudHandoff(),
+    pcmBuffer: [UInt8]? = nil
   ) {
     self.content = CactusPromptContent(content)
     self.maxTokens = maxTokens
@@ -135,6 +143,7 @@ public struct CactusUserMessage {
     self.enableThinkingIfSupported = enableThinkingIfSupported
     self.maxBufferSize = maxBufferSize
     self.cloudHandoff = cloudHandoff
+    self.pcmBuffer = pcmBuffer
   }
 
   /// Creates a user message from a prompt builder trailing closure.
@@ -166,6 +175,7 @@ public struct CactusUserMessage {
     enableThinkingIfSupported: Bool = true,
     maxBufferSize: Int? = nil,
     cloudHandoff: CloudHandoff? = CloudHandoff(),
+    pcmBuffer: [UInt8]? = nil,
     @CactusPromptBuilder content: @Sendable () -> some CactusPromptRepresentable
   ) {
     self.content = CactusPromptContent(content())
@@ -181,6 +191,7 @@ public struct CactusUserMessage {
     self.enableThinkingIfSupported = enableThinkingIfSupported
     self.maxBufferSize = maxBufferSize
     self.cloudHandoff = cloudHandoff
+    self.pcmBuffer = pcmBuffer
   }
 }
 

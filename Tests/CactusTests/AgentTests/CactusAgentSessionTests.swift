@@ -8,6 +8,10 @@ import Testing
   import Observation
 #endif
 
+#if canImport(AVFoundation)
+  import AVFoundation
+#endif
+
 @Suite
 struct `CactusAgentSession tests` {
   @Suite(.serialized)
@@ -105,6 +109,31 @@ struct `CactusAgentSession tests` {
         assertSnapshot(of: session.transcript, as: .json, record: true)
       }
     }
+
+    #if canImport(AVFoundation)
+      @Test
+      func `Multi Turn Conversation With PCM Buffer Maintains Context`() async throws {
+        let modelURL = try await CactusModel.testModelURL(request: .gemma4_E2BIt())
+        let model = try CactusModel(from: modelURL)
+        let session = CactusAgentSession(model: model, transcript: CactusTranscript())
+
+        let buffer = try testAudioPCMBuffer()
+        try await session.respond(
+          to: try CactusUserMessage(pcmBuffer: buffer, enableThinkingIfSupported: false) {
+            "Summarize the audio."
+          }
+        )
+        try await session.respond(
+          to: CactusUserMessage(pcmBuffer: buffer, enableThinkingIfSupported: false) {
+            "What part stands out as the most philosophical?"
+          }
+        )
+
+        withKnownIssue {
+          assertSnapshot(of: session.transcript, as: .json, record: true)
+        }
+      }
+    #endif
 
     @Test
     func `Multi Turn Conversation With System Prompt Maintains Context`() async throws {

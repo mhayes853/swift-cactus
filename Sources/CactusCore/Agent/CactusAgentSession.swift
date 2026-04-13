@@ -742,6 +742,7 @@ extension CactusAgentSession {
       throw error
     }
 
+    let initialPCMBuffer = request.pcmBuffer
     let stream = CactusInferenceStream<CactusCompletion<String>> { continuation in
       defer { self.endResponding() }
 
@@ -768,7 +769,8 @@ extension CactusAgentSession {
             messages: conversationMessages,
             options: options,
             maxBufferSize: context.maxBufferSize,
-            functions: context.functionDefinitions
+            functions: context.functionDefinitions,
+            pcmBuffer: initialPCMBuffer
           ) { token, tokenId in
             continuation.yield(
               token: CactusStreamedToken(
