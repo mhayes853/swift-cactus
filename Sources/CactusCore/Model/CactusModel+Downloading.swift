@@ -192,7 +192,7 @@ extension CactusModel {
       case "qwen3-1.7b": "Qwen3-1.7B"
       case "qwen3.5-0.8b": "Qwen3.5-0.8B"
       case "qwen3.5-2b": "Qwen3.5-2B"
-      case "youtube-llm-2b": "Youtu-LLM-2B"
+      case "youtu-llm-2b": "Youtu-LLM-2B"
       case "nomic-embed-text-v2-moe": "nomic-embed-text-v2-moe"
       case "moonshine-base": "moonshine-base"
       case "silero-vad": "silero-vad"
@@ -631,16 +631,16 @@ extension CactusModel {
       Self(slug: "lfm2.5-350m", quantization: quantization, version: version)
     }
 
-    /// Creates a download request for the `youtube-llm-2b` model.
+    /// Creates a download request for the `youtu-llm-2b` model.
     ///
     /// - Parameters:
     ///   - quantization: The quantization format of the model.
     ///   - version: The library version of the model.
-    public static func youtubeLLM_2b(
+    public static func youtuLLM_2b(
       quantization: Quantization = .int4,
       version: Version = .v1_12
     ) -> Self {
-      Self(slug: "youtube-llm-2b", quantization: quantization, version: version)
+      Self(slug: "youtu-llm-2b", quantization: quantization, version: version)
     }
 
     /// Creates a download request for the `whisper-tiny` model.
