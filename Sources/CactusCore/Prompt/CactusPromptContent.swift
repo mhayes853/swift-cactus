@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - CactusPromptContent
 
-/// A composable prompt payload that can contain text and image references.
+/// A composable prompt payload that can contain text, image references, and audio references.
 ///
 /// Use this type to build structured prompt input before converting it into
 /// chat message components.
@@ -23,14 +23,19 @@ public struct CactusPromptContent {
     /// The image URL portion of a message.
     public var images: [URL]
 
-    /// Creates message components from text and optional image URLs.
+    /// The audio URL portion of a message.
+    public var audio: [URL]
+
+    /// Creates message components from text and optional image and audio URLs.
     ///
     /// - Parameters:
     ///   - text: The text payload.
     ///   - images: Image URLs to associate with the message.
-    public init(text: String, images: [URL] = []) {
+    ///   - audio: Audio URLs to associate with the message.
+    public init(text: String, images: [URL] = [], audio: [URL] = []) {
       self.text = text
       self.images = images
+      self.audio = audio
     }
   }
 
@@ -38,6 +43,7 @@ public struct CactusPromptContent {
     case text(String)
     case separator(String)
     case images([URL])
+    case audio([URL])
     case representable(any CactusPromptRepresentable)
   }
 
@@ -55,6 +61,13 @@ public struct CactusPromptContent {
   /// - Parameter images: Image URLs to include in the prompt.
   public init(images: [URL]) {
     self.blocks.append(.images(images))
+  }
+
+  /// Creates audio-only prompt content.
+  ///
+  /// - Parameter audio: Audio URLs to include in the prompt.
+  public init(audio: [URL]) {
+    self.blocks.append(.audio(audio))
   }
 
   /// Creates empty prompt content.
@@ -109,9 +122,9 @@ extension CactusPromptContent {
   /// Converts prompt content into message-ready components.
   ///
   /// Text blocks are merged in order and separated by the most recent separator.
-  /// Images are collected in insertion order.
+  /// Images and audio paths are collected in insertion order.
   ///
-  /// - Returns: Message components containing text and image URLs.
+  /// - Returns: Message components containing text and media URLs.
   public func messageComponents() throws -> MessageComponents {
     var components = MessageComponents(text: "")
     var currentSeparator: String?
@@ -124,10 +137,13 @@ extension CactusPromptContent {
         currentSeparator = separator
       case .images(let urls):
         components.images.append(contentsOf: urls)
+      case .audio(let urls):
+        components.audio.append(contentsOf: urls)
       case .representable(let representable):
         let subcomponents = try representable.promptContent.messageComponents()
         components.appendText(subcomponents.text, currentSeparator: &currentSeparator)
         components.images.append(contentsOf: subcomponents.images)
+        components.audio.append(contentsOf: subcomponents.audio)
       }
     }
     return components

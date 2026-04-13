@@ -11,6 +11,7 @@ struct `CactusPromptContent tests` {
     let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "Hello world!")
     expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [])
   }
 
   @Test
@@ -20,6 +21,17 @@ struct `CactusPromptContent tests` {
     let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "")
     expectNoDifference(components.images, [imageURL])
+    expectNoDifference(components.audio, [])
+  }
+
+  @Test
+  func `Message Components For Basic Audio`() throws {
+    let audioURL = temporaryModelDirectory().appendingPathComponent("audio.wav")
+    let content = CactusPromptContent(audio: [audioURL])
+    let components = try content.defaultMessageComponents()
+    expectNoDifference(components.text, "")
+    expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [audioURL])
   }
 
   @Test
@@ -30,6 +42,18 @@ struct `CactusPromptContent tests` {
     let components = try content1.joined(with: content2).defaultMessageComponents()
     expectNoDifference(components.text, "Hello world!")
     expectNoDifference(components.images, [imageURL])
+    expectNoDifference(components.audio, [])
+  }
+
+  @Test
+  func `Join Audio Content With String Content`() throws {
+    let audioURL = temporaryModelDirectory().appendingPathComponent("audio.wav")
+    let content1 = CactusPromptContent(audio: [audioURL])
+    let content2 = CactusPromptContent(text: "Hello world!")
+    let components = try content1.joined(with: content2).defaultMessageComponents()
+    expectNoDifference(components.text, "Hello world!")
+    expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [audioURL])
   }
 
   @Test
@@ -39,6 +63,7 @@ struct `CactusPromptContent tests` {
     let components = try content1.joined(with: content2, separator: " ").defaultMessageComponents()
     expectNoDifference(components.text, "Hello world!")
     expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [])
   }
 
   @Test
@@ -51,6 +76,7 @@ struct `CactusPromptContent tests` {
       .defaultMessageComponents()
     expectNoDifference(components.text, "Hello world!, this is cool")
     expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [])
   }
 
   @Test
@@ -66,6 +92,23 @@ struct `CactusPromptContent tests` {
     let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "Hello world\nThis is cool")
     expectNoDifference(components.images, [imageURL, imageURL2])
+    expectNoDifference(components.audio, [])
+  }
+
+  @Test
+  func `Prompt Builder Joins Audio Content With New Lines`() throws {
+    let audioURL = temporaryModelDirectory().appendingPathComponent("audio.wav")
+    let audioURL2 = temporaryModelDirectory().appendingPathComponent("audio2.wav")
+    let content = CactusPromptContent {
+      "Hello world"
+      CactusPromptContent(audio: [audioURL])
+      CactusPromptContent(audio: [audioURL2])
+      "This is cool"
+    }
+    let components = try content.defaultMessageComponents()
+    expectNoDifference(components.text, "Hello world\nThis is cool")
+    expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [audioURL, audioURL2])
   }
 
   @Test
@@ -94,6 +137,36 @@ struct `CactusPromptContent tests` {
     let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "Hello world\nThis is cool")
     expectNoDifference(components.images, [imageURL, representable.imageURL2])
+    expectNoDifference(components.audio, [])
+  }
+
+  @Test
+  func `Prompt Builder Joins Content With Audio Prompt Representables`() throws {
+    struct Representable: CactusPromptRepresentable {
+      let audioURL2 = temporaryModelDirectory().appendingPathComponent("audio2.wav")
+
+      var promptContent: CactusPromptContent {
+        get throws {
+          CactusPromptContent {
+            "This is cool"
+            CactusPromptContent(audio: [self.audioURL2])
+          }
+        }
+      }
+    }
+
+    let audioURL = temporaryModelDirectory().appendingPathComponent("audio.wav")
+    let representable = Representable()
+    let content = CactusPromptContent {
+      "Hello world"
+      CactusPromptContent(audio: [audioURL])
+      representable
+    }
+
+    let components = try content.defaultMessageComponents()
+    expectNoDifference(components.text, "Hello world\nThis is cool")
+    expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [audioURL, representable.audioURL2])
   }
 
   @Test
@@ -138,6 +211,7 @@ struct `CactusPromptContent tests` {
     let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "Hello blob!\n{\"a\":1,\"b\":\"hello\"}")
     expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [])
   }
 
   @Test
@@ -163,6 +237,7 @@ struct `CactusPromptContent tests` {
     let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "Hello blob!\nHello blob!")
     expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [])
   }
 
   @Test(arguments: [(true, 0), (false, 1)])
@@ -178,6 +253,7 @@ struct `CactusPromptContent tests` {
     let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, values[expected])
     expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [])
   }
 
   @Test
@@ -191,6 +267,7 @@ struct `CactusPromptContent tests` {
     let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "hello")
     expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [])
   }
 
   @Test
@@ -205,6 +282,7 @@ struct `CactusPromptContent tests` {
     let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "Hello World")
     expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [])
   }
 
   @Test
@@ -218,6 +296,7 @@ struct `CactusPromptContent tests` {
     let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "/think\nHello world")
     expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [])
   }
 
   @Test
@@ -231,6 +310,7 @@ struct `CactusPromptContent tests` {
     let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "/no_think\nHello world")
     expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [])
   }
 
   @Test
@@ -246,6 +326,7 @@ struct `CactusPromptContent tests` {
     let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "Hello, World")
     expectNoDifference(components.images, [imageURL])
+    expectNoDifference(components.audio, [])
   }
 
   @Test
@@ -260,6 +341,22 @@ struct `CactusPromptContent tests` {
     let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "Hello\nWorld")
     expectNoDifference(components.images, [imageURL])
+    expectNoDifference(components.audio, [])
+  }
+
+  @Test
+  func `Prompt Content Handles Text Around Audio`() throws {
+    let audioURL = temporaryModelDirectory().appendingPathComponent("audio.wav")
+    let content = CactusPromptContent {
+      "Hello"
+      CactusPromptContent(audio: [audioURL])
+      "World"
+    }
+
+    let components = try content.defaultMessageComponents()
+    expectNoDifference(components.text, "Hello\nWorld")
+    expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [audioURL])
   }
 
   @Test
@@ -284,6 +381,56 @@ struct `CactusPromptContent tests` {
     let components = try content.defaultMessageComponents()
     expectNoDifference(components.text, "Hello blob!\nHello blob!")
     expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [])
+  }
+
+  @Test
+  func `Encoded Content Preserves Audio`() throws {
+    let audioURL = temporaryModelDirectory().appendingPathComponent("audio.wav")
+
+    struct AudioRepresentable: CactusPromptRepresentable {
+      let audioURL: URL
+
+      var promptContent: CactusPromptContent {
+        CactusPromptContent {
+          "Hello"
+          CactusPromptContent(audio: [self.audioURL])
+        }
+      }
+    }
+
+    struct CustomEncoder: TopLevelEncoder {
+      func encode(_ value: some Encodable) throws -> Data {
+        Data("ignored".utf8)
+      }
+    }
+
+    let components = try AudioRepresentable(audioURL: audioURL)
+      .encoded(with: CustomEncoder())
+      .promptContent
+      .messageComponents()
+
+    expectNoDifference(components.text, "Hello")
+    expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [audioURL])
+  }
+
+  @Test
+  func `Separated Content Preserves Audio`() throws {
+    let audioURL = temporaryModelDirectory().appendingPathComponent("audio.wav")
+    let content = CactusPromptContent {
+      GroupContent {
+        "Hello"
+        CactusPromptContent(audio: [audioURL])
+        "World"
+      }
+      .separated(by: " ")
+    }
+
+    let components = try content.defaultMessageComponents()
+    expectNoDifference(components.text, "Hello World")
+    expectNoDifference(components.images, [])
+    expectNoDifference(components.audio, [audioURL])
   }
 }
 

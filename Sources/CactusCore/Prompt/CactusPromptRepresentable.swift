@@ -12,7 +12,7 @@ extension CactusPromptRepresentable {
   /// Converts prompt content to a language-model chat message.
   ///
   /// - Parameter role: The role to assign to the generated message.
-  /// - Returns: A chat message with text and optional images.
+  /// - Returns: A chat message with text and optional media.
   public func modelMessage(
     role: CactusModel.Message.Role
   ) throws -> CactusModel.Message {
@@ -34,7 +34,8 @@ extension CactusModel.Message {
     self.init(
       role: role,
       content: components.text,
-      images: components.images.isEmpty ? nil : components.images
+      images: components.images.isEmpty ? nil : components.images,
+      audio: components.audio.isEmpty ? nil : components.audio
     )
   }
 }

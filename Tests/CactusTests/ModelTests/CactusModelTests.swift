@@ -758,6 +758,24 @@ final class CactusModelGenerationSnapshotTests: XCTestCase {
     }
   }
 
+  func testAudioPathAnalysis() async throws {
+    let url = try await CactusModel.testModelURL(
+      request: .gemma4_E2BIt()
+    )
+    let model = try CactusModel(from: url)
+
+    let completed = try model.complete(
+      messages: [
+        .system("You are an assistant that summarizes audio in one short sentence."),
+        .user("Summarize the audio.", audio: [testAudioURL])
+      ]
+    )
+
+    withExpectedIssue {
+      assertSnapshot(of: completed.completion, as: .json, record: true)
+    }
+  }
+
   func testAudioTranscription() async throws {
     struct Transcription: Codable {
       let slug: String

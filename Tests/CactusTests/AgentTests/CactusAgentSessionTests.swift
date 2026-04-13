@@ -110,6 +110,31 @@ struct `CactusAgentSession tests` {
       }
     }
 
+    @Test
+    func `Audio Path Conversation Maintains Context`() async throws {
+      let modelURL = try await CactusModel.testModelURL(request: .gemma4_E2BIt())
+      let model = try CactusModel(from: modelURL)
+      let session = CactusAgentSession(model: model, transcript: CactusTranscript())
+
+      try await session.respond(
+        to: CactusUserMessage {
+          CactusPromptContent {
+            "Summarize the audio in one short sentence."
+            CactusPromptContent(audio: [Self.testAudioURL])
+          }
+        }
+      )
+      try await session.respond(
+        to: CactusUserMessage {
+          "What part is the most philosophical?"
+        }
+      )
+
+      withKnownIssue {
+        assertSnapshot(of: session.transcript, as: .json, record: true)
+      }
+    }
+
     #if canImport(AVFoundation)
       @Test
       func `Multi Turn Conversation With PCM Buffer Maintains Context`() async throws {
@@ -832,6 +857,10 @@ struct `CactusAgentSession tests` {
 
     private static var testImageURL: URL {
       Bundle.module.url(forResource: "sean_avatar", withExtension: "jpeg")!
+    }
+
+    private static var testAudioURL: URL {
+      Bundle.module.url(forResource: "test", withExtension: "wav")!
     }
   }
 

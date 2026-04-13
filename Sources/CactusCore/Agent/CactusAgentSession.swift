@@ -634,6 +634,7 @@ extension CactusAgentSession {
         content: CactusPromptContent {
           components.text
           CactusPromptContent(images: components.images)
+          CactusPromptContent(audio: components.audio)
         }
       )
     }
@@ -1016,7 +1017,7 @@ extension CactusAgentSession {
     guard let promptPrefix else { return messages }
 
     let components = try promptPrefix.messageComponents()
-    messages.append(.user(components.text, images: components.images))
+    messages.append(.user(components.text, images: components.images, audio: components.audio))
     return messages
   }
 
@@ -1098,7 +1099,13 @@ extension CactusAgentSession {
     for functionReturn in functionReturns {
       let components = try functionReturn.content.messageComponents()
       self.appendTranscriptEntry(
-        .tool(components.text, name: functionReturn.name),
+        CactusModel.Message(
+          role: role,
+          content: components.text,
+          images: components.images.isEmpty ? nil : components.images,
+          audio: components.audio.isEmpty ? nil : components.audio,
+          name: functionReturn.name
+        ),
         metrics: nil,
         completionEntries: &completionEntries
       )
@@ -1109,7 +1116,11 @@ extension CactusAgentSession {
     from request: CactusUserMessage
   ) throws -> CactusModel.Message {
     let components = try request.content.messageComponents()
-    return CactusModel.Message.user(components.text, images: components.images)
+    return .user(
+      components.text,
+      images: components.images,
+      audio: components.audio
+    )
   }
 
   private func appendedMessages(

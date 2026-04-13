@@ -37,6 +37,9 @@ public struct _SeparatedContent<Content: CactusPromptRepresentable>: CactusPromp
       if !components.images.isEmpty {
         content.join(with: CactusPromptContent(images: components.images), separator: "")
       }
+      if !components.audio.isEmpty {
+        content.join(with: CactusPromptContent(audio: components.audio), separator: "")
+      }
       return content
     }
   }
