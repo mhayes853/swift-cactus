@@ -945,7 +945,7 @@ extension CactusModel {
   ///   - options: The ``Completion/Options``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
-  ///   - pcmBuffer: An optional PCM buffer to include with the messages.
+  ///   - pcmBuffer: An optional 16khz 16-bit signed mono PCM buffer to include with the messages.
   ///   - onToken: A callback invoked whenever a token is generated.
   /// - Returns: A ``CompletedChatTurn``.
   public func complete(
@@ -986,7 +986,7 @@ extension CactusModel {
   ///   - options: The ``Completion/Options``.
   ///   - maxBufferSize: The maximum buffer size to store the completion.
   ///   - functions: A list of ``FunctionDefinition`` instances.
-  ///   - pcmBuffer: An optional PCM buffer to include with the messages.
+  ///   - pcmBuffer: An optional 16khz 16-bit signed mono PCM buffer to include with the messages.
   ///   - onToken: A callback invoked whenever a token is generated.
   /// - Returns: A ``CompletedChatTurn``.
   public func complete(
@@ -1157,12 +1157,14 @@ extension CactusModel {
   ///   - options: The ``Completion/Options``.
   ///   - maxBufferSize: The maximum buffer size for the response.
   ///   - functions: A list of ``FunctionDefinition`` instances.
+  ///   - pcmBuffer: An optional 16khz 16-bit signed mono PCM buffer to include with the messages.
   /// - Returns: A ``PrefillResult``.
   public func prefill(
     messages: [Message],
     options: Completion.Options = Completion.Options(),
     maxBufferSize: Int? = nil,
-    functions: [FunctionDefinition] = []
+    functions: [FunctionDefinition] = [],
+    pcmBuffer: [UInt8]? = nil
   ) throws -> PrefillResult {
     let maxBufferSize = maxBufferSize ?? Self.defaultBufferSize
     guard maxBufferSize > 0 else {
@@ -1176,20 +1178,37 @@ extension CactusModel {
       : String(decoding: try ffiEncoder.encode(functions), as: UTF8.self)
 
     let ffiMessages = messages.map { FFIMessage(message: $0) }
+    let messagesJSON = String(decoding: try ffiEncoder.encode(ffiMessages), as: UTF8.self)
+    let optionsJSON = String(decoding: try ffiEncoder.encode(options), as: UTF8.self)
 
     let (result, responseData) = try withFFIBuffer(bufferSize: maxBufferSize) {
       buffer,
       responseBufferSize in
-      cactus_prefill(
-        self.rawModelPointer,
-        String(decoding: try ffiEncoder.encode(ffiMessages), as: UTF8.self),
-        buffer,
-        responseBufferSize,
-        String(decoding: try ffiEncoder.encode(options), as: UTF8.self),
-        functionsJSON,
-        nil,
-        0
-      )
+      if let pcmBuffer, !pcmBuffer.isEmpty {
+        pcmBuffer.withUnsafeBufferPointer { rawBuffer in
+          cactus_prefill(
+            self.rawModelPointer,
+            messagesJSON,
+            buffer,
+            responseBufferSize,
+            optionsJSON,
+            functionsJSON,
+            rawBuffer.baseAddress,
+            rawBuffer.count
+          )
+        }
+      } else {
+        cactus_prefill(
+          self.rawModelPointer,
+          messagesJSON,
+          buffer,
+          responseBufferSize,
+          optionsJSON,
+          functionsJSON,
+          nil,
+          0
+        )
+      }
     }
 
     guard result != -1 else {

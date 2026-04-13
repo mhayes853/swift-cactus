@@ -152,6 +152,31 @@
       )
     }
 
+    /// Pre-populates the KV cache with the provided messages and audio buffer without generating output tokens.
+    ///
+    /// - Parameters:
+    ///   - messages: The list of ``CactusModel/Message`` instances to prefill.
+    ///   - buffer: The PCM buffer to include with the messages.
+    ///   - options: The ``CactusModel/Completion/Options``.
+    ///   - maxBufferSize: The maximum buffer size for the response.
+    ///   - functions: A list of ``CactusModel/FunctionDefinition`` instances.
+    /// - Returns: A ``CactusModel/PrefillResult``.
+    public func prefill(
+      messages: [CactusModel.Message],
+      buffer: sending AVAudioPCMBuffer,
+      options: CactusModel.Completion.Options = CactusModel.Completion.Options(),
+      maxBufferSize: Int? = nil,
+      functions: [CactusModel.FunctionDefinition] = []
+    ) async throws -> CactusModel.PrefillResult {
+      try await self.prefill(
+        messages: messages,
+        options: options,
+        maxBufferSize: maxBufferSize,
+        functions: functions,
+        pcmBuffer: try buffer.cactusPCMBytes()
+      )
+    }
+
     /// Runs speaker diarization on the specified PCM buffer.
     ///
     /// - Parameters:

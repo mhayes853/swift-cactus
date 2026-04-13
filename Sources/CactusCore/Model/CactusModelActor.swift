@@ -648,19 +648,22 @@ extension CactusModelActor {
   ///   - options: The ``CactusModel/Completion/Options``.
   ///   - maxBufferSize: The maximum buffer size for the response.
   ///   - functions: A list of ``CactusModel/FunctionDefinition`` instances.
+  ///   - pcmBuffer: An optional PCM buffer to include with the messages.
   /// - Returns: A ``CactusModel/PrefillResult``.
   public func prefill(
     messages: [CactusModel.Message],
     options: CactusModel.Completion.Options = CactusModel.Completion.Options(),
     maxBufferSize: Int? = nil,
-    functions: [CactusModel.FunctionDefinition] = []
+    functions: [CactusModel.FunctionDefinition] = [],
+    pcmBuffer: [UInt8]? = nil
   ) async throws -> CactusModel.PrefillResult {
     try Task.checkCancellation()
     return try self.model.prefill(
       messages: messages,
       options: options,
       maxBufferSize: maxBufferSize,
-      functions: functions
+      functions: functions,
+      pcmBuffer: pcmBuffer
     )
   }
 }
