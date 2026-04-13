@@ -26,7 +26,7 @@ struct `CactusSTTSession tests` {
 
   @Test
   func `File Stream Snapshot`() async throws {
-    let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
+    let modelURL = try await CactusModel.testModelURL(request: .parakeetCtc_0_6b())
     let session = try CactusSTTSession(from: modelURL)
     let request = CactusTranscription.Request(prompt: audioPrompt, content: .audio(testAudioURL))
 
@@ -53,7 +53,7 @@ struct `CactusSTTSession tests` {
   @Test
   func `PCM Buffer Transcription Snapshot`() async throws {
     #if canImport(AVFoundation)
-      let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
+      let modelURL = try await CactusModel.testModelURL(request: .parakeetCtc_0_6b())
       let session = try CactusSTTSession(from: modelURL)
       let pcmBuffer = try testAudioPCMBuffer()
       let content = try CactusTranscription.Request.Content.pcm(pcmBuffer)
@@ -77,7 +77,7 @@ struct `CactusSTTSession tests` {
   @Test
   func `File Transcription With Timestamps Snapshot`() async throws {
     #if canImport(AVFoundation)
-      let modelURL = try await CactusModel.testModelURL(request: .whisperSmall())
+      let modelURL = try await CactusModel.testModelURL(request: .parakeetCtc_0_6b())
       let session = try CactusSTTSession(from: modelURL)
       let pcmBuffer = try testAudioPCMBuffer()
       let content = try CactusTranscription.Request.Content.pcm(pcmBuffer)

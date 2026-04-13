@@ -138,6 +138,7 @@ function build_android_variant() {
 
     sed -i.bak 's/set(CMAKE_CXX_STANDARD *17)/set(CMAKE_CXX_STANDARD 20)/' "$ANDROID_DIR/CMakeLists.txt"
     sed -i.bak 's/target_link_libraries(cactus \${LOG_LIB} android)/target_link_libraries(cactus ${LOG_LIB} android c++_shared)/' "$ANDROID_DIR/CMakeLists.txt"
+    sed -i.bak 's|file(GLOB MODEL_SOURCES "${SOURCE_DIR}/models/\*.cpp")|file(GLOB MODEL_SOURCES "${SOURCE_DIR}/models/*.cpp" "${SOURCE_DIR}/models/gemma4/*.cpp")|' "$ANDROID_DIR/CMakeLists.txt"
 
     "$ANDROID_DIR/build.sh"
 

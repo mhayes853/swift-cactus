@@ -1,20 +1,20 @@
 {
-  "confidence" : 0.588,
-  "decodeTokens" : 348,
-  "prefillTokens" : 24,
+  "confidence" : 1,
+  "decodeTokens" : 196,
+  "prefillTokens" : 36,
   "segments" : [
     {
       "endSeconds" : 45.822,
       "startSeconds" : 5.122,
-      "transcript" : "l l I l I i i dn'tn-dn-dn–mst–w<|ml|><|en|>ligth – A– A– A— A— B— E – C- O- V — S- O– V – S... M– A– A— A— C- O – E… F- E... V – S… T- O– V– S... A— A— C — O- V – C… E… F– E..."
+      "transcript" : "the power of a god cannot be overcome zanza this is the providence of the world even gods are merely beings restricted to the limited power determined by proph that power although great is not unlimited that voice alvis how dare you disobey me i am manada i was here at the beginning and i will proclaim the end but that that's impossible shulk it is time for you to choose"
     },
     {
       "endSeconds" : 98.974,
       "startSeconds" : 46.338,
-      "transcript" : "<|sv|><|zh|><|fr|><|ko|><|zh|><|no|>oi—not-dn-dn—script–crisis–stive – ssistive – srsvxh.exeva—lfvt-djnzp — SvxHUVT—sYrEcAwSWRVLtDHF – srsvhJJGN — SXCFH—L-vdHlTsB – ssSxRV—WrT hEwSbDhJN — SXCFH-LvGdHK – sUvLmMVsR— ssxSWrT HlBhEY, hOmCJSbDH — SXCFH-LVGnNNNNSWM— — SvhJKhEwSdHsUvD HLBHCVT-sF hEWRT — GNNJJMXKhEVSY — LGHLH – JGNCvDHF"
+      "transcript" : "does this world belong to zanza or does it belong to you that is something i decided long ago he we use our power to fell a god and then ease our destiny it' fading the memory of a god's existence born from the chaos of creation it is"
     }
   ],
-  "streamedText" : " l l I l I i i dn'tn-dn-dn–mst–w<|ml|><|en|>ligth – A– A– A— A— B— E – C- O- V — S- O– V – S... M– A– A— A— C- O – E… F- E... V – S… T- O– V– S... A— A— C — O- V – C… E… F– E...<|sv|><|zh|><|fr|><|ko|><|zh|><|no|>oi—not-dn-dn—script–crisis–stive – ssistive – srsvxh.exeva—lfvt-djnzp — SvxHUVT—sYrEcAwSWRVLtDHF – srsvhJJGN — SXCFH—L-vdHlTsB – ssSxRV—WrT hEwSbDhJN — SXCFH-LvGdHK – sUvLmMVsR— ssxSWrT HlBhEY, hOmCJSbDH — SXCFH-LVGnNNNNSWM— — SvhJKhEwSdHsUvD HLBHCVT-sF hEWRT — GNNJJMXKhEVSY — LGHLH – JGNCvDHF",
-  "totalTokens" : 372,
-  "transcript" : "l l I l I i i dn'tn-dn-dn–mst–w<|ml|><|en|>ligth – A– A– A— A— B— E – C- O- V — S- O– V – S... M– A– A— A— C- O – E… F- E... V – S… T- O– V– S... A— A— C — O- V – C… E… F– E...<|sv|><|zh|><|fr|><|ko|><|zh|><|no|>oi—not-dn-dn—script–crisis–stive – ssistive – srsvxh.exeva—lfvt-djnzp — SvxHUVT—sYrEcAwSWRVLtDHF – srsvhJJGN — SXCFH—L-vdHlTsB – ssSxRV—WrT hEwSbDhJN — SXCFH-LvGdHK – sUvLmMVsR— ssxSWrT HlBhEY, hOmCJSbDH — SXCFH-LVGnNNNNSWM— — SvhJKhEwSdHsUvD HLBHCVT-sF hEWRT — GNNJJMXKhEVSY — LGHLH – JGNCvDHF"
+  "streamedText" : " the power of a god cannot be overcome zanza this is the providence of the world even gods are merely beings restricted to the limited power determined by proph that power although great is not unlimited that voice alvis how dare you disobey me i am manada i was here at the beginning and i will proclaim the end but that that's impossible shulk it is time for you to choose does this world belong to zanza or does it belong to you that is something i decided long ago he we use our power to fell a god and then ease our destiny it' fading the memory of a god's existence born from the chaos of creation it is",
+  "totalTokens" : 232,
+  "transcript" : "the power of a god cannot be overcome zanza this is the providence of the world even gods are merely beings restricted to the limited power determined by proph that power although great is not unlimited that voice alvis how dare you disobey me i am manada i was here at the beginning and i will proclaim the end but that that's impossible shulk it is time for you to choose does this world belong to zanza or does it belong to you that is something i decided long ago he we use our power to fell a god and then ease our destiny it' fading the memory of a god's existence born from the chaos of creation it is"
 }

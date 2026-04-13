@@ -737,7 +737,7 @@ final class CactusModelGenerationSnapshotTests: XCTestCase {
 
   func testImageAnalysis() async throws {
     let url = try await CactusModel.testModelURL(
-      request: .lfm2Vl_450m()
+      request: .gemma4_E2BIt()
     )
     let model = try CactusModel(from: url)
 

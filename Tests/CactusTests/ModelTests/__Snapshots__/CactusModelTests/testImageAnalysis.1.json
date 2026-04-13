@@ -1,16 +1,17 @@
 {
   "cloud_handoff" : false,
-  "confidence" : 0.8007,
-  "decode_tokens" : 47,
-  "decode_tps" : 110.41,
+  "confidence" : 0.9591,
+  "decode_tokens" : 512,
+  "decode_tps" : 15.94,
   "function_calls" : [
 
   ],
-  "prefill_tokens" : 314,
-  "prefill_tps" : 315.97,
-  "ram_usage_mb" : 1011.36,
-  "response" : "The guy in the image is likely to be a student, as he's wearing a school uniform and has a laptop on his lap. He appears to be excited about his exams, possibly looking forward to the day of his final exam.",
-  "time_to_first_token_ms" : 993.75,
-  "total_time_ms" : 1410.37,
-  "total_tokens" : 361
+  "prefill_tokens" : 277,
+  "prefill_tps" : 31.43,
+  "ram_usage_mb" : 636.1,
+  "response" : "<|channel>thought\nHere's a thinking process to analyze the request and generate the description:\n\n1.  **Analyze the Request:** The user provided an image (or implied an image based on a description) and expects a response. Since the input is just an image, I need to describe it accurately or provide relevant information about it.\n\n2.  **Examine the Image (Visual Analysis):**\n    *   **Subject:** A young adult male, likely in his 20s or 30s.\n    *   **Style\/Mood:** Professional, friendly, approachable, bright (due to lighting\/editing).\n    *   **Facial Features & Expression:** Smiling genuinely (showing teeth\/full smile), direct eye contact with the camera. Pleasant expression.\n    *   **Hair:** Light brown\/auburn, styled somewhat tousled but neat on the sides and volume on top—medium length. Curly texture is visible but controlled.\n    *   **Attire:** Button-down shirt (looks like denim or chambray texture perhaps) or a soft cotton shirt in a light tone under the black and white conversion suggests softness rather than harshness in the shading of skin tones. The focus is heavily rendered detail on his face and hands\/arms are prominent due to cropping, though only upper body is shown clearly (shoulders down).\n    *   **Pose:** Looking directly at the camera, leaning slightly forward or engaged.\n    *   **Accessories\/Props:** He is holding something dark (a book\/tablet\/binder) with both hands near his chest level.\n    *   **Style:** Clean, modern presentation (high-key lighting often used in professional portraits).\n\n3.  **Analyze the Provided Text Snippet (The provided text seems incomplete: \"...\" \/ \"ㅈ\" or similar characters at the end.)\n\n4.  **Determine the Goal:** Since no specific question was asked, the standard response for an image prompt is to provide a detailed description of what is visible in a portrait format.\n\n5.  **Drafting - Focusing on Key Elements (Structuring the description):**\n    *   Start with a general overview (who\/what kind of photo).\n    *   Detail appearance and expression.\n    *   Detail clothing\/setting if relevant (though background is white).\n\n6.  **Refining the Description (Self-Correction during drafting):** Ensure I mention that it's a black and white or heavily desaturated look,",
+  "thinking" : "thought\nHere's a thinking process to analyze the request and generate the description:\n\n1.  **Analyze the Request:** The user provided an image (or implied an image based on a description) and expects a response. Since the input is just an image, I need to describe it accurately or provide relevant information about it.\n\n2.  **Examine the Image (Visual Analysis):**\n    *   **Subject:** A young adult male, likely in his 20s or 30s.\n    *   **Style\/Mood:** Professional, friendly, approachable, bright (due to lighting\/editing).\n    *   **Facial Features & Expression:** Smiling genuinely (showing teeth\/full smile), direct eye contact with the camera. Pleasant expression.\n    *   **Hair:** Light brown\/auburn, styled somewhat tousled but neat on the sides and volume on top—medium length. Curly texture is visible but controlled.\n    *   **Attire:** Button-down shirt (looks like denim or chambray texture perhaps) or a soft cotton shirt in a light tone under the black and white conversion suggests softness rather than harshness in the shading of skin tones. The focus is heavily rendered detail on his face and hands\/arms are prominent due to cropping, though only upper body is shown clearly (shoulders down).\n    *   **Pose:** Looking directly at the camera, leaning slightly forward or engaged.\n    *   **Accessories\/Props:** He is holding something dark (a book\/tablet\/binder) with both hands near his chest level.\n    *   **Style:** Clean, modern presentation (high-key lighting often used in professional portraits).\n\n3.  **Analyze the Provided Text Snippet (The provided text seems incomplete: \"...\" \/ \"ㅈ\" or similar characters at the end.)\n\n4.  **Determine the Goal:** Since no specific question was asked, the standard response for an image prompt is to provide a detailed description of what is visible in a portrait format.\n\n5.  **Drafting - Focusing on Key Elements (Structuring the description):**\n    *   Start with a general overview (who\/what kind of photo).\n    *   Detail appearance and expression.\n    *   Detail clothing\/setting if relevant (though background is white).\n\n6.  **Refining the Description (Self-Correction during drafting):** Ensure I mention that it's a black and white or heavily desaturated look,",
+  "time_to_first_token_ms" : 8813.58,
+  "total_time_ms" : 40871.75,
+  "total_tokens" : 789
 }
