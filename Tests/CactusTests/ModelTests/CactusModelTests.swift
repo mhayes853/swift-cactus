@@ -564,7 +564,7 @@ final class CactusModelGenerationSnapshotTests: XCTestCase {
       let messages: [CactusModel.Message]
     }
 
-    let request = CactusModel.PlatformDownloadRequest.qwen3_1_7b()
+    let request = CactusModel.PlatformDownloadRequest.gemma4_E2BIt()
     let modelURL = try await CactusModel.testModelURL(request: request)
     let model = try CactusModel(from: modelURL)
     let completed = try model.complete(

@@ -2,27 +2,27 @@
   "slug" : "whisper-small",
   "transcription" : {
     "cloud_handoff" : true,
-    "confidence" : 0.5972,
-    "decode_tokens" : 247,
-    "decode_tps" : 49.57,
+    "confidence" : 0.8047,
+    "decode_tokens" : 512,
+    "decode_tps" : 57.23,
     "prefill_tokens" : 24,
-    "prefill_tps" : 10.7,
-    "ram_usage_mb" : 385.36,
-    "response" : "<|ca|><|zh|><|zh|><|zh|> Ça va à la fin de l'aïs. Aïs, aïs, un pät et à la suite. it is the the the one that you know know not not not north north northern northern northern northern eastern southern north eastern western southern eastern northern north western southern eastern western southern northern eastern western western northern northern southern North northern North region regions regions regions region regions region regions region regions regional north and and N The The The The The The This is a re re re re read read read Re re That Is Re Re Re Re Read That Is Re Le It That Is Re Re Le It That Res Res Res Res Res Res Res Res Res Rest Resres res res res resres res res Ri Ri Ri Ri Ri R Rem Ri Rei R Rem RI R Rem RI RE RI RE R R RE REM Ri RA Rei Rei Restres RER Rem Rem Mi Re Rei RE R REM REM Rio R REM R Rei Restresulous<|ms|><|zh|>avesaveviveviveveaverreerreerreerroofoorr e r s s t i n c e m o w a l y u I W A E S M U V V v v d h h o w",
+    "prefill_tps" : 10.25,
+    "ram_usage_mb" : 447.33,
+    "response" : "l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY YY Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y y y Y y Y y yy yy y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year years years year year year year year year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year yearsimest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-i-mest-mest-i-mest-i-m e m e m e m",
     "segments" : [
       {
         "end" : 45.822,
         "start" : 5.122,
-        "text" : "<|ca|><|zh|><|zh|><|zh|> Ça va à la fin de l'aïs. Aïs, aïs, un pät et à la suite."
+        "text" : "l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I I IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY YY Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y Y y y Y y Y y yy yy y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y y you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you you year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year years years year year year year year year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year Year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year year years"
       },
       {
-        "end" : 98.974,
+        "end" : 98.814,
         "start" : 46.338,
-        "text" : "it is the the the one that you know know not not not north north northern northern northern northern eastern southern north eastern western southern eastern northern north western southern eastern western southern northern eastern western western northern northern southern North northern North region regions regions regions region regions region regions region regions regional north and and N The The The The The The This is a re re re re read read read Re re That Is Re Re Re Re Read That Is Re Le It That Is Re Re Le It That Res Res Res Res Res Res Res Res Res Rest Resres res res res resres res res Ri Ri Ri Ri Ri R Rem Ri Rei R Rem RI R Rem RI RE RI RE R R RE REM Ri RA Rei Rei Restres RER Rem Rem Mi Re Rei RE R REM REM Rio R REM R Rei Restresulous<|ms|><|zh|>avesaveviveviveveaverreerreerreerroofoorr e r s s t i n c e m o w a l y u I W A E S M U V V v v d h h o w"
+        "text" : "imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-imest-i-mest-mest-i-mest-i-m e m e m e m"
       }
     ],
-    "time_to_first_token_ms" : 2242.75,
-    "total_time_ms" : 7205.43,
-    "total_tokens" : 271
+    "time_to_first_token_ms" : 2340.7299999999996,
+    "total_time_ms" : 11269.03,
+    "total_tokens" : 536
   }
 }

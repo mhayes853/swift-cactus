@@ -1,19 +1,20 @@
 {
   "completion" : {
     "cloud_handoff" : false,
-    "confidence" : 0.9592,
-    "decode_tokens" : 31,
-    "decode_tps" : 36.53,
+    "confidence" : 0.971,
+    "decode_tokens" : 256,
+    "decode_tps" : 23.13,
     "function_calls" : [
 
     ],
-    "prefill_tokens" : 28,
-    "prefill_tps" : 129.36,
-    "ram_usage_mb" : 457.05,
-    "response" : "It seems like you're asking for help, but the message is empty. Could you please provide more details or clarify what you need assistance with?",
-    "time_to_first_token_ms" : 216.46,
-    "total_time_ms" : 1037.62,
-    "total_tokens" : 59
+    "prefill_tokens" : 36,
+    "prefill_tps" : 199.27,
+    "ram_usage_mb" : 426.93,
+    "response" : "<|channel>thought\nHere's a thinking process that leads to the suggested response:\n\n1.  **Analyze the Request:** The user is asking a profound, quintessential philosophical question: \"What is the meaning of life?\"\n2.  **Adopt the Persona:** The instruction is to adopt the role of a \"philosopher.\" This requires a tone that is reflective, deep, structured, nuanced, and open-ended rather than dogmatic.\n3.  **Deconstruct the Question:** What *is* the \"meaning of life\"? This is not a question with a single answer. A good philosophical answer must explore the *nature* of the question itself.\n4.  **Determine the Philosophical Approach:** Since there is no single, universally accepted answer, the best approach is to present the major historical and philosophical currents that have attempted to answer this question.\n5.  **Identify Key Themes\/Schools of Thought:**\n    *   *Theistic\/Spiritual:* Meaning derived from a transcendent source (God, universal purpose, spirit).\n    *   *Nihilistic\/Absurdist:* Meaninglessness (the universe is indifferent, or meaning is an illusion).\n    *   *Existentialism:* Meaning is *created* by the",
+    "thinking" : "thought\nHere's a thinking process that leads to the suggested response:\n\n1.  **Analyze the Request:** The user is asking a profound, quintessential philosophical question: \"What is the meaning of life?\"\n2.  **Adopt the Persona:** The instruction is to adopt the role of a \"philosopher.\" This requires a tone that is reflective, deep, structured, nuanced, and open-ended rather than dogmatic.\n3.  **Deconstruct the Question:** What *is* the \"meaning of life\"? This is not a question with a single answer. A good philosophical answer must explore the *nature* of the question itself.\n4.  **Determine the Philosophical Approach:** Since there is no single, universally accepted answer, the best approach is to present the major historical and philosophical currents that have attempted to answer this question.\n5.  **Identify Key Themes\/Schools of Thought:**\n    *   *Theistic\/Spiritual:* Meaning derived from a transcendent source (God, universal purpose, spirit).\n    *   *Nihilistic\/Absurdist:* Meaninglessness (the universe is indifferent, or meaning is an illusion).\n    *   *Existentialism:* Meaning is *created* by the",
+    "time_to_first_token_ms" : 180.66,
+    "total_time_ms" : 11204.51,
+    "total_tokens" : 292
   },
   "messages" : [
     {
@@ -25,9 +26,9 @@
       "role" : "user"
     },
     {
-      "content" : "<\/think>\n\nIt seems like you're asking for help, but the message is empty. Could you please provide more details or clarify what you need assistance with?",
+      "content" : "<think>\nthought\nHere's a thinking process that leads to the suggested response:\n\n1.  **Analyze the Request:** The user is asking a profound, quintessential philosophical question: \"What is the meaning of life?\"\n2.  **Adopt the Persona:** The instruction is to adopt the role of a \"philosopher.\" This requires a tone that is reflective, deep, structured, nuanced, and open-ended rather than dogmatic.\n3.  **Deconstruct the Question:** What *is* the \"meaning of life\"? This is not a question with a single answer. A good philosophical answer must explore the *nature* of the question itself.\n4.  **Determine the Philosophical Approach:** Since there is no single, universally accepted answer, the best approach is to present the major historical and philosophical currents that have attempted to answer this question.\n5.  **Identify Key Themes\/Schools of Thought:**\n    *   *Theistic\/Spiritual:* Meaning derived from a transcendent source (God, universal purpose, spirit).\n    *   *Nihilistic\/Absurdist:* Meaninglessness (the universe is indifferent, or meaning is an illusion).\n    *   *Existentialism:* Meaning is *created* by the\n<\/think>\n\n<|channel>thought\nHere's a thinking process that leads to the suggested response:\n\n1.  **Analyze the Request:** The user is asking a profound, quintessential philosophical question: \"What is the meaning of life?\"\n2.  **Adopt the Persona:** The instruction is to adopt the role of a \"philosopher.\" This requires a tone that is reflective, deep, structured, nuanced, and open-ended rather than dogmatic.\n3.  **Deconstruct the Question:** What *is* the \"meaning of life\"? This is not a question with a single answer. A good philosophical answer must explore the *nature* of the question itself.\n4.  **Determine the Philosophical Approach:** Since there is no single, universally accepted answer, the best approach is to present the major historical and philosophical currents that have attempted to answer this question.\n5.  **Identify Key Themes\/Schools of Thought:**\n    *   *Theistic\/Spiritual:* Meaning derived from a transcendent source (God, universal purpose, spirit).\n    *   *Nihilistic\/Absurdist:* Meaninglessness (the universe is indifferent, or meaning is an illusion).\n    *   *Existentialism:* Meaning is *created* by the",
       "role" : "assistant"
     }
   ],
-  "slug" : "qwen3-1.7b"
+  "slug" : "gemma-4-e2b-it"
 }

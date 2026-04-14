@@ -716,11 +716,12 @@ extension CactusModelActor {
   /// - Returns: A speaker embedding vector.
   public func speakerEmbeddings(
     for audio: URL,
+    maskWeights: [Float]? = nil,
     options: CactusModel.SpeakerEmbeddingsOptions? = nil,
     maxBufferSize: Int? = nil
   ) async throws -> [Float] {
     try Task.checkCancellation()
-    return try self.model.speakerEmbeddings(for: audio, options: options, maxBufferSize: maxBufferSize)
+    return try self.model.speakerEmbeddings(for: audio, maskWeights: maskWeights, options: options, maxBufferSize: maxBufferSize)
   }
 
   /// Extracts speaker embeddings from the specified PCM buffer.
@@ -732,11 +733,50 @@ extension CactusModelActor {
   /// - Returns: A speaker embedding vector.
   public func speakerEmbeddings(
     pcmBuffer: [UInt8],
+    maskWeights: [Float]? = nil,
     options: CactusModel.SpeakerEmbeddingsOptions? = nil,
     maxBufferSize: Int? = nil
   ) async throws -> [Float] {
     try Task.checkCancellation()
-    return try self.model.speakerEmbeddings(pcmBuffer: pcmBuffer, options: options, maxBufferSize: maxBufferSize)
+    return try self.model.speakerEmbeddings(pcmBuffer: pcmBuffer, maskWeights: maskWeights, options: options, maxBufferSize: maxBufferSize)
+  }
+
+  /// Extracts speaker embeddings from the specified audio file and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - audio: The audio file to analyze.
+  ///   - maskWeights: Optional per-frame mask weights for weighted embedding extraction.
+  ///   - buffer: A `MutableSpan` buffer.
+  ///   - options: The ``CactusModel/SpeakerEmbeddingsOptions``.
+  /// - Returns: The number of embedding dimensions written to the buffer.
+  @discardableResult
+  public func speakerEmbeddings(
+    for audio: URL,
+    maskWeights: [Float]? = nil,
+    buffer: inout MutableSpan<Float>,
+    options: CactusModel.SpeakerEmbeddingsOptions? = nil
+  ) async throws -> Int {
+    try Task.checkCancellation()
+    return try self.model.speakerEmbeddings(for: audio, maskWeights: maskWeights, buffer: &buffer, options: options)
+  }
+
+  /// Extracts speaker embeddings from the specified PCM buffer and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - pcmBuffer: The PCM byte buffer to analyze in 16 kHz mono signed 16-bit format.
+  ///   - maskWeights: Optional per-frame mask weights for weighted embedding extraction.
+  ///   - buffer: A `MutableSpan` buffer.
+  ///   - options: The ``CactusModel/SpeakerEmbeddingsOptions``.
+  /// - Returns: The number of embedding dimensions written to the buffer.
+  @discardableResult
+  public func speakerEmbeddings(
+    pcmBuffer: [UInt8],
+    maskWeights: [Float]? = nil,
+    buffer: inout MutableSpan<Float>,
+    options: CactusModel.SpeakerEmbeddingsOptions? = nil
+  ) async throws -> Int {
+    try Task.checkCancellation()
+    return try self.model.speakerEmbeddings(pcmBuffer: pcmBuffer, maskWeights: maskWeights, buffer: &buffer, options: options)
   }
 }
 

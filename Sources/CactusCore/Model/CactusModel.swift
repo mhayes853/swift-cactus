@@ -770,38 +770,139 @@ extension CactusModel {
   ///
   /// - Parameters:
   ///   - audio: The audio file to analyze.
+  ///   - maskWeights: Optional per-frame mask weights for weighted embedding extraction.
   ///   - options: The ``SpeakerEmbeddingsOptions``.
   ///   - maxBufferSize: The maximum buffer size for the response.
   /// - Returns: A speaker embedding vector.
   public func speakerEmbeddings(
     for audio: URL,
+    maskWeights: [Float]? = nil,
     options: SpeakerEmbeddingsOptions? = nil,
     maxBufferSize: Int? = nil
   ) throws -> [Float] {
-    try self.speakerEmbeddings(for: .audio(audio), options: options, maxBufferSize: maxBufferSize)
+    try self.speakerEmbeddings(
+      for: .audio(audio),
+      maskWeights: maskWeights,
+      options: options,
+      maxBufferSize: maxBufferSize
+    )
   }
 
   /// Extracts speaker embeddings from the specified PCM buffer.
   ///
   /// - Parameters:
   ///   - pcmBuffer: The PCM byte buffer to analyze in 16 kHz mono signed 16-bit format.
+  ///   - maskWeights: Optional per-frame mask weights for weighted embedding extraction.
   ///   - options: The ``SpeakerEmbeddingsOptions``.
   ///   - maxBufferSize: The maximum buffer size for the response.
   /// - Returns: A speaker embedding vector.
   public func speakerEmbeddings(
     pcmBuffer: [UInt8],
+    maskWeights: [Float]? = nil,
     options: SpeakerEmbeddingsOptions? = nil,
     maxBufferSize: Int? = nil
   ) throws -> [Float] {
     try self.speakerEmbeddings(
       for: .buffer(pcmBuffer),
+      maskWeights: maskWeights,
       options: options,
       maxBufferSize: maxBufferSize
     )
   }
 
+  /// Extracts speaker embeddings from the specified audio file and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - audio: The audio file to analyze.
+  ///   - maskWeights: Optional per-frame mask weights for weighted embedding extraction.
+  ///   - buffer: A `MutableSpan` buffer.
+  ///   - options: The ``SpeakerEmbeddingsOptions``.
+  /// - Returns: The number of embedding dimensions written to the buffer.
+  @discardableResult
+  public func speakerEmbeddings(
+    for audio: URL,
+    maskWeights: [Float]? = nil,
+    buffer: inout MutableSpan<Float>,
+    options: SpeakerEmbeddingsOptions? = nil
+  ) throws -> Int {
+    try self.speakerEmbeddings(
+      for: .audio(audio),
+      maskWeights: maskWeights,
+      buffer: &buffer,
+      options: options
+    )
+  }
+
+  /// Extracts speaker embeddings from the specified audio file and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - audio: The audio file to analyze.
+  ///   - maskWeights: Optional per-frame mask weights for weighted embedding extraction.
+  ///   - buffer: An `UnsafeMutableBufferPointer` buffer.
+  ///   - options: The ``SpeakerEmbeddingsOptions``.
+  /// - Returns: The number of embedding dimensions written to the buffer.
+  public func speakerEmbeddings(
+    for audio: URL,
+    maskWeights: [Float]? = nil,
+    buffer: UnsafeMutableBufferPointer<Float>,
+    options: SpeakerEmbeddingsOptions? = nil
+  ) throws -> Int {
+    try self.speakerEmbeddings(
+      for: .audio(audio),
+      maskWeights: maskWeights,
+      buffer: buffer,
+      options: options
+    )
+  }
+
+  /// Extracts speaker embeddings from the specified PCM buffer and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - pcmBuffer: The PCM byte buffer to analyze in 16 kHz mono signed 16-bit format.
+  ///   - maskWeights: Optional per-frame mask weights for weighted embedding extraction.
+  ///   - buffer: A `MutableSpan` buffer.
+  ///   - options: The ``SpeakerEmbeddingsOptions``.
+  /// - Returns: The number of embedding dimensions written to the buffer.
+  @discardableResult
+  public func speakerEmbeddings(
+    pcmBuffer: [UInt8],
+    maskWeights: [Float]? = nil,
+    buffer: inout MutableSpan<Float>,
+    options: SpeakerEmbeddingsOptions? = nil
+  ) throws -> Int {
+    try self.speakerEmbeddings(
+      for: .buffer(pcmBuffer),
+      maskWeights: maskWeights,
+      buffer: &buffer,
+      options: options
+    )
+  }
+
+  /// Extracts speaker embeddings from the specified PCM buffer and stores them in the specified buffer.
+  ///
+  /// - Parameters:
+  ///   - pcmBuffer: The PCM byte buffer to analyze in 16 kHz mono signed 16-bit format.
+  ///   - maskWeights: Optional per-frame mask weights for weighted embedding extraction.
+  ///   - buffer: An `UnsafeMutableBufferPointer` buffer.
+  ///   - options: The ``SpeakerEmbeddingsOptions``.
+  /// - Returns: The number of embedding dimensions written to the buffer.
+  public func speakerEmbeddings(
+    pcmBuffer: [UInt8],
+    maskWeights: [Float]? = nil,
+    buffer: UnsafeMutableBufferPointer<Float>,
+    options: SpeakerEmbeddingsOptions? = nil
+  ) throws -> Int {
+    try self.speakerEmbeddings(
+      for: .buffer(pcmBuffer),
+      maskWeights: maskWeights,
+      buffer: buffer,
+      options: options
+    )
+  }
+
   private func speakerEmbeddings(
     for request: SpeakerEmbeddingRequest,
+    maskWeights: [Float]?,
     options: SpeakerEmbeddingsOptions?,
     maxBufferSize: Int?
   ) throws -> [Float] {
@@ -817,25 +918,25 @@ extension CactusModel {
       responseBufferSize in
       switch request {
       case .audio(let audio):
-        cactus_embed_speaker(
-          self.rawModelPointer,
-          audio.nativePath,
-          responseBuffer,
-          responseBufferSize,
-          optionsJSON,
-          nil,
-          0
+        self.embedSpeaker(
+          audioPath: audio.nativePath,
+          pcmBuffer: nil,
+          pcmBufferSize: 0,
+          responseBuffer: responseBuffer,
+          responseBufferSize: responseBufferSize,
+          optionsJSON: optionsJSON,
+          maskWeights: maskWeights
         )
       case .buffer(let buffer):
         buffer.withUnsafeBufferPointer { rawBuffer in
-          cactus_embed_speaker(
-            self.rawModelPointer,
-            nil,
-            responseBuffer,
-            responseBufferSize,
-            optionsJSON,
-            rawBuffer.baseAddress,
-            rawBuffer.count
+          self.embedSpeaker(
+            audioPath: nil,
+            pcmBuffer: rawBuffer,
+            pcmBufferSize: rawBuffer.count,
+            responseBuffer: responseBuffer,
+            responseBufferSize: responseBufferSize,
+            optionsJSON: optionsJSON,
+            maskWeights: maskWeights
           )
         }
       }
@@ -857,6 +958,127 @@ extension CactusModel {
 
     let embeddingResult = try ffiDecoder.decode(SpeakerEmbeddingResult.self, from: responseData)
     return embeddingResult.embedding
+  }
+
+  @discardableResult
+  private func speakerEmbeddings(
+    for request: SpeakerEmbeddingRequest,
+    maskWeights: [Float]?,
+    buffer: inout MutableSpan<Float>,
+    options: SpeakerEmbeddingsOptions?
+  ) throws -> Int {
+    try buffer.withUnsafeMutableBufferPointer {
+      try self.speakerEmbeddings(
+        for: request,
+        maskWeights: maskWeights,
+        buffer: $0,
+        options: options
+      )
+    }
+  }
+
+  @discardableResult
+  private func speakerEmbeddings(
+    for request: SpeakerEmbeddingRequest,
+    maskWeights: [Float]?,
+    buffer: UnsafeMutableBufferPointer<Float>,
+    options: SpeakerEmbeddingsOptions?
+  ) throws -> Int {
+    let size = buffer.count
+    guard size > 0 else {
+      throw CactusModelError.speakerEmbeddingsBufferTooSmall
+    }
+
+    let optionsJSON = try options.map { try String(decoding: ffiEncoder.encode($0), as: UTF8.self) }
+
+    let (result, responseData) = try withFFIBuffer(bufferSize: Self.defaultBufferSize) {
+      responseBuffer,
+      responseBufferSize in
+      switch request {
+      case .audio(let audio):
+        self.embedSpeaker(
+          audioPath: audio.nativePath,
+          pcmBuffer: nil,
+          pcmBufferSize: 0,
+          responseBuffer: responseBuffer,
+          responseBufferSize: responseBufferSize,
+          optionsJSON: optionsJSON,
+          maskWeights: maskWeights
+        )
+      case .buffer(let buffer):
+        buffer.withUnsafeBufferPointer { rawBuffer in
+          self.embedSpeaker(
+            audioPath: nil,
+            pcmBuffer: rawBuffer,
+            pcmBufferSize: rawBuffer.count,
+            responseBuffer: responseBuffer,
+            responseBufferSize: responseBufferSize,
+            optionsJSON: optionsJSON,
+            maskWeights: maskWeights
+          )
+        }
+      }
+    }
+
+    guard result != -1 else {
+      let response = try? ffiDecoder.decode(
+        FFIErrorResponse.self,
+        from: responseData
+      )
+      if response?.error.contains(Self.bufferNotBigEnoughErrorMessage) == true {
+        throw CactusModelError.speakerEmbeddingsBufferTooSmall
+      }
+      if response?.error.localizedCaseInsensitiveContains("not a WeSpeaker") == true {
+        throw CactusModelError.speakerEmbeddingsNotSupported
+      }
+      throw CactusModelError.speakerEmbeddingsGeneration(message: response?.error)
+    }
+
+    let embeddingResult = try ffiDecoder.decode(SpeakerEmbeddingResult.self, from: responseData)
+    let embedding = embeddingResult.embedding
+    guard embedding.count <= size else {
+      throw CactusModelError.speakerEmbeddingsBufferTooSmall
+    }
+    for (index, value) in embedding.enumerated() {
+      buffer[index] = value
+    }
+    return embedding.count
+  }
+
+  private func embedSpeaker(
+    audioPath: UnsafePointer<CChar>?,
+    pcmBuffer: UnsafeBufferPointer<UInt8>?,
+    pcmBufferSize: Int,
+    responseBuffer: UnsafeMutablePointer<CChar>,
+    responseBufferSize: Int,
+    optionsJSON: String?,
+    maskWeights: [Float]?
+  ) -> Int32 {
+    maskWeights?
+      .withUnsafeBufferPointer { maskBuffer in
+        cactus_embed_speaker(
+          self.rawModelPointer,
+          audioPath,
+          responseBuffer,
+          responseBufferSize,
+          optionsJSON,
+          pcmBuffer?.baseAddress,
+          pcmBufferSize,
+          maskBuffer.baseAddress,
+          maskBuffer.count
+        )
+      }
+      ?? cactus_embed_speaker(
+        self.rawModelPointer,
+        audioPath,
+        responseBuffer,
+        responseBufferSize,
+        optionsJSON,
+        pcmBuffer?.baseAddress,
+        pcmBufferSize,
+        nil,
+        0
+      )
   }
 }
 
