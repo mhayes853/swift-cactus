@@ -1064,13 +1064,13 @@ extension CactusModel {
     }
     let completion = try ffiDecoder.decode(Completion.self, from: responseData)
     var completedMessages = messages
-    completedMessages.append(
-      .assistant(
-        completion.rawResponseForTranscript.count > streamedResponse.count
-          ? completion.rawResponseForTranscript
-          : streamedResponse
-      )
-    )
+
+    let replaceStart =
+      streamedResponse.matches(of: streamedResponseBoundaryRegex).last.map(\.range.upperBound)
+      ?? streamedResponse.startIndex
+    streamedResponse = streamedResponse[..<replaceStart] + completion.response
+
+    completedMessages.append(.assistant(streamedResponse))
     return CompletedChatTurn(completion: completion, messages: completedMessages)
   }
 
@@ -1094,6 +1094,10 @@ extension CactusModel {
     }
   }
 }
+
+private nonisolated(unsafe) let streamedResponseBoundaryRegex = try! Regex(
+  #"(</think>\n\n)|(<channel\|>)"#
+)
 
 // MARK: - Prefill
 
@@ -1387,16 +1391,6 @@ extension CactusModel.Completion.Options: Decodable {
     self.handoffWithImages = try container.decode(Bool.self, forKey: .handoffWithImages)
     self.enableThinkingIfSupported =
       try container.decodeIfPresent(Bool.self, forKey: .enableThinkingIfSupported) ?? true
-  }
-}
-
-extension CactusModel.Completion {
-  fileprivate var rawResponseForTranscript: String {
-    guard let thinking, !thinking.isEmpty else { return self.response }
-    if self.response.isEmpty {
-      return "<think>\n\(thinking)\n</think>"
-    }
-    return "<think>\n\(thinking)\n</think>\n\n\(self.response)"
   }
 }
 
