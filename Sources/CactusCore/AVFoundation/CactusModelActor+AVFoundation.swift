@@ -206,12 +206,14 @@
     /// - Returns: A speaker embedding vector.
     public func speakerEmbeddings(
       buffer: sending AVAudioPCMBuffer,
+      maskWeights: [Float]? = nil,
       options: CactusModel.SpeakerEmbeddingsOptions? = nil,
       maxBufferSize: Int? = nil
     ) async throws -> [Float] {
       try Task.checkCancellation()
       return try await self.speakerEmbeddings(
         pcmBuffer: try buffer.cactusPCMBytes(),
+        maskWeights: maskWeights,
         options: options,
         maxBufferSize: maxBufferSize
       )

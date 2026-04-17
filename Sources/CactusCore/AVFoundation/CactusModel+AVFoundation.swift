@@ -113,16 +113,19 @@
     ///
     /// - Parameters:
     ///   - buffer: The PCM buffer to analyze.
+    ///   - maskWeights: Optional per-frame mask weights for weighted embedding extraction.
     ///   - options: The ``CactusModel/SpeakerEmbeddingsOptions``.
     ///   - maxBufferSize: The maximum buffer size to store the result.
     /// - Returns: A speaker embedding vector.
     public func speakerEmbeddings(
       buffer: AVAudioPCMBuffer,
+      maskWeights: [Float]? = nil,
       options: CactusModel.SpeakerEmbeddingsOptions? = nil,
       maxBufferSize: Int? = nil
     ) throws -> [Float] {
       try self.speakerEmbeddings(
         pcmBuffer: try buffer.cactusPCMBytes(),
+        maskWeights: maskWeights,
         options: options,
         maxBufferSize: maxBufferSize
       )

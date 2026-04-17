@@ -31,32 +31,9 @@ fi
 echo "🧹 Removing any kernel_sme2.cpp files from cloned repo"
 find "$CACTUS_ROOT_DIR" -type f -name "kernel_sme2.cpp" -print -exec rm -f {} +
 
-function patch_cloned_repo_sources() {
-    local KERNEL_UTILS_PATH="$SOURCE_DIR/kernel/kernel_utils.h"
-
-    echo "🩹 Patching cloned Cactus sources"
-
-    python3 - "$KERNEL_UTILS_PATH" <<'PY'
-from pathlib import Path
-import sys
-
-path = Path(sys.argv[1])
-source = path.read_text()
-old = """#if defined(__APPLE__)\n    has = true;\n#elif defined(__ANDROID__)"""
-new = """#if defined(__APPLE__)\n    int ret = 0;\n    size_t size = sizeof(ret);\n    if (sysctlbyname(\"hw.optional.arm.FEAT_I8MM\", &ret, &size, nullptr, 0) == 0) {\n        has = ret == 1;\n    }\n#elif defined(__ANDROID__)"""
-
-if old not in source:
-    raise SystemExit(f"expected cpu_has_i8mm Apple branch not found in {path}")
-
-path.write_text(source.replace(old, new, 1))
-PY
-}
-
 CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release}
 ANDROID_DIR="$CACTUS_ROOT_DIR/android"
 SOURCE_DIR="$CACTUS_ROOT_DIR/cactus"
-
-patch_cloned_repo_sources
 
 OUTPUT_DIR="bin"
 
@@ -138,7 +115,6 @@ function build_android_variant() {
 
     sed -i.bak 's/set(CMAKE_CXX_STANDARD *17)/set(CMAKE_CXX_STANDARD 20)/' "$ANDROID_DIR/CMakeLists.txt"
     sed -i.bak 's/target_link_libraries(cactus \${LOG_LIB} android)/target_link_libraries(cactus ${LOG_LIB} android c++_shared)/' "$ANDROID_DIR/CMakeLists.txt"
-    sed -i.bak 's|file(GLOB MODEL_SOURCES "${SOURCE_DIR}/models/\*.cpp")|file(GLOB MODEL_SOURCES "${SOURCE_DIR}/models/*.cpp" "${SOURCE_DIR}/models/gemma4/*.cpp")|' "$ANDROID_DIR/CMakeLists.txt"
 
     "$ANDROID_DIR/build.sh"
 

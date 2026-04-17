@@ -3,16 +3,16 @@
     "cloud_handoff" : false,
     "confidence" : 0.9592,
     "decode_tokens" : 31,
-    "decode_tps" : 36.05,
+    "decode_tps" : 40.9,
     "function_calls" : [
 
     ],
     "prefill_tokens" : 28,
-    "prefill_tps" : 132.03,
-    "ram_usage_mb" : 722,
+    "prefill_tps" : 133.65,
+    "ram_usage_mb" : 218.36,
     "response" : "It seems like you're asking for help, but the message is empty. Could you please provide more details or clarify what you need assistance with?",
-    "time_to_first_token_ms" : 212.07,
-    "total_time_ms" : 1044.14,
+    "time_to_first_token_ms" : 209.51,
+    "total_time_ms" : 943.08,
     "total_tokens" : 59
   },
   "messages" : [

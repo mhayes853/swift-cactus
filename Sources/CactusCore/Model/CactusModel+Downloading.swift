@@ -125,8 +125,10 @@ extension CactusModel {
       public static let v1_7 = Self(rawValue: "v1.7")
       public static let v1_8 = Self(rawValue: "v1.8")
       public static let v1_9 = Self(rawValue: "v1.9")
+      public static let v1_10 = Self(rawValue: "v1.10")
       public static let v1_11 = Self(rawValue: "v1.11")
       public static let v1_12 = Self(rawValue: "v1.12")
+      public static let v1_13 = Self(rawValue: "v1.13")
 
       public let rawValue: String
 
@@ -240,7 +242,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func gemma4_E2BIt(
       quantization: Quantization = .int4,
-      version: Version = .v1_12
+      version: Version = .v1_13
     ) -> Self {
       Self(slug: "gemma-4-e2b-it", quantization: quantization, version: version)
     }
@@ -304,7 +306,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func lfm2_350m(
       quantization: Quantization = .int4,
-      version: Version = .v1_12
+      version: Version = .v1_11
     ) -> Self {
       Self(slug: "lfm2-350m", quantization: quantization, version: version)
     }
@@ -328,7 +330,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func lfm2_1_2b(
       quantization: Quantization = .int4,
-      version: Version = .v1_12
+      version: Version = .v1_10
     ) -> Self {
       Self(slug: "lfm2-1.2b", quantization: quantization, version: version)
     }
@@ -340,7 +342,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func lfm2_1_2bRag(
       quantization: Quantization = .int4,
-      version: Version = .v1_12
+      version: Version = .v1_10
     ) -> Self {
       Self(slug: "lfm2-1.2b-rag", quantization: quantization, version: version)
     }
@@ -352,7 +354,7 @@ extension CactusModel {
     ///   - version: The library version of the model.
     public static func lfm2_1_2bTool(
       quantization: Quantization = .int4,
-      version: Version = .v1_12
+      version: Version = .v1_10
     ) -> Self {
       Self(slug: "lfm2-1.2b-tool", quantization: quantization, version: version)
     }
