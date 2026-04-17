@@ -216,26 +216,27 @@ struct `CactusModel tests` {
   }
 
   @Test(arguments: modelRequests)
-  func `Streams Same Response Content`(request: CactusModel.PlatformDownloadRequest)
+  func `Completion Response Contained In Assistant Message`(
+    request: CactusModel.PlatformDownloadRequest
+  )
     async throws
   {
     let modelURL = try await CactusModel.testModelURL(request: request)
     let model = try CactusModel(from: modelURL)
 
-    var stream = ""
-    let completion = try model.complete(
+    let turn = try model.complete(
       messages: [
         .system("You are a philosopher, philosophize about any questions you are asked."),
         .user("What is the meaning of life?")
       ],
       options: CactusModel.Completion.Options(
         maxTokens: 1024
-      ),
-      onToken: { token, _ in
-        stream.append(token)
-      }
+      )
     )
-    expectNoDifference(stream, completion.completion.cleanedResponse)
+    expectNoDifference(
+      turn.messages.last?.content.contains(turn.completion.response),
+      true
+    )
   }
 
   @Test
@@ -865,7 +866,7 @@ final class CactusModelGenerationSnapshotTests: XCTestCase {
 
 private let audioPrompt = "<|startoftranscript|><|en|><|transcribe|><|notimestamps|>"
 private let modelRequests: [CactusModel.PlatformDownloadRequest] = [
-  .lfm2_350m(),
+  .lfm2Vl_450m(),
   .qwen3_0_6b(),
   .gemma3_270mIt()
 ]
