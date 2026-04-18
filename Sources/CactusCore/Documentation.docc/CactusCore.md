@@ -8,7 +8,7 @@ Cactus is a low-latency inference engine for mobile devices and wearables, allow
 
 This package supports all Apple platforms, Android, and Linux on ARM.
 
-**Supported Engine Version:** 1.12
+**Supported Engine Version:** 1.13
 
 ### Package Structure
 
@@ -549,7 +549,7 @@ This library uses it's own versioning scheme separate from the upstream engine (
 ```swift
 import Cactus
 
-// Prints the supported engine version ("1.10" at the time of writing this).
+// Prints the supported engine version ("1.13" at the time of writing this).
 print(Cactus.cactusEngineVersion)
 ```
 

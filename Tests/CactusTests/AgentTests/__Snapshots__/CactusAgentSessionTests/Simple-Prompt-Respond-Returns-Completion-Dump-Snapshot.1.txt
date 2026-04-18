@@ -4,8 +4,10 @@
       - metrics: Optional<CactusGenerationMetrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: C2BEC410-6CA9-4A91-980C-9A4863746069
+          - rawValue: DBF1F29B-AEB3-4F27-8EBB-1C73EFE1AFC1
         ▿ message: Message
+          ▿ audio: Optional<Array<URL>>
+            - some: 0 elements
           - content: "Say hello in one concise sentence."
           ▿ images: Optional<Array<URL>>
             - some: 0 elements
@@ -15,43 +17,44 @@
     ▿ CactusCompletionEntry
       ▿ metrics: Optional<CactusGenerationMetrics>
         ▿ some: CactusGenerationMetrics
-          - confidence: 0.8803
-          - decodeTokens: 116
-          - decodeTps: 108.64
+          - confidence: 0.9769
+          - decodeTokens: 512
+          - decodeTps: 63.14
           - didHandoffToCloud: false
-          ▿ durationToFirstToken: 0.01962 seconds
-            - _low: 19620000000000001
+          ▿ durationToFirstToken: 0.02725 seconds
+            - _low: 27250000000000000
             - _high: 0
           - prefillTokens: 9
-          - prefillTps: 458.69
-          - ramUsageMb: 187.28
-          ▿ totalDuration: 1.07813 seconds
-            - _low: 1078130000000000109
+          - prefillTps: 330.34
+          - ramUsageMb: 2017.22
+          ▿ totalDuration: 8.11992 seconds
+            - _low: 8119920000000000073
             - _high: 0
-          - totalTokens: 125
+          - totalTokens: 521
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 2FC149BA-10CB-42D2-92E5-F28D939BB73A
+          - rawValue: EF1D644E-FE3D-40AC-9867-D7EC69F3A035
         ▿ message: Message
-          - content: "The title of the first line appears to mean \"Hello there!\"\n\n\"Hello there!\" means the English speaker has received an unexpected greeting. It\'s clear that the user has just initiated communication with someone who may be experiencing difficulties or confusion.\n\nIt seems like a simple statement, but it can carry a lot about how people are navigating life and connecting with others without any special meaning or context provided by this initial utterance. It suggests that even if we don\'t know what we are going for, our capacity to connect is still being reached by those around us. \n"
+          - audio: Optional<Array<URL>>.none
+          - content: "<div>\nI am learning and am ready to answer your questions. I am learning to understand and respond to your questions. I am learning to help others.\n\nI am learning to be helpful and informative. I am learning to be helpful and harmless.\n\nI am learning to be a good and helpful presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.AMES\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence"
           - images: Optional<Array<URL>>.none
           - name: Optional<String>.none
           ▿ role: Role
             - rawValue: "assistant"
   ▿ metrics: CactusGenerationMetrics
-    - confidence: 0.8803
-    - decodeTokens: 116
-    - decodeTps: 108.64
+    - confidence: 0.9769
+    - decodeTokens: 512
+    - decodeTps: 63.14
     - didHandoffToCloud: false
-    ▿ durationToFirstToken: 0.01962 seconds
-      - _low: 19620000000000001
+    ▿ durationToFirstToken: 0.02725 seconds
+      - _low: 27250000000000000
       - _high: 0
     - prefillTokens: 9
-    - prefillTps: 458.69
-    - ramUsageMb: 187.28
-    ▿ totalDuration: 1.07813 seconds
-      - _low: 1078130000000000109
+    - prefillTps: 330.34
+    - ramUsageMb: 2017.22
+    ▿ totalDuration: 8.11992 seconds
+      - _low: 8119920000000000073
       - _high: 0
-    - totalTokens: 125
-  - output: "The title of the first line appears to mean \"Hello there!\"\n\n\"Hello there!\" means the English speaker has received an unexpected greeting. It\'s clear that the user has just initiated communication with someone who may be experiencing difficulties or confusion.\n\nIt seems like a simple statement, but it can carry a lot about how people are navigating life and connecting with others without any special meaning or context provided by this initial utterance. It suggests that even if we don\'t know what we are going for, our capacity to connect is still being reached by those around us. \n"
+    - totalTokens: 521
+  - output: "<div>\nI am learning and am ready to answer your questions. I am learning to understand and respond to your questions. I am learning to help others.\n\nI am learning to be helpful and informative. I am learning to be helpful and harmless.\n\nI am learning to be a good and helpful presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.AMES\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence in the world.\n\nI am learning to be a helpful and caring presence"
   - thinking: Optional<String>.none
