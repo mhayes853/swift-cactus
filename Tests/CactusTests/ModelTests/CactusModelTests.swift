@@ -868,7 +868,8 @@ private let audioPrompt = "<|startoftranscript|><|en|><|transcribe|><|notimestam
 private let modelRequests: [CactusModel.PlatformDownloadRequest] = [
   .lfm2Vl_450m(),
   .qwen3_0_6b(),
-  .gemma3_270mIt()
+  .gemma3_270mIt(),
+  .gemma4_E2BIt()
 ]
 private let testImageURL = Bundle.module.url(forResource: "joe", withExtension: "png")!
 private let testAudioURL = Bundle.module.url(forResource: "test", withExtension: "wav")!
