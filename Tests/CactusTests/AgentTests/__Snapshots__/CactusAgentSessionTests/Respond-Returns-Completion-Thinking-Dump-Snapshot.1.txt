@@ -4,8 +4,10 @@
       - metrics: Optional<CactusGenerationMetrics>.none
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: 41BA2D62-58EF-41F3-8144-F0BA79D4EBC1
+          - rawValue: 2C80F8B8-12B5-46A4-A60D-B7C6E57E10B6
         ▿ message: Message
+          ▿ audio: Optional<Array<URL>>
+            - some: 0 elements
           - content: "What is the meaning of life?"
           ▿ images: Optional<Array<URL>>
             - some: 0 elements
@@ -15,43 +17,44 @@
     ▿ CactusCompletionEntry
       ▿ metrics: Optional<CactusGenerationMetrics>
         ▿ some: CactusGenerationMetrics
-          - confidence: 0.9421
-          - decodeTokens: 256
-          - decodeTps: 33.7
+          - confidence: 0.9488
+          - decodeTokens: 15
+          - decodeTps: 24.47
           - didHandoffToCloud: false
-          ▿ durationToFirstToken: 0.22167 seconds
-            - _low: 221669999999999988
+          ▿ durationToFirstToken: 0.23459 seconds
+            - _low: 234590000000000003
             - _high: 0
-          - prefillTokens: 25
-          - prefillTps: 112.78
-          - ramUsageMb: 249.58
-          ▿ totalDuration: 7.78896 seconds
-            - _low: 7788960000000000036
+          - prefillTokens: 18
+          - prefillTps: 76.73
+          - ramUsageMb: 2018.38
+          ▿ totalDuration: 0.80669 seconds
+            - _low: 806690000000000055
             - _high: 0
-          - totalTokens: 281
+          - totalTokens: 33
       ▿ transcriptEntry: Element
         ▿ id: CactusGenerationID
-          - rawValue: F6C170D0-E9F0-4929-B444-16CA54FFC322
+          - rawValue: E1D5867A-2458-4CE3-85CB-B487F8D0A3BA
         ▿ message: Message
-          - content: "<|im_end|>\n\nOkay, the user is asking, \"What is the meaning of life?\" That\'s a profound question. I need to make sure my response is both accurate and helpful. Let me start by acknowledging that this is a deeply personal and philosophical question. \n\nFirst, I should consider different perspectives. There\'s the religious view, where many believe the purpose of life is to serve a higher power or achieve spiritual growth. Then there\'s the scientific approach, which might look at life as a process of evolution and survival. But the user might be looking for a more personal or existential answer.\n\nI should also think about the possibility that the user is seeking a more introspective or emotional response. Maybe they\'re feeling overwhelmed and need reassurance. It\'s important to balance the different viewpoints without making the answer too technical. \n\nI need to avoid being too one-sided. Maybe mention that there\'s no single answer, but encourage the user to reflect on their own values and experiences. Also, it\'s crucial to keep the tone empathetic and open, not to dismiss the question but to offer a range of perspectives.\n\nWait, but the user might be looking for a more concise answer. Let me structure it in a way that\'s both informative and not overwhelming. Start"
+          - audio: Optional<Array<URL>>.none
+          - content: "</think>\n\nSure! Let me know what you need help with. 😊"
           - images: Optional<Array<URL>>.none
           - name: Optional<String>.none
           ▿ role: Role
             - rawValue: "assistant"
   ▿ metrics: CactusGenerationMetrics
-    - confidence: 0.9421
-    - decodeTokens: 256
-    - decodeTps: 33.7
+    - confidence: 0.9488
+    - decodeTokens: 15
+    - decodeTps: 24.47
     - didHandoffToCloud: false
-    ▿ durationToFirstToken: 0.22167 seconds
-      - _low: 221669999999999988
+    ▿ durationToFirstToken: 0.23459 seconds
+      - _low: 234590000000000003
       - _high: 0
-    - prefillTokens: 25
-    - prefillTps: 112.78
-    - ramUsageMb: 249.58
-    ▿ totalDuration: 7.78896 seconds
-      - _low: 7788960000000000036
+    - prefillTokens: 18
+    - prefillTps: 76.73
+    - ramUsageMb: 2018.38
+    ▿ totalDuration: 0.80669 seconds
+      - _low: 806690000000000055
       - _high: 0
-    - totalTokens: 281
-  - output: "<|im_end|>\n\nOkay, the user is asking, \"What is the meaning of life?\" That\'s a profound question. I need to make sure my response is both accurate and helpful. Let me start by acknowledging that this is a deeply personal and philosophical question. \n\nFirst, I should consider different perspectives. There\'s the religious view, where many believe the purpose of life is to serve a higher power or achieve spiritual growth. Then there\'s the scientific approach, which might look at life as a process of evolution and survival. But the user might be looking for a more personal or existential answer.\n\nI should also think about the possibility that the user is seeking a more introspective or emotional response. Maybe they\'re feeling overwhelmed and need reassurance. It\'s important to balance the different viewpoints without making the answer too technical. \n\nI need to avoid being too one-sided. Maybe mention that there\'s no single answer, but encourage the user to reflect on their own values and experiences. Also, it\'s crucial to keep the tone empathetic and open, not to dismiss the question but to offer a range of perspectives.\n\nWait, but the user might be looking for a more concise answer. Let me structure it in a way that\'s both informative and not overwhelming. Start"
+    - totalTokens: 33
+  - output: "Sure! Let me know what you need help with. 😊"
   - thinking: Optional<String>.none
